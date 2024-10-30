@@ -1,9 +1,8 @@
-import React from "react";
-import '../App.css';
+import '../../App.css';
 
 function Login() {
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
+        <div className="flex flex-col items-center justify-center bg-gray-900">
             {/* Login Form */}
             <div className="bg-gray-800 p-10 rounded-lg shadow-xl border border-gray-600 w-full max-w-lg h-full max-h-[600px] flex flex-col justify-center">
                 <h1 className="text-3xl font-medieval text-center text-gray-200 mb-6 tracking-wider">

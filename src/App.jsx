@@ -1,10 +1,9 @@
-import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
-import Login from "./components/Login";
-import Home from "./components/Home";
-import About from "./components/About";
-import Private from "./components/Private";
+import Login from "./components/pages/Login";
+import Home from "./components/pages/Home";
+import About from "./components/pages/About";
+import Private from "./components/pages/Private";
 
 function App() {
     return (
