@@ -1,7 +1,9 @@
 import { useState } from "react";
 import '../../App.css';
+import { useAuth } from "../../context/AuthContext";
 
 function Home() {
+    const { currentUser } = useAuth();
     const [question, setQuestion] = useState("");
     const [answer, setAnswer] = useState("");
     const [loading, setLoading] = useState(false);
@@ -31,6 +33,9 @@ function Home() {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
+            <p className="text-gray-300 text-center">
+                        Logged in as {currentUser.email}
+            </p>
             <div className="bg-gray-800 p-10 rounded-lg shadow-xl border border-gray-600 w-full max-w-lg">
                 <h1 className="text-2xl font-medieval text-center text-gray-200 mb-6 tracking-wider">
                     Ask the Oracle

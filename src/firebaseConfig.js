@@ -5,11 +5,12 @@ import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDC__zZlDtQET57C2t-H_oAvZc8WgpWDD8",
-    authDomain: "YOUR_AUTH_DOMAIN",
+    authDomain: "project-dm-helper.firebaseapp.com",
     projectId: "project-dm-helper",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    storageBucket: "project-dm-helper.firebasestorage.app",
+    messagingSenderId: "803001985782",
+    appId: "1:803001985782:web:d233ad4ae12d83ab519ad7",
+    measurementId: "G-RQYRM1GX9R"
 };
 
 const app = initializeApp(firebaseConfig);
