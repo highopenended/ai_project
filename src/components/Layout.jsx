@@ -1,6 +1,7 @@
 // Layout.js
 import { Link } from "react-router-dom";
 
+// eslint-disable-next-line react/prop-types
 function Layout({ children }) {
     return (
         <div className="min-h-screen w-full flex flex-col bg-gray-900">

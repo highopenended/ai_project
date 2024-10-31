@@ -65,7 +65,7 @@ function Home() {
                 </form>
                 {answer && (
                     <div className="mt-6 p-4 bg-gray-700 border border-gray-600 rounded-md">
-                        <h2 className="text-xl font-medieval text-gray-300 mb-2">Oracle's Answer:</h2>
+                        <h2 className="text-xl font-medieval text-gray-300 mb-2">Oracle&apos;s Answer:</h2>
                         <p className="text-gray-300">{answer}</p>
                     </div>
                 )}
