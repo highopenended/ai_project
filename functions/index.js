@@ -1,16 +1,14 @@
 const functions = require("firebase-functions");
-const { Configuration, OpenAIApi } = require("openai"); // Import OpenAI
+const { Configuration, OpenAIApi } = require("openai");
 
-// Initialize OpenAI with the API key stored in Firebase environment variables
+// Initialize OpenAI with the API key stored in environment variables
 const configuration = new Configuration({
-    apiKey: functions.config().openai.key,
+    apiKey: process.env.OPENAI_KEY, // If you've set the key in environment variables
 });
 const openai = new OpenAIApi(configuration);
 
 const { onRequest } = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
 
-// Define the chat function
 exports.chat = onRequest(async (req, res) => {
     if (req.method !== "POST") {
         return res.status(405).send("Method Not Allowed");
@@ -20,7 +18,7 @@ exports.chat = onRequest(async (req, res) => {
 
     try {
         const completion = await openai.createCompletion({
-            model: "GPT-4o mini", // or another OpenAI model
+            model: "gpt-4-turbo", // or "text-davinci-003"
             prompt: question,
             max_tokens: 150,
         });
@@ -28,7 +26,7 @@ exports.chat = onRequest(async (req, res) => {
         const answer = completion.data.choices[0].text.trim();
         res.json({ answer });
     } catch (error) {
-        logger.error("Error communicating with OpenAI:", error);
+        console.error("Error communicating with OpenAI:", error);
         res.status(500).json({ error: "Error communicating with OpenAI" });
     }
 });
