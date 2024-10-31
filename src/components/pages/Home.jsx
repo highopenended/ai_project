@@ -8,14 +8,17 @@ function Home() {
     const [answer, setAnswer] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Replace with your Firebase Function URL
+    const firebaseFunctionUrl = "https://<REGION>-<PROJECT_ID>.cloudfunctions.net/chat";
+
     // Function to handle question submission
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setAnswer(""); // Clear previous answer
         try {
-            // Make an API request to your backend, which then queries ChatGPT
-            const response = await fetch("/api/chat", {
+            // Make an API request to your Firebase function
+            const response = await fetch(firebaseFunctionUrl, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
