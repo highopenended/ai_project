@@ -24,8 +24,15 @@ exports.chat = functions.https.onRequest((req, res) => {
             const answer = completion.choices[0].text.trim();
             res.json({ answer });
         } catch (error) {
-            console.error("Error communicating with OpenAI:", error);
-            res.status(500).json({ error: "An error occurred" });
+            console.error("Error in function execution:", error);
+
+            // Detailed error message for OpenAI API errors
+            if (error.response) {
+                console.error("OpenAI API Error:", error.response.status, error.response.data);
+                res.status(500).json({ error: "Error with OpenAI API", details: error.response.data });
+            } else {
+                res.status(500).json({ error: "An internal server error occurred" });
+            }
         }
     });
 });
