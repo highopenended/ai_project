@@ -15,23 +15,21 @@ exports.chat = functions.https.onRequest((req, res) => {
         const { question } = req.body;
 
         try {
-            const completion = await openai.completions.create({
-                model: "gpt-4o-mini",
-                prompt: question,
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4o-mini",  // Use the correct model name
+                messages: [{ role: "user", content: question }],
                 max_tokens: 150,
             });
 
-            const answer = completion.choices[0].text.trim();
+            const answer = completion.choices[0].message.content.trim();
             res.json({ answer });
         } catch (error) {
-            console.error("Error in function execution:", error);
-
-            // Detailed error message for OpenAI API errors
             if (error.response) {
                 console.error("OpenAI API Error:", error.response.status, error.response.data);
-                res.status(500).json({ error: "Error with OpenAI API", details: error.response.data });
+                res.status(error.response.status).json({ error: "OpenAI API Error", message: error.response.data });
             } else {
-                res.status(500).json({ error: "An internal server error occurred" });
+                console.error("Error:", error.message);
+                res.status(500).json({ error: "An internal server error occurred", message: error.message });
             }
         }
     });
