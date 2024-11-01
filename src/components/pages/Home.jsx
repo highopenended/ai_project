@@ -5,8 +5,25 @@ import { useAuth } from "../../context/AuthContext";
 function Home() {
     const { currentUser } = useAuth();
     const [question, setQuestion] = useState("");
+    const [questionWithParams, setquestionWithParams] = useState("");
     const [answer, setAnswer] = useState("");
     const [loading, setLoading] = useState(false);
+
+    const questionLead = `Answer this question with the following parameters:
+    1) Answer through the lens of a Pathfinder 2e setting
+    2) Add some numerical details when the request is for a random NPC, class, ancestry, etc.
+    3) All numerical info can be acquired from Archives of Nethys`
+
+
+    const assignQuestion=(qst)=>{
+        setQuestion(qst)
+        let val =`${questionLead}  ${qst}`
+        setquestionWithParams(String(val))
+        
+        console.log(question)
+        console.log(questionWithParams)
+    }
+
 
     // Replace with your Firebase Function URL
     const firebaseFunctionUrl = "https://us-central1-project-dm-helper.cloudfunctions.net/chat";
@@ -23,9 +40,11 @@ function Home() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ question }),
+                body: JSON.stringify({ question:questionWithParams }),
             });
             const data = await response.json();
+            console.log(data)
+
             setAnswer(data.answer); // Assuming your backend returns { answer: "..." }
         } catch (error) {
             console.error("Error fetching answer:", error);
@@ -54,7 +73,7 @@ function Home() {
                             id="question"
                             placeholder="Type your question here..."
                             value={question}
-                            onChange={(e) => setQuestion(e.target.value)}
+                            onChange={(e) => assignQuestion(e.target.value)}
                             required
                             className="w-full px-4 py-2 bg-gray-700 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-200 placeholder-gray-400"
                         />
