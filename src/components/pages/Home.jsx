@@ -9,7 +9,7 @@ function Home() {
     const [loading, setLoading] = useState(false);
 
     // Replace with your Firebase Function URL
-    const firebaseFunctionUrl = "";
+    const firebaseFunctionUrl = "https://us-central1-project-dm-helper.cloudfunctions.net/chat";
 
     // Function to handle question submission
     const handleSubmit = async (e) => {
