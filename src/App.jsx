@@ -3,8 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./components/pages/Login";
 import Home from "./components/pages/Home";
-import About from "./components/pages/About";
-import Private from "./components/pages/Private";
+// import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 
 function App() {
     return (
@@ -14,8 +13,6 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Login />} />
                         <Route path="/home" element={<Home />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/private" element={<Private />} />
                     </Routes>
                 </Layout>
             </Router>

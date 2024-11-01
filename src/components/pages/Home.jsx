@@ -12,15 +12,16 @@ function Home() {
     const questionLead = `Answer this question with the following parameters:
     1) Answer through the lens of a Pathfinder 2e setting
     2) Try to keep the text clean and readable with line breaks
-    3) Restrict the response to fit within the maximum number of tokens`;
+    3) Restrict the response to fit within the maximum number of tokens
+    4) Don't say the words "Pathfinder 2e"( ex. any broad sweeping statements can refer to the world of Golorian)`;
 
     const assignQuestion = (qst) => {
         setQuestion(qst);
         let val = String(`${questionLead}  ${qst}`);
         setquestionWithParams(val);
 
-        console.log(question);
-        console.log(questionWithParams);
+        // console.log(question);
+        // console.log(questionWithParams);
     };
 
     // Replace with your Firebase Function URL

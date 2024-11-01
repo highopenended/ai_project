@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebaseConfig"; 
 import '../../App.css';
@@ -8,6 +9,8 @@ function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    
+    const navigate = useNavigate(); // Initialize navigate
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -17,7 +20,7 @@ function Login() {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             console.log("Login successful");
-            
+            navigate('/home'); // Redirect to home page after successful login
         } catch (err) {
             setError("Failed to log in. Please check your email and password.");
             console.error("Error logging in:", err);
@@ -49,7 +52,7 @@ function Login() {
                     </div>
                     <div>
                         <label className="block text-gray-400 font-semibold mb-2 font-medieval" htmlFor="password">
-                            Secret Incantation
+                            Hidden Passphrase
                         </label>
                         <input
                             type="password"
