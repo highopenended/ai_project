@@ -11,19 +11,17 @@ function Home() {
 
     const questionLead = `Answer this question with the following parameters:
     1) Answer through the lens of a Pathfinder 2e setting
-    2) Add some numerical details when the request is for a random NPC, class, ancestry, etc.
-    3) All numerical info can be acquired from Archives of Nethys`
+    2) Try to keep the text clean and readable with line breaks
+    3) Restrict the response to fit within the maximum number of tokens`;
 
+    const assignQuestion = (qst) => {
+        setQuestion(qst);
+        let val = String(`${questionLead}  ${qst}`);
+        setquestionWithParams(val);
 
-    const assignQuestion=(qst)=>{
-        setQuestion(qst)
-        let val =`${questionLead}  ${qst}`
-        setquestionWithParams(String(val))
-        
-        console.log(question)
-        console.log(questionWithParams)
-    }
-
+        console.log(question);
+        console.log(questionWithParams);
+    };
 
     // Replace with your Firebase Function URL
     const firebaseFunctionUrl = "https://us-central1-project-dm-helper.cloudfunctions.net/chat";
@@ -40,10 +38,10 @@ function Home() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ question:questionWithParams }),
+                body: JSON.stringify({ question: questionWithParams }),
             });
             const data = await response.json();
-            console.log(data)
+            console.log(data.answer);
 
             setAnswer(data.answer); // Assuming your backend returns { answer: "..." }
         } catch (error) {
@@ -59,7 +57,7 @@ function Home() {
                 {/* Only display the email if currentUser exists */}
                 {currentUser ? `Logged in as ${currentUser.email}` : "Not logged in"}
             </p>
-            <div className="bg-gray-800 p-10 rounded-lg shadow-xl border border-gray-600 w-full max-w-lg">
+            <div className="bg-gray-800 p-10 rounded-lg shadow-xl border border-gray-600 w-full max-w-2xl">
                 <h1 className="text-2xl font-medieval text-center text-gray-200 mb-6 tracking-wider">
                     Ask the Oracle
                 </h1>
@@ -68,14 +66,14 @@ function Home() {
                         <label className="block text-gray-400 font-semibold mb-2 font-medieval" htmlFor="question">
                             Your Question
                         </label>
-                        <input
-                            type="text"
+                        <textarea
                             id="question"
                             placeholder="Type your question here..."
                             value={question}
                             onChange={(e) => assignQuestion(e.target.value)}
                             required
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-200 placeholder-gray-400"
+                            className="w-full px-4 py-2 bg-gray-700 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-200 placeholder-gray-400 resize-none"
+                            rows="4" // You can adjust this to control the default height
                         />
                     </div>
                     <button
@@ -87,9 +85,9 @@ function Home() {
                     </button>
                 </form>
                 {answer && (
-                    <div className="mt-6 p-4 bg-gray-700 border border-gray-600 rounded-md">
+                    <div className="mt-6 p-4 bg-gray-700 border border-gray-600 rounded-md max-h-64 overflow-y-auto">
                         <h2 className="text-xl font-medieval text-gray-300 mb-2">Oracle&apos;s Answer:</h2>
-                        <p className="text-gray-300">{answer}</p>
+                        <p className="text-gray-300 whitespace-pre-wrap">{answer}</p>
                     </div>
                 )}
             </div>

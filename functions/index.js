@@ -18,7 +18,7 @@ exports.chat = functions.https.onRequest((req, res) => {
             const completion = await openai.chat.completions.create({
                 model: "gpt-4o-mini",  // Use the correct model name
                 messages: [{ role: "user", content: question }],
-                max_tokens: 150,
+                max_tokens: 500,
             });
 
             const answer = completion.choices[0].message.content.trim();
