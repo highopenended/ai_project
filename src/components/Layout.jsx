@@ -5,8 +5,6 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig"; // Import your Firebase config
 import { useNavigate } from "react-router-dom";
 
-
-
 // eslint-disable-next-line react/prop-types
 function Layout({ children }) {
     const { currentUser } = useAuth(); // Get the current user from context
