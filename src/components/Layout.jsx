@@ -1,14 +1,14 @@
 // Layout.js
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"; // Assuming you have an AuthContext
+import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebaseConfig"; // Import your Firebase config
+import { auth } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
 
-// eslint-disable-next-line react/prop-types
 function Layout({ children }) {
-    const { currentUser } = useAuth(); // Get the current user from context
-    const navigate = useNavigate(); // Initialize navigate
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogout = async () => {
         try {
@@ -22,16 +22,16 @@ function Layout({ children }) {
 
     return (
         <div className="min-h-screen w-full flex flex-col bg-gray-900">
-            {/* Navbar */}
             <nav className="w-full bg-gray-800 py-4 shadow-lg">
                 <div className="max-w-4xl mx-auto flex justify-center space-x-8 font-medieval">
-                    <Link to="/" className="text-gray-300 hover:text-gray-100 transition duration-300 text-lg">
-                        Login
-                    </Link>
+                    {!currentUser && (
+                        <Link to="/" className="text-gray-300 hover:text-gray-100 transition duration-300 text-lg">
+                            Login
+                        </Link>
+                    )}
                     <Link to="/home" className="text-gray-300 hover:text-gray-100 transition duration-300 text-lg">
                         Home
                     </Link>
-                    {/* Render Logout button if the user is logged in */}
                     {currentUser && (
                         <button
                             onClick={handleLogout}
@@ -43,12 +43,15 @@ function Layout({ children }) {
                 </div>
             </nav>
 
-            {/* Main Content */}
             <main className="flex-1 flex items-center justify-center w-full">
                 {children}
             </main>
         </div>
     );
 }
+
+Layout.propTypes = {
+    children: PropTypes.node.isRequired
+};
 
 export default Layout;

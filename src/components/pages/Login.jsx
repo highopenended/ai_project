@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithRedirect } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebaseConfig"; 
 import '../../App.css';
+import { useAuth } from "../../context/AuthContext";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -11,7 +12,14 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const [isNewAccount, setIsNewAccount] = useState(false);
     
-    const navigate = useNavigate(); // Initialize navigate
+    const { currentUser } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (currentUser) {
+            navigate('/home');
+        }
+    }, [currentUser, navigate]);
 
     const handleGoogleSignIn = async () => {
         setError("");

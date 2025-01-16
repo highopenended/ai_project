@@ -14,18 +14,32 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Set loading true before checking auth state
+        setLoading(true);
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setCurrentUser(user);
             setLoading(false);
         });
 
-        // Cleanup the listener on unmount
-        return unsubscribe;
+        return () => {
+            unsubscribe();
+            setLoading(true); // Reset loading state on cleanup
+        };
     }, []);
 
+    const value = {
+        currentUser,
+        loading
+    };
+
+    // Don't render children until initial auth check is complete
+    if (loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
-        <AuthContext.Provider value={{ currentUser }}>
-            {!loading && children}
+        <AuthContext.Provider value={value}>
+            {children}
         </AuthContext.Provider>
     );
 };
