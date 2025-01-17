@@ -37,10 +37,8 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submit triggered');
-
         if (!input.trim() || !currentUser) {
-            console.log('Validation failed:', { input: input.trim(), currentUser: !!currentUser });
+            console.warn('Missing input or user:', { input: input.trim(), userId: currentUser?.uid });
             return;
         }
 
@@ -51,24 +49,36 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             timestamp: Date.now()
         };
 
-        console.log('Created user message:', userMessage);
-        const updatedMessages = [...messages, userMessage];
-        setMessages(updatedMessages);
-        setInput('');
+        // Debug log the exact data we're about to save
+        const debugData = {
+            userId: currentUser.uid,
+            message: userMessage,
+            timestamp: new Date().toISOString()
+        };
+        console.log('Attempting to save:', debugData);
 
         try {
             // Save user message immediately
-            console.log('=== SAVING USER MESSAGE TO FIREBASE ===');
             let conversationRef = currentConversationId;
+            const updatedMessages = [...messages, userMessage];
             
             if (!conversationRef) {
+                // Log the exact data being sent to saveConversation
+                console.log('Creating new conversation with data:', {
+                    userId: currentUser.uid,
+                    messages: updatedMessages
+                });
+                
                 conversationRef = await saveConversation(currentUser.uid, updatedMessages);
+                console.log('New conversation ID:', conversationRef);
                 setCurrentConversationId(conversationRef);
-                console.log('Created new conversation:', conversationRef);
             } else {
+                console.log('Updating conversation:', conversationRef);
                 await updateConversation(conversationRef, updatedMessages);
-                console.log('Updated existing conversation:', conversationRef);
             }
+
+            setMessages(updatedMessages);
+            setInput('');
 
             // Get AI response
             const response = await fetch('/api/chat', {
@@ -78,8 +88,7 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             });
 
             const data = await response.json();
-            console.log('Received AI response:', data);
-
+            
             const assistantMessage = {
                 role: 'assistant',
                 content: data.message,
@@ -89,12 +98,21 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             const newMessages = [...updatedMessages, assistantMessage];
             setMessages(newMessages);
 
-            // Update conversation with AI response
-            await updateConversation(conversationRef, newMessages);
-            console.log('Updated conversation with AI response');
+            // Update with AI response
+            if (conversationRef) {
+                console.log('Saving AI response to conversation:', conversationRef);
+                await updateConversation(conversationRef, newMessages);
+            }
 
         } catch (error) {
-            console.error('Error in handleSubmit:', error);
+            console.error('Error in chat flow:', error);
+            // Log detailed error information
+            if (error.code) {
+                console.error('Firebase error code:', error.code);
+            }
+            if (error.message) {
+                console.error('Error message:', error.message);
+            }
         } finally {
             setIsLoading(false);
         }

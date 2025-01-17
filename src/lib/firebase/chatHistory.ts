@@ -25,8 +25,12 @@ export interface Conversation {
 }
 
 export const saveConversation = async (userId: string, messages: ChatMessage[]) => {
-  console.log('saveConversation called with:', { userId, messages }); // Debug log
-  
+  console.log('saveConversation called with:', {
+    userId,
+    messageCount: messages.length,
+    firstMessage: messages[0]
+  });
+
   try {
     const conversationsRef = collection(db, 'conversations');
     const title = messages[0]?.content.substring(0, 30) + '...';
@@ -35,18 +39,21 @@ export const saveConversation = async (userId: string, messages: ChatMessage[]) 
       userId,
       messages,
       lastAccessed: Date.now(),
-      title
+      title,
+      createdAt: Date.now()
     };
 
-    console.log('Attempting to save conversation:', newConversation); // Debug log
-    
+    console.log('About to save conversation:', newConversation);
     const docRef = await addDoc(conversationsRef, newConversation);
-    console.log('Successfully saved conversation with ID:', docRef.id); // Debug log
+    console.log('Successfully saved conversation with ID:', docRef.id);
+    
+    // Verify the save by immediately reading it back
+    const savedDoc = await docRef.get();
+    console.log('Verified saved data:', savedDoc.data());
+    
     return docRef.id;
   } catch (error) {
-    console.error('Error in saveConversation:', error);
-    // Log the full error details
-    console.error('Full error:', JSON.stringify(error, null, 2));
+    console.error('Failed to save conversation:', error);
     throw error;
   }
 };
