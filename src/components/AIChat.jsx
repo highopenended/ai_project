@@ -1,17 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { saveConversation, updateConversation } from '../lib/firebase/chatHistory';
+import { saveConversation, updateConversation, getUserConversations } from '../lib/firebase/chatHistory';
 
 function AIChat({ initialMessages = [], conversationId = null }) {
     const { currentUser } = useAuth();
     const [messages, setMessages] = useState(initialMessages);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [currentConversationId, setCurrentConversationId] = useState(conversationId);
 
-    // Add this useEffect to verify currentUser
+    // Load conversation history when component mounts
     useEffect(() => {
-        console.log('AIChat mounted, currentUser:', currentUser?.uid);
-    }, [currentUser]);
+        const loadConversations = async () => {
+            if (!currentUser) return;
+            
+            try {
+                console.log('Loading conversations for user:', currentUser.uid);
+                const conversations = await getUserConversations(currentUser.uid);
+                console.log('Loaded conversations:', conversations);
+                
+                // If we have a conversationId, load that specific conversation
+                if (currentConversationId) {
+                    const conversation = conversations.find(c => c.id === currentConversationId);
+                    if (conversation) {
+                        console.log('Loading specific conversation:', conversation);
+                        setMessages(conversation.messages);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        };
+
+        loadConversations();
+    }, [currentUser, currentConversationId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -35,6 +57,19 @@ function AIChat({ initialMessages = [], conversationId = null }) {
         setInput('');
 
         try {
+            // Save user message immediately
+            console.log('=== SAVING USER MESSAGE TO FIREBASE ===');
+            let conversationRef = currentConversationId;
+            
+            if (!conversationRef) {
+                conversationRef = await saveConversation(currentUser.uid, updatedMessages);
+                setCurrentConversationId(conversationRef);
+                console.log('Created new conversation:', conversationRef);
+            } else {
+                await updateConversation(conversationRef, updatedMessages);
+                console.log('Updated existing conversation:', conversationRef);
+            }
+
             // Get AI response
             const response = await fetch('/api/chat', {
                 method: 'POST',
@@ -54,25 +89,9 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             const newMessages = [...updatedMessages, assistantMessage];
             setMessages(newMessages);
 
-            // Save to Firebase
-            console.log('=== ATTEMPTING FIREBASE SAVE ===');
-            console.log('User ID:', currentUser.uid);
-            console.log('Messages:', newMessages);
-
-            try {
-                if (conversationId) {
-                    console.log('Updating conversation:', conversationId);
-                    await updateConversation(conversationId, newMessages);
-                    console.log('Update successful');
-                } else {
-                    console.log('Creating new conversation');
-                    const newId = await saveConversation(currentUser.uid, newMessages);
-                    console.log('Save successful, new ID:', newId);
-                }
-            } catch (saveError) {
-                console.error('Firebase save error:', saveError);
-                throw saveError;
-            }
+            // Update conversation with AI response
+            await updateConversation(conversationRef, newMessages);
+            console.log('Updated conversation with AI response');
 
         } catch (error) {
             console.error('Error in handleSubmit:', error);
