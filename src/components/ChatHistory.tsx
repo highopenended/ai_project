@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserConversations, Conversation, ChatMessage } from '../lib/firebase/chatHistory';
 import '../styles/ChatHistory.css';

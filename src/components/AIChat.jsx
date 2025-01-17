@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { saveConversation, updateConversation, getUserConversations } from '../lib/firebase/chatHistory';
+import PropTypes from 'prop-types';
 
 function AIChat({ initialMessages = [], conversationId = null }) {
     const { currentUser } = useAuth();
@@ -159,5 +160,14 @@ function AIChat({ initialMessages = [], conversationId = null }) {
         </div>
     );
 }
+
+AIChat.propTypes = {
+    initialMessages: PropTypes.arrayOf(PropTypes.shape({
+        role: PropTypes.string.isRequired,
+        content: PropTypes.string.isRequired,
+        timestamp: PropTypes.number.isRequired
+    })),
+    conversationId: PropTypes.string
+};
 
 export default AIChat; 

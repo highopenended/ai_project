@@ -5,6 +5,7 @@ import {
   query, 
   where, 
   getDocs, 
+  getDoc,
   orderBy,
   doc,
   updateDoc
@@ -47,8 +48,8 @@ export const saveConversation = async (userId: string, messages: ChatMessage[]) 
     const docRef = await addDoc(conversationsRef, newConversation);
     console.log('Successfully saved conversation with ID:', docRef.id);
     
-    // Verify the save by immediately reading it back
-    const savedDoc = await docRef.get();
+    // Verify the save using getDoc
+    const savedDoc = await getDoc(docRef);
     console.log('Verified saved data:', savedDoc.data());
     
     return docRef.id;
