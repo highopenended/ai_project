@@ -10,7 +10,10 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!input.trim() || !currentUser) return;
+        if (!input.trim() || !currentUser) {
+            console.log('Input empty or no user:', { input, currentUser });
+            return;
+        }
 
         setIsLoading(true);
         const userMessage = {
@@ -18,6 +21,8 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             content: input.trim(),
             timestamp: Date.now()
         };
+
+        console.log('Attempting to save message:', userMessage);
 
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
@@ -43,15 +48,15 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
             // Save to Firebase
             if (conversationId) {
-                console.log('Updating conversation:', conversationId);
+                console.log('Updating existing conversation:', conversationId);
                 await updateConversation(conversationId, newMessages);
             } else {
-                console.log('Creating new conversation');
+                console.log('Creating new conversation for user:', currentUser.uid);
                 const newId = await saveConversation(currentUser.uid, newMessages);
-                console.log('Created conversation with ID:', newId);
+                console.log('New conversation created with ID:', newId);
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Detailed error:', error);
         } finally {
             setIsLoading(false);
         }

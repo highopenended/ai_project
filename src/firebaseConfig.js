@@ -18,6 +18,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+console.log('Firebase initialized with db:', db); // Debug
+
 // Add this to check if Firebase is initialized
 const isInitialized = new Promise(resolve => {
     auth.onAuthStateChanged(() => {
