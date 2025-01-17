@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { saveConversation, updateConversation } from '../lib/firebase/chatHistory';
 
@@ -8,12 +8,17 @@ function AIChat({ initialMessages = [], conversationId = null }) {
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    // Add this useEffect to verify currentUser
+    useEffect(() => {
+        console.log('AIChat mounted, currentUser:', currentUser?.uid);
+    }, [currentUser]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submit triggered, currentUser:', currentUser);
+        console.log('Submit triggered');
 
         if (!input.trim() || !currentUser) {
-            console.log('Input empty or no user:', { input, currentUser });
+            console.log('Validation failed:', { input: input.trim(), currentUser: !!currentUser });
             return;
         }
 
@@ -24,15 +29,13 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             timestamp: Date.now()
         };
 
-        console.log('User message created:', userMessage);
-
+        console.log('Created user message:', userMessage);
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
         setInput('');
 
         try {
-            // Get AI response first
-            console.log('Fetching AI response...');
+            // Get AI response
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -40,7 +43,7 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             });
 
             const data = await response.json();
-            console.log('AI response received:', data);
+            console.log('Received AI response:', data);
 
             const assistantMessage = {
                 role: 'assistant',
@@ -52,21 +55,25 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             setMessages(newMessages);
 
             // Save to Firebase
-            console.log('Attempting to save to Firebase...');
-            if (conversationId) {
-                console.log('Updating conversation:', conversationId);
-                await updateConversation(conversationId, newMessages);
-            } else {
-                console.log('Creating new conversation for user:', currentUser.uid);
-                try {
+            console.log('=== ATTEMPTING FIREBASE SAVE ===');
+            console.log('User ID:', currentUser.uid);
+            console.log('Messages:', newMessages);
+
+            try {
+                if (conversationId) {
+                    console.log('Updating conversation:', conversationId);
+                    await updateConversation(conversationId, newMessages);
+                    console.log('Update successful');
+                } else {
+                    console.log('Creating new conversation');
                     const newId = await saveConversation(currentUser.uid, newMessages);
-                    console.log('New conversation saved with ID:', newId);
-                } catch (saveError) {
-                    console.error('Error saving conversation:', saveError);
-                    // Log the full error details
-                    console.error('Full error:', JSON.stringify(saveError, null, 2));
+                    console.log('Save successful, new ID:', newId);
                 }
+            } catch (saveError) {
+                console.error('Firebase save error:', saveError);
+                throw saveError;
             }
+
         } catch (error) {
             console.error('Error in handleSubmit:', error);
         } finally {
