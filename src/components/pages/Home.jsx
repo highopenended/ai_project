@@ -43,37 +43,50 @@ function Home() {
         setAnswer("");
 
         try {
-            const response = await fetch(firebaseFunctionUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question: questionWithParams }),
-            });
-            const data = await response.json();
-
+            // Create the new user message
             const userMessage = {
                 role: 'user',
                 content: question,
                 timestamp: Date.now()
             };
+
+            // Include all previous messages plus the new question when asking the AI
+            const conversationHistory = [...messages, userMessage];
+            
+            // Send the full conversation history to the AI
+            const response = await fetch(firebaseFunctionUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    messages: conversationHistory.map(msg => ({
+                        role: msg.role,
+                        content: msg.content
+                    })),
+                    question: questionWithParams 
+                }),
+            });
+            const data = await response.json();
+
+            // Create the AI's response message
             const assistantMessage = {
                 role: 'assistant',
                 content: data.answer,
                 timestamp: Date.now()
             };
 
+            // Update the conversation with both messages
             const updatedMessages = [...messages, userMessage, assistantMessage];
             setMessages(updatedMessages);
 
             if (currentConversationId) {
-                // Update existing conversation
                 await updateConversation(currentConversationId, updatedMessages);
             } else {
-                // Create new conversation
                 const newConversationId = await saveConversation(currentUser.uid, updatedMessages);
                 setCurrentConversationId(newConversationId);
             }
 
             setAnswer(data.answer);
+            setQuestion(""); // Clear input after sending
         } catch (error) {
             console.error("Error:", error);
             setAnswer("There was an error processing your question. Please try again.");
