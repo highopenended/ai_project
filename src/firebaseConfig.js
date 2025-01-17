@@ -1,6 +1,7 @@
 // src/firebaseConfig.js
 import { initializeApp } from "firebase/app";
 import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 
 const firebaseConfig = {
@@ -15,6 +16,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Add this to check if Firebase is initialized
 const isInitialized = new Promise(resolve => {
@@ -23,4 +25,4 @@ const isInitialized = new Promise(resolve => {
     });
 });
 
-export { auth, isInitialized };
+export { auth, isInitialized, db };

@@ -1,14 +1,24 @@
 // Layout.js
+import React from 'react';
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import ChatHistory from "./ChatHistory";
+import { useState } from "react";
 
 function Layout({ children }) {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
+    const [selectedMessages, setSelectedMessages] = useState([]);
+    const [selectedConversationId, setSelectedConversationId] = useState(null);
+
+    const handleSelectConversation = (messages, conversationId) => {
+        setSelectedMessages(messages);
+        setSelectedConversationId(conversationId);
+    };
 
     const handleLogout = async () => {
         try {
@@ -33,18 +43,39 @@ function Layout({ children }) {
                         Home
                     </Link>
                     {currentUser && (
-                        <button
-                            onClick={handleLogout}
-                            className="text-gray-300 hover:text-gray-100 transition duration-300 text-lg"
-                        >
-                            Log Out
-                        </button>
+                        <>
+                            <button
+                                onClick={handleLogout}
+                                className="text-gray-300 hover:text-gray-100 transition duration-300 text-lg"
+                            >
+                                Log Out
+                            </button>
+                        </>
                     )}
                 </div>
             </nav>
 
-            <main className="flex-1 flex items-center justify-center w-full">
-                {children}
+            <main className="flex-1 flex">
+                {currentUser && (
+                    <div className="flex w-full">
+                        <div className="w-64 bg-gray-800 border-r border-gray-700">
+                            <ChatHistory 
+                                onSelectConversation={handleSelectConversation}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            {React.cloneElement(children, {
+                                initialMessages: selectedMessages,
+                                conversationId: selectedConversationId
+                            })}
+                        </div>
+                    </div>
+                )}
+                {!currentUser && (
+                    <div className="flex items-center justify-center flex-1">
+                        {children}
+                    </div>
+                )}
             </main>
         </div>
     );
