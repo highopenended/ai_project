@@ -10,6 +10,8 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log('Submit triggered, currentUser:', currentUser);
+
         if (!input.trim() || !currentUser) {
             console.log('Input empty or no user:', { input, currentUser });
             return;
@@ -22,7 +24,7 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             timestamp: Date.now()
         };
 
-        console.log('Attempting to save message:', userMessage);
+        console.log('User message created:', userMessage);
 
         const updatedMessages = [...messages, userMessage];
         setMessages(updatedMessages);
@@ -30,6 +32,7 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
         try {
             // Get AI response first
+            console.log('Fetching AI response...');
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -37,6 +40,8 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             });
 
             const data = await response.json();
+            console.log('AI response received:', data);
+
             const assistantMessage = {
                 role: 'assistant',
                 content: data.message,
@@ -47,16 +52,23 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             setMessages(newMessages);
 
             // Save to Firebase
+            console.log('Attempting to save to Firebase...');
             if (conversationId) {
-                console.log('Updating existing conversation:', conversationId);
+                console.log('Updating conversation:', conversationId);
                 await updateConversation(conversationId, newMessages);
             } else {
                 console.log('Creating new conversation for user:', currentUser.uid);
-                const newId = await saveConversation(currentUser.uid, newMessages);
-                console.log('New conversation created with ID:', newId);
+                try {
+                    const newId = await saveConversation(currentUser.uid, newMessages);
+                    console.log('New conversation saved with ID:', newId);
+                } catch (saveError) {
+                    console.error('Error saving conversation:', saveError);
+                    // Log the full error details
+                    console.error('Full error:', JSON.stringify(saveError, null, 2));
+                }
             }
         } catch (error) {
-            console.error('Detailed error:', error);
+            console.error('Error in handleSubmit:', error);
         } finally {
             setIsLoading(false);
         }
