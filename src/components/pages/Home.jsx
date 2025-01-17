@@ -7,16 +7,16 @@ function Home() {
     const { currentUser } = useAuth();
     const [question, setQuestion] = useState("");
     const [questionWithParams, setquestionWithParams] = useState("");
-    const [answer, setAnswer] = useState("");
     const [loading, setLoading] = useState(false);
     const [currentConversationId, setCurrentConversationId] = useState(null);
     const [messages, setMessages] = useState([]);
 
-    const questionLead = `Answer this question with the following parameters:
+    const questionLead = `You are a professional Dungeon Master. Answer this question with the following parameters:
     1) Answer through the lens of a Pathfinder 2e setting
     2) Try to keep the text clean and readable with line breaks
     3) Restrict the response to fit within the maximum number of tokens
-    4) Don't say the words "Pathfinder 2e"( ex. any broad sweeping statements can refer to the world of Golorian)`;
+    4) Don't say the words "Pathfinder 2e"( ex. any broad sweeping statements can refer to the world of Golorian)
+    5) Be concise and don't speak too broadly`;
 
     const assignQuestion = (qst) => {
         setQuestion(qst);
@@ -33,14 +33,12 @@ function Home() {
     const handleNewThread = () => {
         setCurrentConversationId(null);
         setMessages([]);
-        setAnswer("");
         setQuestion("");
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setAnswer("");
 
         try {
             // Create the new user message
@@ -53,6 +51,9 @@ function Home() {
             // Include all previous messages plus the new question when asking the AI
             const conversationHistory = [...messages, userMessage];
             
+            console.log(conversationHistory)
+
+
             // Send the full conversation history to the AI
             const response = await fetch(firebaseFunctionUrl, {
                 method: "POST",
@@ -65,8 +66,14 @@ function Home() {
                     question: questionWithParams 
                 }),
             });
+
+
+
+            
             const data = await response.json();
 
+            console.log(data)
+            
             // Create the AI's response message
             const assistantMessage = {
                 role: 'assistant',
@@ -85,11 +92,10 @@ function Home() {
                 setCurrentConversationId(newConversationId);
             }
 
-            setAnswer(data.answer);
             setQuestion(""); // Clear input after sending
         } catch (error) {
             console.error("Error:", error);
-            setAnswer("There was an error processing your question. Please try again.");
+            setQuestion("There was an error processing your question. Please try again.");
         }
         setLoading(false);
     };
@@ -134,15 +140,9 @@ function Home() {
                         {loading ? "Consulting..." : "Ask"}
                     </button>
                 </form>
-                {answer && (
-                    <div className="mt-6 p-4 bg-gray-700 border border-gray-600 rounded-md max-h-64 overflow-y-auto">
-                        <h2 className="text-xl font-medieval text-gray-300 mb-2">Oracle&apos;s Answer:</h2>
-                        <p className="text-gray-300 whitespace-pre-wrap">{answer}</p>
-                    </div>
-                )}
                 {messages.length > 0 && (
                     <div className="mt-6 space-y-4">
-                        {messages.map((message, index) => (
+                        {[...messages].reverse().map((message, index) => (
                             <div
                                 key={index}
                                 className={`p-4 rounded-md ${
