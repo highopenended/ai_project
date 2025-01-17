@@ -26,13 +26,13 @@ export interface Conversation {
 }
 
 export const saveConversation = async (userId: string, messages: ChatMessage[]) => {
-  console.log('saveConversation called with:', {
-    userId,
-    messageCount: messages.length,
-    firstMessage: messages[0]
-  });
+  console.log('🔥 Starting save:', { userId, messageCount: messages.length });
 
   try {
+    if (!db) {
+      throw new Error('Firestore not initialized');
+    }
+
     const conversationsRef = collection(db, 'conversations');
     const title = messages[0]?.content.substring(0, 30) + '...';
     
@@ -44,17 +44,20 @@ export const saveConversation = async (userId: string, messages: ChatMessage[]) 
       createdAt: Date.now()
     };
 
-    console.log('About to save conversation:', newConversation);
+    console.log('🔥 Attempting save:', newConversation);
     const docRef = await addDoc(conversationsRef, newConversation);
-    console.log('Successfully saved conversation with ID:', docRef.id);
-    
-    // Verify the save using getDoc
-    const savedDoc = await getDoc(docRef);
-    console.log('Verified saved data:', savedDoc.data());
+    console.log('🔥 Save successful:', docRef.id);
     
     return docRef.id;
   } catch (error) {
-    console.error('Failed to save conversation:', error);
+    console.error('🚨 Save failed:', error);
+    if (error instanceof Error) {
+      console.error('🚨 Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+    }
     throw error;
   }
 };

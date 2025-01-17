@@ -13,17 +13,25 @@ const firebaseConfig = {
     measurementId: "G-RQYRM1GX9R"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-console.log('Firebase initialized with db:', db); // Debug
+// Debug logging
+console.log('🔥 Firebase Status:', {
+    hasAuth: !!auth,
+    hasDB: !!db,
+    currentUser: auth.currentUser?.email,
+    dbType: db?.type,
+    projectId: firebaseConfig.projectId
+});
 
-// Add this to check if Firebase is initialized
 const isInitialized = new Promise(resolve => {
-    auth.onAuthStateChanged(() => {
+    auth.onAuthStateChanged((user) => {
+        console.log('🔥 Auth state changed:', user?.email);
         resolve(true);
     });
 });
 
-export { auth, isInitialized, db };
+export { auth, db, isInitialized };
