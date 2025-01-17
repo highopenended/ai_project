@@ -48,31 +48,29 @@ function Home() {
                 timestamp: Date.now()
             };
 
-            // Include all previous messages plus the new question when asking the AI
+            // Include all previous messages plus the new question
             const conversationHistory = [...messages, userMessage];
             
-            console.log(conversationHistory)
+            // Format the question to include context
+            const contextualQuestion = `Previous conversation: ${messages.map(m => 
+                `${m.role === 'user' ? 'Human' : 'Assistant'}: ${m.content}`
+            ).join('\n')}\n\nCurrent question: ${question}`;
 
+            const payload = { 
+                messages: conversationHistory.map(msg => ({
+                    role: msg.role,
+                    content: msg.content
+                })),
+                question: `${questionLead}\n\n${contextualQuestion}`
+            };
 
-            // Send the full conversation history to the AI
             const response = await fetch(firebaseFunctionUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    messages: conversationHistory.map(msg => ({
-                        role: msg.role,
-                        content: msg.content
-                    })),
-                    question: questionWithParams 
-                }),
+                body: JSON.stringify(payload),
             });
 
-
-
-            
             const data = await response.json();
-
-            console.log(data)
             
             // Create the AI's response message
             const assistantMessage = {
