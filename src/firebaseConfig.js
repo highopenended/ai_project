@@ -4,7 +4,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDC__zZlDtQET57C2t-H_oAvZc8WgpWDD8",
+    apiKey: "AIzaSyAfxOAYR_vLGR_y0OAVzFb-SHuya2D_sjE",
     authDomain: "project-dm-helper.firebaseapp.com",
     projectId: "project-dm-helper",
     storageBucket: "project-dm-helper.firebasestorage.app",
