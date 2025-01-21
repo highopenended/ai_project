@@ -1,54 +1,82 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserConversations } from '../lib/firebase/chatHistory';
 import '../styles/ChatHistory.css';
 import PropTypes from 'prop-types';
 
-const ChatHistory = ({ onSelectConversation }) => {
+const ChatHistory = ({ onSelectConversation, selectedId }) => {
   const { currentUser } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   console.log('ChatHistory rendering, currentUser:', currentUser); // Debug log
 
-  useEffect(() => {
-    console.log('ChatHistory useEffect triggered'); // Debug log
-    const loadConversations = async () => {
-      if (!currentUser) return;
-      try {
-        const userConversations = await getUserConversations(currentUser.uid);
-        console.log('Loaded conversations:', userConversations);
-        setConversations(userConversations);
-      } catch (error) {
-        console.error('Error loading conversations:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadConversations();
+  // Function to load conversations
+  const loadConversations = useCallback(async () => {
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      const userConversations = await getUserConversations(currentUser.uid);
+      console.log('Loaded conversations:', userConversations);
+      const validConversations = userConversations
+        .filter(conv => conv && conv.messages && conv.title && conv.lastAccessed)
+        // Sort conversations by lastAccessed timestamp, most recent first
+        .sort((a, b) => b.lastAccessed - a.lastAccessed);
+      setConversations(validConversations);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+      setError('Failed to load conversations');
+    } finally {
+      setLoading(false);
+    }
   }, [currentUser]);
+
+  // Load conversations initially and when selectedId changes
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations, selectedId]); // Add selectedId as dependency
+
+  const handleConversationClick = (conversation) => {
+    console.log('Conversation clicked:', conversation); // Debug log
+    if (conversation && conversation.messages) {
+      onSelectConversation(conversation.messages, conversation.id);
+    }
+  };
 
   if (loading) {
     return <div className="p-4 text-gray-300">Loading conversations...</div>;
   }
 
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
+
   return (
     <div className="chat-history">
-      {conversations.length === 0 ? (
+      {!conversations || conversations.length === 0 ? (
         <div className="p-4 text-gray-300">No conversations yet</div>
       ) : (
         conversations.map((conversation) => (
-          <div 
-            key={conversation.id}
-            className="conversation-preview"
-            onClick={() => onSelectConversation(conversation.messageData, conversation.id)}
-          >
-            <h3 className="text-gray-200">{conversation.metadata.title || 'Untitled Conversation'}</h3>
-            <p className="text-gray-400 text-sm">
-              {new Date(conversation.metadata.lastAccessed).toLocaleString()}
-            </p>
-          </div>
+          conversation && (
+            <div 
+              key={conversation.id}
+              className={`conversation-preview cursor-pointer hover:bg-gray-700 transition-colors ${
+                selectedId === conversation.id ? 'bg-gray-700' : ''
+              }`}
+              onClick={() => handleConversationClick(conversation)}
+            >
+              <h3 className="text-gray-200">
+                {(conversation.title || 'Untitled Conversation').substring(0, 50)}
+              </h3>
+              <p className="text-gray-400 text-sm">
+                {new Date(conversation.lastAccessed || Date.now()).toLocaleString()}
+              </p>
+            </div>
+          )
         ))
       )}
     </div>
@@ -56,7 +84,8 @@ const ChatHistory = ({ onSelectConversation }) => {
 };
 
 ChatHistory.propTypes = {
-  onSelectConversation: PropTypes.func.isRequired
+  onSelectConversation: PropTypes.func.isRequired,
+  selectedId: PropTypes.string
 };
 
 export default ChatHistory; 

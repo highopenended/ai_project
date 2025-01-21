@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { saveConversation, updateConversation, getUserConversations } from '../lib/firebase/chatHistory';
+import { saveConversation, updateConversation } from '../lib/firebase/chatHistory';
 import PropTypes from 'prop-types';
 
 function AIChat({ initialMessages = [], conversationId = null }) {
@@ -36,8 +36,11 @@ function AIChat({ initialMessages = [], conversationId = null }) {
                 isAnonymous: currentUser.isAnonymous
             });
 
-            let conversationRef = currentConversationId;
             const updatedMessages = [...messages, userMessage];
+            setMessages(updatedMessages);
+            setInput('');
+
+            let conversationRef = currentConversationId;
             
             console.log('Attempting to save conversation with:', {
                 userId: currentUser.uid,
@@ -61,9 +64,6 @@ function AIChat({ initialMessages = [], conversationId = null }) {
                 await updateConversation(currentUser.uid, conversationRef, updatedMessages);
             }
 
-            setMessages(updatedMessages);
-            setInput('');
-
             // Get AI response
             const response = await fetch('/api/chat', {
                 method: 'POST',
@@ -73,28 +73,24 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
             const data = await response.json();
             
-            const assistantMessage = {
+            const newMessages = [...updatedMessages, {
                 role: 'assistant',
                 content: data.message,
                 timestamp: Date.now()
-            };
-
-            const newMessages = [...updatedMessages, assistantMessage];
+            }];
+            
             setMessages(newMessages);
-
-            // Update with AI response
+            
+            // Update conversation with AI response
             if (conversationRef) {
                 await updateConversation(currentUser.uid, conversationRef, newMessages);
             }
-
         } catch (error) {
             console.error('Error in chat flow:', error);
-            if (error.code) {
-                console.error('Firebase error code:', error.code);
-            }
-            if (error.message) {
-                console.error('Error message:', error.message);
-            }
+            console.error('Chat error details:', {
+                code: error.code,
+                message: error.message
+            });
         } finally {
             setIsLoading(false);
         }

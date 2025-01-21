@@ -19,13 +19,10 @@ export interface ChatMessage {
 
 export interface Conversation {
   id: string;
-  messageData: ChatMessage[];
-  metadata: {
-    lastAccessed: number;
-    title: string;
-    createdAt: number;
-    ownerEmail: string;
-  };
+  messages: ChatMessage[];
+  lastAccessed: number;
+  title: string;
+  createdAt: number;
 }
 
 export const saveConversation = async (userId: string, messages: ChatMessage[], userEmail: string) => {
@@ -76,20 +73,19 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
 
 export const getUserConversations = async (userId: string) => {
   try {
-    // Reference the user's conversations subcollection
     const userDocRef = doc(db, 'users', userId);
     const conversationsRef = collection(userDocRef, 'conversations');
     
     const q = query(
       conversationsRef,
-      orderBy('metadata.lastAccessed', 'desc')
+      orderBy('lastAccessed', 'desc')
     );
 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    })) as Conversation[];
+    }));
   } catch (error) {
     console.error('Error fetching conversations:', error);
     throw error;
@@ -104,8 +100,12 @@ export const updateConversation = async (
   try {
     const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
     await updateDoc(conversationRef, {
-      'messageData': messages,
-      'metadata.lastAccessed': Date.now()
+      'messages': messages.map(m => ({
+        role: m.role,
+        content: m.content,
+        timestamp: m.timestamp
+      })),
+      'lastAccessed': Date.now()
     });
   } catch (error) {
     console.error('Error updating conversation:', error);
