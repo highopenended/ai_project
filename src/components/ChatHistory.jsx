@@ -1,24 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserConversations, Conversation, ChatMessage } from '../lib/firebase/chatHistory';
+import { getUserConversations } from '../lib/firebase/chatHistory';
 import '../styles/ChatHistory.css';
+import PropTypes from 'prop-types';
 
-interface ChatHistoryProps {
-  onSelectConversation: (messages: ChatMessage[], conversationId: string) => void;
-}
-
-const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectConversation }) => {
+const ChatHistory = ({ onSelectConversation }) => {
   const { currentUser } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  console.log('ChatHistory rendering, currentUser:', currentUser); // Debug log
+
   useEffect(() => {
+    console.log('ChatHistory useEffect triggered'); // Debug log
     const loadConversations = async () => {
       if (!currentUser) return;
-      
       try {
         const userConversations = await getUserConversations(currentUser.uid);
-        console.log('Loaded conversations:', userConversations); // Debug log
+        console.log('Loaded conversations:', userConversations);
         setConversations(userConversations);
       } catch (error) {
         console.error('Error loading conversations:', error);
@@ -43,17 +42,21 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ onSelectConversation }) => {
           <div 
             key={conversation.id}
             className="conversation-preview"
-            onClick={() => onSelectConversation(conversation.messages, conversation.id)}
+            onClick={() => onSelectConversation(conversation.messageData, conversation.id)}
           >
-            <h3 className="text-gray-200">{conversation.title || 'Untitled Conversation'}</h3>
+            <h3 className="text-gray-200">{conversation.metadata.title || 'Untitled Conversation'}</h3>
             <p className="text-gray-400 text-sm">
-              {new Date(conversation.lastAccessed).toLocaleString()}
+              {new Date(conversation.metadata.lastAccessed).toLocaleString()}
             </p>
           </div>
         ))
       )}
     </div>
   );
+};
+
+ChatHistory.propTypes = {
+  onSelectConversation: PropTypes.func.isRequired
 };
 
 export default ChatHistory; 

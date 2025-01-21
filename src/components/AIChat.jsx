@@ -10,31 +10,10 @@ function AIChat({ initialMessages = [], conversationId = null }) {
     const [isLoading, setIsLoading] = useState(false);
     const [currentConversationId, setCurrentConversationId] = useState(conversationId);
 
-    // Load conversation history when component mounts
     useEffect(() => {
-        const loadConversations = async () => {
-            if (!currentUser) return;
-            
-            try {
-                console.log('Loading conversations for user:', currentUser.uid);
-                const conversations = await getUserConversations(currentUser.uid);
-                console.log('Loaded conversations:', conversations);
-                
-                // If we have a conversationId, load that specific conversation
-                if (currentConversationId) {
-                    const conversation = conversations.find(c => c.id === currentConversationId);
-                    if (conversation) {
-                        console.log('Loading specific conversation:', conversation);
-                        setMessages(conversation.messages);
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading conversations:', error);
-            }
-        };
-
-        loadConversations();
-    }, [currentUser, currentConversationId]);
+        setMessages(initialMessages);
+        setCurrentConversationId(conversationId);
+    }, [initialMessages, conversationId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,32 +29,36 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             timestamp: Date.now()
         };
 
-        // Debug log the exact data we're about to save
-        const debugData = {
-            userId: currentUser.uid,
-            message: userMessage,
-            timestamp: new Date().toISOString()
-        };
-        console.log('Attempting to save:', debugData);
-
         try {
-            // Save user message immediately
+            console.log('Current user details:', {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                isAnonymous: currentUser.isAnonymous
+            });
+
             let conversationRef = currentConversationId;
             const updatedMessages = [...messages, userMessage];
             
+            console.log('Attempting to save conversation with:', {
+                userId: currentUser.uid,
+                messageCount: updatedMessages.length,
+                email: currentUser.email,
+                messages: updatedMessages
+            });
+
             if (!conversationRef) {
-                // Log the exact data being sent to saveConversation
-                console.log('Creating new conversation with data:', {
-                    userId: currentUser.uid,
-                    messages: updatedMessages
-                });
-                
-                conversationRef = await saveConversation(currentUser.uid, updatedMessages);
-                console.log('New conversation ID:', conversationRef);
+                if (!currentUser.email) {
+                    throw new Error('User email is required');
+                }
+                conversationRef = await saveConversation(
+                    currentUser.uid, 
+                    updatedMessages,
+                    currentUser.email
+                );
+                console.log('New conversation created:', conversationRef);
                 setCurrentConversationId(conversationRef);
             } else {
-                console.log('Updating conversation:', conversationRef);
-                await updateConversation(conversationRef, updatedMessages);
+                await updateConversation(currentUser.uid, conversationRef, updatedMessages);
             }
 
             setMessages(updatedMessages);
@@ -101,13 +84,11 @@ function AIChat({ initialMessages = [], conversationId = null }) {
 
             // Update with AI response
             if (conversationRef) {
-                console.log('Saving AI response to conversation:', conversationRef);
-                await updateConversation(conversationRef, newMessages);
+                await updateConversation(currentUser.uid, conversationRef, newMessages);
             }
 
         } catch (error) {
             console.error('Error in chat flow:', error);
-            // Log detailed error information
             if (error.code) {
                 console.error('Firebase error code:', error.code);
             }

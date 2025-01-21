@@ -3,12 +3,12 @@ import {
   collection, 
   addDoc, 
   query, 
-  where, 
   getDocs, 
-  getDoc,
   orderBy,
   doc,
-  updateDoc
+  updateDoc,
+  setDoc,
+  increment
 } from 'firebase/firestore';
 
 export interface ChatMessage {
@@ -19,56 +19,70 @@ export interface ChatMessage {
 
 export interface Conversation {
   id: string;
-  userId: string;
-  messages: ChatMessage[];
-  lastAccessed: number;
-  title: string;
+  messageData: ChatMessage[];
+  metadata: {
+    lastAccessed: number;
+    title: string;
+    createdAt: number;
+    ownerEmail: string;
+  };
 }
 
-export const saveConversation = async (userId: string, messages: ChatMessage[]) => {
-  console.log('🔥 Starting save:', { userId, messageCount: messages.length });
+export const saveConversation = async (userId: string, messages: ChatMessage[], userEmail: string) => {
+  console.log('🔥 Starting save with db:', !!db, {
+    userId,
+    messageCount: messages.length,
+    userEmail,
+    dbType: db?.type,
+    dbConfig: db?.toJSON?.()
+  });
 
   try {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const conversationsRef = collection(db, 'conversations');
-    const title = messages[0]?.content.substring(0, 30) + '...';
-    
-    const newConversation = {
-      userId,
-      messages,
+    const conversationsRef = collection(db, 'users', userId, 'conversations');
+    console.log('Created reference:', conversationsRef.path);
+
+    const simpleConversation = {
+      messages: messages.map(m => ({
+        role: m.role,
+        content: m.content,
+        timestamp: m.timestamp
+      })),
       lastAccessed: Date.now(),
-      title,
+      title: messages[0]?.content.substring(0, 30) + '...',
       createdAt: Date.now()
     };
 
-    console.log('🔥 Attempting save:', newConversation);
-    const docRef = await addDoc(conversationsRef, newConversation);
-    console.log('🔥 Save successful:', docRef.id);
-    
+    console.log('Attempting to save:', simpleConversation);
+    const docRef = await addDoc(conversationsRef, simpleConversation);
+    console.log('Save successful, new doc ID:', docRef.id);
     return docRef.id;
+
   } catch (error) {
-    console.error('🚨 Save failed:', error);
-    if (error instanceof Error) {
-      console.error('🚨 Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
-    }
+    console.error('🚨 Save failed:', {
+      errorName: error.name,
+      errorMessage: error.message,
+      errorCode: error.code,
+      path: error?.path,
+      userId,
+      dbExists: !!db
+    });
     throw error;
   }
 };
 
 export const getUserConversations = async (userId: string) => {
   try {
-    const conversationsRef = collection(db, 'conversations');
+    // Reference the user's conversations subcollection
+    const userDocRef = doc(db, 'users', userId);
+    const conversationsRef = collection(userDocRef, 'conversations');
+    
     const q = query(
       conversationsRef,
-      where('userId', '==', userId),
-      orderBy('lastAccessed', 'desc')
+      orderBy('metadata.lastAccessed', 'desc')
     );
 
     const querySnapshot = await getDocs(q);
@@ -83,14 +97,15 @@ export const getUserConversations = async (userId: string) => {
 };
 
 export const updateConversation = async (
+  userId: string,
   conversationId: string,
   messages: ChatMessage[]
 ) => {
   try {
-    const conversationRef = doc(db, 'conversations', conversationId);
+    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
     await updateDoc(conversationRef, {
-      messages,
-      lastAccessed: Date.now()
+      'messageData': messages,
+      'metadata.lastAccessed': Date.now()
     });
   } catch (error) {
     console.error('Error updating conversation:', error);
