@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import '../../styles/Home.css';
+import FormattedMessage from './FormattedMessage';
 
 function MessageList({ messages, conversationId }) {
     return (
@@ -7,13 +8,16 @@ function MessageList({ messages, conversationId }) {
             {messages.map((message, index) => (
                 <div
                     key={`${conversationId}-${index}`}
-                    className={`message ${
+                    className={`message-wrapper ${
                         message.role === 'user' 
-                            ? 'user-message' 
-                            : 'assistant-message'
+                            ? 'justify-end' 
+                            : 'justify-start'
                     }`}
                 >
-                    {message.content}
+                    <FormattedMessage 
+                        content={message.content}
+                        role={message.role}
+                    />
                 </div>
             ))}
         </div>

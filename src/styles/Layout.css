@@ -43,9 +43,30 @@
 }
 
 .sidebar {
-    width: 16rem;
+    width: 20rem;
     background-color: #1f2937;
     border-right: 1px solid #374151;
+    height: calc(100vh - 4rem);
+    position: sticky;
+    top: 4rem;
+    overflow-y: auto;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
 }
 
 .content-area {
