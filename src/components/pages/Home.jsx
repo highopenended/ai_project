@@ -131,8 +131,10 @@ function Home({ initialMessages = [], conversationId = null }) {
                 {currentUser ? `Logged in as ${currentUser.email}` : "Not logged in"}
             </p>
             <div className="chat-container">
-                <ChatHeader onNewThread={handleNewThread} />
-                <MessageInput onSubmit={handleSubmit} loading={loading} />
+                <div className="chat-input-area">
+                    <ChatHeader onNewThread={handleNewThread} />
+                    <MessageInput onSubmit={handleSubmit} loading={loading} />
+                </div>
                 {messages.length > 0 && (
                     <MessageList 
                         messages={messages}
