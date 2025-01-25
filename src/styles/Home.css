@@ -2,39 +2,42 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: #111827;
+  height: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
 }
 
 .user-status {
   color: #d1d5db;
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
 }
 
 .chat-container {
   background-color: #1f2937;
-  padding: 2.5rem;
+  padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   border: 1px solid #4b5563;
   width: 100%;
   max-width: 42rem;
-  height: calc(100vh - 8rem); /* Account for nav and padding */
+  height: calc(100% - 2rem);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .chat-input-area {
-  flex-shrink: 0; /* Prevent input area from shrinking */
+  flex-shrink: 0;
+  margin-bottom: 0.5rem;
 }
 
 .header-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .chat-title {
@@ -58,7 +61,7 @@
 }
 
 .question-form {
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .question-label {
@@ -101,7 +104,7 @@
   box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   letter-spacing: 0.05em;
   font-family: 'medieval', serif;
-  margin-top: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .submit-btn:hover {
@@ -109,13 +112,13 @@
 }
 
 .messages-container {
-  margin-top: 1rem;
+  margin-top: 0.5rem;
   flex: 1;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding-right: 0.5rem; /* Space for scrollbar */
+  gap: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 /* Custom scrollbar for messages */

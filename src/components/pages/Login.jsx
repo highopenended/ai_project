@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../firebaseConfig"; 
 import '../../App.css';
+import '../../styles/Login.css';
 import { useAuth } from "../../context/AuthContext";
 
 function Login() {
@@ -63,37 +64,35 @@ function Login() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900">
-            <div className="bg-gray-800 p-10 rounded-lg shadow-xl border border-gray-600 w-full max-w-lg">
-                <h1 className="text-3xl font-medieval text-center text-gray-200 mb-6 tracking-wider">
+        <div className="login-container">
+            <div className="login-box">
+                <h1 className="login-title">
                     {isNewAccount ? "Join the Realm" : "Enter the Realm"}
                 </h1>
 
                 <button
                     onClick={handleGoogleSignIn}
                     disabled={loading}
-                    className="w-full mb-6 bg-white hover:bg-gray-100 text-gray-800 font-bold py-2 px-4 rounded-md transition duration-300 border shadow-inner tracking-wide font-medieval flex items-center justify-center"
+                    className="google-button"
                 >
                     <img 
                         src="https://www.google.com/favicon.ico" 
                         alt="Google" 
-                        className="w-5 h-5 mr-2"
+                        className="google-icon"
                     />
                     Continue with Google
                 </button>
 
-                <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-600"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-gray-800 text-gray-400 font-medieval">Or</span>
+                <div className="divider">
+                    <div className="divider-line"></div>
+                    <div className="divider-text">
+                        <span>Or</span>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
-                        <label className="block text-gray-400 font-semibold mb-2 font-medieval" htmlFor="email">
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="email">
                             Email Address
                         </label>
                         <input
@@ -103,11 +102,11 @@ function Login() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-200 placeholder-gray-400"
+                            className="form-input"
                         />
                     </div>
-                    <div>
-                        <label className="block text-gray-400 font-semibold mb-2 font-medieval" htmlFor="password">
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="password">
                             Hidden Passphrase
                         </label>
                         <input
@@ -117,24 +116,21 @@ function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            className="w-full px-4 py-2 bg-gray-700 border border-gray-500 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 text-gray-200 placeholder-gray-400"
+                            className="form-input"
                         />
                     </div>
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-gray-600 hover:bg-gray-700 text-gray-300 font-bold py-2 rounded-md transition duration-300 border border-gray-500 shadow-inner tracking-wide font-medieval"
+                        className="submit-button"
                     >
                         {loading ? "Entering Realm..." : "Begin Quest"}
                     </button>
-                    {error && <p className="mt-4 text-red-500 text-center font-medieval">{error}</p>}
+                    {error && <p className="error-message">{error}</p>}
                 </form>
 
-                <div className="mt-4 text-center text-gray-400 font-medieval">
-                    <button
-                        onClick={() => setIsNewAccount(!isNewAccount)}
-                        className="hover:text-gray-300 transition duration-300"
-                    >
+                <div className="toggle-auth">
+                    <button onClick={() => setIsNewAccount(!isNewAccount)}>
                         {isNewAccount 
                             ? "Already have an account? Sign in instead" 
                             : "New to the realm? Create an account"}

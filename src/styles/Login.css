@@ -1,0 +1,168 @@
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-width: 100vw;
+    background-color: #1a202c;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.login-box {
+    background-color: #1a202c;
+    padding: 2.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    border: 1px solid #4a5568;
+    width: 90%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.login-title {
+    font-size: 1.875rem;
+    font-family: 'medieval', serif;
+    text-align: center;
+    color: #e2e8f0;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+}
+
+.google-button {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    background-color: white;
+    color: #2d3748;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.3s;
+    border: none;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    letter-spacing: 0.025em;
+    font-family: 'medieval', serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.google-button:hover {
+    background-color: #f7fafc;
+}
+
+.google-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 0.5rem;
+}
+
+.divider {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.divider-line {
+    position: absolute;
+    inset: 50% 0;
+    border-top: 1px solid #4a5568;
+}
+
+.divider-text {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    font-size: 0.875rem;
+    color: #a0aec0;
+    font-family: 'medieval', serif;
+}
+
+.divider-text span {
+    padding: 0 0.5rem;
+    background-color: #1a202c;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    color: #a0aec0;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-family: 'medieval', serif;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: #4a5568;
+    border: 1px solid #718096;
+    border-radius: 0.375rem;
+    color: #e2e8f0;
+}
+
+.form-input::placeholder {
+    color: #a0aec0;
+}
+
+.form-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #4a5568;
+}
+
+.submit-button {
+    width: 100%;
+    background-color: #4a5568;
+    color: #e2e8f0;
+    font-weight: bold;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    transition: background-color 0.3s;
+    border: 1px solid #718096;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    letter-spacing: 0.025em;
+    font-family: 'medieval', serif;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #2d3748;
+}
+
+.submit-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.error-message {
+    margin-top: 1rem;
+    color: #f56565;
+    text-align: center;
+    font-family: 'medieval', serif;
+}
+
+.toggle-auth {
+    margin-top: 1rem;
+    text-align: center;
+    color: #a0aec0;
+    font-family: 'medieval', serif;
+}
+
+.toggle-auth button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.toggle-auth button:hover {
+    color: #e2e8f0;
+} 
