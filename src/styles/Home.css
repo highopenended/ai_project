@@ -168,6 +168,75 @@
   line-height: 1.2;
 }
 
+/* Headers */
+.assistant-message h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  font-family: 'medieval', serif;
+}
+
+.assistant-message h4 {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  color: var(--color-text-secondary);
+}
+
+/* Lists */
+.assistant-message ul {
+  margin: 0.5rem 0;
+  padding-left: var(--spacing-lg);
+}
+
+.assistant-message li {
+  margin: 0.1rem 0;
+  line-height: 1.2;
+}
+
+/* Numbered Items */
+.assistant-message .numbered-item {
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.assistant-message .numbered-item .number {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+/* Paragraphs */
+.assistant-message p {
+  margin: 0.5rem 0;
+}
+
+.assistant-message p:first-child {
+  margin-top: 0;
+}
+
+.assistant-message p:last-child {
+  margin-bottom: 0;
+}
+
+/* Separators */
+.assistant-message hr {
+  margin: 0.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.assistant-message .subseparator {
+  margin: 0.3rem 0;
+  border-top: 1px dashed var(--color-border);
+}
+
+/* Bold Text */
+.assistant-message strong {
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
 /* Message Content Styles */
 .assistant-message ul,
 .assistant-message ol {
@@ -185,10 +254,6 @@
   list-style-type: decimal;
   margin: 0.1rem 0;
   line-height: 1.2;
-}
-
-.assistant-message p {
-  margin: 0.5rem 0;
 }
 
 .assistant-message p:first-child {

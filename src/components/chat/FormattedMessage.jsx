@@ -1,33 +1,38 @@
 import PropTypes from 'prop-types';
-import DOMPurify from 'dompurify';
-import { marked } from 'marked';
 
 function FormattedMessage({ content, role }) {
     const formatContent = (text) => {
         if (role === 'user') return text;
 
-        // Configure marked for safe and limited markdown
-        marked.setOptions({
-            breaks: false,
-            gfm: true,
-            headerIds: false,
-            mangle: false
-        });
-
-        // Clean up excessive newlines and format numbered items
-        const cleanedText = text
+        return text
+            // First, handle headers
+            .replace(/^### (.*?)$/gm, '<h3>$1</h3>')
+            
+            // Handle section headers (bold text at start of line)
+            .replace(/^\*\*(.*?)\*\*$/gm, '<h4>$1</h4>')
+            
+            // Handle numbered items with bold
+            .replace(/^(\d+)\. \*\*(.*?)\*\*/gm, '<div class="numbered-item"><span class="number">$1.</span> <strong>$2</strong></div>')
+            
+            // Handle bullet points
+            .replace(/^- (.*?)$/gm, '<li>$1</li>')
+            
+            // Handle remaining bold text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            
+            // Handle separators
+            .replace(/^---$/gm, '<hr>')
+            .replace(/^--$/gm, '<div class="subseparator"></div>')
+            
+            // Wrap bullet points in ul
+            .replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
+            
+            // Handle paragraphs (lines not already wrapped in HTML)
+            .replace(/^(?!<[a-z].*>)(.+)$/gm, '<p>$1</p>')
+            
+            // Clean up extra newlines
             .replace(/\n{3,}/g, '\n\n')
-            // Only remove asterisks from numbered items at the start of lines
-            .replace(/^\*\*(\d+)\./gm, '$1.');
-
-        // Convert markdown to HTML and sanitize
-        const rawHtml = marked(cleanedText);
-        const cleanHtml = DOMPurify.sanitize(rawHtml, {
-            ALLOWED_TAGS: ['p', 'br', 'ul', 'ol', 'li', 'strong', 'em', 'hr'],
-            ALLOWED_ATTR: []
-        });
-
-        return cleanHtml;
+            .trim();
     };
 
     return (
