@@ -1,5 +1,5 @@
 :root {
-    --sidebar-width: 450px;
+    --sidebar-width: 25%;
 }
 
 .layout {
@@ -53,6 +53,8 @@
 
 .sidebar {
     width: var(--sidebar-width);
+    min-width: 300px;
+    max-width: 600px;
     background-color: #1f2937;
     border-right: 1px solid #374151;
     height: 100%;
