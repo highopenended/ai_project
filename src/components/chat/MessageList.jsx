@@ -5,21 +5,23 @@ import FormattedMessage from './FormattedMessage';
 function MessageList({ messages, conversationId }) {
     return (
         <div className="messages-container">
-            {messages.map((message, index) => (
-                <div
-                    key={`${conversationId}-${index}`}
-                    className={`message-wrapper ${
-                        message.role === 'user' 
-                            ? 'justify-end' 
-                            : 'justify-start'
-                    }`}
-                >
-                    <FormattedMessage 
-                        content={message.content}
-                        role={message.role}
-                    />
-                </div>
-            ))}
+            <div style={{ marginTop: 'auto' }}>
+                {messages.map((message, index) => (
+                    <div
+                        key={`${conversationId}-${index}`}
+                        className={`message-wrapper ${
+                            message.role === 'user' 
+                                ? 'justify-end' 
+                                : 'justify-start'
+                        }`}
+                    >
+                        <FormattedMessage 
+                            content={message.content}
+                            role={message.role}
+                        />
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
