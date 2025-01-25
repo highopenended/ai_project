@@ -5,7 +5,7 @@ import FormattedMessage from './FormattedMessage';
 function MessageList({ messages, conversationId }) {
     return (
         <div className="messages-container">
-            <div style={{ marginTop: 'auto' }}>
+            <div className="messages-wrapper">
                 {messages.map((message, index) => (
                     <div
                         key={`${conversationId}-${index}`}

@@ -48,31 +48,31 @@ const ChatHistory = ({ onSelectConversation, selectedId }) => {
   };
 
   if (loading) {
-    return <div className="p-4 text-gray-300">Loading conversations...</div>;
+    return <div className="loading-state">Loading conversations...</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
+    return <div className="error-state">{error}</div>;
   }
 
   return (
     <div className="chat-history">
       {!conversations || conversations.length === 0 ? (
-        <div className="p-4 text-gray-300">No conversations yet</div>
+        <div className="empty-state">No conversations yet</div>
       ) : (
         conversations.map((conversation) => (
           conversation && (
             <div 
               key={conversation.id}
-              className={`conversation-preview cursor-pointer hover:bg-gray-700 transition-colors ${
-                selectedId === conversation.id ? 'bg-gray-700' : ''
+              className={`conversation-preview ${
+                selectedId === conversation.id ? 'selected' : ''
               }`}
               onClick={() => handleConversationClick(conversation)}
             >
-              <h3 className="text-gray-200">
+              <h3 className="conversation-title">
                 {(conversation.title || 'Untitled Conversation').substring(0, 50)}
               </h3>
-              <p className="text-gray-400 text-sm">
+              <p className="conversation-timestamp">
                 {new Date(conversation.lastAccessed || Date.now()).toLocaleString()}
               </p>
             </div>

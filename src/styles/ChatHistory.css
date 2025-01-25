@@ -26,6 +26,21 @@
     background-color: #6b7280;
 }
 
+.loading-state {
+    padding: 1rem;
+    color: #d1d5db;
+}
+
+.error-state {
+    padding: 1rem;
+    color: #ef4444;
+}
+
+.empty-state {
+    padding: 1rem;
+    color: #d1d5db;
+}
+
 .conversation-preview {
     padding: 1rem;
     border-bottom: 1px solid #374151;
@@ -43,7 +58,7 @@
     background-color: #374151;
 }
 
-.conversation-preview h3 {
+.conversation-title {
     margin: 0;
     font-size: 0.875rem;
     color: #d1d5db;
@@ -53,7 +68,7 @@
     text-overflow: ellipsis;
 }
 
-.conversation-preview p {
+.conversation-timestamp {
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: #9ca3af;
