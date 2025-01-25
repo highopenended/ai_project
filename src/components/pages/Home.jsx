@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
-import '../../App.css';
 import '../../styles/Home.css';
 import { useAuth } from "../../context/AuthContext";
 import { saveConversation, updateConversation } from "../../lib/firebase/chatHistory";

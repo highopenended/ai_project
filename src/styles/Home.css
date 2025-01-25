@@ -165,28 +165,30 @@
 .assistant-message {
   background-color: var(--color-bg-tertiary);
   color: var(--color-text-primary);
-  white-space: pre-line;
+  line-height: 1.2;
 }
 
 /* Message Content Styles */
 .assistant-message ul,
 .assistant-message ol {
-  margin: var(--spacing-xs) 0;
+  margin: 0.5rem 0;
   padding-left: var(--spacing-lg);
 }
 
 .assistant-message ul li {
   list-style-type: disc;
-  margin: var(--spacing-xs) 0;
+  margin: 0.1rem 0;
+  line-height: 1.2;
 }
 
 .assistant-message ol li {
   list-style-type: decimal;
-  margin: var(--spacing-xs) 0;
+  margin: 0.1rem 0;
+  line-height: 1.2;
 }
 
 .assistant-message p {
-  margin: var(--spacing-xs) 0;
+  margin: 0.5rem 0;
 }
 
 .assistant-message p:first-child {
@@ -198,7 +200,7 @@
 }
 
 .assistant-message hr {
-  margin: var(--spacing-sm) 0;
+  margin: 0.5rem 0;
   border: 0;
   border-top: 1px solid var(--color-border);
 }

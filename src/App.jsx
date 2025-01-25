@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import Layout from "./components/Layout";
-import Login from "./components/pages/Login";
-import Home from "./components/pages/Home";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./context/AuthContext.jsx";
+import Layout from "./components/Layout.jsx";
+import Login from "./components/pages/Login.jsx";
+import Home from "./components/pages/Home.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
     return (

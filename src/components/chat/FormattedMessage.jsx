@@ -8,14 +8,20 @@ function FormattedMessage({ content, role }) {
 
         // Configure marked for safe and limited markdown
         marked.setOptions({
-            breaks: true,
+            breaks: false,
             gfm: true,
             headerIds: false,
             mangle: false
         });
 
+        // Clean up excessive newlines and format numbered items
+        const cleanedText = text
+            .replace(/\n{3,}/g, '\n\n')
+            // Only remove asterisks from numbered items at the start of lines
+            .replace(/^\*\*(\d+)\./gm, '$1.');
+
         // Convert markdown to HTML and sanitize
-        const rawHtml = marked(text);
+        const rawHtml = marked(cleanedText);
         const cleanHtml = DOMPurify.sanitize(rawHtml, {
             ALLOWED_TAGS: ['p', 'br', 'ul', 'ol', 'li', 'strong', 'em', 'hr'],
             ALLOWED_ATTR: []
