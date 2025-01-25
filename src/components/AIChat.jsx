@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { saveConversation, updateConversation } from '../lib/firebase/chatHistory';
 import PropTypes from 'prop-types';
+import '../styles/AIChat.css';
 
 function AIChat({ initialMessages = [], conversationId = null }) {
     const { currentUser } = useAuth();
@@ -30,25 +31,12 @@ function AIChat({ initialMessages = [], conversationId = null }) {
         };
 
         try {
-            console.log('Current user details:', {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                isAnonymous: currentUser.isAnonymous
-            });
-
             const updatedMessages = [...messages, userMessage];
             setMessages(updatedMessages);
             setInput('');
 
             let conversationRef = currentConversationId;
             
-            console.log('Attempting to save conversation with:', {
-                userId: currentUser.uid,
-                messageCount: updatedMessages.length,
-                email: currentUser.email,
-                messages: updatedMessages
-            });
-
             if (!conversationRef) {
                 if (!currentUser.email) {
                     throw new Error('User email is required');
@@ -58,7 +46,6 @@ function AIChat({ initialMessages = [], conversationId = null }) {
                     updatedMessages,
                     currentUser.email
                 );
-                console.log('New conversation created:', conversationRef);
                 setCurrentConversationId(conversationRef);
             } else {
                 await updateConversation(currentUser.uid, conversationRef, updatedMessages);
@@ -87,49 +74,43 @@ function AIChat({ initialMessages = [], conversationId = null }) {
             }
         } catch (error) {
             console.error('Error in chat flow:', error);
-            console.error('Chat error details:', {
-                code: error.code,
-                message: error.message
-            });
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-900 p-4">
-            <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+        <div className="ai-chat-container">
+            <div className="messages-area">
                 {messages.map((message, index) => (
                     <div 
                         key={index} 
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`message-wrapper ${
+                            message.role === 'user' ? 'justify-end' : 'justify-start'
+                        }`}
                     >
-                        <div className={`max-w-[80%] p-3 rounded-lg ${
-                            message.role === 'user' 
-                                ? 'bg-blue-600 text-white' 
-                                : 'bg-gray-700 text-gray-200'
-                        }`}>
+                        <div className={message.role === 'user' ? 'user-message' : 'assistant-message'}>
                             {message.content}
                         </div>
                     </div>
                 ))}
                 {isLoading && (
-                    <div className="text-gray-400">Thinking...</div>
+                    <div className="loading-message">Thinking...</div>
                 )}
             </div>
 
-            <form onSubmit={handleSubmit} className="flex gap-2">
+            <form onSubmit={handleSubmit} className="chat-form">
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    className="flex-1 bg-gray-800 text-gray-200 p-2 rounded border border-gray-700 focus:outline-none focus:border-blue-500"
+                    className="chat-input"
                     placeholder="Type your message..."
                 />
                 <button 
                     type="submit"
                     disabled={isLoading || !input.trim()}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed"
+                    className="chat-submit"
                 >
                     Send
                 </button>
