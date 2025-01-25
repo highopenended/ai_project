@@ -49,7 +49,7 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
         timestamp: m.timestamp
       })),
       lastAccessed: Date.now(),
-      title: messages[0]?.content.substring(0, 30) + '...',
+      title: messages[0]?.content.substring(0, 100) + '...',
       createdAt: Date.now()
     };
 

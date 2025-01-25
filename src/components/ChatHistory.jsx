@@ -47,38 +47,35 @@ const ChatHistory = ({ onSelectConversation, selectedId }) => {
     }
   };
 
-  if (loading) {
-    return <div className="loading-state">Loading conversations...</div>;
-  }
-
-  if (error) {
-    return <div className="error-state">{error}</div>;
-  }
-
   return (
     <div className="chat-history">
-      {!conversations || conversations.length === 0 ? (
-        <div className="empty-state">No conversations yet</div>
-      ) : (
-        conversations.map((conversation) => (
-          conversation && (
-            <div 
-              key={conversation.id}
-              className={`conversation-preview ${
-                selectedId === conversation.id ? 'selected' : ''
-              }`}
-              onClick={() => handleConversationClick(conversation)}
-            >
-              <h3 className="conversation-title">
-                {(conversation.title || 'Untitled Conversation').substring(0, 50)}
-              </h3>
-              <p className="conversation-timestamp">
-                {new Date(conversation.lastAccessed || Date.now()).toLocaleString()}
-              </p>
-            </div>
-          )
-        ))
-      )}
+      <div className="sidebar-header">Previous Conversations</div>
+      <div className="sidebar-content">
+        {loading && <div className="loading-state">Loading conversations...</div>}
+        {error && <div className="error-state">{error}</div>}
+        {!loading && !error && (!conversations || conversations.length === 0) ? (
+          <div className="empty-state">No conversations yet</div>
+        ) : (
+          conversations.map((conversation) => (
+            conversation && (
+              <div 
+                key={conversation.id}
+                className={`conversation-preview ${
+                  selectedId === conversation.id ? 'selected' : ''
+                }`}
+                onClick={() => handleConversationClick(conversation)}
+              >
+                <h3 className="conversation-title">
+                  {conversation.title || 'Untitled Conversation'}
+                </h3>
+                <p className="conversation-timestamp">
+                  {new Date(conversation.lastAccessed || Date.now()).toLocaleString()}
+                </p>
+              </div>
+            )
+          ))
+        )}
+      </div>
     </div>
   );
 };

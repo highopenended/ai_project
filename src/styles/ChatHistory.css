@@ -1,44 +1,56 @@
 .chat-history {
-    padding: 1rem;
-    height: calc(100vh - 3rem); /* Subtract nav height */
-    color: #d1d5db;
-    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    height: calc(100vh - 4rem); /* Adjust for top nav height */
+    overflow: hidden;
+    background-color: #111827;
+    width: 100%;
     box-sizing: border-box;
 }
 
-.chat-history::-webkit-scrollbar {
+.sidebar-header {
+    padding: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #d1d5db;
+    background-color: #1f2937;
+    border-bottom: 1px solid #374151;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 1rem;
+    background-color: #111827;
+    min-height: 0; /* Important for Firefox */
+    box-sizing: border-box;
+}
+
+.sidebar-content::-webkit-scrollbar {
     width: 8px;
 }
 
-.chat-history::-webkit-scrollbar-track {
+.sidebar-content::-webkit-scrollbar-track {
     background: #1f2937;
 }
 
-.chat-history::-webkit-scrollbar-thumb {
+.sidebar-content::-webkit-scrollbar-thumb {
     background-color: #4b5563;
     border-radius: 4px;
 }
 
-.chat-history::-webkit-scrollbar-thumb:hover {
+.sidebar-content::-webkit-scrollbar-thumb:hover {
     background-color: #6b7280;
 }
 
-.loading-state {
-    padding: 1rem;
-    color: #d1d5db;
-}
-
-.error-state {
-    padding: 1rem;
-    color: #ef4444;
-}
-
+.loading-state,
+.error-state,
 .empty-state {
     padding: 1rem;
-    color: #d1d5db;
+    text-align: center;
+    color: #9ca3af;
 }
 
 .conversation-preview {
@@ -46,8 +58,11 @@
     border-bottom: 1px solid #374151;
     cursor: pointer;
     transition: background-color 0.3s;
-    flex-shrink: 0;
     background-color: #1f2937;
+    box-sizing: border-box;
+    margin: 0 -1rem;  /* Extend to edges */
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .conversation-preview:hover {
@@ -66,6 +81,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    box-sizing: border-box;
 }
 
 .conversation-timestamp {
