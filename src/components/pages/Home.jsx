@@ -8,7 +8,7 @@ import ChatHeader from "../chat/ChatHeader";
 import MessageInput from "../chat/MessageInput";
 import MessageList from "../chat/MessageList";
 
-function Home({ initialMessages = [], conversationId = null }) {
+function Home({ initialMessages = [], conversationId = null, refreshHistory }) {
     const { currentUser } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -18,9 +18,17 @@ function Home({ initialMessages = [], conversationId = null }) {
     const loadingRef = useRef(false);
 
     const handleNewThread = () => {
+        // Clear all state first
         setMessages([]);
         setCurrentConversationId(null);
-        navigate('/home', { replace: true, state: {} });
+        // Force a clean navigation state
+        navigate('/home', { 
+            replace: true, 
+            state: { 
+                messages: [], 
+                conversationId: null 
+            } 
+        });
     };
 
     // Single source of truth for message sorting
@@ -81,6 +89,7 @@ function Home({ initialMessages = [], conversationId = null }) {
                 question: `${questionLead}\n\n${contextualQuestion}`
             };
 
+            // Get AI response
             const response = await fetch(firebaseFunctionUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -89,23 +98,36 @@ function Home({ initialMessages = [], conversationId = null }) {
 
             const data = await response.json();
             
-            // After getting AI response
+            // Create AI response message
             const assistantMessage = {
                 role: 'assistant',
                 content: data.answer,
                 timestamp: Date.now()
             };
 
-            // Update with AI response
+            // Prepare final message state
             const finalMessages = sortMessages([...updatedMessages, assistantMessage]);
-            setMessages(finalMessages);
+            
+            try {
+                // Save to Firebase first
+                let newId = currentConversationId;
+                if (currentConversationId) {
+                    await updateConversation(currentUser.uid, currentConversationId, finalMessages);
+                } else {
+                    newId = await saveConversation(currentUser.uid, finalMessages);
+                    setCurrentConversationId(newId);
+                }
 
-            // Update conversation in Firebase
-            if (currentConversationId) {
-                await updateConversation(currentUser.uid, currentConversationId, finalMessages);
-            } else {
-                const newConversationId = await saveConversation(currentUser.uid, finalMessages);
-                setCurrentConversationId(newConversationId);
+                // Update local state
+                setMessages(finalMessages);
+
+                // Refresh history after saving
+                if (refreshHistory) {
+                    refreshHistory();
+                }
+            } catch (error) {
+                console.error("Error saving conversation:", error);
+                setMessages(finalMessages); // Still update local state
             }
         } catch (error) {
             console.error("Error:", error);
@@ -151,7 +173,8 @@ Home.propTypes = {
         content: PropTypes.string.isRequired,
         timestamp: PropTypes.number.isRequired
     })),
-    conversationId: PropTypes.string
+    conversationId: PropTypes.string,
+    refreshHistory: PropTypes.func
 };
 
 export default Home;

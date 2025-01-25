@@ -11,6 +11,8 @@ import {
   increment
 } from 'firebase/firestore';
 
+const FIREBASE_FUNCTION_BASE_URL = "https://us-central1-project-dm-helper.cloudfunctions.net";
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -42,6 +44,33 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
     const conversationsRef = collection(db, 'users', userId, 'conversations');
     console.log('Created reference:', conversationsRef.path);
 
+    // Generate title if we have at least 2 messages (user question + AI response)
+    let title = "New Conversation";
+    if (messages.length >= 2) {
+      try {
+        const response = await fetch(`${FIREBASE_FUNCTION_BASE_URL}/generateTitle`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          mode: 'cors',
+          body: JSON.stringify({ messages: messages.slice(0, 4) })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Title generation failed');
+        }
+        
+        const data = await response.json();
+        title = data.title;
+      } catch (error) {
+        console.error('Failed to generate title:', error);
+        // Fallback to first message if title generation fails
+        title = messages[0]?.content.substring(0, 100);
+      }
+    }
+
     const simpleConversation = {
       messages: messages.map(m => ({
         role: m.role,
@@ -49,7 +78,7 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
         timestamp: m.timestamp
       })),
       lastAccessed: Date.now(),
-      title: messages[0]?.content.substring(0, 100) + '...',
+      title,
       createdAt: Date.now()
     };
 

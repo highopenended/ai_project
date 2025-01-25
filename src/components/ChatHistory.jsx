@@ -1,10 +1,10 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserConversations } from '../lib/firebase/chatHistory';
 import '../styles/ChatHistory.css';
 import PropTypes from 'prop-types';
 
-const ChatHistory = ({ onSelectConversation, selectedId }) => {
+const ChatHistory = forwardRef(({ onSelectConversation, selectedId, refreshTrigger }, ref) => {
   const { currentUser } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +35,15 @@ const ChatHistory = ({ onSelectConversation, selectedId }) => {
     }
   }, [currentUser]);
 
-  // Load conversations initially and when selectedId changes
+  // Load conversations when refreshTrigger changes
   useEffect(() => {
     loadConversations();
-  }, [loadConversations, selectedId]); // Add selectedId as dependency
+  }, [loadConversations, refreshTrigger]);
+
+  // Expose refresh function to parent
+  useImperativeHandle(ref, () => ({
+    refresh: loadConversations
+  }));
 
   const handleConversationClick = (conversation) => {
     console.log('Conversation clicked:', conversation); // Debug log
@@ -78,11 +83,14 @@ const ChatHistory = ({ onSelectConversation, selectedId }) => {
       </div>
     </div>
   );
-};
+});
+
+ChatHistory.displayName = 'ChatHistory';
 
 ChatHistory.propTypes = {
   onSelectConversation: PropTypes.func.isRequired,
-  selectedId: PropTypes.string
+  selectedId: PropTypes.string,
+  refreshTrigger: PropTypes.number
 };
 
 export default ChatHistory; 

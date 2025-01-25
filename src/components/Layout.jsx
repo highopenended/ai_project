@@ -1,31 +1,28 @@
 // Layout.js
 import { useState, useCallback } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import { useNavigate } from "react-router-dom";
-import PropTypes from "prop-types";
 import ChatHistory from "./ChatHistory";
 import '../styles/Layout.css';
 
-function Layout({ children }) {
+function Layout() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
-    const [selectedConversationId, setSelectedConversationId] = useState(null);
+    const [selectedId, setSelectedId] = useState(null);
+    const [messages, setMessages] = useState([]);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    const handleSelectConversation = useCallback((messages, conversationId) => {
-        if (selectedConversationId === conversationId) return;
-        
-        setSelectedConversationId(conversationId);
-        navigate('/home', {
-            state: {
-                messages,
-                conversationId
-            },
-            replace: true
-        });
-    }, [navigate, selectedConversationId]);
+    const refreshHistory = useCallback(() => {
+        setRefreshTrigger(prev => prev + 1);
+    }, []);
+
+    const handleConversationSelect = useCallback((messages, id) => {
+        setSelectedId(id);
+        setMessages(messages);
+        navigate('/home', { state: { conversationId: id, messages } });
+    }, [navigate]);
 
     const handleLogout = async () => {
         try {
@@ -46,9 +43,11 @@ function Layout({ children }) {
                             Login
                         </Link>
                     )}
-                    <Link to="/home" className="nav-link">
-                        Home
-                    </Link>
+                    {currentUser && (
+                        <Link to="/home" className="nav-link">
+                            Home
+                        </Link>
+                    )}
                     {currentUser && (
                         <button
                             onClick={handleLogout}
@@ -65,23 +64,25 @@ function Layout({ children }) {
                     <div className="layout-with-sidebar">
                         <div className="sidebar">
                             <ChatHistory 
-                                onSelectConversation={handleSelectConversation}
-                                selectedId={selectedConversationId}
+                                selectedId={selectedId}
+                                onSelectConversation={handleConversationSelect}
+                                refreshTrigger={refreshTrigger}
                             />
                         </div>
                         <div className="content-area">
-                            {children}
+                            <Outlet context={{ 
+                                messages, 
+                                setMessages, 
+                                selectedId,
+                                refreshHistory
+                            }} />
                         </div>
                     </div>
                 )}
-                {!currentUser && children}
+                {!currentUser && <Outlet />}
             </main>
         </div>
     );
 }
-
-Layout.propTypes = {
-    children: PropTypes.node.isRequired
-};
 
 export default Layout;

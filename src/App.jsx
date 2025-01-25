@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation, useOutletContext } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./components/pages/Login.jsx";
@@ -7,23 +7,34 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
     return (
-        <AuthProvider>
-            <Router>
-                <Layout>
-                    <Routes>
-                        <Route path="/" element={<Login />} />
-                        <Route
-                            path="/home"
-                            element={
-                                <ProtectedRoute>
-                                    <Home />
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Routes>
-                </Layout>
-            </Router>
-        </AuthProvider>
+        <Router>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        <Route index element={<Login />} />
+                        <Route path="home" element={
+                            <ProtectedRoute>
+                                <HomeWrapper />
+                            </ProtectedRoute>
+                        } />
+                    </Route>
+                </Routes>
+            </AuthProvider>
+        </Router>
+    );
+}
+
+// Wrapper component to handle outlet context and location state
+function HomeWrapper() {
+    const location = useLocation();
+    const { messages, selectedId, refreshHistory } = useOutletContext();
+    
+    return (
+        <Home 
+            initialMessages={messages} 
+            conversationId={location.state?.conversationId || selectedId}
+            refreshHistory={refreshHistory}
+        />
     );
 }
 
