@@ -8,7 +8,7 @@ import ChatHeader from "../chat/ChatHeader";
 import MessageInput from "../chat/MessageInput";
 import MessageList from "../chat/MessageList";
 
-function Home({ initialMessages = [], conversationId = null, refreshHistory }) {
+function Home({ initialMessages = [], conversationId = null }) {
     const { currentUser } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
@@ -118,13 +118,16 @@ function Home({ initialMessages = [], conversationId = null, refreshHistory }) {
                     setCurrentConversationId(newId);
                 }
 
-                // Update local state
+                // Update local state and trigger ChatHistory refresh with navigation
                 setMessages(finalMessages);
-
-                // Refresh history after saving
-                if (refreshHistory) {
-                    refreshHistory();
-                }
+                navigate('/home', { 
+                    replace: true, 
+                    state: { 
+                        conversationId: newId, 
+                        messages: finalMessages,
+                        isNewConversation: !currentConversationId // Flag to indicate new conversation
+                    } 
+                });
             } catch (error) {
                 console.error("Error saving conversation:", error);
                 setMessages(finalMessages); // Still update local state
@@ -173,8 +176,7 @@ Home.propTypes = {
         content: PropTypes.string.isRequired,
         timestamp: PropTypes.number.isRequired
     })),
-    conversationId: PropTypes.string,
-    refreshHistory: PropTypes.func
+    conversationId: PropTypes.string
 };
 
 export default Home;

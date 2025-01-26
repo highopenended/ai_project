@@ -1,5 +1,4 @@
 // Layout.js
-import { useState, useCallback } from 'react';
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
@@ -10,19 +9,6 @@ import '../styles/Layout.css';
 function Layout() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
-    const [selectedId, setSelectedId] = useState(null);
-    const [messages, setMessages] = useState([]);
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-    const refreshHistory = useCallback(() => {
-        setRefreshTrigger(prev => prev + 1);
-    }, []);
-
-    const handleConversationSelect = useCallback((messages, id) => {
-        setSelectedId(id);
-        setMessages(messages);
-        navigate('/home', { state: { conversationId: id, messages } });
-    }, [navigate]);
 
     const handleLogout = async () => {
         try {
@@ -63,19 +49,10 @@ function Layout() {
                 {currentUser && (
                     <div className="layout-with-sidebar">
                         <div className="sidebar">
-                            <ChatHistory 
-                                selectedId={selectedId}
-                                onSelectConversation={handleConversationSelect}
-                                refreshTrigger={refreshTrigger}
-                            />
+                            <ChatHistory />
                         </div>
                         <div className="content-area">
-                            <Outlet context={{ 
-                                messages, 
-                                setMessages, 
-                                selectedId,
-                                refreshHistory
-                            }} />
+                            <Outlet />
                         </div>
                     </div>
                 )}

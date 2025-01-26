@@ -1,16 +1,17 @@
-import { useEffect, useState, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getUserConversations } from '../lib/firebase/chatHistory';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/ChatHistory.css';
-import PropTypes from 'prop-types';
 
-const ChatHistory = forwardRef(({ onSelectConversation, selectedId, refreshTrigger }, ref) => {
+function ChatHistory() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  console.log('ChatHistory rendering, currentUser:', currentUser); // Debug log
+  const [selectedId, setSelectedId] = useState(null);
 
   // Function to load conversations
   const loadConversations = useCallback(async () => {
@@ -21,34 +22,39 @@ const ChatHistory = forwardRef(({ onSelectConversation, selectedId, refreshTrigg
     
     try {
       const userConversations = await getUserConversations(currentUser.uid);
-      console.log('Loaded conversations:', userConversations);
       const validConversations = userConversations
         .filter(conv => conv && conv.messages && conv.title && conv.lastAccessed)
         // Sort conversations by lastAccessed timestamp, most recent first
         .sort((a, b) => b.lastAccessed - a.lastAccessed);
       setConversations(validConversations);
+
+      // If we have a new conversation in the URL, select it
+      const urlConversationId = location.state?.conversationId;
+      if (urlConversationId) {
+        setSelectedId(urlConversationId);
+      }
     } catch (error) {
       console.error('Error loading conversations:', error);
       setError('Failed to load conversations');
     } finally {
       setLoading(false);
     }
-  }, [currentUser]);
+  }, [currentUser, location.state?.conversationId]);
 
-  // Load conversations when refreshTrigger changes
+  // Load conversations initially and when URL changes
   useEffect(() => {
     loadConversations();
-  }, [loadConversations, refreshTrigger]);
-
-  // Expose refresh function to parent
-  useImperativeHandle(ref, () => ({
-    refresh: loadConversations
-  }));
+  }, [loadConversations]);
 
   const handleConversationClick = (conversation) => {
-    console.log('Conversation clicked:', conversation); // Debug log
     if (conversation && conversation.messages) {
-      onSelectConversation(conversation.messages, conversation.id);
+      setSelectedId(conversation.id);
+      navigate('/home', { 
+        state: { 
+          conversationId: conversation.id, 
+          messages: conversation.messages 
+        }
+      });
     }
   };
 
@@ -83,14 +89,6 @@ const ChatHistory = forwardRef(({ onSelectConversation, selectedId, refreshTrigg
       </div>
     </div>
   );
-});
-
-ChatHistory.displayName = 'ChatHistory';
-
-ChatHistory.propTypes = {
-  onSelectConversation: PropTypes.func.isRequired,
-  selectedId: PropTypes.string,
-  refreshTrigger: PropTypes.number
-};
+}
 
 export default ChatHistory; 
