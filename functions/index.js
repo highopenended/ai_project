@@ -28,7 +28,7 @@ exports.generateTitle = functions.https.onRequest((req, res) => {
                 messages: [
                     {
                         role: "system",
-                        content: "Generate a concise, descriptive title (max 6 words) for this conversation about Pathfinder/D&D topics. Focus on the key theme or question being discussed. Do not use quotes or punctuation in the title."
+                        content: "Generate a concise, descriptive title (max 6 words) for this Pathfinder/D&D conversation. Create a thematic title that captures the essence of the tabletop RPG discussion. Examples:\n- For rules questions: 'Grappling Rules in Pathfinder 2E'\n- For character concepts: 'Unconventional Gnome Fighter Concept'\n- For worldbuilding: 'Mystical Kingdom of Kyonin Lore'\n- For session topics: 'Dungeon Master's Green Dragon Tactics'\nDo not use periods at the end. Focus on RPG themes and mechanics rather than quoting conversation text"
                     },
                     ...messages.slice(0, 4)
                 ],
