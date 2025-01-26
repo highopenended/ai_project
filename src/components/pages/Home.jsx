@@ -8,6 +8,28 @@ import ChatHeader from "../chat/ChatHeader";
 import MessageInput from "../chat/MessageInput";
 import MessageList from "../chat/MessageList";
 
+/**
+ * Home Component
+ * 
+ * Main chat interface component that handles conversation display and interaction.
+ * Manages message state and synchronizes with Firebase and URL state.
+ * 
+ * Features:
+ * - Displays and manages chat messages
+ * - Handles new thread creation
+ * - Processes user input and AI responses
+ * - Saves conversations to Firebase
+ * 
+ * State Management:
+ * - Maintains local message state
+ * - Syncs with Firebase for persistence
+ * - Uses URL state for navigation and history updates
+ * - Handles loading states during API calls
+ * 
+ * Props:
+ * @param {Object[]} initialMessages - Initial messages for the conversation
+ * @param {string} conversationId - ID of the current conversation
+ */
 function Home({ initialMessages = [], conversationId = null }) {
     const { currentUser } = useAuth();
     const location = useLocation();

@@ -16,6 +16,61 @@
     background-color: #1f2937;
     border-bottom: 1px solid #374151;
     flex-shrink: 0; /* Prevent header from shrinking */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.select-button,
+.delete-button,
+.cancel-button {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.select-button {
+    background-color: #374151;
+    color: #d1d5db;
+}
+
+.select-button:hover:not(:disabled) {
+    background-color: #4b5563;
+}
+
+.delete-button {
+    background-color: #dc2626;
+    color: white;
+}
+
+.delete-button:hover:not(:disabled) {
+    background-color: #b91c1c;
+}
+
+.cancel-button {
+    background-color: #374151;
+    color: #d1d5db;
+}
+
+.cancel-button:hover {
+    background-color: #4b5563;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.selected-for-deletion {
+    background-color: #4c0519 !important;
+    border-color: #dc2626 !important;
 }
 
 .sidebar-content {
@@ -63,6 +118,10 @@
     margin: 0 -1rem;  /* Extend to edges */
     padding-left: 1rem;
     padding-right: 1rem;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .conversation-preview:hover {
@@ -88,4 +147,12 @@
     margin-top: 0.5rem;
     font-size: 0.75rem;
     color: #9ca3af;
+}
+
+.conversation-preview h3,
+.conversation-preview p {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 } 

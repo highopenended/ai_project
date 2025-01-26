@@ -8,7 +8,9 @@ import {
   doc,
   updateDoc,
   setDoc,
-  increment
+  increment,
+  deleteDoc,
+  writeBatch
 } from 'firebase/firestore';
 
 const FIREBASE_FUNCTION_BASE_URL = "https://us-central1-project-dm-helper.cloudfunctions.net";
@@ -138,6 +140,32 @@ export const updateConversation = async (
     });
   } catch (error) {
     console.error('Error updating conversation:', error);
+    throw error;
+  }
+};
+
+export const deleteConversation = async (userId: string, conversationId: string) => {
+  try {
+    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    await deleteDoc(conversationRef);
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    throw error;
+  }
+};
+
+export const deleteMultipleConversations = async (userId: string, conversationIds: string[]) => {
+  try {
+    const batch = writeBatch(db);
+    
+    conversationIds.forEach(id => {
+      const conversationRef = doc(db, 'users', userId, 'conversations', id);
+      batch.delete(conversationRef);
+    });
+
+    await batch.commit();
+  } catch (error) {
+    console.error('Error deleting conversations:', error);
     throw error;
   }
 }; 

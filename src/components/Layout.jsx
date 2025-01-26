@@ -6,6 +6,18 @@ import { auth } from "../firebaseConfig";
 import ChatHistory from "./ChatHistory";
 import '../styles/Layout.css';
 
+/**
+ * Layout Component
+ * 
+ * Main layout component that provides the application structure.
+ * Handles the top navigation bar and sidebar layout when authenticated.
+ * 
+ * Features:
+ * - Conditional rendering based on authentication state
+ * - Navigation links for Login/Home
+ * - Logout functionality
+ * - Chat history sidebar for authenticated users
+ */
 function Layout() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();

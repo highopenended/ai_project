@@ -1,9 +1,26 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserConversations } from '../lib/firebase/chatHistory';
+import { getUserConversations, deleteConversation, deleteMultipleConversations } from '../lib/firebase/chatHistory';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/ChatHistory.css';
 
+/**
+ * ChatHistory Component
+ * 
+ * Sidebar component that displays a list of user conversations.
+ * Manages conversation selection and synchronizes with URL state.
+ * 
+ * Features:
+ * - Loads and displays user conversations sorted by last access
+ * - Handles conversation selection through URL state
+ * - Updates selection when new conversations are created
+ * - Provides loading and error states
+ * 
+ * State Management:
+ * - Uses URL state for conversation selection
+ * - Automatically refreshes when conversations are updated
+ * - Selection is synchronized with the current route
+ */
 function ChatHistory() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -12,6 +29,9 @@ function ChatHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedForDeletion, setSelectedForDeletion] = useState(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
 
   // Function to load conversations
   const loadConversations = useCallback(async () => {
@@ -46,8 +66,37 @@ function ChatHistory() {
     loadConversations();
   }, [loadConversations]);
 
-  const handleConversationClick = (conversation) => {
-    if (conversation && conversation.messages) {
+  const handleConversationClick = (conversation, index, event) => {
+    if (isSelectionMode) {
+      // Handle shift+click selection
+      if (event.shiftKey && lastSelectedIndex !== null) {
+        const start = Math.min(lastSelectedIndex, index);
+        const end = Math.max(lastSelectedIndex, index);
+        
+        setSelectedForDeletion(prev => {
+          const newSet = new Set(prev);
+          for (let i = start; i <= end; i++) {
+            if (conversations[i]) {
+              newSet.add(conversations[i].id);
+            }
+          }
+          return newSet;
+        });
+      } else {
+        // Regular selection toggle
+        setSelectedForDeletion(prev => {
+          const newSet = new Set(prev);
+          if (newSet.has(conversation.id)) {
+            newSet.delete(conversation.id);
+          } else {
+            newSet.add(conversation.id);
+          }
+          return newSet;
+        });
+        setLastSelectedIndex(index);
+      }
+    } else if (conversation && conversation.messages) {
+      // Normal mode, navigate to conversation
       setSelectedId(conversation.id);
       navigate('/home', { 
         state: { 
@@ -58,23 +107,95 @@ function ChatHistory() {
     }
   };
 
+  const enterSelectionMode = () => {
+    setIsSelectionMode(true);
+    setLastSelectedIndex(null);
+    setSelectedForDeletion(new Set());
+  };
+
+  const exitSelectionMode = () => {
+    setIsSelectionMode(false);
+    setLastSelectedIndex(null);
+    setSelectedForDeletion(new Set());
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedForDeletion.size === 0) return;
+
+    try {
+      setLoading(true);
+      const ids = Array.from(selectedForDeletion);
+      await deleteMultipleConversations(currentUser.uid, ids);
+      
+      // If current conversation is being deleted, clear it
+      if (selectedForDeletion.has(selectedId)) {
+        navigate('/home', { 
+          replace: true, 
+          state: { 
+            messages: [], 
+            conversationId: null 
+          } 
+        });
+      }
+
+      // Reset selection mode and refresh conversations
+      setSelectedForDeletion(new Set());
+      setIsSelectionMode(false);
+      await loadConversations();
+    } catch (error) {
+      console.error('Error deleting conversations:', error);
+      setError('Failed to delete conversations');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="chat-history">
-      <div className="sidebar-header">Previous Conversations</div>
+      <div className="sidebar-header">
+        <span>Previous Conversations</span>
+        <div className="header-actions">
+          {isSelectionMode ? (
+            <>
+              <button 
+                onClick={handleDeleteSelected}
+                disabled={selectedForDeletion.size === 0}
+                className="delete-button"
+              >
+                Delete ({selectedForDeletion.size})
+              </button>
+              <button 
+                onClick={exitSelectionMode}
+                className="cancel-button"
+              >
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button 
+              onClick={enterSelectionMode}
+              className="select-button"
+              disabled={conversations.length === 0}
+            >
+              Select
+            </button>
+          )}
+        </div>
+      </div>
       <div className="sidebar-content">
         {loading && <div className="loading-state">Loading conversations...</div>}
         {error && <div className="error-state">{error}</div>}
         {!loading && !error && (!conversations || conversations.length === 0) ? (
           <div className="empty-state">No conversations yet</div>
         ) : (
-          conversations.map((conversation) => (
+          conversations.map((conversation, index) => (
             conversation && (
               <div 
                 key={conversation.id}
                 className={`conversation-preview ${
                   selectedId === conversation.id ? 'selected' : ''
-                }`}
-                onClick={() => handleConversationClick(conversation)}
+                } ${selectedForDeletion.has(conversation.id) ? 'selected-for-deletion' : ''}`}
+                onClick={(e) => handleConversationClick(conversation, index, e)}
               >
                 <h3 className="conversation-title">
                   {conversation.title || 'Untitled Conversation'}
