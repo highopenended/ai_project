@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserConversations, deleteConversation, deleteMultipleConversations } from '../lib/firebase/chatHistory';
+import { getUserConversations, deleteMultipleConversations } from '../lib/firebase/chatHistory';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/ChatHistory.css';
 
@@ -201,7 +201,7 @@ function ChatHistory() {
                   {conversation.title || 'Untitled Conversation'}
                 </h3>
                 <p className="conversation-timestamp">
-                  {new Date(conversation.lastAccessed || Date.now()).toLocaleString()}
+                  {new Date(conversation.lastAccessed || Date.now()).toLocaleDateString()}
                 </p>
               </div>
             )
