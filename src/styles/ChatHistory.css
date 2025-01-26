@@ -115,13 +115,13 @@ button:disabled {
     transition: background-color 0.3s;
     background-color: #1f2937;
     box-sizing: border-box;
-    margin: 0 -1rem;  /* Extend to edges */
+    margin: 0 -1rem;
     padding-left: 1rem;
     padding-right: 1rem;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 .conversation-preview:hover {
@@ -132,11 +132,16 @@ button:disabled {
     background-color: #374151;
 }
 
+.conversation-content {
+    flex: 1;
+    min-width: 0;
+    padding-top: 2px; /* Adjust content to align with button */
+}
+
 .conversation-title {
     margin: 0;
     font-size: 0.875rem;
     color: #d1d5db;
-    /* Allow for two lines with ellipsis */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -144,8 +149,31 @@ button:disabled {
     text-overflow: ellipsis;
     white-space: normal;
     line-height: 1.2;
-    max-height: 2.4em; /* 2 lines * 1.2 line height */
-    box-sizing: border-box;
+    max-height: 2.4em;
+}
+
+.edit-title-button {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 2px;
+    font-size: 0.875rem;
+    transition: color 0.2s;
+    flex-shrink: 0;
+    line-height: 1;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.conversation-preview.selected .edit-title-button {
+    opacity: 1;
+    visibility: visible;
+}
+
+.edit-title-button:hover {
+    color: #d1d5db;
 }
 
 .conversation-timestamp {
@@ -160,4 +188,21 @@ button:disabled {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+
+.edit-title-input {
+    width: 100%;
+    background: #374151;
+    border: 1px solid #4b5563;
+    border-radius: 4px;
+    color: #d1d5db;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.5rem;
+    margin: -0.25rem 0;
+    outline: none;
+}
+
+.edit-title-input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
 }

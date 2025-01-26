@@ -168,4 +168,4 @@ export const deleteMultipleConversations = async (userId: string, conversationId
     console.error('Error deleting conversations:', error);
     throw error;
   }
-}; 
+};

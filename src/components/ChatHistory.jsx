@@ -32,6 +32,8 @@ function ChatHistory() {
   const [selectedForDeletion, setSelectedForDeletion] = useState(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+  const [editingTitleId, setEditingTitleId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
   // Function to load conversations
   const loadConversations = useCallback(async () => {
@@ -150,6 +152,25 @@ function ChatHistory() {
     }
   };
 
+  const handleTitleEdit = (conversation, event) => {
+    event.stopPropagation();
+    setEditingTitleId(conversation.id);
+    setEditingTitle(conversation.title || '');
+  };
+
+  const handleTitleSave = async (event) => {
+    event.preventDefault();
+    // TODO: Implement save to Firebase
+    setEditingTitleId(null);
+    setEditingTitle('');
+  };
+
+  const handleTitleCancel = (event) => {
+    event.stopPropagation();
+    setEditingTitleId(null);
+    setEditingTitle('');
+  };
+
   return (
     <div className="chat-history">
       <div className="sidebar-header">
@@ -197,12 +218,41 @@ function ChatHistory() {
                 } ${selectedForDeletion.has(conversation.id) ? 'selected-for-deletion' : ''}`}
                 onClick={(e) => handleConversationClick(conversation, index, e)}
               >
-                <h3 className="conversation-title">
-                  {conversation.title || 'Untitled Conversation'}
-                </h3>
-                <p className="conversation-timestamp">
-                  {new Date(conversation.lastAccessed || Date.now()).toLocaleDateString()}
-                </p>
+                <div className="conversation-content">
+                  {editingTitleId === conversation.id ? (
+                    <form onSubmit={handleTitleSave} onClick={e => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={e => setEditingTitle(e.target.value)}
+                        onBlur={handleTitleSave}
+                        onKeyDown={e => {
+                          if (e.key === 'Escape') {
+                            handleTitleCancel(e);
+                          }
+                        }}
+                        autoFocus
+                        className="edit-title-input"
+                      />
+                    </form>
+                  ) : (
+                    <h3 className="conversation-title">
+                      {conversation.title || 'Untitled Conversation'}
+                    </h3>
+                  )}
+                  <p className="conversation-timestamp">
+                    {new Date(conversation.lastAccessed || Date.now()).toLocaleDateString()}
+                  </p>
+                </div>
+                {!isSelectionMode && (
+                  <button
+                    onClick={(e) => handleTitleEdit(conversation, e)}
+                    className="edit-title-button"
+                    title="Edit title"
+                  >
+                    ✎
+                  </button>
+                )}
               </div>
             )
           ))
