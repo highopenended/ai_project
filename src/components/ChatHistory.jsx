@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserConversations, deleteMultipleConversations } from '../lib/firebase/chatHistory';
+import { getUserConversations, deleteMultipleConversations, updateConversationTitle } from '../lib/firebase/chatHistory';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/ChatHistory.css';
 
@@ -34,6 +34,17 @@ function ChatHistory() {
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
   const [editingTitleId, setEditingTitleId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
+
+  const MIN_TITLE_LENGTH = 3;
+  const MAX_TITLE_LENGTH = 50;
+
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    if (editingTitleId && textareaRef.current) {
+        textareaRef.current.select();
+    }
+  }, [editingTitleId]);
 
   // Function to load conversations
   const loadConversations = useCallback(async () => {
@@ -158,9 +169,29 @@ function ChatHistory() {
     setEditingTitle(conversation.title || '');
   };
 
+  const handleTitleChange = (e) => {
+    if (e.target.value.length <= MAX_TITLE_LENGTH) {
+        setEditingTitle(e.target.value);
+    }
+  };
+
   const handleTitleSave = async (event) => {
     event.preventDefault();
-    // TODO: Implement save to Firebase
+    const trimmedTitle = editingTitle.trim();
+    
+    // Validate title length
+    if (trimmedTitle.length < MIN_TITLE_LENGTH) {
+        handleTitleCancel(event);
+        return;
+    }
+    
+    try {
+        await updateConversationTitle(currentUser.uid, editingTitleId, trimmedTitle);
+        await loadConversations(); // Refresh the list
+    } catch (error) {
+        console.error('Failed to update title:', error);
+    }
+    
     setEditingTitleId(null);
     setEditingTitle('');
   };
@@ -221,18 +252,23 @@ function ChatHistory() {
                 <div className="conversation-content">
                   {editingTitleId === conversation.id ? (
                     <form onSubmit={handleTitleSave} onClick={e => e.stopPropagation()}>
-                      <input
-                        type="text"
+                      <textarea
+                        ref={textareaRef}
                         value={editingTitle}
-                        onChange={e => setEditingTitle(e.target.value)}
-                        onBlur={handleTitleSave}
+                        onChange={handleTitleChange}
+                        onBlur={handleTitleCancel}
                         onKeyDown={e => {
                           if (e.key === 'Escape') {
                             handleTitleCancel(e);
+                          } else if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleTitleSave(e);
                           }
                         }}
                         autoFocus
                         className="edit-title-input"
+                        maxLength={MAX_TITLE_LENGTH}
+                        placeholder={`Title (${MIN_TITLE_LENGTH}-${MAX_TITLE_LENGTH} characters)`}
                       />
                     </form>
                   ) : (

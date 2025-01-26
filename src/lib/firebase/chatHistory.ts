@@ -169,3 +169,16 @@ export const deleteMultipleConversations = async (userId: string, conversationId
     throw error;
   }
 };
+
+export const updateConversationTitle = async (userId: string, conversationId: string, newTitle: string) => {
+  try {
+    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    await updateDoc(conversationRef, {
+      'title': newTitle,
+      'lastAccessed': Date.now()
+    });
+  } catch (error) {
+    console.error('Error updating conversation title:', error);
+    throw error;
+  }
+};
