@@ -34,6 +34,7 @@ function ChatHistory() {
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
   const [editingTitleId, setEditingTitleId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
+  const [sortBy, setSortBy] = useState('lastAccessed'); // 'lastAccessed' or 'createdAt'
 
   const MIN_TITLE_LENGTH = 3;
   const MAX_TITLE_LENGTH = 50;
@@ -46,7 +47,12 @@ function ChatHistory() {
     }
   }, [editingTitleId]);
 
-  // Function to load conversations
+  // Add sort function
+  const sortConversations = (convs, sortField) => {
+    return [...convs].sort((a, b) => b[sortField] - a[sortField]);
+  };
+
+  // Modify loadConversations to use sort function
   const loadConversations = useCallback(async () => {
     if (!currentUser) {
       setLoading(false);
@@ -56,10 +62,8 @@ function ChatHistory() {
     try {
       const userConversations = await getUserConversations(currentUser.uid);
       const validConversations = userConversations
-        .filter(conv => conv && conv.messages && conv.title && conv.lastAccessed)
-        // Sort conversations by lastAccessed timestamp, most recent first
-        .sort((a, b) => b.lastAccessed - a.lastAccessed);
-      setConversations(validConversations);
+        .filter(conv => conv && conv.messages && conv.title && conv.lastAccessed);
+      setConversations(sortConversations(validConversations, sortBy));
 
       // If we have a new conversation in the URL, select it
       const urlConversationId = location.state?.conversationId;
@@ -72,14 +76,14 @@ function ChatHistory() {
     } finally {
       setLoading(false);
     }
-  }, [currentUser, location.state?.conversationId]);
+  }, [currentUser, location.state?.conversationId, location.state?.messages, sortBy]);
 
   // Load conversations initially and when URL changes
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
 
-  const handleConversationClick = (conversation, index, event) => {
+  const handleConversationClick = async (conversation, index, event) => {
     if (isSelectionMode) {
       // Handle shift+click selection
       if (event.shiftKey && lastSelectedIndex !== null) {
@@ -109,7 +113,6 @@ function ChatHistory() {
         setLastSelectedIndex(index);
       }
     } else if (conversation && conversation.messages) {
-      // Normal mode, navigate to conversation
       setSelectedId(conversation.id);
       navigate('/home', { 
         state: { 
@@ -205,7 +208,18 @@ function ChatHistory() {
   return (
     <div className="chat-history">
       <div className="sidebar-header">
-        <span>Previous Conversations</span>
+        <div className="header-left">
+          <span>Previous Conversations</span>
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            className="sort-select"
+            title="Sort conversations"
+          >
+            <option value="lastAccessed">Sort by Last Updated</option>
+            <option value="createdAt">Sort by Creation Date</option>
+          </select>
+        </div>
         <div className="header-actions">
           {isSelectionMode ? (
             <>
@@ -272,13 +286,20 @@ function ChatHistory() {
                       />
                     </form>
                   ) : (
-                    <h3 className="conversation-title">
-                      {conversation.title || 'Untitled Conversation'}
-                    </h3>
+                    <>
+                      <h3 className="conversation-title">
+                        {conversation.title || 'Untitled Conversation'}
+                      </h3>
+                      <div className="conversation-timestamps">
+                        <p className="conversation-timestamp">
+                          Created: {new Date(conversation.createdAt).toLocaleDateString()}
+                        </p>
+                        <p className="conversation-timestamp">
+                          Last viewed: {new Date(conversation.lastAccessed).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </>
                   )}
-                  <p className="conversation-timestamp">
-                    {new Date(conversation.lastAccessed || Date.now()).toLocaleDateString()}
-                  </p>
                 </div>
                 {!isSelectionMode && (
                   <button

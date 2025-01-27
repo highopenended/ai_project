@@ -25,8 +25,8 @@ export interface Conversation {
   id: string;
   messages: ChatMessage[];
   lastAccessed: number;
-  title: string;
   createdAt: number;
+  title: string;
 }
 
 export const saveConversation = async (userId: string, messages: ChatMessage[], userEmail: string) => {
@@ -179,6 +179,18 @@ export const updateConversationTitle = async (userId: string, conversationId: st
     });
   } catch (error) {
     console.error('Error updating conversation title:', error);
+    throw error;
+  }
+};
+
+export const updateLastAccessed = async (userId: string, conversationId: string) => {
+  try {
+    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    await updateDoc(conversationRef, {
+      'lastAccessed': Date.now()
+    });
+  } catch (error) {
+    console.error('Error updating last accessed:', error);
     throw error;
   }
 };
