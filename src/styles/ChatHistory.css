@@ -167,25 +167,15 @@ button:disabled {
 .edit-title-button {
     background: none;
     border: none;
-    color: #9ca3af;
+    color: #666;
     cursor: pointer;
-    padding: 0;
-    margin-top: 2px;
-    font-size: 0.875rem;
-    transition: color 0.2s;
-    flex-shrink: 0;
-    line-height: 1;
-    opacity: 0;
-    visibility: hidden;
-}
-
-.conversation-preview.selected .edit-title-button {
-    opacity: 1;
-    visibility: visible;
+    font-size: 1.2rem;
+    padding: 4px;
+    transition: color 0.2s ease;
 }
 
 .edit-title-button:hover {
-    color: #d1d5db;
+    color: #fff;
 }
 
 .conversation-timestamps {
@@ -265,4 +255,44 @@ button:disabled {
 .sort-select:focus {
     border-color: #60a5fa;
     box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+}
+
+.conversation-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.favorite-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+    transition: color 0.2s ease;
+}
+
+.favorite-button:hover {
+    color: #ffd700;
+}
+
+.favorite-button.favorited {
+    color: #ffd700;
+}
+
+.conversation-preview {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem;
+    border-bottom: 1px solid #2a2a2a;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.conversation-content {
+    flex: 1;
+    min-width: 0; /* Ensures text truncation works */
+    margin-right: 1rem;
 }

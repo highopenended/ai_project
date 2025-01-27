@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserConversations, deleteMultipleConversations, updateConversationTitle } from '../lib/firebase/chatHistory';
+import { getUserConversations, deleteMultipleConversations, updateConversationTitle, toggleConversationFavorite, enforceConversationLimit } from '../lib/firebase/chatHistory';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/ChatHistory.css';
 
@@ -41,6 +41,8 @@ function ChatHistory() {
 
   const textareaRef = useRef(null);
 
+  const CONVERSATION_LIMIT = 20;
+
   useEffect(() => {
     if (editingTitleId && textareaRef.current) {
         textareaRef.current.select();
@@ -49,6 +51,15 @@ function ChatHistory() {
 
   // Add sort function
   const sortConversations = (convs, sortField) => {
+    if (sortField === 'favorite') {
+      // Sort by favorite first, then by lastAccessed
+      return [...convs].sort((a, b) => {
+        if (a.favorite === b.favorite) {
+          return b.lastAccessed - a.lastAccessed;
+        }
+        return b.favorite ? 1 : -1;
+      });
+    }
     return [...convs].sort((a, b) => b[sortField] - a[sortField]);
   };
 
@@ -60,6 +71,7 @@ function ChatHistory() {
     }
     
     try {
+      await enforceConversationLimit(currentUser.uid, CONVERSATION_LIMIT);
       const userConversations = await getUserConversations(currentUser.uid);
       const validConversations = userConversations
         .filter(conv => conv && conv.messages && conv.title && conv.lastAccessed);
@@ -205,6 +217,16 @@ function ChatHistory() {
     setEditingTitle('');
   };
 
+  const handleFavoriteToggle = async (conversation, event) => {
+    event.stopPropagation();
+    try {
+      await toggleConversationFavorite(currentUser.uid, conversation.id, !conversation.favorite);
+      await loadConversations();
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
   return (
     <div className="chat-history">
       <div className="sidebar-header">
@@ -218,6 +240,7 @@ function ChatHistory() {
           >
             <option value="lastAccessed">Sort by Last Updated</option>
             <option value="createdAt">Sort by Creation Date</option>
+            <option value="favorite">Sort by Favorites</option>
           </select>
         </div>
         <div className="header-actions">
@@ -295,20 +318,29 @@ function ChatHistory() {
                           Created: {new Date(conversation.createdAt).toLocaleDateString()}
                         </p>
                         <p className="conversation-timestamp">
-                          Last viewed: {new Date(conversation.lastAccessed).toLocaleDateString()}
+                          Last Updated: {new Date(conversation.lastAccessed).toLocaleDateString()}
                         </p>
                       </div>
                     </>
                   )}
                 </div>
                 {!isSelectionMode && (
-                  <button
-                    onClick={(e) => handleTitleEdit(conversation, e)}
-                    className="edit-title-button"
-                    title="Edit title"
-                  >
-                    ✎
-                  </button>
+                  <div className="conversation-actions">
+                    <button
+                      onClick={(e) => handleFavoriteToggle(conversation, e)}
+                      className={`favorite-button ${conversation.favorite ? 'favorited' : ''}`}
+                      title={conversation.favorite ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      ★
+                    </button>
+                    <button
+                      onClick={(e) => handleTitleEdit(conversation, e)}
+                      className="edit-title-button"
+                      title="Edit title"
+                    >
+                      ✎
+                    </button>
+                  </div>
                 )}
               </div>
             )

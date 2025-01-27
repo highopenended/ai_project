@@ -27,6 +27,7 @@ export interface Conversation {
   lastAccessed: number;
   createdAt: number;
   title: string;
+  favorite: boolean;
 }
 
 export const saveConversation = async (userId: string, messages: ChatMessage[], userEmail: string) => {
@@ -81,7 +82,8 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
       })),
       lastAccessed: Date.now(),
       title,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      favorite: false
     };
 
     console.log('Attempting to save:', simpleConversation);
@@ -194,3 +196,55 @@ export const updateLastAccessed = async (userId: string, conversationId: string)
     throw error;
   }
 };
+
+/**
+ * Toggles the favorite status of a conversation
+ */
+export async function toggleConversationFavorite(userId: string, conversationId: string, isFavorite: boolean): Promise<void> {
+  try {
+    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    await updateDoc(conversationRef, {
+      favorite: isFavorite
+    });
+  } catch (error) {
+    console.error('Error toggling conversation favorite:', error);
+    throw error;
+  }
+}
+
+/**
+ * Enforces the conversation limit by deleting the oldest non-favorite conversations
+ */
+export async function enforceConversationLimit(userId: string, limit: number = 20): Promise<void> {
+  try {
+    const conversationsRef = collection(db, 'users', userId, 'conversations');
+    const q = query(conversationsRef, orderBy('lastAccessed', 'asc'));
+    const snapshot = await getDocs(q);
+    
+    const conversations = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    // Filter out favorite conversations
+    const nonFavoriteConversations = conversations.filter(conv => !conv.favorite);
+    
+    // If we have more than the limit, delete the oldest non-favorite conversations
+    const excessCount = conversations.length - limit;
+    if (excessCount > 0) {
+      const conversationsToDelete = nonFavoriteConversations.slice(0, excessCount);
+      
+      // Delete each conversation
+      const batch = writeBatch(db);
+      conversationsToDelete.forEach(conv => {
+        const docRef = doc(conversationsRef, conv.id);
+        batch.delete(docRef);
+      });
+      
+      await batch.commit();
+    }
+  } catch (error) {
+    console.error('Error enforcing conversation limit:', error);
+    throw error;
+  }
+}
