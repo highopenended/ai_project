@@ -4,6 +4,7 @@ import Layout from "./components/Layout.jsx";
 import Login from "./components/pages/Login.jsx";
 import Home from "./components/pages/Home.jsx";
 import ShopGenerator from "./components/pages/ShopGenerator.jsx";
+import ItemList from "./components/pages/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 /**
@@ -32,6 +33,11 @@ function App() {
                         <Route path="shop-generator" element={
                             <ProtectedRoute>
                                 <ShopGenerator />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="item-list" element={
+                            <ProtectedRoute>
+                                <ItemList />
                             </ProtectedRoute>
                         } />
                     </Route>

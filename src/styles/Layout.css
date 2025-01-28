@@ -20,14 +20,13 @@
 }
 
 .nav-container {
-    max-width: 56rem;
-    margin: 0 auto;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 2rem;
     font-family: 'medieval', serif;
     align-items: center;
     position: relative;
+    padding: 0 2rem;
 }
 
 .nav-link {
