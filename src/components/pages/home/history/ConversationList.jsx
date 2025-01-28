@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { useAuth } from '../../../../context/AuthContext';
-import { deleteMultipleConversations, toggleConversationFavorite } from '../../../../lib/firebase/chatHistory';
-import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import ConversationPreview from './ConversationPreview';
 
@@ -9,7 +6,7 @@ import ConversationPreview from './ConversationPreview';
  * ConversationList Component
  * 
  * Displays and manages the list of conversations.
- * Handles conversation sorting, selection, and deletion.
+ * Handles conversation sorting and selection.
  */
 function ConversationList({ 
   conversations,
@@ -22,10 +19,8 @@ function ConversationList({
   onRefresh,
   loading,
   error,
-  setConversations
+  onFavoriteToggle
 }) {
-  const { currentUser } = useAuth();
-  const navigate = useNavigate();
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
 
   const sortConversations = (convs) => {
@@ -68,58 +63,6 @@ function ConversationList({
     }
   };
 
-  const handleDeleteSelected = async () => {
-    if (selectedForDeletion.size === 0) return;
-
-    try {
-      const ids = Array.from(selectedForDeletion);
-      await deleteMultipleConversations(currentUser.uid, ids);
-      
-      // If current conversation is being deleted, clear it
-      if (selectedForDeletion.has(selectedId)) {
-        navigate('/home', { 
-          replace: true, 
-          state: { 
-            messages: [], 
-            conversationId: null 
-          } 
-        });
-      }
-
-      setSelectedForDeletion(new Set());
-      await onRefresh();
-    } catch (error) {
-      console.error('Error deleting conversations:', error);
-    }
-  };
-
-  const handleFavoriteToggle = async (conversation, event) => {
-    event.stopPropagation();
-    try {
-        // Update UI immediately
-        setConversations(prevConversations => 
-            prevConversations.map(conv => 
-                conv.id === conversation.id 
-                    ? { ...conv, favorite: !conv.favorite }
-                    : conv
-            )
-        );
-
-        // Then sync with database
-        await toggleConversationFavorite(currentUser.uid, conversation.id, !conversation.favorite);
-    } catch (error) {
-        console.error('Error toggling favorite:', error);
-        // Revert UI on error
-        setConversations(prevConversations => 
-            prevConversations.map(conv => 
-                conv.id === conversation.id 
-                    ? { ...conv, favorite: conversation.favorite }
-                    : conv
-            )
-        );
-    }
-  };
-
   const sortedConversations = sortConversations(conversations);
 
   if (loading) {
@@ -147,7 +90,7 @@ function ConversationList({
             onSelect={isSelectionMode ? handleSelectionChange : onSelect}
             onTitleEdit={onRefresh}
             index={index}
-            onFavoriteToggle={handleFavoriteToggle}
+            onFavoriteToggle={onFavoriteToggle}
           />
         )
       ))}
@@ -173,7 +116,7 @@ ConversationList.propTypes = {
   onRefresh: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
-  setConversations: PropTypes.func.isRequired
+  onFavoriteToggle: PropTypes.func.isRequired
 };
 
 export default ConversationList; 

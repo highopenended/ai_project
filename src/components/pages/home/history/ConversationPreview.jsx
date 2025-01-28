@@ -132,18 +132,19 @@ function ConversationPreview({
       {!isSelectionMode && (
         <div className="conversation-actions">
           <button
+            onClick={handleTitleEdit}
+            className="edit-title-button"
+            title="Edit title"
+            style={{ display: selected ? 'block' : 'none' }}
+          >
+            ✎
+          </button>
+          <button
             onClick={handleFavoriteToggle}
             className={`favorite-button ${conversation.favorite ? 'favorited' : ''}`}
             title={conversation.favorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             ★
-          </button>
-          <button
-            onClick={handleTitleEdit}
-            className="edit-title-button"
-            title="Edit title"
-          >
-            ✎
           </button>
         </div>
       )}

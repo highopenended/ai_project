@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../../../context/AuthContext';
-import { getUserConversations, enforceConversationLimit } from '../../../../lib/firebase/chatHistory';
+import { getUserConversations, enforceConversationLimit, deleteMultipleConversations, toggleConversationFavorite } from '../../../../lib/firebase/chatHistory';
 import { useNavigate, useLocation } from 'react-router-dom';
 import HistoryHeader from './HistoryHeader';
 import ConversationList from './ConversationList';
@@ -69,6 +69,59 @@ function ChatHistory() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    if (selectedForDeletion.size === 0) return;
+
+    try {
+      const ids = Array.from(selectedForDeletion);
+      await deleteMultipleConversations(currentUser.uid, ids);
+      
+      // If current conversation is being deleted, clear it
+      if (selectedForDeletion.has(selectedId)) {
+        navigate('/home', { 
+          replace: true, 
+          state: { 
+            messages: [], 
+            conversationId: null 
+          } 
+        });
+      }
+
+      setSelectedForDeletion(new Set());
+      setIsSelectionMode(false);
+      await loadConversations();
+    } catch (error) {
+      console.error('Error deleting conversations:', error);
+    }
+  };
+
+  const handleFavoriteToggle = async (conversation, event) => {
+    event.stopPropagation();
+    try {
+      // Update UI immediately
+      setConversations(prevConversations => 
+        prevConversations.map(conv => 
+          conv.id === conversation.id 
+            ? { ...conv, favorite: !conv.favorite }
+            : conv
+        )
+      );
+
+      // Then sync with database
+      await toggleConversationFavorite(currentUser.uid, conversation.id, !conversation.favorite);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      // Revert UI on error
+      setConversations(prevConversations => 
+        prevConversations.map(conv => 
+          conv.id === conversation.id 
+            ? { ...conv, favorite: conversation.favorite }
+            : conv
+        )
+      );
+    }
+  };
+
   return (
     <div className="chat-history">
       <HistoryHeader 
@@ -78,11 +131,7 @@ function ChatHistory() {
         setIsSelectionMode={setIsSelectionMode}
         selectedCount={selectedForDeletion.size}
         conversationCount={conversations.length}
-        onDeleteSelected={() => {
-          // Will be implemented in ConversationList
-          setSelectedForDeletion(new Set());
-          setIsSelectionMode(false);
-        }}
+        onDeleteSelected={handleDeleteSelected}
       />
       <ConversationList 
         conversations={conversations}
@@ -95,7 +144,7 @@ function ChatHistory() {
         onRefresh={loadConversations}
         loading={loading}
         error={error}
-        setConversations={setConversations}
+        onFavoriteToggle={handleFavoriteToggle}
       />
     </div>
   );
