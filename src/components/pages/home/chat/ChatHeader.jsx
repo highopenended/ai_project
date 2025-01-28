@@ -1,5 +1,5 @@
+import '../Home.css';
 import PropTypes from 'prop-types';
-import '../../styles/Home.css';
 
 function ChatHeader({ onNewThread }) {
     return (

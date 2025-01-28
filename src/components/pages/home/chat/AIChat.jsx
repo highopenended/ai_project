@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { saveConversation, updateConversation } from '../lib/firebase/chatHistory';
+import { useAuth } from '../../../../context/AuthContext';
+import { saveConversation, updateConversation } from '../../../../lib/firebase/chatHistory';
 import PropTypes from 'prop-types';
-import '../styles/AIChat.css';
+import './AIChat.css';
 
 function AIChat({ initialMessages = [], conversationId = null }) {
     const { currentUser } = useAuth();

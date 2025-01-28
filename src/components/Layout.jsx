@@ -3,7 +3,7 @@ import { Link, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import ChatHistory from "./ChatHistory";
+import ChatHistory from "./pages/home/history/ChatHistory";
 import '../styles/Layout.css';
 
 /**

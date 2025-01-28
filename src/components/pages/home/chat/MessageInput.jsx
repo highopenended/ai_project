@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import '../../styles/Home.css';
+import '../Home.css';
 
 function MessageInput({ onSubmit, loading }) {
-    const [question, setQuestion] = useState("");
+    const [question, setQuestion] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(question);
-        setQuestion("");
+        setQuestion('');
     };
 
     return (
@@ -27,7 +27,7 @@ function MessageInput({ onSubmit, loading }) {
                     rows="4"
                 />
             </div>
-            <button
+            <button 
                 type="submit"
                 disabled={loading}
                 className="submit-btn"

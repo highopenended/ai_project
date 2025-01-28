@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import FormattedMessage from './FormattedMessage';
-import '../../styles/MessageList.css';
+import './MessageList.css';
 
 function MessageList({ messages, conversationId }) {
     return (
