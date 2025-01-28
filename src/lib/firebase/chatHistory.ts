@@ -7,10 +7,11 @@ import {
   orderBy,
   doc,
   updateDoc,
-  setDoc,
-  increment,
   deleteDoc,
-  writeBatch
+  writeBatch,
+  DocumentData,
+  CollectionReference,
+  DocumentReference
 } from 'firebase/firestore';
 
 const FIREBASE_FUNCTION_BASE_URL = "https://us-central1-project-dm-helper.cloudfunctions.net";
@@ -30,24 +31,36 @@ export interface Conversation {
   favorite: boolean;
 }
 
-export const saveConversation = async (userId: string, messages: ChatMessage[], userEmail: string) => {
-  console.log('🔥 Starting save with db:', !!db, {
-    userId,
-    messageCount: messages.length,
-    userEmail,
-    dbType: db?.type,
-    dbConfig: db?.toJSON?.()
-  });
+type FirestoreConversation = Omit<Conversation, 'id'>;
 
+// Helper functions to create Firestore references
+const getConversationsCollection = (userId: string): CollectionReference => {
+  return collection(db, 'users', userId, 'conversations');
+};
+
+const getConversationDoc = (userId: string, conversationId: string): DocumentReference => {
+  return doc(db, 'users', userId, 'conversations', conversationId);
+};
+
+// Helper function to map document data to Conversation type
+const mapDocToConversation = (doc: DocumentData): Conversation => ({
+  id: doc.id,
+  messages: doc.data().messages,
+  lastAccessed: doc.data().lastAccessed,
+  createdAt: doc.data().createdAt,
+  title: doc.data().title,
+  favorite: doc.data().favorite ?? false
+});
+
+export const saveConversation = async (userId: string, messages: ChatMessage[], userEmail: string) => {
   try {
     if (!db) {
       throw new Error('Firestore not initialized');
     }
 
-    const conversationsRef = collection(db, 'users', userId, 'conversations');
-    console.log('Created reference:', conversationsRef.path);
+    const conversationsRef = getConversationsCollection(userId);
 
-    // Generate title if we have at least 2 messages (user question + AI response)
+    // Generate title if we have at least 2 messages
     let title = "New Conversation";
     if (messages.length >= 2) {
       try {
@@ -69,12 +82,11 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
         title = data.title;
       } catch (error) {
         console.error('Failed to generate title:', error);
-        // Fallback to first message if title generation fails
-        title = messages[0]?.content.substring(0, 100);
+        title = messages[0]?.content.substring(0, 100) || "New Conversation";
       }
     }
 
-    const simpleConversation = {
+    const conversation: FirestoreConversation = {
       messages: messages.map(m => ({
         role: m.role,
         content: m.content,
@@ -86,39 +98,22 @@ export const saveConversation = async (userId: string, messages: ChatMessage[], 
       favorite: false
     };
 
-    console.log('Attempting to save:', simpleConversation);
-    const docRef = await addDoc(conversationsRef, simpleConversation);
-    console.log('Save successful, new doc ID:', docRef.id);
+    const docRef = await addDoc(conversationsRef, conversation);
     return docRef.id;
 
   } catch (error) {
-    console.error('🚨 Save failed:', {
-      errorName: error.name,
-      errorMessage: error.message,
-      errorCode: error.code,
-      path: error?.path,
-      userId,
-      dbExists: !!db
-    });
+    console.error('Save failed:', error);
     throw error;
   }
 };
 
-export const getUserConversations = async (userId: string) => {
+export const getUserConversations = async (userId: string): Promise<Conversation[]> => {
   try {
-    const userDocRef = doc(db, 'users', userId);
-    const conversationsRef = collection(userDocRef, 'conversations');
-    
-    const q = query(
-      conversationsRef,
-      orderBy('lastAccessed', 'desc')
-    );
-
+    const conversationsRef = getConversationsCollection(userId);
+    const q = query(conversationsRef, orderBy('lastAccessed', 'desc'));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    
+    return querySnapshot.docs.map(mapDocToConversation);
   } catch (error) {
     console.error('Error fetching conversations:', error);
     throw error;
@@ -129,16 +124,16 @@ export const updateConversation = async (
   userId: string,
   conversationId: string,
   messages: ChatMessage[]
-) => {
+): Promise<void> => {
   try {
-    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    const conversationRef = getConversationDoc(userId, conversationId);
     await updateDoc(conversationRef, {
-      'messages': messages.map(m => ({
+      messages: messages.map(m => ({
         role: m.role,
         content: m.content,
         timestamp: m.timestamp
       })),
-      'lastAccessed': Date.now()
+      lastAccessed: Date.now()
     });
   } catch (error) {
     console.error('Error updating conversation:', error);
@@ -146,9 +141,9 @@ export const updateConversation = async (
   }
 };
 
-export const deleteConversation = async (userId: string, conversationId: string) => {
+export const deleteConversation = async (userId: string, conversationId: string): Promise<void> => {
   try {
-    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    const conversationRef = getConversationDoc(userId, conversationId);
     await deleteDoc(conversationRef);
   } catch (error) {
     console.error('Error deleting conversation:', error);
@@ -156,12 +151,12 @@ export const deleteConversation = async (userId: string, conversationId: string)
   }
 };
 
-export const deleteMultipleConversations = async (userId: string, conversationIds: string[]) => {
+export const deleteMultipleConversations = async (userId: string, conversationIds: string[]): Promise<void> => {
   try {
     const batch = writeBatch(db);
     
     conversationIds.forEach(id => {
-      const conversationRef = doc(db, 'users', userId, 'conversations', id);
+      const conversationRef = getConversationDoc(userId, id);
       batch.delete(conversationRef);
     });
 
@@ -172,12 +167,16 @@ export const deleteMultipleConversations = async (userId: string, conversationId
   }
 };
 
-export const updateConversationTitle = async (userId: string, conversationId: string, newTitle: string) => {
+export const updateConversationTitle = async (
+  userId: string, 
+  conversationId: string, 
+  newTitle: string
+): Promise<void> => {
   try {
-    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    const conversationRef = getConversationDoc(userId, conversationId);
     await updateDoc(conversationRef, {
-      'title': newTitle,
-      'lastAccessed': Date.now()
+      title: newTitle,
+      lastAccessed: Date.now()
     });
   } catch (error) {
     console.error('Error updating conversation title:', error);
@@ -185,11 +184,11 @@ export const updateConversationTitle = async (userId: string, conversationId: st
   }
 };
 
-export const updateLastAccessed = async (userId: string, conversationId: string) => {
+export const updateLastAccessed = async (userId: string, conversationId: string): Promise<void> => {
   try {
-    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    const conversationRef = getConversationDoc(userId, conversationId);
     await updateDoc(conversationRef, {
-      'lastAccessed': Date.now()
+      lastAccessed: Date.now()
     });
   } catch (error) {
     console.error('Error updating last accessed:', error);
@@ -197,12 +196,13 @@ export const updateLastAccessed = async (userId: string, conversationId: string)
   }
 };
 
-/**
- * Toggles the favorite status of a conversation
- */
-export async function toggleConversationFavorite(userId: string, conversationId: string, isFavorite: boolean): Promise<void> {
+export const toggleConversationFavorite = async (
+  userId: string, 
+  conversationId: string, 
+  isFavorite: boolean
+): Promise<void> => {
   try {
-    const conversationRef = doc(db, 'users', userId, 'conversations', conversationId);
+    const conversationRef = getConversationDoc(userId, conversationId);
     await updateDoc(conversationRef, {
       favorite: isFavorite
     });
@@ -210,34 +210,24 @@ export async function toggleConversationFavorite(userId: string, conversationId:
     console.error('Error toggling conversation favorite:', error);
     throw error;
   }
-}
+};
 
-/**
- * Enforces the conversation limit by deleting the oldest non-favorite conversations
- */
-export async function enforceConversationLimit(userId: string, limit: number = 20): Promise<void> {
+export const enforceConversationLimit = async (userId: string, limit: number = 20): Promise<void> => {
   try {
-    const conversationsRef = collection(db, 'users', userId, 'conversations');
+    const conversationsRef = getConversationsCollection(userId);
     const q = query(conversationsRef, orderBy('lastAccessed', 'asc'));
     const snapshot = await getDocs(q);
     
-    const conversations = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    // Filter out favorite conversations
+    const conversations = snapshot.docs.map(mapDocToConversation);
     const nonFavoriteConversations = conversations.filter(conv => !conv.favorite);
     
-    // If we have more than the limit, delete the oldest non-favorite conversations
     const excessCount = conversations.length - limit;
     if (excessCount > 0) {
       const conversationsToDelete = nonFavoriteConversations.slice(0, excessCount);
       
-      // Delete each conversation
       const batch = writeBatch(db);
       conversationsToDelete.forEach(conv => {
-        const docRef = doc(conversationsRef, conv.id);
+        const docRef = getConversationDoc(userId, conv.id);
         batch.delete(docRef);
       });
       
@@ -247,4 +237,4 @@ export async function enforceConversationLimit(userId: string, limit: number = 2
     console.error('Error enforcing conversation limit:', error);
     throw error;
   }
-}
+};
