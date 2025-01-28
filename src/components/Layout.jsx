@@ -14,7 +14,7 @@ import '../styles/Layout.css';
  * 
  * Features:
  * - Conditional rendering based on authentication state
- * - Navigation links for Login/Home
+ * - Navigation links for Login/Home/Shop Generator
  * - Logout functionality
  * - Chat history sidebar for authenticated users
  */
@@ -42,17 +42,23 @@ function Layout() {
                         </Link>
                     )}
                     {currentUser && (
-                        <Link to="/home" className="nav-link">
-                            Home
-                        </Link>
-                    )}
-                    {currentUser && (
-                        <button
-                            onClick={handleLogout}
-                            className="nav-link"
-                        >
-                            Log Out
-                        </button>
+                        <>
+                            <Link to="/home" className="nav-link">
+                                Home
+                            </Link>
+                            <Link to="/shop-generator" className="nav-link">
+                                Shop Generator
+                            </Link>
+                            <button
+                                onClick={handleLogout}
+                                className="nav-link"
+                            >
+                                Log Out
+                            </button>
+                            <div className="user-status-nav">
+                                Logged in as {currentUser.email}
+                            </div>
+                        </>
                     )}
                 </div>
             </nav>

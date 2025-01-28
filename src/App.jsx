@@ -3,6 +3,7 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./components/pages/Login.jsx";
 import Home from "./components/pages/Home.jsx";
+import ShopGenerator from "./components/pages/ShopGenerator.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 /**
@@ -14,7 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
  * Features:
  * - Router setup with protected routes
  * - Authentication context provider
- * - Basic route structure (login, home)
+ * - Basic route structure (login, home, shop generator)
  */
 function App() {
     return (
@@ -26,6 +27,11 @@ function App() {
                         <Route path="home" element={
                             <ProtectedRoute>
                                 <HomeWrapper />
+                            </ProtectedRoute>
+                        } />
+                        <Route path="shop-generator" element={
+                            <ProtectedRoute>
+                                <ShopGenerator />
                             </ProtectedRoute>
                         } />
                     </Route>

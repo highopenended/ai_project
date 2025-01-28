@@ -173,9 +173,6 @@ function Home({ initialMessages = [], conversationId = null }) {
 
     return (
         <div className="home-container">
-            <p className="user-status">
-                {currentUser ? `Logged in as ${currentUser.email}` : "Not logged in"}
-            </p>
             <div className="chat-container">
                 <div className="chat-input-area">
                     <ChatHeader onNewThread={handleNewThread} />

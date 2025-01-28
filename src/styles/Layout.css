@@ -26,16 +26,31 @@
     justify-content: center;
     gap: 2rem;
     font-family: 'medieval', serif;
+    align-items: center;
+    position: relative;
 }
 
 .nav-link {
     color: #d1d5db;
     font-size: 1.125rem;
     transition: color 0.3s;
+    text-decoration: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
 }
 
 .nav-link:hover {
     color: #f3f4f6;
+}
+
+.user-status-nav {
+    position: absolute;
+    right: 1rem;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-family: system-ui, -apple-system, sans-serif;
 }
 
 .main-content {
