@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './shopgenerator/ShopGenerator.css';
 import GoldInput from './shopgenerator/leftsidebar/GoldInput';
+import LevelInput from './shopgenerator/leftsidebar/LevelInput';
 import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import ItemTable from './shopgenerator/ItemTable';
 
@@ -20,6 +21,8 @@ function ShopGenerator() {
     const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentGold, setCurrentGold] = useState(0);
+    const [lowestLevel, setLowestLevel] = useState(1);
+    const [highestLevel, setHighestLevel] = useState(20);
 
     useEffect(() => {
         fetch('/item-table.json')
@@ -52,6 +55,14 @@ function ShopGenerator() {
 
     const handleGoldChange = (gold) => {
         setCurrentGold(gold);
+    };
+
+    const handleLowestLevelChange = (level) => {
+        setLowestLevel(level);
+    };
+
+    const handleHighestLevelChange = (level) => {
+        setHighestLevel(level);
     };
 
     const handleGenerateClick = () => {
@@ -97,6 +108,12 @@ function ShopGenerator() {
             <div className="content-container">
                 <LeftSidebar onGenerate={handleGenerateClick}>
                     <GoldInput onChange={handleGoldChange} />
+                    <LevelInput
+                        lowestLevel={lowestLevel}
+                        highestLevel={highestLevel}
+                        onLowestLevelChange={handleLowestLevelChange}
+                        onHighestLevelChange={handleHighestLevelChange}
+                    />
                 </LeftSidebar>
                 <div className="shop-generator-main">
                     <h1>Shop Generator</h1>

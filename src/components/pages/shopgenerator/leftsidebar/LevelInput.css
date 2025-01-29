@@ -1,0 +1,50 @@
+.level-input-container {
+    width: 100%;
+    padding: 15px 20px;
+}
+
+.level-input-container h3 {
+    color: var(--text-color);
+    font-size: 1.1rem;
+    margin: 0 0 10px 0;
+    font-weight: 500;
+}
+
+.level-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.level-input-group input {
+    background-color: rgba(30, 33, 43, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 8px;
+    color: var(--text-color);
+    font-size: 1rem;
+    width: 60px;
+    text-align: center;
+}
+
+.level-input-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background-color: rgba(30, 33, 43, 0.7);
+}
+
+.level-input-group input::-webkit-inner-spin-button,
+.level-input-group input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.level-input-group input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.level-input-separator {
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.9rem;
+} 
