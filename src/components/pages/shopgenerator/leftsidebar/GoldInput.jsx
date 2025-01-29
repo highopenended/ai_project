@@ -5,12 +5,58 @@ import './GoldInput.css';
 function GoldInput({ onChange }) {
     const [goldAmount, setGoldAmount] = useState('');
 
+    const formatNumber = (value) => {
+        if (!value) return '';
+
+        // Split into whole and decimal parts
+        const [whole, decimal] = value.split('.');
+
+        // Remove existing commas and format with new ones
+        const formattedWhole = whole.replace(/,/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+        // Limit decimal to 2 places if it exists
+        const formattedDecimal = decimal ? '.' + decimal.slice(0, 2) : '';
+
+        return formattedWhole + formattedDecimal;
+    };
+
     const handleChange = (e) => {
         const value = e.target.value;
+        
+        // Only allow numbers, single decimal point, and commas
+        if (!/^[\d,]*\.?\d*$/.test(value)) {
+            return;
+        }
+
         setGoldAmount(value);
-        const gold = parseFloat(value);
-        if (!isNaN(gold) && gold > 0) {
-            onChange(gold);
+        
+        // Pass the numeric value to parent (without commas)
+        const numericValue = parseFloat(value.replace(/,/g, ''));
+        if (!isNaN(numericValue)) {
+            onChange(numericValue);
+        }
+    };
+
+    const handleBlur = (e) => {
+        const value = e.target.value;
+        if (!value) {
+            setGoldAmount('');
+            onChange(0);
+            return;
+        }
+
+        const formattedValue = formatNumber(value);
+        setGoldAmount(formattedValue);
+
+        const numericValue = parseFloat(formattedValue.replace(/,/g, ''));
+        if (!isNaN(numericValue)) {
+            onChange(numericValue);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.target.blur();
         }
     };
 
@@ -19,12 +65,12 @@ function GoldInput({ onChange }) {
             <div className="gold-input-wrapper">
                 <div className="input-with-suffix">
                     <input
-                        type="number"
+                        type="text"
                         id="goldAmount"
                         value={goldAmount}
                         onChange={handleChange}
-                        min="0"
-                        step="0.01"
+                        onBlur={handleBlur}
+                        onKeyDown={handleKeyDown}
                         placeholder="Enter gold amount"
                         required
                     />
