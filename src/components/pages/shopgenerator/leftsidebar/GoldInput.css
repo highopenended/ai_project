@@ -1,0 +1,62 @@
+.shop-parameter-form {
+    margin: 0;
+    padding: 20px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(163, 177, 255, 0.1);
+}
+
+.shop-parameter-form:last-child {
+    border-bottom: none;
+}
+
+.shop-parameter-form label {
+    color: var(--text-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: block;
+    color: #a3b1ff;
+}
+
+.shop-parameter-form input {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(163, 177, 255, 0.15);
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    padding: 12px 15px;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.shop-parameter-form input:hover {
+    border-color: rgba(163, 177, 255, 0.3);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.shop-parameter-form input:focus {
+    border-color: #a3b1ff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(163, 177, 255, 0.1);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.shop-parameter-form input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Hide number input arrows */
+.shop-parameter-form input[type="number"]::-webkit-inner-spin-button,
+.shop-parameter-form input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.shop-parameter-form input[type="number"] {
+    -moz-appearance: textfield;
+} 

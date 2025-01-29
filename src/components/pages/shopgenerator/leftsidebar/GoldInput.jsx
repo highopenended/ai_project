@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
+import './GoldInput.css';
 
 function GoldInput({ onChange }) {
     const [goldAmount, setGoldAmount] = useState('');
