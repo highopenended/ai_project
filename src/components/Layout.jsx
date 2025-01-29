@@ -1,5 +1,5 @@
 // Layout.js
-import { Link, useNavigate, Outlet } from "react-router-dom";
+import { Link, useNavigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
@@ -16,11 +16,13 @@ import '../styles/Layout.css';
  * - Conditional rendering based on authentication state
  * - Navigation links for Login/Home/Shop Generator
  * - Logout functionality
- * - Chat history sidebar for authenticated users
+ * - Chat history sidebar only for Home page
  */
 function Layout() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isHomePage = location.pathname === '/home';
 
     const handleLogout = async () => {
         try {
@@ -67,7 +69,7 @@ function Layout() {
             </nav>
 
             <main className="main-content">
-                {currentUser && (
+                {currentUser && isHomePage ? (
                     <div className="layout-with-sidebar">
                         <div className="sidebar">
                             <ChatHistory />
@@ -76,8 +78,11 @@ function Layout() {
                             <Outlet />
                         </div>
                     </div>
+                ) : (
+                    <div className="content-area">
+                        <Outlet />
+                    </div>
                 )}
-                {!currentUser && <Outlet />}
             </main>
         </div>
     );

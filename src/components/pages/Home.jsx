@@ -64,8 +64,9 @@ function Home({ initialMessages = [], conversationId = null }) {
         const loadConversation = async () => {
             const messageData = location.state?.messages || initialMessages;
             const convId = location.state?.conversationId || conversationId;
+            const isLoading = location.state?.isLoading;
             
-            if (!messageData || messageData.length === 0) {
+            if (!convId) {
                 setMessages([]);
                 setCurrentConversationId(null);
                 return;
@@ -73,6 +74,15 @@ function Home({ initialMessages = [], conversationId = null }) {
 
             try {
                 loadingRef.current = true;
+                
+                // If we're in a loading state, just update the ID
+                if (isLoading) {
+                    setCurrentConversationId(convId);
+                    setMessages([]);
+                    return;
+                }
+
+                // Otherwise update both ID and messages
                 setMessages(sortMessages(messageData));
                 setCurrentConversationId(convId);
             } finally {
@@ -81,7 +91,7 @@ function Home({ initialMessages = [], conversationId = null }) {
         };
 
         loadConversation();
-    }, [location.state?.conversationId, conversationId]);
+    }, [location.state?.conversationId, location.state?.messages, location.state?.isLoading, conversationId, initialMessages]);
 
     const handleSubmit = async (question) => {
         if (loading || !question.trim()) return;
@@ -178,12 +188,11 @@ function Home({ initialMessages = [], conversationId = null }) {
                     <ChatHeader onNewThread={handleNewThread} />
                     <MessageInput onSubmit={handleSubmit} loading={loading} />
                 </div>
-                {messages.length > 0 && (
-                    <MessageList 
-                        messages={messages}
-                        conversationId={currentConversationId}
-                    />
-                )}
+                <MessageList 
+                    messages={messages}
+                    conversationId={currentConversationId}
+                    loading={location.state?.isLoading}
+                />
             </div>
         </div>
     );

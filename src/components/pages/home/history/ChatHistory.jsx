@@ -58,14 +58,34 @@ function ChatHistory() {
   }, [loadConversations]);
 
   const handleConversationSelect = (conversation) => {
-    if (conversation && conversation.messages) {
+    if (conversation) {
+      // Update selection state immediately
       setSelectedId(conversation.id);
+      
+      // Navigate immediately with just the ID
       navigate('/home', { 
         state: { 
-          conversationId: conversation.id, 
-          messages: conversation.messages 
+          conversationId: conversation.id,
+          // Send empty messages array to indicate loading state
+          messages: [],
+          isLoading: true
         }
       });
+      
+      // If we have messages already, update them after navigation
+      if (conversation.messages) {
+        // Small delay to ensure smooth UI transition
+        setTimeout(() => {
+          navigate('/home', { 
+            replace: true,
+            state: { 
+              conversationId: conversation.id, 
+              messages: conversation.messages,
+              isLoading: false
+            }
+          });
+        }, 50);
+      }
     }
   };
 
