@@ -15,18 +15,22 @@ function GoldInput({ onChange }) {
     };
 
     return (
-        <div className="shop-parameter-form">
-            <label htmlFor="goldAmount">Gold Amount:</label>
-            <input
-                type="number"
-                id="goldAmount"
-                value={goldAmount}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                placeholder="Enter gold amount"
-                required
-            />
+        <div className="gold-input-container">
+            <div className="gold-input-wrapper">
+                <div className="input-with-suffix">
+                    <input
+                        type="number"
+                        id="goldAmount"
+                        value={goldAmount}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                        placeholder="Enter gold amount"
+                        required
+                    />
+                    <span className="suffix">gp</span>
+                </div>
+            </div>
         </div>
     );
 }

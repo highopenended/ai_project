@@ -1,6 +1,6 @@
-.shop-parameter-form {
+.gold-input-container {
     margin: 0;
-    padding: 20px;
+    padding: 12px 20px;
     width: 100%;
     background: rgba(255, 255, 255, 0.03);
     border-radius: 0;
@@ -8,55 +8,61 @@
     border-bottom: 1px solid rgba(163, 177, 255, 0.1);
 }
 
-.shop-parameter-form:last-child {
-    border-bottom: none;
+.gold-input-wrapper {
+    display: flex;
+    align-items: center;
 }
 
-.shop-parameter-form label {
-    color: var(--text-color);
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-    display: block;
-    color: #a3b1ff;
+.input-with-suffix {
+    position: relative;
+    width: 100%;
 }
 
-.shop-parameter-form input {
+.input-with-suffix input {
     width: 100%;
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(163, 177, 255, 0.15);
     color: var(--text-color);
     transition: all 0.2s ease;
-    padding: 12px 15px;
+    padding: 8px 12px;
+    padding-right: 40px; /* Make room for the suffix */
     border-radius: 6px;
     font-size: 1rem;
 }
 
-.shop-parameter-form input:hover {
+.input-with-suffix .suffix {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(163, 177, 255, 0.5);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+
+.input-with-suffix input:hover {
     border-color: rgba(163, 177, 255, 0.3);
     background-color: rgba(0, 0, 0, 0.3);
 }
 
-.shop-parameter-form input:focus {
+.input-with-suffix input:focus {
     border-color: #a3b1ff;
     outline: none;
     box-shadow: 0 0 0 2px rgba(163, 177, 255, 0.1);
     background-color: rgba(0, 0, 0, 0.4);
 }
 
-.shop-parameter-form input::placeholder {
+.input-with-suffix input::placeholder {
     color: rgba(255, 255, 255, 0.3);
 }
 
 /* Hide number input arrows */
-.shop-parameter-form input[type="number"]::-webkit-inner-spin-button,
-.shop-parameter-form input[type="number"]::-webkit-outer-spin-button {
+.input-with-suffix input[type="number"]::-webkit-inner-spin-button,
+.input-with-suffix input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.shop-parameter-form input[type="number"] {
+.input-with-suffix input[type="number"] {
     -moz-appearance: textfield;
 } 
