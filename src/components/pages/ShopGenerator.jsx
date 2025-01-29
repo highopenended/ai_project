@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './shopgenerator/ShopGenerator.css';
-import GoldInput from './shopgenerator/leftside_parameters/GoldInput';
-import LeftSidebar from './shopgenerator/leftside_parameters/LeftSidebar';
+import GoldInput from './shopgenerator/leftsidebar/GoldInput';
+import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import ItemTable from './shopgenerator/ItemTable';
 
 /**
@@ -19,6 +19,7 @@ function ShopGenerator() {
     const [items, setItems] = useState([]);
     const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentGold, setCurrentGold] = useState(0);
 
     useEffect(() => {
         fetch('/item-table.json')
@@ -49,8 +50,14 @@ function ShopGenerator() {
         }
     };
 
-    const generateShop = (goldLimit) => {
-        let remainingGold = goldLimit;
+    const handleGoldChange = (gold) => {
+        setCurrentGold(gold);
+    };
+
+    const handleGenerateClick = () => {
+        if (currentGold <= 0) return;
+
+        let remainingGold = currentGold;
         const selectedItems = [];
         const availableItems = [...allItems];
 
@@ -88,8 +95,8 @@ function ShopGenerator() {
     return (
         <div className="content-area">
             <div className="content-container">
-                <LeftSidebar>
-                    <GoldInput onSubmit={generateShop} />
+                <LeftSidebar onGenerate={handleGenerateClick}>
+                    <GoldInput onChange={handleGoldChange} />
                 </LeftSidebar>
                 <div className="shop-generator-main">
                     <h1>Shop Generator</h1>

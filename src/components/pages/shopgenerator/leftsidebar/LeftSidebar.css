@@ -1,0 +1,112 @@
+.shop-generator-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.shop-generator-sidebar h2 {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.generate-shop-button {
+    background-color: var(--accent-color);
+    color: white;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    margin-bottom: 10px;
+}
+
+.generate-shop-button:hover {
+    background-color: var(--accent-color-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.generate-shop-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.parameter-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+}
+
+.parameter-section {
+    background-color: var(--background-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+}
+
+.parameter-section:hover {
+    border-color: var(--accent-color);
+}
+
+/* Style adjustments for the form inside parameter sections */
+.parameter-section .shop-parameter-form {
+    margin: 0;
+}
+
+.parameter-section .shop-parameter-form label {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.parameter-section .shop-parameter-form input {
+    width: 100%;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    transition: border-color 0.2s;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.parameter-section .shop-parameter-form input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.parameter-section .shop-parameter-form button {
+    background-color: var(--accent-color);
+    color: white;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background-color 0.2s;
+}
+
+.parameter-section .shop-parameter-form button:hover {
+    background-color: var(--accent-color-hover);
+} 
