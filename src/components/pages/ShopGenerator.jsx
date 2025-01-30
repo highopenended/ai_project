@@ -76,7 +76,7 @@ function ShopGenerator() {
         if (currentGold <= 0) return;
 
         let remainingGold = currentGold;
-        const selectedItems = [];
+        const selectedItems = new Map(); // Use a Map to track items and their counts
         const availableItems = [...allItems];
         let totalSpent = 0;
         let iterationCount = 0;
@@ -103,25 +103,34 @@ function ShopGenerator() {
             const selectedItem = affordableItems[randomIndex];
             const itemPrice = convertPriceToGold(selectedItem.price);
 
-            // Add the item and update remaining gold
-            selectedItems.push(selectedItem);
+            // Create a unique key combining URL and full name
+            const itemKey = `${selectedItem.url}-${selectedItem.name}`;
+
+            // Update the item count and totals
+            if (selectedItems.has(itemKey)) {
+                const existing = selectedItems.get(itemKey);
+                existing.count += 1;
+                existing.total += itemPrice;
+            } else {
+                selectedItems.set(itemKey, {
+                    ...selectedItem,
+                    count: 1,
+                    total: itemPrice
+                });
+            }
+
+            // Update remaining gold
             remainingGold -= itemPrice;
             totalSpent += itemPrice;
             console.log(`Added item ${selectedItem.name} for ${itemPrice}gp. Total spent: ${totalSpent}gp. Remaining: ${remainingGold}gp`);
-
-            // Remove the selected item from available items using the URL as a unique identifier
-            const originalIndex = availableItems.findIndex(item => item.url === selectedItem.url);
-            if (originalIndex !== -1) {
-                availableItems.splice(originalIndex, 1);
-            }
         }
 
         if (iterationCount >= MAX_ITERATIONS) {
             console.warn('Shop generation reached maximum iterations - stopping for safety');
         }
 
-        // Sort items by price before setting them
-        const sortedItems = selectedItems.sort((a, b) => {
+        // Convert Map to array and sort by price
+        const sortedItems = Array.from(selectedItems.values()).sort((a, b) => {
             const priceA = convertPriceToGold(a.price);
             const priceB = convertPriceToGold(b.price);
             return priceB - priceA;
