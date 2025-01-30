@@ -1,4 +1,6 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
+/* eslint-enable no-unused-vars */
 import './shopgenerator/ShopGenerator.css';
 import GoldInput from './shopgenerator/leftsidebar/GoldInput';
 import LevelInput from './shopgenerator/leftsidebar/LevelInput';
@@ -116,7 +118,6 @@ function ShopGenerator() {
                     />
                 </LeftSidebar>
                 <div className="shop-generator-main">
-                    <h1>Shop Generator</h1>
                     <ItemTable items={items} />
                 </div>
             </div>

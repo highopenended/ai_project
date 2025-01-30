@@ -11,7 +11,7 @@ function LeftSidebar({ children, onGenerate }) {
 
     return (
         <div className="shop-generator-sidebar">
-            <h2>Shop Parameters</h2>
+            <h2>Shop Generator</h2>
             <GenerateButton onClick={handleGenerateClick} />
             <div className="parameter-sections">
                 {React.Children.map(children, (child, index) => (
