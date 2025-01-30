@@ -25,6 +25,7 @@ function ShopGenerator() {
     const [currentGold, setCurrentGold] = useState(0);
     const [lowestLevel, setLowestLevel] = useState(1);
     const [highestLevel, setHighestLevel] = useState(20);
+    const [sortConfig, setSortConfig] = useState([]);
 
     useEffect(() => {
         fetch('/item-table.json')
@@ -69,6 +70,73 @@ function ShopGenerator() {
 
     const handleHighestLevelChange = (level) => {
         setHighestLevel(level);
+    };
+
+    // Helper function to get the next sort direction
+    const getNextSortDirection = (currentDirection) => {
+        switch (currentDirection) {
+            case undefined: return 'asc';
+            case 'asc': return 'desc';
+            case 'desc': return undefined;
+            default: return undefined;
+        }
+    };
+
+    // Handle column header clicks for sorting
+    const handleSort = (columnName) => {
+        setSortConfig(prevConfig => {
+            // Remove the column if it exists in the current config
+            const newConfig = prevConfig.filter(sort => sort.column !== columnName);
+            
+            // Get the current direction for this column
+            const currentDirection = prevConfig.find(sort => sort.column === columnName)?.direction;
+            
+            // Get the next direction in the cycle
+            const nextDirection = getNextSortDirection(currentDirection);
+            
+            // If there's a next direction, add it to the end of the queue
+            if (nextDirection) {
+                newConfig.push({ column: columnName, direction: nextDirection });
+            }
+            
+            return newConfig;
+        });
+    };
+
+    // Apply multi-column sorting
+    const sortItems = (items) => {
+        if (!sortConfig.length) return items;
+
+        return [...items].sort((a, b) => {
+            for (const { column, direction } of sortConfig) {
+                let comparison = 0;
+                
+                switch (column) {
+                    case 'count':
+                        comparison = a.count - b.count;
+                        break;
+                    case 'name':
+                        comparison = a.name.localeCompare(b.name);
+                        break;
+                    case 'level':
+                        comparison = parseInt(a.level) - parseInt(b.level);
+                        break;
+                    case 'price':
+                        comparison = convertPriceToGold(a.price) - convertPriceToGold(b.price);
+                        break;
+                    case 'total':
+                        comparison = a.total - b.total;
+                        break;
+                    default:
+                        comparison = 0;
+                }
+
+                if (comparison !== 0) {
+                    return direction === 'asc' ? comparison : -comparison;
+                }
+            }
+            return 0;
+        });
     };
 
     const handleGenerateClick = () => {
@@ -129,13 +197,12 @@ function ShopGenerator() {
             console.warn('Shop generation reached maximum iterations - stopping for safety');
         }
 
-        // Convert Map to array and sort by price
-        const sortedItems = Array.from(selectedItems.values()).sort((a, b) => {
-            const priceA = convertPriceToGold(a.price);
-            const priceB = convertPriceToGold(b.price);
-            return priceB - priceA;
-        });
-
+        // Convert Map to array
+        const itemsArray = Array.from(selectedItems.values());
+        
+        // Apply current sorting configuration
+        const sortedItems = sortItems(itemsArray);
+        
         setItems(sortedItems);
     };
 
@@ -156,7 +223,11 @@ function ShopGenerator() {
                     />
                 </LeftSidebar>
                 <div className="shop-generator-main">
-                    <ItemTable items={items} />
+                    <ItemTable 
+                        items={sortItems(items)} 
+                        sortConfig={sortConfig}
+                        onSort={handleSort}
+                    />
                 </div>
             </div>
         </div>

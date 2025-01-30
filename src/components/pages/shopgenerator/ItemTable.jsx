@@ -1,21 +1,47 @@
 import PropTypes from 'prop-types';
 import './ItemTable.css';
 
-function ItemTable({ items }) {
+function ItemTable({ items, sortConfig, onSort }) {
     if (!items || items.length === 0) {
         return null;
     }
+
+    // Helper function to get sort indicator and order
+    const getSortInfo = (columnName) => {
+        const sortItem = sortConfig.find(item => item.column === columnName);
+        if (!sortItem) return { indicator: '', order: 0 };
+        
+        const order = sortConfig.findIndex(item => item.column === columnName) + 1;
+        return {
+            indicator: sortItem.direction === 'asc' ? '↑' : '↓',
+            order: sortConfig.length > 1 ? order : 0
+        };
+    };
+
+    // Helper function to render column header with sort indicator
+    const renderColumnHeader = (columnName, displayName) => {
+        const { indicator, order } = getSortInfo(columnName);
+        return (
+            <th onClick={() => onSort(columnName)} className="sortable-header">
+                {displayName}
+                <span className="sort-indicator">
+                    {indicator}
+                    {order > 0 && <sup>{order}</sup>}
+                </span>
+            </th>
+        );
+    };
 
     return (
         <div className="item-table-container">
             <table className="item-table">
                 <thead>
                     <tr>
-                        <th>Count</th>
-                        <th>Item Name</th>
-                        <th>Level</th>
-                        <th>Price</th>
-                        <th>Total</th>
+                        {renderColumnHeader('count', 'Count')}
+                        {renderColumnHeader('name', 'Item Name')}
+                        {renderColumnHeader('level', 'Level')}
+                        {renderColumnHeader('price', 'Price')}
+                        {renderColumnHeader('total', 'Total')}
                     </tr>
                 </thead>
                 <tbody>
@@ -45,6 +71,13 @@ ItemTable.propTypes = {
             url: PropTypes.string.isRequired,
         })
     ).isRequired,
+    sortConfig: PropTypes.arrayOf(
+        PropTypes.shape({
+            column: PropTypes.string.isRequired,
+            direction: PropTypes.oneOf(['asc', 'desc']).isRequired,
+        })
+    ).isRequired,
+    onSort: PropTypes.func.isRequired,
 };
 
 export default ItemTable; 
