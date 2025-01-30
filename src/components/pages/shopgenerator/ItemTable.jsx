@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import './ItemTable.css';
 
 function ItemTable({ items }) {
     if (!items || items.length === 0) {

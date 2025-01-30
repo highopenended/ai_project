@@ -48,6 +48,7 @@ function GoldInput({ onChange }) {
         const formattedValue = formatNumber(value);
         setGoldAmount(formattedValue);
 
+        // Remove commas before parsing
         const numericValue = parseFloat(formattedValue.replace(/,/g, ''));
         if (!isNaN(numericValue)) {
             onChange(numericValue);

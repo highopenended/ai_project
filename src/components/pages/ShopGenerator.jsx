@@ -41,7 +41,10 @@ function ShopGenerator() {
 
     const convertPriceToGold = (priceString) => {
         if (!priceString) return 0;
-        const match = priceString.match(/(\d+(?:\.\d+)?)\s*(gp|sp|cp)/);
+        
+        // Remove commas from the price string before parsing
+        const cleanPriceString = priceString.replace(/,/g, '');
+        const match = cleanPriceString.match(/(\d+(?:\.\d+)?)\s*(gp|sp|cp)/);
         if (!match) return 0;
 
         const [, value, unit] = match;
@@ -56,6 +59,7 @@ function ShopGenerator() {
     };
 
     const handleGoldChange = (gold) => {
+        console.log('Gold value received:', gold, typeof gold);
         setCurrentGold(gold);
     };
 
@@ -68,17 +72,27 @@ function ShopGenerator() {
     };
 
     const handleGenerateClick = () => {
+        console.log('Current gold when generating:', currentGold, typeof currentGold);
         if (currentGold <= 0) return;
 
         let remainingGold = currentGold;
         const selectedItems = [];
         const availableItems = [...allItems];
+        let totalSpent = 0;
+        let iterationCount = 0;
+        const MAX_ITERATIONS = 1000; // Safety limit
 
-        while (remainingGold > 0 && availableItems.length > 0) {
-            // Filter items that are too expensive
+        while (remainingGold > 0 && availableItems.length > 0 && iterationCount < MAX_ITERATIONS) {
+            iterationCount++;
+            
+            // Filter items that are too expensive and within level range
             const affordableItems = availableItems.filter(item => {
                 const price = convertPriceToGold(item.price);
-                return price <= remainingGold && price > 0; // Ensure price is positive
+                const level = parseInt(item.level);
+                return price <= remainingGold && 
+                       price > 0 && 
+                       level >= lowestLevel && 
+                       level <= highestLevel;
             });
 
             // If no affordable items left, break
@@ -92,13 +106,28 @@ function ShopGenerator() {
             // Add the item and update remaining gold
             selectedItems.push(selectedItem);
             remainingGold -= itemPrice;
+            totalSpent += itemPrice;
+            console.log(`Added item ${selectedItem.name} for ${itemPrice}gp. Total spent: ${totalSpent}gp. Remaining: ${remainingGold}gp`);
 
-            // Remove the selected item from available items
-            const originalIndex = availableItems.findIndex(item => item.name === selectedItem.name);
-            availableItems.splice(originalIndex, 1);
+            // Remove the selected item from available items using the URL as a unique identifier
+            const originalIndex = availableItems.findIndex(item => item.url === selectedItem.url);
+            if (originalIndex !== -1) {
+                availableItems.splice(originalIndex, 1);
+            }
         }
 
-        setItems(selectedItems);
+        if (iterationCount >= MAX_ITERATIONS) {
+            console.warn('Shop generation reached maximum iterations - stopping for safety');
+        }
+
+        // Sort items by price before setting them
+        const sortedItems = selectedItems.sort((a, b) => {
+            const priceA = convertPriceToGold(a.price);
+            const priceB = convertPriceToGold(b.price);
+            return priceB - priceA;
+        });
+
+        setItems(sortedItems);
     };
 
     if (loading) {
