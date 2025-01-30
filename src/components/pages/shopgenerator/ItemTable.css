@@ -4,15 +4,14 @@
     padding: 0;
     background-color: rgba(13, 17, 23, 0.7);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    max-height: 500px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    max-height: calc(100vh - 3rem - 4rem - 2rem); /* Account for nav, title, and padding */
+    overflow-y: auto;
 }
 
 .item-table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .item-table thead {
@@ -21,19 +20,6 @@
     z-index: 1;
     background-color: rgba(22, 27, 34, 0.8);
     backdrop-filter: blur(8px);
-}
-
-.item-table tbody {
-    display: block;
-    overflow-y: auto;
-    max-height: calc(500px - 48px); /* Subtract header height */
-}
-
-.item-table thead tr,
-.item-table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
 }
 
 .item-table th,
@@ -68,7 +54,7 @@
 .item-table th:nth-child(2),
 .item-table td:nth-child(2) {
     /* Item Name column takes remaining space */
-    min-width: 200px;
+    width: auto;
 }
 
 .item-table th {
@@ -104,19 +90,19 @@
 }
 
 /* Custom scrollbar styling */
-.item-table tbody::-webkit-scrollbar {
+.item-table-container::-webkit-scrollbar {
     width: 8px;
 }
 
-.item-table tbody::-webkit-scrollbar-track {
+.item-table-container::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.05);
 }
 
-.item-table tbody::-webkit-scrollbar-thumb {
+.item-table-container::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
 }
 
-.item-table tbody::-webkit-scrollbar-thumb:hover {
+.item-table-container::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 } 

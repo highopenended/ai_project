@@ -6,6 +6,24 @@ function ItemTable({ items, sortConfig, onSort }) {
         return null;
     }
 
+    // Helper function to format gold amount into gp, sp, cp
+    const formatGold = (amount) => {
+        // Convert to copper pieces first (multiply by 100 to handle 2 decimal places)
+        const totalCopper = Math.round(amount * 100);
+        
+        const gp = Math.floor(totalCopper / 100);
+        const sp = Math.floor((totalCopper % 100) / 10);
+        const cp = totalCopper % 10;
+
+        const parts = [];
+        if (gp > 0) parts.push(`${gp} gp`);
+        if (sp > 0) parts.push(`${sp} sp`);
+        if (cp > 0) parts.push(`${cp} cp`);
+        
+        // If amount is 0, return "0 gp"
+        return parts.length > 0 ? parts.join(', ') : '0 gp';
+    };
+
     // Helper function to get sort indicator and order
     const getSortInfo = (columnName) => {
         const sortItem = sortConfig.find(item => item.column === columnName);
@@ -51,7 +69,7 @@ function ItemTable({ items, sortConfig, onSort }) {
                             <td>{item.name}</td>
                             <td>{item.level}</td>
                             <td>{item.price}</td>
-                            <td>{item.total} gp</td>
+                            <td>{formatGold(item.total)}</td>
                         </tr>
                     ))}
                 </tbody>
