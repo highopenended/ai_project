@@ -44,6 +44,33 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Column width specifications */
+.item-table th:nth-child(1),
+.item-table td:nth-child(1) {
+    width: 80px; /* Count column */
+}
+
+.item-table th:nth-child(3),
+.item-table td:nth-child(3) {
+    width: 80px; /* Level column */
+}
+
+.item-table th:nth-child(4),
+.item-table td:nth-child(4) {
+    width: 100px; /* Price column */
+}
+
+.item-table th:nth-child(5),
+.item-table td:nth-child(5) {
+    width: 100px; /* Total column */
+}
+
+.item-table th:nth-child(2),
+.item-table td:nth-child(2) {
+    /* Item Name column takes remaining space */
+    min-width: 200px;
+}
+
 .item-table th {
     font-weight: 600;
     font-size: 0.95rem;
