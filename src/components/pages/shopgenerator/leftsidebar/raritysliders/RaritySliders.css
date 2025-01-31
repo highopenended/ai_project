@@ -17,19 +17,29 @@
     border: none;
     cursor: pointer;
     padding: 0;
-    font-size: 0.75rem;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    min-width: 1rem;
-    line-height: 1;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
 
 .lock-button:hover {
-    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.lock-button.locked {
-    opacity: 1;
+.lock-button svg {
+    transition: transform 0.2s;
+}
+
+.lock-button:hover svg {
+    transform: scale(1.1);
+}
+
+.lock-button.locked svg {
+    filter: drop-shadow(0 0 2px rgba(74, 158, 255, 0.5));
 }
 
 .rarity-sliders h3 {

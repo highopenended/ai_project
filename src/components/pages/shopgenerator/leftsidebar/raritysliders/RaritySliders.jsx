@@ -99,9 +99,12 @@ function RaritySliders({ onChange }) {
         if (editingRarity && !lockedRarities.has(editingRarity)) {
             const value = parseFloat(editValue) || 0;
             const newValue = Math.min(100, Math.max(0, value));
-            const newDistribution = adjustDistribution(newValue, editingRarity);
-            setDistribution(newDistribution);
-            onChange(newDistribution);
+            // Only adjust if the value actually changed
+            if (Math.abs(newValue - distribution[editingRarity]) >= 0.01) {
+                const newDistribution = adjustDistribution(newValue, editingRarity);
+                setDistribution(newDistribution);
+                onChange(newDistribution);
+            }
         }
         setEditingRarity(null);
         setPreEditValue(null);
@@ -134,6 +137,43 @@ function RaritySliders({ onChange }) {
         }
         setLockedRarities(newLockedRarities);
     };
+
+    const formatPercentage = (value) => {
+        // Convert to number and fix to 2 decimal places
+        const num = Number(value);
+        if (Number.isInteger(num)) {
+            return num.toString();
+        }
+        // Check if second decimal is 0
+        if (num * 10 % 1 === 0) {
+            return num.toFixed(1);
+        }
+        return num.toFixed(2);
+    };
+
+    const LockIcon = ({ locked }) => (
+        <svg 
+            width="20" 
+            height="20" 
+            viewBox="0 0 20 20" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            {locked ? (
+                // Locked state - simple lock
+                <path
+                    d="M7 9V6c0-1.65 1.35-3 3-3s3 1.35 3 3v3H7zM6 10h8v6H6v-6z"
+                    fill="rgba(255, 255, 255, 0.5)"
+                />
+            ) : (
+                // Unlocked state - simple lock with open shackle
+                <path
+                    d="M13 6c0-1.65-1.35-3-3-3S7 4.35 7 6h3v3H6v6h8v-6h-1V6z"
+                    fill="rgba(255, 255, 255, 0.9)"
+                />
+            )}
+        </svg>
+    );
 
     return (
         <div className="rarity-sliders">
@@ -174,7 +214,7 @@ function RaritySliders({ onChange }) {
                                     className={`percentage-display ${lockedRarities.has(rarity) ? 'locked' : ''}`}
                                     onClick={() => handleInputFocus(rarity)}
                                 >
-                                    {distribution[rarity].toFixed(2)}%
+                                    {formatPercentage(distribution[rarity])}%
                                 </span>
                             )}
                         </div>
@@ -185,7 +225,7 @@ function RaritySliders({ onChange }) {
                         onClick={() => toggleLock(rarity)}
                         aria-label={`${lockedRarities.has(rarity) ? 'Unlock' : 'Lock'} ${rarity} rarity`}
                     >
-                        {lockedRarities.has(rarity) ? '🔒' : '🔓'}
+                        <LockIcon locked={lockedRarities.has(rarity)} />
                     </button>
                 </div>
             ))}
