@@ -69,7 +69,10 @@ function ItemTable({ items, sortConfig, onSort }) {
                 <tbody>
                     {items.map((item, index) => (
                         <tr key={`${item.url}-${index}`}>
-                            <td className="col-count">{item.count}</td>
+                            <td className="col-count">
+                                <span className="count-prefix">×</span>
+                                {item.count}
+                            </td>
                             <td className="col-name">{item.name}</td>
                             <td className="col-rarity" style={{ color: RARITY_COLORS[item.rarity] }}>{item.rarity}</td>
                             <td className="col-level">{item.level}</td>

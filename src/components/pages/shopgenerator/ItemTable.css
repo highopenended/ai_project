@@ -31,7 +31,18 @@
 }
 
 /* Column widths */
-.col-count { width: 80px; }
+.col-count { 
+    width: 80px;
+    font-variant-numeric: tabular-nums;
+}
+
+.count-prefix {
+    font-size: 0.85em;
+    opacity: 0.7;
+    margin-right: 1px;
+    font-weight: 300;
+}
+
 .col-level { width: 80px; }
 .col-price { width: 100px; }
 .col-total { width: 100px; }
