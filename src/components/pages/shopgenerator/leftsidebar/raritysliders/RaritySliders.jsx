@@ -27,10 +27,10 @@ function RaritySliders({ onChange }) {
         // Start with current distribution
         const newDistribution = { ...distribution };
         
-        // Calculate total of locked values
-        const lockedTotal = Array.from(lockedRarities).reduce((sum, rarity) => 
+        // Calculate total of locked values (rounded to 2 decimals)
+        const lockedTotal = Number(Array.from(lockedRarities).reduce((sum, rarity) => 
             sum + distribution[rarity], 0
-        );
+        ).toFixed(2));
 
         // Get list of unlocked rarities (excluding the one being changed)
         const unlockedRarities = RARITIES.filter(r => 
@@ -38,21 +38,46 @@ function RaritySliders({ onChange }) {
         );
 
         // Cap new value at available space
-        const availableForChange = 100 - lockedTotal;
-        const cappedValue = Math.min(newValue, availableForChange);
+        const availableForChange = Number((100 - lockedTotal).toFixed(2));
+        const cappedValue = Number(Math.min(newValue, availableForChange).toFixed(2));
         
         // Set the new value
         newDistribution[changedRarity] = cappedValue;
 
-        // Calculate remaining space for unlocked rarities
-        const remainingSpace = 100 - lockedTotal - cappedValue;
-
         if (unlockedRarities.length > 0) {
-            // Distribute remaining space equally
-            const valuePerRarity = remainingSpace / unlockedRarities.length;
+            // Calculate exact remaining space
+            const remainingSpace = Number((100 - lockedTotal - cappedValue).toFixed(2));
+            
+            // Calculate base value (floor to 2 decimals to ensure we don't go over)
+            const baseValuePerRarity = Math.floor((remainingSpace / unlockedRarities.length) * 100) / 100;
+            
+            // Calculate total pennies to distribute
+            const totalPennies = Math.round((remainingSpace - (baseValuePerRarity * unlockedRarities.length)) * 100);
+            
+            // Set base values first
             unlockedRarities.forEach(rarity => {
-                newDistribution[rarity] = valuePerRarity;
+                newDistribution[rarity] = baseValuePerRarity;
             });
+
+            // Distribute remaining pennies
+            let remainingPennies = totalPennies;
+            for (let i = 0; remainingPennies > 0 && i < unlockedRarities.length; i++) {
+                const penny = 0.01;
+                newDistribution[unlockedRarities[i]] = Number((newDistribution[unlockedRarities[i]] + penny).toFixed(2));
+                remainingPennies--;
+            }
+        }
+
+        // Verify total is exactly 100
+        const total = Number(Object.values(newDistribution).reduce((sum, val) => sum + val, 0).toFixed(2));
+        if (total !== 100) {
+            console.warn(`Distribution total is ${total}, adjusting...`);
+            const diff = Number((100 - total).toFixed(2));
+            // Add or subtract the difference from the first unlocked rarity
+            if (unlockedRarities.length > 0) {
+                const adjustRarity = unlockedRarities[0];
+                newDistribution[adjustRarity] = Number((newDistribution[adjustRarity] + diff).toFixed(2));
+            }
         }
 
         return newDistribution;
@@ -136,6 +161,7 @@ function RaritySliders({ onChange }) {
                                     onChange={(e) => handleInputChange(e.target.value)}
                                     onBlur={handleInputBlur}
                                     onKeyDown={handleKeyDown}
+                                    onFocus={(e) => e.target.select()}
                                     step="0.01"
                                     min="0"
                                     max="100"
