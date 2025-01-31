@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import './shopgenerator/ShopGenerator.css';
 import GoldInput from './shopgenerator/leftsidebar/GoldInput';
 import LevelInput from './shopgenerator/leftsidebar/LevelInput';
+import BiasSlider from './shopgenerator/leftsidebar/BiasSlider';
 import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import ItemTable from './shopgenerator/ItemTable';
 
@@ -26,6 +27,7 @@ function ShopGenerator() {
     const [lowestLevel, setLowestLevel] = useState(1);
     const [highestLevel, setHighestLevel] = useState(20);
     const [sortConfig, setSortConfig] = useState([]);
+    const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
 
     useEffect(() => {
         fetch('/item-table.json')
@@ -72,12 +74,16 @@ function ShopGenerator() {
         setHighestLevel(level);
     };
 
+    const handleBiasChange = (bias) => {
+        setItemBias(bias);
+    };
+
     // Helper function to get the next sort direction
     const getNextSortDirection = (currentDirection) => {
         switch (currentDirection) {
-            case undefined: return 'asc';
-            case 'asc': return 'desc';
-            case 'desc': return undefined;
+            case undefined: return 'desc';
+            case 'desc': return 'asc';
+            case 'asc': return undefined;
             default: return undefined;
         }
     };
@@ -166,9 +172,21 @@ function ShopGenerator() {
             // If no affordable items left, break
             if (affordableItems.length === 0) break;
 
-            // Get a random affordable item
-            const randomIndex = Math.floor(Math.random() * affordableItems.length);
-            const selectedItem = affordableItems[randomIndex];
+            // Sort items by price and apply bias
+            const sortedItems = affordableItems.sort((a, b) => {
+                const priceA = convertPriceToGold(a.price);
+                const priceB = convertPriceToGold(b.price);
+                return priceB - priceA; // Sort by descending price
+            });
+
+            // Calculate index based on bias
+            // itemBias of 0 favors cheaper items (end of array)
+            // itemBias of 1 favors expensive items (start of array)
+            // Add some randomness to avoid pure deterministic selection
+            const randomFactor = Math.random() * 0.3 - 0.15; // Random value between -0.15 and 0.15
+            const biasedIndex = Math.floor((1 - (itemBias + randomFactor)) * (sortedItems.length - 1));
+            const selectedItem = sortedItems[Math.max(0, Math.min(sortedItems.length - 1, biasedIndex))];
+
             const itemPrice = convertPriceToGold(selectedItem.price);
 
             // Create a unique key combining URL and full name
@@ -200,6 +218,9 @@ function ShopGenerator() {
         // Convert Map to array
         const itemsArray = Array.from(selectedItems.values());
         
+        // Set initial sort config for Total column
+        setSortConfig([{ column: 'total', direction: 'desc' }]);
+        
         // Apply current sorting configuration
         const sortedItems = sortItems(itemsArray);
         
@@ -221,6 +242,7 @@ function ShopGenerator() {
                         onLowestLevelChange={handleLowestLevelChange}
                         onHighestLevelChange={handleHighestLevelChange}
                     />
+                    <BiasSlider onChange={handleBiasChange} />
                 </LeftSidebar>
                 <div className="shop-generator-main">
                     <ItemTable 

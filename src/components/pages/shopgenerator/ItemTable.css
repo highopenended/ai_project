@@ -1,10 +1,9 @@
 .item-table-container {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 0;
     background-color: rgba(13, 17, 23, 0.7);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    max-height: calc(100vh - 3rem - 4rem - 2rem); /* Account for nav, title, and padding */
+    max-height: calc(100vh - 3rem - 4rem - 2rem);
     overflow-y: auto;
 }
 
@@ -14,6 +13,7 @@
     table-layout: fixed;
 }
 
+/* Header styling */
 .item-table thead {
     position: sticky;
     top: 0;
@@ -30,43 +30,18 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Column width specifications */
-.item-table th:nth-child(1),
-.item-table td:nth-child(1) {
-    width: 80px; /* Count column */
-}
+/* Column widths */
+.col-count { width: 80px; }
+.col-level { width: 80px; }
+.col-price { width: 100px; }
+.col-total { width: 100px; }
+.col-name { width: auto; }
 
-.item-table th:nth-child(3),
-.item-table td:nth-child(3) {
-    width: 80px; /* Level column */
-}
-
-.item-table th:nth-child(4),
-.item-table td:nth-child(4) {
-    width: 100px; /* Price column */
-}
-
-.item-table th:nth-child(5),
-.item-table td:nth-child(5) {
-    width: 100px; /* Total column */
-}
-
-.item-table th:nth-child(2),
-.item-table td:nth-child(2) {
-    /* Item Name column takes remaining space */
-    width: auto;
-}
-
-.item-table th {
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
+/* Sorting */
 .sortable-header {
     cursor: pointer;
     user-select: none;
     transition: background-color 0.2s;
-    position: relative;
 }
 
 .sortable-header:hover {
@@ -76,7 +51,6 @@
 .sort-indicator {
     margin-left: 8px;
     opacity: 0.7;
-    display: inline-block;
 }
 
 .sort-indicator sup {
@@ -85,11 +59,12 @@
     opacity: 0.8;
 }
 
+/* Row hover effect */
 .item-table tbody tr:hover {
     background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Custom scrollbar styling */
+/* Scrollbar */
 .item-table-container::-webkit-scrollbar {
     width: 8px;
 }

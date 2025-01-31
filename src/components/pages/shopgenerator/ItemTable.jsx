@@ -40,7 +40,7 @@ function ItemTable({ items, sortConfig, onSort }) {
     const renderColumnHeader = (columnName, displayName) => {
         const { indicator, order } = getSortInfo(columnName);
         return (
-            <th onClick={() => onSort(columnName)} className="sortable-header">
+            <th onClick={() => onSort(columnName)} className={`sortable-header col-${columnName}`}>
                 {displayName}
                 <span className="sort-indicator">
                     {indicator}
@@ -65,11 +65,11 @@ function ItemTable({ items, sortConfig, onSort }) {
                 <tbody>
                     {items.map((item, index) => (
                         <tr key={`${item.url}-${index}`}>
-                            <td>{item.count}</td>
-                            <td>{item.name}</td>
-                            <td>{item.level}</td>
-                            <td>{item.price}</td>
-                            <td>{formatGold(item.total)}</td>
+                            <td className="col-count">{item.count}</td>
+                            <td className="col-name">{item.name}</td>
+                            <td className="col-level">{item.level}</td>
+                            <td className="col-price">{item.price}</td>
+                            <td className="col-total">{formatGold(item.total)}</td>
                         </tr>
                     ))}
                 </tbody>
