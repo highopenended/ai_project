@@ -115,8 +115,8 @@ function ShopGenerator() {
 
     // Helper function to get the next sort direction
     const getNextSortDirection = (currentDirection, columnName) => {
-        // Special handling for name column
-        if (columnName === 'name') {
+        // Special handling for text-based columns
+        if (columnName === 'name' || columnName === 'item_category' || columnName === 'item_subcategory') {
             switch (currentDirection) {
                 case undefined: return 'asc';  // First click: alphabetical
                 case 'asc': return 'desc';     // Second click: reverse alphabetical
@@ -182,13 +182,19 @@ function ShopGenerator() {
                     case 'rarity':
                         comparison = RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
                         break;
+                    case 'item_category':
+                        comparison = (a.item_category || '').localeCompare(b.item_category || '');
+                        break;
+                    case 'item_subcategory':
+                        comparison = (a.item_subcategory || '').localeCompare(b.item_subcategory || '');
+                        break;
                     default:
                         comparison = 0;
                 }
 
                 if (comparison !== 0) {
-                    // For name column, flip the comparison direction to match natural alphabetical order
-                    if (column === 'name') {
+                    // For text-based columns, flip the comparison direction to match natural alphabetical order
+                    if (column === 'name' || column === 'item_category' || column === 'item_subcategory') {
                         return direction === 'asc' ? comparison : -comparison;
                     }
                     // For all other columns, maintain the existing direction logic

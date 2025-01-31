@@ -60,6 +60,8 @@ function ItemTable({ items, sortConfig, onSort }) {
                         {renderColumnHeader('name', 'Item Name')}
                         {renderColumnHeader('rarity', 'Rarity')}
                         {renderColumnHeader('level', 'Level')}
+                        {renderColumnHeader('item_category', 'Category')}
+                        {renderColumnHeader('item_subcategory', 'Subcategory')}
                         {renderColumnHeader('price', 'Price')}
                         {renderColumnHeader('total', 'Total')}
                     </tr>
@@ -71,6 +73,8 @@ function ItemTable({ items, sortConfig, onSort }) {
                             <td className="col-name">{item.name}</td>
                             <td className="col-rarity" style={{ color: RARITY_COLORS[item.rarity] }}>{item.rarity}</td>
                             <td className="col-level">{item.level}</td>
+                            <td className="col-category">{item.item_category}</td>
+                            <td className="col-subcategory">{item.item_subcategory}</td>
                             <td className="col-price">{item.price}</td>
                             <td className="col-total">{formatGold(item.total)}</td>
                         </tr>
@@ -90,6 +94,8 @@ ItemTable.propTypes = {
             count: PropTypes.number.isRequired,
             total: PropTypes.number.isRequired,
             url: PropTypes.string.isRequired,
+            item_category: PropTypes.string.isRequired,
+            item_subcategory: PropTypes.string,
         })
     ).isRequired,
     sortConfig: PropTypes.arrayOf(
