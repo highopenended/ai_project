@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "import-data": "node src/scripts/runImport.js import",
-    "delete-data": "node src/scripts/runImport.js delete"
+    "delete-data": "node src/scripts/runImport.js delete",
+    "sync-items": "node src/scripts/syncItemTable.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

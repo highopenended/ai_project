@@ -48073,5 +48073,35 @@
         "usage": "held in 2 hands",
         "spoilers": "",
         "url": "/Equipment.aspx?ID=2367"
+    },
+    {
+        "name": "Test1",
+        "pfs": "Restricted",
+        "source": "Treasure Vault pg. 180 <sup>1.1</sup>",
+        "rarity": "Common",
+        "trait": "Artifact, Divine, Necromancy",
+        "item_category": "Artifacts",
+        "item_subcategory": "",
+        "level": "29",
+        "price": "1 gp",
+        "bulk": "2",
+        "usage": "held in 2 hands",
+        "spoilers": "",
+        "url": "/Equipment.aspx?ID=2500"
+    },
+    {
+        "name": "Test2",
+        "pfs": "Restricted",
+        "source": "Treasure Vault pg. 180 <sup>1.1</sup>",
+        "rarity": "Uncommon",
+        "trait": "Artifact, Divine, Necromancy, Unique",
+        "item_category": "Artifacts",
+        "item_subcategory": "",
+        "level": "29",
+        "price": "1 gp",
+        "bulk": "2",
+        "usage": "held in 2 hands",
+        "spoilers": "",
+        "url": "/Equipment.aspx?ID=2501"
     }
 ]

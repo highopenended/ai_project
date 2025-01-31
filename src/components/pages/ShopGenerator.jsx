@@ -8,6 +8,7 @@ import BiasSlider from './shopgenerator/leftsidebar/BiasSlider';
 import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySliders';
 import ItemTable from './shopgenerator/ItemTable';
+import itemData from '../../../public/item-table.json';  // Import JSON directly
 
 /**
  * Shop Generator Component
@@ -45,16 +46,31 @@ function ShopGenerator() {
     };
 
     useEffect(() => {
-        fetch('/item-table.json')
-            .then(response => response.json())
-            .then(data => {
-                setAllItems(data);
-                setLoading(false);
-            })
-            .catch(error => {
-                console.error('Error loading items:', error);
-                setLoading(false);
-            });
+        try {
+            // Format and process the imported data
+            console.log('Raw itemData length:', itemData.length);
+            console.log('Sample of raw data:', itemData.slice(0, 2));
+            
+            const formattedData = itemData.map(item => ({
+                ...item,
+                bulk: item.bulk?.trim() === '' ? '-' : item.bulk,
+                level: item.level ? item.level : '0'
+            }));
+            
+            setAllItems(formattedData);
+            setLoading(false);
+            
+            // Debug logging
+            console.log('Total items loaded:', formattedData.length);
+            const level29Items = formattedData.filter(item => item.level === "29");
+            console.log('Level 29 items:', level29Items);
+            
+            // Log the last few items to see if our test items are at the end
+            console.log('Last few items:', formattedData.slice(-5));
+        } catch (error) {
+            console.error('Error loading items:', error);
+            setLoading(false);
+        }
     }, []);
 
     const convertPriceToGold = (priceString) => {
@@ -184,12 +200,24 @@ function ShopGenerator() {
     };
 
     const handleGenerateClick = () => {
-        console.log('Current gold when generating:', currentGold, typeof currentGold);
+        console.log('Generate clicked with settings:', {
+            currentGold,
+            lowestLevel,
+            highestLevel,
+            itemBias,
+            rarityDistribution
+        });
+        
         if (currentGold <= 0) return;
 
         let remainingGold = currentGold;
         const selectedItems = new Map(); // Use a Map to track items and their counts
         const availableItems = [...allItems];
+        
+        // Debug log available items
+        console.log('Initial available items:', availableItems.length);
+        console.log('Level 29 items in pool:', availableItems.filter(item => item.level === "29"));
+        
         let totalSpent = 0;
         let iterationCount = 0;
         const MAX_ITERATIONS = 1000; // Safety limit
@@ -201,11 +229,26 @@ function ShopGenerator() {
             const affordableItems = availableItems.filter(item => {
                 const price = convertPriceToGold(item.price);
                 const level = parseInt(item.level);
-                return price <= remainingGold && 
-                       price > 0 && 
-                       level >= lowestLevel && 
-                       level <= highestLevel;
+                const isAffordable = price <= remainingGold && price > 0 && level >= lowestLevel && level <= highestLevel;
+                
+                // Log every item's filtering process
+                if (level === 29) {
+                    console.log('Level 29 item check:', {
+                        name: item.name,
+                        price,
+                        level,
+                        isAffordable,
+                        meetsConditions: {
+                            priceInRange: price <= remainingGold,
+                            pricePositive: price > 0,
+                            levelInRange: level >= lowestLevel && level <= highestLevel
+                        }
+                    });
+                }
+                return isAffordable;
             });
+
+            console.log(`Iteration ${iterationCount}: Found ${affordableItems.length} affordable items`);
 
             // If no affordable items left, break
             if (affordableItems.length === 0) break;

@@ -20,6 +20,14 @@ function RaritySliders({ onChange }) {
     const [preEditValue, setPreEditValue] = useState(null);
     const [lockedRarities, setLockedRarities] = useState(new Set());
 
+    // Set CSS variables for rarity colors
+    React.useEffect(() => {
+        const root = document.documentElement;
+        Object.entries(RARITY_COLORS).forEach(([rarity, color]) => {
+            root.style.setProperty(`--rarity-${rarity.toLowerCase()}-color`, color);
+        });
+    }, []);
+
     const adjustDistribution = (newValue, changedRarity) => {
         // Start with current distribution
         const newDistribution = { ...distribution };
