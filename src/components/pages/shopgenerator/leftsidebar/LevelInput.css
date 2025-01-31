@@ -1,54 +1,32 @@
 .level-input-container {
-    margin: 0;
-    padding: 12px 20px;
-    width: 100%;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 0;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(163, 177, 255, 0.1);
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
 }
 
 .level-input-container h3 {
-    color: var(--text-color);
-    font-size: 1.1rem;
-    margin: 0 0 10px 0;
-    font-weight: 500;
-    opacity: 0.7;
-    text-align: center;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .level-input-group {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: 1;
 }
 
 .level-input-group input {
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(163, 177, 255, 0.15);
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: var(--text-color);
-    font-size: 1rem;
-    width: 60px;
+    padding: 4px 8px;
+    font-size: 0.9rem;
+    width: 45px;
     text-align: center;
-    transition: all 0.2s ease;
-}
-
-.level-input-group input:hover {
-    border-color: rgba(163, 177, 255, 0.3);
-    background-color: rgba(0, 0, 0, 0.3);
-}
-
-.level-input-group input:focus {
-    border-color: #a3b1ff;
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(163, 177, 255, 0.1);
-    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .level-input-group input::-webkit-inner-spin-button,
@@ -64,5 +42,5 @@
 .level-input-separator {
     color: var(--text-color);
     opacity: 0.5;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 } 

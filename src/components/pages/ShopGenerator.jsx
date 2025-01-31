@@ -9,6 +9,7 @@ import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySliders';
 import ItemTable from './shopgenerator/ItemTable';
 import itemData from '../../../public/item-table.json';  // Import JSON directly
+import { useCategoryContext } from '../../context/CategoryContext';
 
 /**
  * Shop Generator Component
@@ -22,6 +23,11 @@ import itemData from '../../../public/item-table.json';  // Import JSON directly
  * - Save favorite shops
  */
 function ShopGenerator() {
+    const {
+        selectedCategories,
+        selectedSubcategories
+    } = useCategoryContext();
+
     const [items, setItems] = useState([]);
     const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -211,7 +217,9 @@ function ShopGenerator() {
             lowestLevel,
             highestLevel,
             itemBias,
-            rarityDistribution
+            rarityDistribution,
+            selectedCategories: Array.from(selectedCategories),
+            selectedSubcategories: Array.from(selectedSubcategories)
         });
         
         if (currentGold <= 0) return;
@@ -222,7 +230,6 @@ function ShopGenerator() {
         
         // Debug log available items
         console.log('Initial available items:', availableItems.length);
-        console.log('Level 29 items in pool:', availableItems.filter(item => item.level === "29"));
         
         let totalSpent = 0;
         let iterationCount = 0;
@@ -235,23 +242,22 @@ function ShopGenerator() {
             const affordableItems = availableItems.filter(item => {
                 const price = convertPriceToGold(item.price);
                 const level = parseInt(item.level);
-                const isAffordable = price <= remainingGold && price > 0 && level >= lowestLevel && level <= highestLevel;
                 
-                // Log every item's filtering process
-                if (level === 29) {
-                    console.log('Level 29 item check:', {
-                        name: item.name,
-                        price,
-                        level,
-                        isAffordable,
-                        meetsConditions: {
-                            priceInRange: price <= remainingGold,
-                            pricePositive: price > 0,
-                            levelInRange: level >= lowestLevel && level <= highestLevel
-                        }
-                    });
+                // Basic filters (price and level)
+                const isAffordable = price <= remainingGold && price > 0 && level >= lowestLevel && level <= highestLevel;
+                if (!isAffordable) return false;
+
+                // Category filter
+                if (selectedCategories.size > 0 && !selectedCategories.has(item.item_category)) {
+                    return false;
                 }
-                return isAffordable;
+
+                // Subcategory filter
+                if (selectedSubcategories.size > 0 && !selectedSubcategories.has(item.item_subcategory)) {
+                    return false;
+                }
+
+                return true;
             });
 
             console.log(`Iteration ${iterationCount}: Found ${affordableItems.length} affordable items`);

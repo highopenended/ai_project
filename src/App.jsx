@@ -6,6 +6,7 @@ import Home from "./components/pages/Home.jsx";
 import ShopGenerator from "./components/pages/ShopGenerator.jsx";
 import ItemList from "./components/pages/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import CategoryProvider from './context/CategoryContext';
 
 /**
  * App Component
@@ -20,30 +21,32 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
  */
 function App() {
     return (
-        <Router>
+        <CategoryProvider>
             <AuthProvider>
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={<Login />} />
-                        <Route path="home" element={
-                            <ProtectedRoute>
-                                <HomeWrapper />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="shop-generator" element={
-                            <ProtectedRoute>
-                                <ShopGenerator />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="item-list" element={
-                            <ProtectedRoute>
-                                <ItemList />
-                            </ProtectedRoute>
-                        } />
-                    </Route>
-                </Routes>
+                <Router>
+                    <Routes>
+                        <Route path="/" element={<Layout />}>
+                            <Route index element={<Login />} />
+                            <Route path="home" element={
+                                <ProtectedRoute>
+                                    <HomeWrapper />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="shop-generator" element={
+                                <ProtectedRoute>
+                                    <ShopGenerator />
+                                </ProtectedRoute>
+                            } />
+                            <Route path="item-list" element={
+                                <ProtectedRoute>
+                                    <ItemList />
+                                </ProtectedRoute>
+                            } />
+                        </Route>
+                    </Routes>
+                </Router>
             </AuthProvider>
-        </Router>
+        </CategoryProvider>
     );
 }
 

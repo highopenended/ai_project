@@ -23,8 +23,8 @@ function BiasSlider({ onChange }) {
         <div className="bias-slider-container">
             <div className="bias-slider-wrapper">
                 <div className="slider-labels">
-                    <span>More Items</span>
-                    <span>Better Items</span>
+                    <span>Quantity</span>
+                    <span>Quality</span>
                 </div>
                 <div className="slider-container">
                     <input

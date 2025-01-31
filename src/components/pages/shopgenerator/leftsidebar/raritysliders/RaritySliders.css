@@ -1,17 +1,12 @@
 .rarity-sliders {
-    padding: 0.4rem;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    margin: 0.4rem 0;
     width: 100%;
-    box-sizing: border-box;
 }
 
 .rarity-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .reset-button {
@@ -78,7 +73,7 @@
 }
 
 .rarity-slider-container {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
     display: flex;
     align-items: center;
     gap: 0.25rem;
@@ -165,7 +160,7 @@
 
 .percentage-input {
     width: 100%;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 3px;
     color: rgba(255, 255, 255, 0.9);
@@ -173,20 +168,17 @@
     font-size: 0.7rem;
     text-align: right;
     line-height: 1;
-    /* Remove spinners for Chrome, Safari, Edge, Opera */
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: textfield;
 }
 
-/* Remove spinners for Chrome, Safari, Edge, Opera */
 .percentage-input::-webkit-outer-spin-button,
 .percentage-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-/* Remove spinners for Firefox */
 .percentage-input[type=number] {
     -moz-appearance: textfield;
 }
@@ -194,7 +186,7 @@
 .percentage-input:focus {
     outline: none;
     border-color: #4a9eff;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 /* Customize colors for each rarity */

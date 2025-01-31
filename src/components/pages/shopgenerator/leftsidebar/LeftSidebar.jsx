@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './LeftSidebar.css';
 import GenerateButton from './GenerateButton';
+import CategoryFilter from './categoryfilter/CategoryFilter';
 
 function LeftSidebar({ children, onGenerate }) {
     const handleGenerateClick = (e) => {
@@ -19,6 +20,9 @@ function LeftSidebar({ children, onGenerate }) {
                         {child}
                     </div>
                 ))}
+                <div className="parameter-section">
+                    <CategoryFilter />
+                </div>
             </div>
         </div>
     );
