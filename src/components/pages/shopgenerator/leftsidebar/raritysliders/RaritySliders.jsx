@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 /* eslint-enable no-unused-vars */
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
+import { RARITY_COLORS } from '../../../../../constants/rarityColors';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
 const DEFAULT_DISTRIBUTION = {

@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import './ItemTable.css';
+import { RARITY_COLORS } from '../../../constants/rarityColors';
 
 function ItemTable({ items, sortConfig, onSort }) {
     if (!items || items.length === 0) {
@@ -68,7 +69,7 @@ function ItemTable({ items, sortConfig, onSort }) {
                         <tr key={`${item.url}-${index}`}>
                             <td className="col-count">{item.count}</td>
                             <td className="col-name">{item.name}</td>
-                            <td className={`col-rarity rarity-${item.rarity.toLowerCase()}`}>{item.rarity}</td>
+                            <td className="col-rarity" style={{ color: RARITY_COLORS[item.rarity] }}>{item.rarity}</td>
                             <td className="col-level">{item.level}</td>
                             <td className="col-price">{item.price}</td>
                             <td className="col-total">{formatGold(item.total)}</td>

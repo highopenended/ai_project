@@ -36,6 +36,14 @@ function ShopGenerator() {
         Unique: 0.01
     });
 
+    // Rarity order map for sorting (from least rare to most rare)
+    const RARITY_ORDER = {
+        'Common': 1,
+        'Uncommon': 2,
+        'Rare': 3,
+        'Unique': 4
+    };
+
     useEffect(() => {
         fetch('/item-table.json')
             .then(response => response.json())
@@ -90,7 +98,18 @@ function ShopGenerator() {
     };
 
     // Helper function to get the next sort direction
-    const getNextSortDirection = (currentDirection) => {
+    const getNextSortDirection = (currentDirection, columnName) => {
+        // Special handling for name column
+        if (columnName === 'name') {
+            switch (currentDirection) {
+                case undefined: return 'asc';  // First click: alphabetical
+                case 'asc': return 'desc';     // Second click: reverse alphabetical
+                case 'desc': return undefined; // Third click: back to default
+                default: return undefined;
+            }
+        }
+        
+        // Default behavior for price and total
         switch (currentDirection) {
             case undefined: return 'desc';
             case 'desc': return 'asc';
@@ -109,7 +128,7 @@ function ShopGenerator() {
             const currentDirection = prevConfig.find(sort => sort.column === columnName)?.direction;
             
             // Get the next direction in the cycle
-            const nextDirection = getNextSortDirection(currentDirection);
+            const nextDirection = getNextSortDirection(currentDirection, columnName);
             
             // If there's a next direction, add it to the end of the queue
             if (nextDirection) {
@@ -144,11 +163,19 @@ function ShopGenerator() {
                     case 'total':
                         comparison = a.total - b.total;
                         break;
+                    case 'rarity':
+                        comparison = RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
+                        break;
                     default:
                         comparison = 0;
                 }
 
                 if (comparison !== 0) {
+                    // For name column, flip the comparison direction to match natural alphabetical order
+                    if (column === 'name') {
+                        return direction === 'asc' ? comparison : -comparison;
+                    }
+                    // For all other columns, maintain the existing direction logic
                     return direction === 'asc' ? comparison : -comparison;
                 }
             }
