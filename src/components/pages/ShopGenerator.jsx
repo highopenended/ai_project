@@ -6,6 +6,7 @@ import GoldInput from './shopgenerator/leftsidebar/GoldInput';
 import LevelInput from './shopgenerator/leftsidebar/LevelInput';
 import BiasSlider from './shopgenerator/leftsidebar/BiasSlider';
 import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
+import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySliders';
 import ItemTable from './shopgenerator/ItemTable';
 
 /**
@@ -28,6 +29,12 @@ function ShopGenerator() {
     const [highestLevel, setHighestLevel] = useState(20);
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
+    const [rarityDistribution, setRarityDistribution] = useState({
+        Common: 40.00,
+        Uncommon: 30.00,
+        Rare: 20.00,
+        Unique: 10.00
+    });
 
     useEffect(() => {
         fetch('/item-table.json')
@@ -76,6 +83,10 @@ function ShopGenerator() {
 
     const handleBiasChange = (bias) => {
         setItemBias(bias);
+    };
+
+    const handleRarityDistributionChange = (newDistribution) => {
+        setRarityDistribution(newDistribution);
     };
 
     // Helper function to get the next sort direction
@@ -243,6 +254,7 @@ function ShopGenerator() {
                         onHighestLevelChange={handleHighestLevelChange}
                     />
                     <BiasSlider onChange={handleBiasChange} />
+                    <RaritySliders onChange={handleRarityDistributionChange} />
                 </LeftSidebar>
                 <div className="shop-generator-main">
                     <ItemTable 

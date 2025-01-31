@@ -1,0 +1,181 @@
+.rarity-sliders {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.rarity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.lock-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    min-width: 1.5rem;
+}
+
+.lock-button:hover {
+    opacity: 1;
+}
+
+.lock-button.locked {
+    opacity: 1;
+}
+
+.rarity-sliders h3 {
+    margin: 0 0 1rem 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.rarity-slider-container {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.rarity-slider-container:last-child {
+    margin-bottom: 0;
+}
+
+.rarity-slider-container label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    min-width: 5.5rem;
+}
+
+.slider-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.rarity-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.rarity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #4a9eff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.rarity-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #4a9eff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.rarity-slider::-webkit-slider-thumb:hover {
+    background: #66aeff;
+}
+
+.rarity-slider::-moz-range-thumb:hover {
+    background: #66aeff;
+}
+
+.percentage-input-container {
+    width: 65px;
+    text-align: right;
+}
+
+.percentage-display {
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-size: 0.85rem;
+}
+
+.percentage-display:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.percentage-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    text-align: right;
+    /* Remove spinners for Chrome, Safari, Edge, Opera */
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Remove spinners for Chrome, Safari, Edge, Opera */
+.percentage-input::-webkit-outer-spin-button,
+.percentage-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Remove spinners for Firefox */
+.percentage-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.percentage-input:focus {
+    outline: none;
+    border-color: #4a9eff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Customize colors for each rarity */
+.rarity-slider-container:nth-child(2) .rarity-slider::-webkit-slider-thumb { background: #ffffff; }
+.rarity-slider-container:nth-child(2) .rarity-slider::-moz-range-thumb { background: #ffffff; }
+
+.rarity-slider-container:nth-child(3) .rarity-slider::-webkit-slider-thumb { background: #1eff00; }
+.rarity-slider-container:nth-child(3) .rarity-slider::-moz-range-thumb { background: #1eff00; }
+
+.rarity-slider-container:nth-child(4) .rarity-slider::-webkit-slider-thumb { background: #0070dd; }
+.rarity-slider-container:nth-child(4) .rarity-slider::-moz-range-thumb { background: #0070dd; }
+
+.rarity-slider-container:nth-child(5) .rarity-slider::-webkit-slider-thumb { background: #a335ee; }
+.rarity-slider-container:nth-child(5) .rarity-slider::-moz-range-thumb { background: #a335ee; }
+
+.rarity-slider.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.percentage-display.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.percentage-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
