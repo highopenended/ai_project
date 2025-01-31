@@ -22,6 +22,26 @@
     padding: 0 4px;
 }
 
+.slider-container {
+    position: relative;
+    padding: 10px 0;
+    margin: 0 4px;
+}
+
+/* Center mark */
+.slider-container::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 14px;
+    width: 2px;
+    background: rgba(163, 177, 255, 0.2);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
 .bias-slider {
     -webkit-appearance: none;
     width: 100%;
@@ -29,6 +49,8 @@
     background: rgba(163, 177, 255, 0.15);
     border-radius: 2px;
     outline: none;
+    position: relative;
+    z-index: 1;
 }
 
 .bias-slider::-webkit-slider-thumb {
@@ -40,6 +62,8 @@
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .bias-slider::-moz-range-thumb {
@@ -50,6 +74,8 @@
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .bias-slider::-webkit-slider-thumb:hover {
