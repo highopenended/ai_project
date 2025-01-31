@@ -3,6 +3,8 @@
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     margin: 0.4rem 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .rarity-header {
@@ -10,6 +12,31 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
+}
+
+.reset-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.reset-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    transform: rotate(-30deg);
+}
+
+.reset-button:active {
+    transform: rotate(-180deg);
 }
 
 .lock-button {
@@ -56,6 +83,8 @@
     align-items: center;
     gap: 0.25rem;
     height: 1.2rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .rarity-slider-container:last-child {

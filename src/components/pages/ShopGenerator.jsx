@@ -30,10 +30,10 @@ function ShopGenerator() {
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
     const [rarityDistribution, setRarityDistribution] = useState({
-        Common: 40.00,
-        Uncommon: 30.00,
-        Rare: 20.00,
-        Unique: 10.00
+        Common: 95.00,
+        Uncommon: 4.50,
+        Rare: 0.49,
+        Unique: 0.01
     });
 
     useEffect(() => {
@@ -183,8 +183,28 @@ function ShopGenerator() {
             // If no affordable items left, break
             if (affordableItems.length === 0) break;
 
-            // Sort items by price and apply bias
-            const sortedItems = affordableItems.sort((a, b) => {
+            // Apply rarity distribution to select an item
+            // First, determine which rarity tier we'll select from based on the distribution
+            const rarityRoll = Math.random() * 100; // Roll 0-100
+            let selectedRarity;
+            let cumulativePercentage = 0;
+
+            for (const [rarity, percentage] of Object.entries(rarityDistribution)) {
+                cumulativePercentage += percentage;
+                if (rarityRoll <= cumulativePercentage) {
+                    selectedRarity = rarity;
+                    break;
+                }
+            }
+
+            // Filter items by the selected rarity
+            const rarityFilteredItems = affordableItems.filter(item => item.rarity === selectedRarity);
+            
+            // If no items of selected rarity, try again with any rarity
+            const itemsToUse = rarityFilteredItems.length > 0 ? rarityFilteredItems : affordableItems;
+
+            // Sort filtered items by price and apply bias
+            const sortedItems = itemsToUse.sort((a, b) => {
                 const priceA = convertPriceToGold(a.price);
                 const priceB = convertPriceToGold(b.price);
                 return priceB - priceA; // Sort by descending price

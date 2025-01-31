@@ -57,6 +57,7 @@ function ItemTable({ items, sortConfig, onSort }) {
                     <tr>
                         {renderColumnHeader('count', 'Count')}
                         {renderColumnHeader('name', 'Item Name')}
+                        {renderColumnHeader('rarity', 'Rarity')}
                         {renderColumnHeader('level', 'Level')}
                         {renderColumnHeader('price', 'Price')}
                         {renderColumnHeader('total', 'Total')}
@@ -67,6 +68,7 @@ function ItemTable({ items, sortConfig, onSort }) {
                         <tr key={`${item.url}-${index}`}>
                             <td className="col-count">{item.count}</td>
                             <td className="col-name">{item.name}</td>
+                            <td className={`col-rarity rarity-${item.rarity.toLowerCase()}`}>{item.rarity}</td>
                             <td className="col-level">{item.level}</td>
                             <td className="col-price">{item.price}</td>
                             <td className="col-total">{formatGold(item.total)}</td>

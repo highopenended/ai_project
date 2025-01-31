@@ -1,13 +1,15 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
+/* eslint-enable no-unused-vars */
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
 const DEFAULT_DISTRIBUTION = {
-    Common: 40.00,
-    Uncommon: 30.00,
-    Rare: 20.00,
-    Unique: 10.00
+    Common: 95.00,
+    Uncommon: 4.50,
+    Rare: 0.49,
+    Unique: 0.01
 };
 
 function RaritySliders({ onChange }) {
@@ -16,12 +18,6 @@ function RaritySliders({ onChange }) {
     const [editValue, setEditValue] = useState('');
     const [preEditValue, setPreEditValue] = useState(null);
     const [lockedRarities, setLockedRarities] = useState(new Set());
-
-    const getLockedTotal = () => {
-        return Array.from(lockedRarities).reduce((sum, rarity) => 
-            sum + distribution[rarity], 0
-        );
-    };
 
     const adjustDistribution = (newValue, changedRarity) => {
         // Start with current distribution
@@ -175,9 +171,37 @@ function RaritySliders({ onChange }) {
         </svg>
     );
 
+    LockIcon.propTypes = {
+        locked: PropTypes.bool.isRequired
+    };
+
     return (
         <div className="rarity-sliders">
-            <h3>Rarity Distribution</h3>
+            <div className="rarity-header">
+                <h3>Rarity Distribution</h3>
+                <button 
+                    className="reset-button" 
+                    onClick={() => {
+                        setDistribution(DEFAULT_DISTRIBUTION);
+                        setLockedRarities(new Set());
+                        onChange(DEFAULT_DISTRIBUTION);
+                    }}
+                    title="Reset to default values"
+                >
+                    <svg 
+                        width="14" 
+                        height="14" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path 
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </button>
+            </div>
             {RARITIES.map(rarity => (
                 <div key={rarity} className="rarity-slider-container">
                     <label htmlFor={`rarity-${rarity}`}>{rarity}</label>

@@ -51,9 +51,9 @@ function Layout() {
                             <Link to="/shop-generator" className="nav-link">
                                 Shop Generator
                             </Link>
-                            <Link to="/item-list" className="nav-link">
+                            {/* <Link to="/item-list" className="nav-link">
                                 Item List
-                            </Link>
+                            </Link> */}
                             <button
                                 onClick={handleLogout}
                                 className="nav-link"

@@ -35,7 +35,25 @@
 .col-level { width: 80px; }
 .col-price { width: 100px; }
 .col-total { width: 100px; }
+.col-rarity { width: 100px; }
 .col-name { width: auto; }
+
+/* Rarity colors */
+.rarity-common {
+    color: #ffffff;
+}
+
+.rarity-uncommon {
+    color: #1eff00;
+}
+
+.rarity-rare {
+    color: #0070dd;
+}
+
+.rarity-unique {
+    color: #a335ee;
+}
 
 /* Sorting */
 .sortable-header {
