@@ -42,6 +42,8 @@ function LeftSidebar({ children, onGenerate }) {
                 <div className="parameter-section">
                     <CategoryFilter />
                 </div>
+                {/* Add bottom spacer */}
+                <div className="parameter-section-spacer"></div>
             </div>
         </div>
     );
