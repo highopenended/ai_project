@@ -1,3 +1,9 @@
+/**
+ * RaritySliders.css
+ * This component should be self-contained and not rely on parent styles
+ * Colors should use CSS variables or constants where appropriate
+ */
+
 .rarity-sliders {
     width: 100%;
 }
@@ -9,6 +15,7 @@
     margin-bottom: 1rem;
 }
 
+/* Reset button styles */
 .reset-button {
     background: none;
     border: none;
@@ -21,12 +28,12 @@
     justify-content: center;
     border-radius: 4px;
     transition: all 0.2s ease;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
 }
 
 .reset-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--background-hover);
+    color: var(--text-primary);
     transform: rotate(-30deg);
 }
 
@@ -34,6 +41,7 @@
     transform: rotate(-180deg);
 }
 
+/* Lock button styles */
 .lock-button {
     background: none;
     border: none;
@@ -49,7 +57,7 @@
 }
 
 .lock-button:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--background-hover);
 }
 
 .lock-button svg {
@@ -61,17 +69,10 @@
 }
 
 .lock-button.locked svg {
-    filter: drop-shadow(0 0 2px rgba(74, 158, 255, 0.5));
+    filter: drop-shadow(0 0 2px var(--accent-glow));
 }
 
-.rarity-sliders h3 {
-    margin: 0 0 0.4rem 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.85rem;
-    font-weight: 600;
-    line-height: 1;
-}
-
+/* Slider container styles */
 .rarity-slider-container {
     margin-bottom: 0.5rem;
     display: flex;
@@ -87,7 +88,7 @@
 }
 
 .rarity-slider-container label {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--text-secondary);
     font-size: 0.75rem;
     min-width: 4.25rem;
     line-height: 1;
@@ -100,22 +101,23 @@
     flex: 1;
 }
 
+/* Slider styles */
 .rarity-slider {
     flex: 1;
     -webkit-appearance: none;
     appearance: none;
     height: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--background-tertiary);
     border-radius: 2px;
     outline: none;
 }
 
+/* Base thumb styles - will be overridden by rarity-specific colors */
 .rarity-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 12px;
     height: 12px;
-    background: #4a9eff;
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -124,28 +126,20 @@
 .rarity-slider::-moz-range-thumb {
     width: 12px;
     height: 12px;
-    background: #4a9eff;
     border: none;
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.rarity-slider::-webkit-slider-thumb:hover {
-    background: #66aeff;
-}
-
-.rarity-slider::-moz-range-thumb:hover {
-    background: #66aeff;
-}
-
+/* Percentage input styles */
 .percentage-input-container {
     width: 48px;
     text-align: right;
 }
 
 .percentage-display {
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     cursor: pointer;
     padding: 0.1rem 0.2rem;
     border-radius: 3px;
@@ -155,15 +149,15 @@
 }
 
 .percentage-display:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--background-hover);
 }
 
 .percentage-input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--background-input);
+    border: 1px solid var(--border-color);
     border-radius: 3px;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     padding: 0.1rem 0.2rem;
     font-size: 0.7rem;
     text-align: right;
@@ -185,11 +179,11 @@
 
 .percentage-input:focus {
     outline: none;
-    border-color: #4a9eff;
-    background: rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-color);
+    background: var(--background-input-focus);
 }
 
-/* Customize colors for each rarity */
+/* Rarity-specific slider colors */
 .rarity-slider-container:nth-child(2) .rarity-slider::-webkit-slider-thumb { background: var(--rarity-common-color); }
 .rarity-slider-container:nth-child(2) .rarity-slider::-moz-range-thumb { background: var(--rarity-common-color); }
 
@@ -202,6 +196,7 @@
 .rarity-slider-container:nth-child(5) .rarity-slider::-webkit-slider-thumb { background: var(--rarity-unique-color); }
 .rarity-slider-container:nth-child(5) .rarity-slider::-moz-range-thumb { background: var(--rarity-unique-color); }
 
+/* Disabled states */
 .rarity-slider.locked {
     opacity: 0.5;
     cursor: not-allowed;
