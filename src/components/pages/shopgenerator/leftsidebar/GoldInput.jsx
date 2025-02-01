@@ -3,7 +3,13 @@ import PropTypes from 'prop-types';
 import './GoldInput.css';
 
 function GoldInput({ onChange }) {
-    const [goldAmount, setGoldAmount] = useState('');
+    // Initialize with formatted default value
+    const [goldAmount, setGoldAmount] = useState('5,000');
+
+    // Call onChange with initial value
+    useState(() => {
+        onChange(5000);
+    }, []);
 
     const formatNumber = (value) => {
         if (!value) return '';
@@ -40,8 +46,8 @@ function GoldInput({ onChange }) {
     const handleBlur = (e) => {
         const value = e.target.value;
         if (!value) {
-            setGoldAmount('');
-            onChange(0);
+            setGoldAmount('5,000'); // Reset to default if empty
+            onChange(5000);
             return;
         }
 
@@ -74,6 +80,7 @@ function GoldInput({ onChange }) {
                         onKeyDown={handleKeyDown}
                         placeholder="Enter gold amount"
                         required
+                        autoComplete="off"
                     />
                     <span className="suffix">gp</span>
                 </div>
