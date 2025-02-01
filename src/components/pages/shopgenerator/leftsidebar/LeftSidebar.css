@@ -24,6 +24,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    max-height: calc(100vh - 48px); /* Subtract the height of the top nav */
     overflow: hidden;
     position: relative;
 }
@@ -35,7 +36,7 @@
     margin: 0;
     padding: 0.75rem 1rem;
     border-bottom: 2px solid var(--border-color);
-    flex-shrink: 0;
+    flex: 0 0 auto;
     background-color: var(--background-secondary);
 }
 
@@ -44,8 +45,8 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    flex: 1;
-    overflow-y: scroll;
+    flex: 1 1 auto;
+    overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
     background-color: rgba(0, 0, 0, 0.2);
@@ -96,7 +97,7 @@
 /* Basic padding for section content */
 .parameter-section > div {
     width: 100%;
-    padding: 1rem;
+    padding: 0.5rem;
     box-sizing: border-box;
 }
 
