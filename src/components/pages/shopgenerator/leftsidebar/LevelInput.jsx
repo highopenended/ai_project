@@ -2,10 +2,21 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import './LevelInput.css';
 
-function LevelInput({ lowestLevel, highestLevel, onLowestLevelChange, onHighestLevelChange }) {
+function LevelInput({ 
+    lowestLevel = 0,  // Default to 0
+    highestLevel = 10,  // Default to 10
+    onLowestLevelChange, 
+    onHighestLevelChange 
+}) {
     // Track the display value separately from the actual number value
     const [lowestDisplay, setLowestDisplay] = useState(lowestLevel.toString());
     const [highestDisplay, setHighestDisplay] = useState(highestLevel.toString());
+
+    // Set initial values
+    useState(() => {
+        onLowestLevelChange(0);
+        onHighestLevelChange(10);
+    }, []);
 
     const handleLowestLevelChange = (e) => {
         const value = e.target.value;

@@ -32,8 +32,8 @@ function ShopGenerator() {
     const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentGold, setCurrentGold] = useState(0);
-    const [lowestLevel, setLowestLevel] = useState(1);
-    const [highestLevel, setHighestLevel] = useState(20);
+    const [lowestLevel, setLowestLevel] = useState(0);
+    const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
     const [rarityDistribution, setRarityDistribution] = useState({
