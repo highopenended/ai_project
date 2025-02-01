@@ -8,9 +8,8 @@ function BiasSlider({ onChange }) {
     const handleChange = useCallback((e) => {
         const value = parseInt(e.target.value);
         
-        // Smoother sticky effect
-        const distance = Math.abs(value - 50);
-        const stickyValue = distance <= 2 ? 50 : value;
+        // Only make the center point sticky
+        const stickyValue = Math.abs(value - 50) <= 2 ? 50 : value;
         
         // Only update if the value actually changed
         if (stickyValue !== bias) {
@@ -27,6 +26,9 @@ function BiasSlider({ onChange }) {
                     <span>Quality</span>
                 </div>
                 <div className="slider-container">
+                    {/* Tick marks */}
+                    <div className="tick-mark tick-25"></div>
+                    <div className="tick-mark tick-75"></div>
                     <input
                         type="range"
                         min="0"
@@ -38,9 +40,11 @@ function BiasSlider({ onChange }) {
                     />
                 </div>
                 <div className="slider-description">
-                    {bias < 40 && "Favoring more, cheaper items"}
-                    {bias >= 40 && bias <= 60 && "Balanced distribution"}
-                    {bias > 60 && "Favoring fewer, expensive items"}
+                    {bias <= 25 && "A ton of cheap items"}
+                    {bias > 25 && bias < 50 && "Favoring cheaper items"}
+                    {bias === 50 && "Balanced distribution"}
+                    {bias > 50 && bias <= 75 && "Favoring expensive items"}
+                    {bias > 75 && "A few expensive items"}
                 </div>
             </div>
         </div>

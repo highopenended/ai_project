@@ -15,6 +15,7 @@
     justify-content: space-between;
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.8rem;
+    font-weight: 600;
     padding: 0 4px;
     margin-bottom: -4px;
 }
@@ -92,4 +93,19 @@
     min-height: 1em;
     margin-top: -4px;
     padding-bottom: 0;
-} 
+}
+
+/* Tick marks */
+.tick-mark {
+    position: absolute;
+    top: 50%;
+    width: 1px;
+    height: 6px;
+    background: rgba(163, 177, 255, 0.2);
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.tick-mark.tick-25 { left: 25%; }
+.tick-mark.tick-75 { left: 75%; } 
