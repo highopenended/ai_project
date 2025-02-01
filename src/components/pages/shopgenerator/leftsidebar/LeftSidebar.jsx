@@ -81,11 +81,8 @@ function LeftSidebar({ children, onGenerate }) {
             ref={sidebarRef}
             style={{ width: sidebarWidth }}
         >
-            <h2>Shop Generator</h2>
             <GenerateButton onClick={handleGenerateClick} />
-            {/* This container should only provide basic layout structure */}
             <div className="parameter-sections">
-                {/* Each child gets wrapped in a standard section container */}
                 {React.Children.map(children, (child, index) => (
                     <div className="parameter-section" key={index}>
                         {child}
@@ -94,8 +91,6 @@ function LeftSidebar({ children, onGenerate }) {
                 <div className="parameter-section">
                     <CategoryFilter />
                 </div>
-                {/* Add bottom spacer */}
-                <div className="parameter-section-spacer"></div>
             </div>
             <div 
                 className={`resize-handle ${isDragging ? 'dragging' : ''}`}

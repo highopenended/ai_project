@@ -21,7 +21,7 @@
     border-radius: 0 8px 8px 0;
     border-right: 3px solid var(--accent-color);
     box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
-    padding: 0;
+    padding: 0.5rem 0 0 0;
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -29,17 +29,7 @@
     max-height: calc(100vh - 48px); /* Subtract the height of the top nav */
     overflow: hidden;
     position: relative;
-}
-
-/* Sidebar header */
-.shop-generator-sidebar h2 {
-    color: var(--text-color);
-    font-size: 1.5rem;
-    margin: 0;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border-color);
-    flex: 0 0 auto;
-    background-color: var(--background-secondary);
+    gap: 0.25rem; /* Tighter spacing between Generate button and sections */
 }
 
 /* Container for all parameter sections */
@@ -49,32 +39,43 @@
     width: 100%;
     flex: 1 1 auto;
     overflow-y: auto;
-    scrollbar-width: thin;
+    scrollbar-width: auto;
     scrollbar-color: var(--border-color) transparent;
     background-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Scrollbar styling */
 .parameter-sections::-webkit-scrollbar {
-    width: 8px;
+    width: 16px;
     background: transparent;
 }
 
 .parameter-sections::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
     margin: 4px;
 }
 
 .parameter-sections::-webkit-scrollbar-thumb {
-    background-color: var(--border-color);
-    border-radius: 4px;
-    border: 2px solid transparent;
+    background-color: rgba(163, 177, 255, 0.2);
+    border-radius: 8px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
     background-clip: padding-box;
+    min-height: 40px;
 }
 
 .parameter-sections::-webkit-scrollbar-thumb:hover {
     background-color: rgba(163, 177, 255, 0.4);
+}
+
+.parameter-sections::-webkit-scrollbar-thumb:active {
+    background-color: rgba(163, 177, 255, 0.5);
+}
+
+/* Firefox scrollbar styling */
+.parameter-sections {
+    scrollbar-width: auto;
+    scrollbar-color: rgba(163, 177, 255, 0.2) rgba(0, 0, 0, 0.2);
 }
 
 /* Individual parameter section wrapper */
