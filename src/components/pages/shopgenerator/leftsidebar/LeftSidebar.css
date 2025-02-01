@@ -50,7 +50,6 @@
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
     background-color: rgba(0, 0, 0, 0.2);
-    padding-bottom: 20px;
 }
 
 /* Scrollbar styling */
@@ -135,11 +134,4 @@
 
 .parameter-section:hover {
     background-color: rgba(255, 255, 255, 0.02);
-}
-
-/* Bottom spacer to ensure scrolling past the last section */
-.parameter-section-spacer {
-    height: 40px;
-    flex-shrink: 0;
-    background: transparent;
 } 
