@@ -28,9 +28,10 @@ function ItemTable({ items, sortConfig, onSort }) {
     // Helper function to format decimal gold pieces
     const formatDecimalGold = (amount) => {
         const [whole, decimal] = amount.toFixed(2).split('.');
+        const wholeWithCommas = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         return (
             <>
-                {whole}<span className="decimal-part">.{decimal}</span> gp
+                {wholeWithCommas}<span className="decimal-part">.{decimal}</span> gp
             </>
         );
     };
@@ -63,6 +64,7 @@ function ItemTable({ items, sortConfig, onSort }) {
 
     // Calculate totals
     const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+    const uniqueCount = items.length;
     const totalPrice = items.reduce((sum, item) => sum + item.total, 0);
 
     // Calculate averages
@@ -115,11 +117,12 @@ function ItemTable({ items, sortConfig, onSort }) {
                 <div className="totals-content">
                     <div className="total-item counts-group">
                         <div className="total-row">
-                            <span className="total-label">Total Items:</span>
+                            <span className="total-label">Items:</span>
                             <span className="total-value">
                                 <span className="count-prefix">×</span>
                                 {totalCount}
                             </span>
+                            <span className="total-label unique-count">({uniqueCount} unique)</span>
                         </div>
                         <div className="rarity-count-list">
                             {Object.entries(RARITY_COLORS)

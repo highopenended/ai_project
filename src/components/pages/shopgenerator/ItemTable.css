@@ -195,6 +195,14 @@
     letter-spacing: 0.5px;
 }
 
+.total-label.unique-count {
+    text-transform: none;
+    margin-left: 12px;
+    font-size: 0.85em;
+    letter-spacing: 0;
+    opacity: 0.7;
+}
+
 .total-value {
     color: rgba(255, 255, 255, 0.95);
     font-variant-numeric: tabular-nums;
