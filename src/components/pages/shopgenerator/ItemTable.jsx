@@ -25,6 +25,16 @@ function ItemTable({ items, sortConfig, onSort }) {
         return parts.length > 0 ? parts.join(', ') : '0 gp';
     };
 
+    // Helper function to format decimal gold pieces
+    const formatDecimalGold = (amount) => {
+        const [whole, decimal] = amount.toFixed(2).split('.');
+        return (
+            <>
+                {whole}<span className="decimal-part">.{decimal}</span> gp
+            </>
+        );
+    };
+
     // Helper function to get sort indicator and order
     const getSortInfo = (columnName) => {
         const sortItem = sortConfig.find(item => item.column === columnName);
@@ -51,39 +61,92 @@ function ItemTable({ items, sortConfig, onSort }) {
         );
     };
 
+    // Calculate totals
+    const totalCount = items.reduce((sum, item) => sum + item.count, 0);
+    const totalPrice = items.reduce((sum, item) => sum + item.total, 0);
+
+    // Calculate averages
+    const avgLevel = totalCount > 0 ? 
+        items.reduce((sum, item) => sum + (parseInt(item.level) * item.count), 0) / totalCount : 0;
+    const avgPrice = totalCount > 0 ? totalPrice / totalCount : 0;
+
+    // Calculate rarity counts
+    const rarityCounts = items.reduce((counts, item) => {
+        counts[item.rarity] = (counts[item.rarity] || 0) + item.count;
+        return counts;
+    }, {});
+
     return (
-        <div className="item-table-container">
-            <table className="item-table">
-                <thead>
-                    <tr>
-                        {renderColumnHeader('count', 'Count')}
-                        {renderColumnHeader('name', 'Item Name')}
-                        {renderColumnHeader('rarity', 'Rarity')}
-                        {renderColumnHeader('level', 'Level')}
-                        {renderColumnHeader('item_category', 'Category')}
-                        {renderColumnHeader('item_subcategory', 'Subcategory')}
-                        {renderColumnHeader('price', 'Price')}
-                        {renderColumnHeader('total', 'Total')}
-                    </tr>
-                </thead>
-                <tbody>
-                    {items.map((item, index) => (
-                        <tr key={`${item.url}-${index}`}>
-                            <td className="col-count">
-                                <span className="count-prefix">×</span>
-                                {item.count}
-                            </td>
-                            <td className="col-name">{item.name}</td>
-                            <td className="col-rarity" style={{ color: RARITY_COLORS[item.rarity] }}>{item.rarity}</td>
-                            <td className="col-level">{item.level}</td>
-                            <td className="col-category">{item.item_category}</td>
-                            <td className="col-subcategory">{item.item_subcategory}</td>
-                            <td className="col-price">{item.price}</td>
-                            <td className="col-total">{formatGold(item.total)}</td>
+        <div className="item-table-wrapper">
+            <div className="item-table-container">
+                <table className="item-table">
+                    <thead>
+                        <tr>
+                            {renderColumnHeader('count', 'Count')}
+                            {renderColumnHeader('name', 'Item Name')}
+                            {renderColumnHeader('rarity', 'Rarity')}
+                            {renderColumnHeader('level', 'Level')}
+                            {renderColumnHeader('item_category', 'Category')}
+                            {renderColumnHeader('item_subcategory', 'Subcategory')}
+                            {renderColumnHeader('price', 'Price')}
+                            {renderColumnHeader('total', 'Total')}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {items.map((item, index) => (
+                            <tr key={`${item.url}-${index}`}>
+                                <td className="col-count">
+                                    <span className="count-prefix">×</span>
+                                    {item.count}
+                                </td>
+                                <td className="col-name">{item.name}</td>
+                                <td className="col-rarity" style={{ color: RARITY_COLORS[item.rarity] }}>{item.rarity}</td>
+                                <td className="col-level">{item.level}</td>
+                                <td className="col-category">{item.item_category}</td>
+                                <td className="col-subcategory">{item.item_subcategory}</td>
+                                <td className="col-price">{item.price}</td>
+                                <td className="col-total">{formatGold(item.total)}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div className="table-totals">
+                <div className="totals-content">
+                    <div className="total-item counts-group">
+                        <div className="total-row">
+                            <span className="total-label">Total Items:</span>
+                            <span className="total-value">
+                                <span className="count-prefix">×</span>
+                                {totalCount}
+                            </span>
+                        </div>
+                        <div className="rarity-count-list">
+                            {Object.entries(RARITY_COLORS)
+                                .filter(([rarity]) => (rarityCounts[rarity] || 0) > 0)
+                                .map(([rarity, color], index, filteredArray) => (
+                                    <span key={rarity} className="rarity-count" style={{ color }}>
+                                        {rarity}: {rarityCounts[rarity]}
+                                        {index < filteredArray.length - 1 && <span className="rarity-separator" />}
+                                    </span>
+                                ))}
+                        </div>
+                    </div>
+                    <div className="totals-divider" />
+                    <div className="total-item">
+                        <span className="total-label">Avg Level:</span>
+                        <span className="total-value">{avgLevel.toFixed(1)}</span>
+                    </div>
+                    <div className="total-item">
+                        <span className="total-label">Avg Price:</span>
+                        <span className="total-value">{formatDecimalGold(avgPrice)}</span>
+                    </div>
+                    <div className="total-item">
+                        <span className="total-label">Total Value:</span>
+                        <span className="total-value">{formatDecimalGold(totalPrice)}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
