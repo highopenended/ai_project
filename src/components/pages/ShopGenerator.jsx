@@ -241,6 +241,10 @@ function ShopGenerator() {
             return true;
         });
 
+        // Calculate average price for lockBox functionality
+        const validPrices = categoryFiltered.map(item => convertPriceToGold(item.price)).filter(price => price > 0 && price <= maxItemPrice);
+        const averagePrice = validPrices.reduce((sum, price) => sum + price, 0) / validPrices.length;
+
         // 3. Filter by price and group by rarity
         const rarityBuckets = {
             Common: [],
@@ -264,15 +268,67 @@ function ShopGenerator() {
         // 4. Random Selection
         const selectedItems = new Map();
         let totalSpent = 0;
-        const targetMin = currentGold * 0.9;  // -10% of target
+        let lockBoxValue = 0;
         const targetMax = currentGold * 1.1;  // +10% of target
         const MAX_ITEMS = 1000;
         let attempts = 0;
         const MAX_ATTEMPTS = 10000; // Safety limit
 
-        while (totalSpent < targetMin && selectedItems.size < MAX_ITEMS && attempts < MAX_ATTEMPTS) {
+        const addToLockBox = (amount) => {
+            lockBoxValue += amount;
+            console.log(`Added ${amount.toFixed(2)} gp to lockbox. New lockbox total: ${lockBoxValue.toFixed(2)} gp`);
+        };
+
+        const getTotalWithLockBox = () => totalSpent + lockBoxValue;
+
+        const isEmptyBucket = (rarity) => !rarityBuckets[rarity] || rarityBuckets[rarity].length === 0;
+
+        const tryIncreaseQuantity = (rarity) => {
+            // Find existing item of this rarity with the lowest price
+            let lowestPriceItem = null;
+            let lowestPrice = Infinity;
+
+            for (const [key, item] of selectedItems.entries()) {
+                if (item.rarity === rarity) {
+                    const price = convertPriceToGold(item.price);
+                    if (price < lowestPrice) {
+                        lowestPrice = price;
+                        lowestPriceItem = { key, item };
+                    }
+                }
+            }
+
+            if (lowestPriceItem) {
+                const newTotal = getTotalWithLockBox() + lowestPrice;
+                
+                if (newTotal > targetMax) {
+                    // Would exceed 110%, add to lockbox
+                    addToLockBox(averagePrice);
+                    return true;
+                } else {
+                    // Increase quantity
+                    const item = selectedItems.get(lowestPriceItem.key);
+                    item.count += 1;
+                    item.total += lowestPrice;
+                    totalSpent += lowestPrice;
+                    return newTotal >= currentGold;  // Return true if we should stop
+                }
+            }
+            return false;
+        };
+
+        while (getTotalWithLockBox() < currentGold && selectedItems.size < MAX_ITEMS && attempts < MAX_ATTEMPTS) {
             attempts++;
             
+            // Check if all buckets are empty
+            if (Object.values(rarityBuckets).every(bucket => bucket.length === 0)) {
+                const remaining = currentGold - getTotalWithLockBox();
+                if (remaining > 0) {
+                    addToLockBox(averagePrice);
+                }
+                break;
+            }
+
             // Roll for rarity
             const rarityRoll = Math.random() * 100;
             let selectedRarity;
@@ -286,15 +342,25 @@ function ShopGenerator() {
                 }
             }
 
-            const bucket = rarityBuckets[selectedRarity];
-            if (!bucket || bucket.length === 0) continue;
+            // Handle empty bucket
+            if (isEmptyBucket(selectedRarity)) {
+                if (tryIncreaseQuantity(selectedRarity)) break;
+                continue;
+            }
 
-            // Select random item from bucket
-            const selectedItem = bucket[Math.floor(Math.random() * bucket.length)];
+            const bucket = rarityBuckets[selectedRarity];
+            const randomIndex = Math.floor(Math.random() * bucket.length);
+            const selectedItem = bucket[randomIndex];
             const itemPrice = convertPriceToGold(selectedItem.price);
             
-            // Skip if this would put us over the maximum target
-            if (totalSpent + itemPrice > targetMax) continue;
+            const newTotal = getTotalWithLockBox() + itemPrice;
+
+            // Check if this would exceed our limits
+            if (newTotal > targetMax) {
+                // Remove item from bucket permanently
+                bucket.splice(randomIndex, 1);
+                continue;
+            }
 
             const itemKey = `${selectedItem.url}-${selectedItem.name}`;
 
@@ -312,13 +378,31 @@ function ShopGenerator() {
             }
 
             totalSpent += itemPrice;
+
+            // Check if we should stop
+            if (getTotalWithLockBox() >= currentGold) break;
         }
 
         if (attempts >= MAX_ATTEMPTS) {
             console.warn('Shop generation reached maximum attempts - stopping for safety');
         }
 
-        console.log(`Generation complete: ${totalSpent.toFixed(2)} gp spent, ${selectedItems.size} unique items`);
+        // Add lockbox as a special item if it has value
+        if (lockBoxValue > 0) {
+            selectedItems.set('lockbox', {
+                name: 'Shop Lockbox',
+                rarity: 'Common',
+                level: '0',
+                price: lockBoxValue.toFixed(2) + ' gp',
+                item_category: 'Services',
+                item_subcategory: 'Storage',
+                count: 1,
+                total: lockBoxValue,
+                url: '#'
+            });
+        }
+
+        console.log(`Generation complete: ${totalSpent.toFixed(2)} gp spent, ${lockBoxValue.toFixed(2)} gp in lockbox, ${selectedItems.size} unique items`);
 
         // Convert Map to array and sort
         const itemsArray = Array.from(selectedItems.values());
