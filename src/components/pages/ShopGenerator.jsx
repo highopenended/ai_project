@@ -36,6 +36,7 @@ function ShopGenerator() {
     const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
+    const [avgPrice, setAvgPrice] = useState(0); // Track average price for items in the given level range
     const [rarityDistribution, setRarityDistribution] = useState({
         Common: 95.00,
         Uncommon: 4.50,
@@ -55,7 +56,6 @@ function ShopGenerator() {
         try {
             // Format and process the imported data
             console.log('Raw itemData length:', itemData.length);
-            console.log('Sample of raw data:', itemData.slice(0, 2));
             
             const formattedData = itemData.map(item => ({
                 ...item,
@@ -66,13 +66,7 @@ function ShopGenerator() {
             setAllItems(formattedData);
             setLoading(false);
             
-            // Debug logging
-            console.log('Total items loaded:', formattedData.length);
-            const level29Items = formattedData.filter(item => item.level === "29");
-            console.log('Level 29 items:', level29Items);
             
-            // Log the last few items to see if our test items are at the end
-            console.log('Last few items:', formattedData.slice(-5));
         } catch (error) {
             console.error('Error loading items:', error);
             setLoading(false);
@@ -212,6 +206,17 @@ function ShopGenerator() {
     };
 
     const handleGenerateClick = () => {
+        // Calculate average price for the current level range
+        const itemsInRange = allItems.filter(item => {
+            const level = parseInt(item.level);
+            const price = convertPriceToGold(item.price);
+            return level >= lowestLevel && level <= highestLevel && price > 0;
+        });
+        
+        const totalPrice = itemsInRange.reduce((sum, item) => sum + convertPriceToGold(item.price), 0);
+        const averagePrice = itemsInRange.length > 0 ? totalPrice / itemsInRange.length : 0;
+        setAvgPrice(averagePrice);
+        
         console.log('Generate clicked with settings:', {
             currentGold,
             lowestLevel,
@@ -219,7 +224,8 @@ function ShopGenerator() {
             itemBias,
             rarityDistribution,
             selectedCategories: Array.from(selectedCategories),
-            selectedSubcategories: Array.from(selectedSubcategories)
+            selectedSubcategories: Array.from(selectedSubcategories),
+            averagePriceInRange: averagePrice.toFixed(2) + ' gp'
         });
         
         if (currentGold <= 0) return;
@@ -227,17 +233,9 @@ function ShopGenerator() {
         let remainingGold = currentGold;
         const selectedItems = new Map(); // Use a Map to track items and their counts
         const availableItems = [...allItems];
-        
-        // Debug log available items
-        console.log('Initial available items:', availableItems.length);
-        
-        let totalSpent = 0;
-        let iterationCount = 0;
-        const MAX_ITERATIONS = 1000; // Safety limit
+        const MAX_ITEMS = 1000; // Maximum unique items limit
 
-        while (remainingGold > 0 && availableItems.length > 0 && iterationCount < MAX_ITERATIONS) {
-            iterationCount++;
-            
+        while (remainingGold > 0 && availableItems.length > 0 && selectedItems.size < MAX_ITEMS) {
             // Filter items that are too expensive and within level range
             const affordableItems = availableItems.filter(item => {
                 const price = convertPriceToGold(item.price);
@@ -260,14 +258,10 @@ function ShopGenerator() {
                 return true;
             });
 
-            console.log(`Iteration ${iterationCount}: Found ${affordableItems.length} affordable items`);
-
-            // If no affordable items left, break
             if (affordableItems.length === 0) break;
 
             // Apply rarity distribution to select an item
-            // First, determine which rarity tier we'll select from based on the distribution
-            const rarityRoll = Math.random() * 100; // Roll 0-100
+            const rarityRoll = Math.random() * 100;
             let selectedRarity;
             let cumulativePercentage = 0;
 
@@ -292,17 +286,12 @@ function ShopGenerator() {
                 return priceB - priceA; // Sort by descending price
             });
 
-            // Calculate index based on bias
-            // itemBias of 0 favors cheaper items (end of array)
-            // itemBias of 1 favors expensive items (start of array)
-            // Add some randomness to avoid pure deterministic selection
-            const randomFactor = Math.random() * 0.3 - 0.15; // Random value between -0.15 and 0.15
+            // Apply bias to select an item
+            const randomFactor = Math.random() * 0.3 - 0.15;
             const biasedIndex = Math.floor((1 - (itemBias + randomFactor)) * (sortedItems.length - 1));
             const selectedItem = sortedItems[Math.max(0, Math.min(sortedItems.length - 1, biasedIndex))];
 
             const itemPrice = convertPriceToGold(selectedItem.price);
-
-            // Create a unique key combining URL and full name
             const itemKey = `${selectedItem.url}-${selectedItem.name}`;
 
             // Update the item count and totals
@@ -318,26 +307,34 @@ function ShopGenerator() {
                 });
             }
 
-            // Update remaining gold
             remainingGold -= itemPrice;
-            totalSpent += itemPrice;
-            console.log(`Added item ${selectedItem.name} for ${itemPrice}gp. Total spent: ${totalSpent}gp. Remaining: ${remainingGold}gp`);
+
+            // Remove the selected item from available items to prevent duplicates
+            const index = availableItems.findIndex(item => item.url === selectedItem.url);
+            if (index > -1) {
+                availableItems.splice(index, 1);
+            }
         }
 
-        if (iterationCount >= MAX_ITERATIONS) {
-            console.warn('Shop generation reached maximum iterations - stopping for safety');
+        // If we hit the item limit and still have gold left, scale up quantities
+        if (selectedItems.size === MAX_ITEMS && remainingGold > 0) {
+            console.log('Hit item limit with remaining gold, scaling up quantities...');
+            
+            // Calculate the multiplier based on target gold vs spent gold
+            const multiplier = Math.floor(currentGold / (currentGold - remainingGold));
+            console.log(`Scaling quantities by ${multiplier}x`);
+
+            // Scale up all item quantities and totals
+            for (const item of selectedItems.values()) {
+                item.count *= multiplier;
+                item.total *= multiplier;
+            }
         }
 
-        // Convert Map to array
+        // Convert Map to array and sort
         const itemsArray = Array.from(selectedItems.values());
-        
-        // Set initial sort config for Total column
         setSortConfig([{ column: 'total', direction: 'desc' }]);
-        
-        // Apply current sorting configuration
-        const sortedItems = sortItems(itemsArray);
-        
-        setItems(sortedItems);
+        setItems(sortItems(itemsArray));
     };
 
     if (loading) {
