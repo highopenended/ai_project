@@ -36,6 +36,12 @@ function ShopGenerator() {
     const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
+    const [avgPrice, setAvgPrice] = useState({
+        Common: 0,
+        Uncommon: 0,
+        Rare: 0,
+        Unique: 0
+    });
     const [rarityDistribution, setRarityDistribution] = useState({
         Common: 95.00,
         Uncommon: 4.50,
@@ -205,24 +211,12 @@ function ShopGenerator() {
     };
 
     const handleGenerateClick = () => {
-        console.log('Generate clicked with settings:', {
-            currentGold,
-            lowestLevel,
-            highestLevel,
-            itemBias,
-            rarityDistribution,
-            selectedCategories: Array.from(selectedCategories),
-            selectedSubcategories: Array.from(selectedSubcategories),
-        });
-        
         if (currentGold <= 0) return;
 
         // Calculate price limits based on quantity/quality bias
         // itemBias of 0 = quantity (10% max), 0.5 = balanced (50% max), 1 = quality (90% max)
         const maxPricePercentage = 0.1 + (itemBias * 0.8); // Scales from 10% to 90%
         const maxItemPrice = currentGold * maxPricePercentage;
-        
-        console.log(`Price limits: max ${maxItemPrice.toFixed(2)} gp per item (${(maxPricePercentage * 100).toFixed(1)}% of total)`);
 
         // 1. Filter by level range
         const levelFiltered = allItems.filter(item => {
@@ -240,10 +234,6 @@ function ShopGenerator() {
             }
             return true;
         });
-
-        // Calculate average price for lockBox functionality
-        const validPrices = categoryFiltered.map(item => convertPriceToGold(item.price)).filter(price => price > 0 && price <= maxItemPrice);
-        const averagePrice = validPrices.reduce((sum, price) => sum + price, 0) / validPrices.length;
 
         // 3. Filter by price and group by rarity
         const rarityBuckets = {
@@ -264,6 +254,40 @@ function ShopGenerator() {
         Object.entries(rarityBuckets).forEach(([rarity, items]) => {
             console.log(`${rarity} bucket size: ${items.length}`);
         });
+
+        // Calculate average prices by rarity
+        const avgPricesByRarity = {};
+        Object.keys(rarityBuckets).forEach(rarity => {
+            const rarityPrices = categoryFiltered
+                .filter(item => item.rarity === rarity)
+                .map(item => convertPriceToGold(item.price))
+                .filter(price => price > 0 && price <= maxItemPrice);
+            
+            avgPricesByRarity[rarity] = rarityPrices.length > 0 
+                ? rarityPrices.reduce((sum, price) => sum + price, 0) / rarityPrices.length 
+                : 0;
+        });
+        setAvgPrice(avgPricesByRarity);
+
+        // Calculate overall average for lockbox functionality
+        const validPrices = categoryFiltered.map(item => convertPriceToGold(item.price)).filter(price => price > 0 && price <= maxItemPrice);
+        const averagePrice = validPrices.reduce((sum, price) => sum + price, 0) / validPrices.length;
+
+        console.log('Generate clicked with settings:', {
+            currentGold,
+            lowestLevel,
+            highestLevel,
+            itemBias,
+            rarityDistribution,
+            selectedCategories: Array.from(selectedCategories),
+            selectedSubcategories: Array.from(selectedSubcategories),
+            averagePricesByRarity: Object.entries(avgPricesByRarity).reduce((obj, [rarity, price]) => {
+                obj[rarity] = price.toFixed(2) + ' gp';
+                return obj;
+            }, {})
+        });
+        
+        console.log(`Price limits: max ${maxItemPrice.toFixed(2)} gp per item (${(maxPricePercentage * 100).toFixed(1)}% of total)`);
 
         // 4. Random Selection
         const selectedItems = new Map();
