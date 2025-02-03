@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './BiasGrid.css';
 
@@ -6,6 +6,7 @@ function BiasGrid({ onChange }) {
     const gridRef = useRef(null);
     const [position, setPosition] = useState({ x: 0.5, y: 0.5 }); // Center by default
     const [isDragging, setIsDragging] = useState(false);
+    const [pingKey, setPingKey] = useState(0); // Use a key to force animation restart
 
     const updatePosition = (clientX, clientY) => {
         if (!gridRef.current) return;
@@ -22,8 +23,6 @@ function BiasGrid({ onChange }) {
         e.preventDefault(); // Prevent text selection
         setIsDragging(true);
         updatePosition(e.clientX, e.clientY);
-        
-        // Add dragging class to body to prevent unwanted interactions
         document.body.classList.add('bias-grid-dragging');
     };
 
@@ -34,8 +33,10 @@ function BiasGrid({ onChange }) {
     };
 
     const handleMouseUp = () => {
+        if (isDragging) {
+            setPingKey(k => k + 1); // Trigger ping effect on release
+        }
         setIsDragging(false);
-        // Remove dragging class from body
         document.body.classList.remove('bias-grid-dragging');
     };
 
@@ -56,35 +57,59 @@ function BiasGrid({ onChange }) {
     return (
         <div className="bias-grid-container">
             <h3>Shop Bias</h3>
-            <div 
-                className={`bias-grid ${isDragging ? 'dragging' : ''}`}
-                ref={gridRef}
-                onMouseDown={handleMouseDown}
-            >
-                {/* Grid labels */}
+            <div className="bias-grid-wrapper">
                 <div className="grid-label top">Expensive</div>
                 <div className="grid-label bottom">Cheap</div>
-                <div className="grid-label left">Low Variety</div>
-                <div className="grid-label right">High Variety</div>
+                <div className="grid-label left">
+                    Low<br/>Variety
+                </div>
+                <div className="grid-label right">
+                    High<br/>Variety
+                </div>
 
-                {/* Grid lines */}
-                <div className="grid-lines horizontal" />
-                <div className="grid-lines vertical" />
-
-                {/* Draggable dot */}
                 <div 
-                    className="grid-dot"
-                    style={{
-                        left: `${position.x * 100}%`,
-                        bottom: `${position.y * 100}%`
-                    }}
-                />
+                    className={`bias-grid ${isDragging ? 'dragging' : ''}`}
+                    ref={gridRef}
+                    onMouseDown={handleMouseDown}
+                >
+                    {/* Grid lines */}
+                    <div className="grid-lines horizontal" />
+                    <div className="grid-lines vertical" />
+
+                    {/* Center marker */}
+                    <div className="grid-center-marker" />
+
+                    {/* Draggable dot */}
+                    <div 
+                        className="grid-dot"
+                        style={{
+                            left: `${position.x * 100}%`,
+                            bottom: `${position.y * 100}%`
+                        }}
+                    />
+                    {/* Separate ping element */}
+                    <div 
+                        key={pingKey}
+                        className="ping-ring"
+                        style={{
+                            left: `${position.x * 100}%`,
+                            bottom: `${position.y * 100}%`,
+                            zIndex: 1000
+                        }}
+                    />
+                </div>
             </div>
 
-            {/* Debug values */}
+            {/* Value display */}
             <div className="bias-values">
-                <span>Variety: {(position.x * 100).toFixed(0)}%</span>
-                <span>Cost: {(position.y * 100).toFixed(0)}%</span>
+                <div className="bias-value">
+                    <span className="bias-label">Variety:</span>
+                    <span className="bias-number">{(position.x * 100).toFixed(0)}%</span>
+                </div>
+                <div className="bias-value">
+                    <span className="bias-label">Cost:</span>
+                    <span className="bias-number">{(position.y * 100).toFixed(0)}%</span>
+                </div>
             </div>
         </div>
     );
