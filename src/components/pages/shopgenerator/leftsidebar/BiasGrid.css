@@ -1,9 +1,7 @@
 .bias-grid-container {
-    padding: 0.5rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    align-items: center;
+    width: 200px;
+    margin: 0 auto;
+    padding: 0.5rem;
 }
 
 .bias-grid-container h3 {
@@ -85,16 +83,16 @@
 /* Grid Content */
 .bias-grid-content {
     position: relative;
-    width: 100%;
-    padding: 2rem 2.5rem;
-    box-sizing: border-box;
+    width: 200px;
+    height: 200px;
+    margin: 1.5rem auto;
 }
 
-/* Grid Area */
+/* Grid Container */
 .bias-grid-area {
     position: relative;
     width: 100%;
-    padding-bottom: 100%; /* Make it square */
+    height: 100%;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid #666;
     border-radius: 4px;
@@ -157,7 +155,7 @@
     height: 12px;
     background: #a3b1ff;
     border-radius: 50%;
-    transform: translate(-50%, 50%);
+    transform: translate(-50%, -50%);
     box-shadow: 0 0 0 2px rgba(163, 177, 255, 0.3);
     pointer-events: none;
     transition: box-shadow 0.2s ease;
@@ -172,32 +170,32 @@
     position: absolute;
     color: var(--text-secondary);
     font-size: 0.75rem;
-    line-height: 1.2;
-    text-align: center;
+    line-height: 1;
     pointer-events: none;
+    white-space: nowrap;
 }
 
 .grid-label.top {
-    top: 0;
+    top: -1.5rem;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .grid-label.bottom {
-    bottom: 0;
+    bottom: -1.5rem;
     left: 50%;
     transform: translateX(-50%);
 }
 
 .grid-label.left {
-    left: 0;
+    left: -2.5rem;
     top: 50%;
     transform: translateY(-50%);
     text-align: right;
 }
 
 .grid-label.right {
-    right: 0;
+    right: -2.5rem;
     top: 50%;
     transform: translateY(-50%);
     text-align: left;
@@ -207,19 +205,20 @@
 .bias-values {
     display: flex;
     justify-content: space-between;
+    width: 100%;
     margin-top: 0.5rem;
-    padding: 0 0.5rem;
 }
 
 .bias-value {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
 .bias-label {
     color: var(--text-secondary);
     font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .bias-number {
