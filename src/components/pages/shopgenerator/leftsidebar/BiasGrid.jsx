@@ -102,8 +102,8 @@ function BiasGrid({ onChange }) {
                 <div className="bias-grid-content">
                     <div className="grid-label top">Expensive</div>
                     <div className="grid-label bottom">Cheap</div>
-                    <div className="grid-label left">Low<br/>Variety</div>
-                    <div className="grid-label right">High<br/>Variety</div>
+                    <div className="grid-label left">Low Variety</div>
+                    <div className="grid-label right">High Variety</div>
                     
                     <div 
                         className={`bias-grid-area ${isDragging ? 'dragging' : ''}`}
@@ -122,7 +122,7 @@ function BiasGrid({ onChange }) {
                             className="grid-dot"
                             style={{ 
                                 left: `${position.x * 100}%`, 
-                                bottom: `${position.y * 100}%` 
+                                top: `${(1 - position.y) * 100}%` 
                             }}
                         />
                     </div>

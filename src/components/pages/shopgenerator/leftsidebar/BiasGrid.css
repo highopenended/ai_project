@@ -4,8 +4,7 @@
     padding: 0.5rem;
 }
 
-.bias-grid-container h3 {
-    align-self: flex-start;
+.bias-grid-container h3, .section-header h3, .header-row h3 {
     font-size: 1rem;
     font-weight: 500;
     margin: 0;
@@ -24,17 +23,13 @@
     box-sizing: border-box;
 }
 
-.section-header {
+.section-header, .header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
-}
-
-.section-header h3 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
+    padding: 0.25rem 0;
+    white-space: nowrap;
 }
 
 .section-header .buttons {
@@ -48,39 +43,29 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    padding: 0;
     border: 1px solid #666;
     border-radius: 4px;
     background: transparent;
     color: #fff;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.reset-button svg {
-    width: 20px;
-    height: 20px;
-}
-
-.reset-button svg path {
-    transition: transform 0.2s ease;
-    transform-origin: center;
-}
-
-.reset-button:hover svg path {
+.reset-button:hover, .reset-button:hover svg path {
+    background: rgba(163, 177, 255, 0.15);
+    border-color: rgba(163, 177, 255, 0.3);
     transform: rotate(180deg);
 }
 
-.collapse-button svg {
+.reset-button svg, .collapse-button svg {
     width: 20px;
     height: 20px;
-    transition: transform 0.2s ease;
 }
 
 .collapse-button.collapsed svg {
     transform: rotate(-90deg);
 }
 
-/* Grid Content */
 .bias-grid-content {
     position: relative;
     width: 160px;
@@ -88,7 +73,6 @@
     margin: 1.5rem auto;
 }
 
-/* Grid Container */
 .bias-grid-area {
     position: relative;
     width: 100%;
@@ -99,43 +83,6 @@
     cursor: crosshair;
 }
 
-/* Grid Lines */
-.grid-lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-}
-
-.grid-lines.horizontal::before,
-.grid-lines.horizontal::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.grid-lines.horizontal::before { top: 33.33%; }
-.grid-lines.horizontal::after { top: 66.66%; }
-
-.grid-lines.vertical::before,
-.grid-lines.vertical::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.grid-lines.vertical::before { left: 33.33%; }
-.grid-lines.vertical::after { left: 66.66%; }
-
-/* Center Marker */
 .grid-center-marker {
     position: absolute;
     top: 50%;
@@ -148,11 +95,10 @@
     pointer-events: none;
 }
 
-/* Grid Dot */
 .grid-dot {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     background: #a3b1ff;
     border-radius: 50%;
     transform: translate(-50%, -50%);
@@ -165,7 +111,6 @@
     box-shadow: 0 0 0 4px rgba(163, 177, 255, 0.5);
 }
 
-/* Grid Labels */
 .grid-label {
     position: absolute;
     color: var(--text-secondary);
@@ -175,38 +120,20 @@
     white-space: nowrap;
 }
 
-.grid-label.top {
-    top: -1rem;
-    left: 50%;
-    transform: translateX(-50%);
-}
+.grid-label.top { top: -1rem; left: 50%; transform: translateX(-50%); }
+.grid-label.bottom { bottom: -1rem; left: 50%; transform: translateX(-50%); }
+.grid-label.left { left: -2.6rem; top: 50%; transform: rotate(-90deg); text-align: center; font-size: 0.8rem; }
+.grid-label.right { right: -2.8rem; top: 50%; transform: rotate(90deg); text-align: center; font-size: 0.8rem; }
 
-.grid-label.bottom {
-    bottom: -1rem;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.grid-label.left {
-    left: -2rem;
-    top: 50%;
-    transform: translateY(-50%);
-    text-align: right;
-}
-
-.grid-label.right {
-    right: -2rem;
-    top: 50%;
-    transform: translateY(-50%);
-    text-align: left;
-}
-
-/* Values Display */
 .bias-values {
     display: flex;
-    justify-content: space-between;
+    justify-content:space-evenly;
+    align-items: center;
     width: 100%;
-    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    padding: 0.75rem 0.5rem;
+    gap: 3rem;
 }
 
 .bias-value {
@@ -217,41 +144,6 @@
 
 .bias-label {
     color: var(--text-secondary);
-    font-size: 0.75rem;
-    white-space: nowrap;
-}
-
-.bias-number {
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    font-variant-numeric: tabular-nums;
-    min-width: 2.5em;
-}
-
-/* Prevent text selection while dragging */
-body.bias-grid-dragging {
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-/* Value display */
-.bias-values {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    font-size: 0.7rem;
-    padding: 0.25rem 0;
-}
-
-.bias-value {
-    display: flex;
-    gap: 0.25rem;
-    align-items: center;
-}
-
-.bias-label {
-    color: var(--text-color-secondary);
     white-space: nowrap;
 }
 
@@ -262,89 +154,21 @@ body.bias-grid-dragging {
     text-align: right;
 }
 
-/* Add a class for when dragging is active */
-.bias-grid-dragging {
-    /* Prevent any pointer events outside the grid while dragging */
+body.bias-grid-dragging {
+    user-select: none;
+    -webkit-user-select: none;
     cursor: grabbing !important;
-    /* Prevent scrolling on mobile */
     touch-action: none;
 }
 
-/* Grid lines */
 .grid-lines {
     position: absolute;
-    background-image: linear-gradient(
-        rgba(163, 177, 255, 0.1) 1px,
-        transparent 1px
-    );
+    background-image: linear-gradient(rgba(163, 177, 255, 0.1) 1px, transparent 1px);
     background-size: 20% 20%;
-}
-
-.grid-lines.horizontal {
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
 }
 
 .grid-lines.vertical {
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: linear-gradient(
-        90deg,
-        rgba(163, 177, 255, 0.1) 1px,
-        transparent 1px
-    );
+    background-image: linear-gradient(90deg, rgba(163, 177, 255, 0.1) 1px, transparent 1px);
 }
-
-/* Debug values display */
-.bias-values {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: var(--text-color-secondary);
-    padding: 0 0.5rem;
-}
-
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 0.25rem 0;
-    white-space: nowrap;
-}
-
-.header-row h3 {
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin: 0;
-}
-
-.reset-button {
-    background: rgba(163, 177, 255, 0.1);
-    border: 1px solid rgba(163, 177, 255, 0.2);
-    color: var(--text-color);
-    font-size: 1.1rem;
-    cursor: pointer;
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.reset-button svg {
-    width: 16px;
-    height: 16px;
-}
-
-.reset-button:hover {
-    background: rgba(163, 177, 255, 0.15);
-    border-color: rgba(163, 177, 255, 0.3);
-} 
