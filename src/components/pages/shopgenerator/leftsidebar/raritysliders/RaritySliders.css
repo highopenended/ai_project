@@ -11,37 +11,60 @@
     box-sizing: border-box;
 }
 
-.rarity-header {
+.section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
 
-/* Reset button styles */
-.reset-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0.25rem;
-    width: 24px;
-    height: 24px;
+.section-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.section-header .buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.reset-button, .collapse-button {
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #666;
     border-radius: 4px;
-    transition: all 0.2s ease;
-    color: var(--text-secondary);
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
 }
 
-.reset-button:hover {
-    background: var(--background-hover);
-    color: var(--text-primary);
-    transform: rotate(-30deg);
+.reset-button svg {
+    width: 20px;
+    height: 20px;
 }
 
-.reset-button:active {
-    transform: rotate(-180deg);
+.reset-button svg path {
+    transition: transform 0.2s ease;
+    transform-origin: center;
+}
+
+.reset-button:hover svg path {
+    transform: rotate(180deg);
+}
+
+.collapse-button svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+}
+
+.collapse-button.collapsed svg {
+    transform: rotate(-90deg);
 }
 
 /* Lock button styles */

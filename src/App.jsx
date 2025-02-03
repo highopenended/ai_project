@@ -7,6 +7,7 @@ import ShopGenerator from "./components/pages/ShopGenerator.jsx";
 import ItemList from "./components/pages/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import CategoryProvider from './context/CategoryContext';
+import { TraitProvider } from './context/TraitContext';
 
 /**
  * App Component
@@ -21,32 +22,34 @@ import CategoryProvider from './context/CategoryContext';
  */
 function App() {
     return (
-        <CategoryProvider>
-            <AuthProvider>
-                <Router>
-                    <Routes>
-                        <Route path="/" element={<Layout />}>
-                            <Route index element={<Login />} />
-                            <Route path="home" element={
-                                <ProtectedRoute>
-                                    <HomeWrapper />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="shop-generator" element={
-                                <ProtectedRoute>
-                                    <ShopGenerator />
-                                </ProtectedRoute>
-                            } />
-                            <Route path="item-list" element={
-                                <ProtectedRoute>
-                                    <ItemList />
-                                </ProtectedRoute>
-                            } />
-                        </Route>
-                    </Routes>
-                </Router>
-            </AuthProvider>
-        </CategoryProvider>
+        <Router>
+            <CategoryProvider>
+                <TraitProvider>
+                    <AuthProvider>
+                        <Routes>
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<Login />} />
+                                <Route path="home" element={
+                                    <ProtectedRoute>
+                                        <HomeWrapper />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="shop-generator" element={
+                                    <ProtectedRoute>
+                                        <ShopGenerator />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="item-list" element={
+                                    <ProtectedRoute>
+                                        <ItemList />
+                                    </ProtectedRoute>
+                                } />
+                            </Route>
+                        </Routes>
+                    </AuthProvider>
+                </TraitProvider>
+            </CategoryProvider>
+        </Router>
     );
 }
 

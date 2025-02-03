@@ -6,7 +6,7 @@ function BiasGrid({ onChange }) {
     const gridRef = useRef(null);
     const [position, setPosition] = useState({ x: 0.5, y: 0.5 }); // Center by default
     const [isDragging, setIsDragging] = useState(false);
-    const [pingKey, setPingKey] = useState(0); // Use a key to force animation restart
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const updatePosition = (clientX, clientY) => {
         if (!gridRef.current) return;
@@ -33,9 +33,6 @@ function BiasGrid({ onChange }) {
     };
 
     const handleMouseUp = () => {
-        if (isDragging) {
-            setPingKey(k => k + 1); // Trigger ping effect on release
-        }
         setIsDragging(false);
         document.body.classList.remove('bias-grid-dragging');
     };
@@ -43,7 +40,6 @@ function BiasGrid({ onChange }) {
     const handleReset = () => {
         setPosition({ x: 0.5, y: 0.5 });
         onChange({ x: 0.5, y: 0.5 });
-        setPingKey(k => k + 1); // Trigger ping effect on reset
     };
 
     useEffect(() => {
@@ -55,86 +51,94 @@ function BiasGrid({ onChange }) {
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
-            // Cleanup: ensure we remove the class if component unmounts while dragging
             document.body.classList.remove('bias-grid-dragging');
         };
     }, [isDragging]);
 
     return (
-        <div className="bias-grid-container">
-            <div className="header-row">
+        <div className="bias-grid">
+            <div className="section-header">
                 <h3>Shop Bias</h3>
-                <button 
-                    className="reset-button" 
-                    onClick={handleReset}
-                    title="Reset to default values"
-                >
-                    <svg 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        xmlns="http://www.w3.org/2000/svg"
+                <div className="buttons">
+                    <button 
+                        className="reset-button" 
+                        onClick={handleReset}
+                        title="Reset to center"
                     >
-                        <path 
-                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
-                            fill="currentColor"
+                        <svg 
+                            width="16" 
+                            height="16" 
+                            viewBox="0 0 24 24" 
+                            fill="none" 
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path 
+                                d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                fill="currentColor"
+                            />
+                        </svg>
+                    </button>
+                    <button
+                        className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        title={isCollapsed ? "Expand shop bias" : "Collapse shop bias"}
+                    >
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <path
+                                d="M7 10l5 5 5-5H7z"
+                                fill="currentColor"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            {!isCollapsed && (
+                <div className="bias-grid-content">
+                    <div className="grid-label top">Expensive</div>
+                    <div className="grid-label bottom">Cheap</div>
+                    <div className="grid-label left">Low<br/>Variety</div>
+                    <div className="grid-label right">High<br/>Variety</div>
+                    
+                    <div 
+                        className={`bias-grid-area ${isDragging ? 'dragging' : ''}`}
+                        ref={gridRef}
+                        onMouseDown={handleMouseDown}
+                    >
+                        {/* Grid lines */}
+                        <div className="grid-lines horizontal" />
+                        <div className="grid-lines vertical" />
+
+                        {/* Center marker */}
+                        <div className="grid-center-marker" />
+
+                        {/* Draggable dot */}
+                        <div 
+                            className="grid-dot"
+                            style={{ 
+                                left: `${position.x * 100}%`, 
+                                bottom: `${position.y * 100}%` 
+                            }}
                         />
-                    </svg>
-                </button>
-            </div>
-            <div className="bias-grid-wrapper">
-                <div className="grid-label top">Expensive</div>
-                <div className="grid-label bottom">Cheap</div>
-                <div className="grid-label left">
-                    Low<br/>Variety
-                </div>
-                <div className="grid-label right">
-                    High<br/>Variety
-                </div>
+                    </div>
 
-                <div 
-                    className={`bias-grid ${isDragging ? 'dragging' : ''}`}
-                    ref={gridRef}
-                    onMouseDown={handleMouseDown}
-                >
-                    {/* Grid lines */}
-                    <div className="grid-lines horizontal" />
-                    <div className="grid-lines vertical" />
-
-                    {/* Center marker */}
-                    <div className="grid-center-marker" />
-
-                    {/* Draggable dot */}
-                    <div 
-                        className="grid-dot"
-                        style={{
-                            left: `${position.x * 100}%`,
-                            bottom: `${position.y * 100}%`
-                        }}
-                    />
-                    {/* Separate ping element */}
-                    <div 
-                        key={pingKey}
-                        className="ping-ring"
-                        style={{
-                            left: `${position.x * 100}%`,
-                            bottom: `${position.y * 100}%`,
-                            zIndex: 1000
-                        }}
-                    />
+                    <div className="bias-values">
+                        <div className="bias-value">
+                            <span className="bias-label">Variety:</span>
+                            <span className="bias-number">{(position.x * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="bias-value">
+                            <span className="bias-label">Cost:</span>
+                            <span className="bias-number">{(position.y * 100).toFixed(0)}%</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div className="bias-values">
-                <div className="bias-value">
-                    <span className="bias-label">Variety:</span>
-                    <span className="bias-number">{(position.x * 100).toFixed(0)}%</span>
-                </div>
-                <div className="bias-value">
-                    <span className="bias-label">Cost:</span>
-                    <span className="bias-number">{(position.y * 100).toFixed(0)}%</span>
-                </div>
-            </div>
+            )}
         </div>
     );
 }

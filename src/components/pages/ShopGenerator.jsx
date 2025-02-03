@@ -10,6 +10,7 @@ import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySlide
 import ItemTable from './shopgenerator/ItemTable';
 import itemData from '../../../public/item-table.json';  // Import JSON directly
 import { useCategoryContext } from '../../context/CategoryContext';
+import { useTraitContext } from '../../context/TraitContext';
 import { generateShop } from './shopgenerator/utils/generateShop';
 
 /**
@@ -28,6 +29,10 @@ function ShopGenerator() {
         selectedCategories,
         selectedSubcategories
     } = useCategoryContext();
+
+    const {
+        selectedTraits
+    } = useTraitContext();
 
     const [items, setItems] = useState([]);
     const [allItems, setAllItems] = useState([]);
@@ -219,10 +224,10 @@ function ShopGenerator() {
             rarityDistribution,
             selectedCategories,
             selectedSubcategories,
+            selectedTraits,
             allItems
         });
 
-        // Don't modify sort config here anymore
         setItems(sortItems(result.items));
     };
 

@@ -50,6 +50,22 @@ const filterByCategory = (items, selectedCategories, selectedSubcategories) => {
 };
 
 /**
+ * Filter items based on selected traits
+ * @param {Array} items - Array of items to filter
+ * @param {Set} selectedTraits - Set of selected traits
+ * @returns {Array} Filtered items matching trait criteria
+ */
+const filterByTraits = (items, selectedTraits) => {
+    if (selectedTraits.size === 0) return items;
+    
+    return items.filter(item => {
+        if (!item.trait) return false;
+        const itemTraits = item.trait.split(',').map(t => t.trim());
+        return itemTraits.some(trait => selectedTraits.has(trait));
+    });
+};
+
+/**
  * Filter items based on their price relative to other items, influenced by 2D bias
  * @param {Array} items - Array of items to filter
  * @param {Object} itemBias - {x: variety (0-1), y: cost (0-1)}
@@ -225,6 +241,7 @@ export const generateShop = ({
     rarityDistribution,
     selectedCategories,
     selectedSubcategories,
+    selectedTraits,
     allItems
 }) => {
 
@@ -234,7 +251,8 @@ export const generateShop = ({
     // Apply filters
     const levelFiltered = filterByLevel(allItems, lowestLevel, highestLevel);
     const categoryFiltered = filterByCategory(levelFiltered, selectedCategories, selectedSubcategories);
-    const biasFiltered = filterByBias(categoryFiltered, itemBias);
+    const traitFiltered = filterByTraits(categoryFiltered, selectedTraits);
+    const biasFiltered = filterByBias(traitFiltered, itemBias);
     const rarityBuckets = groupByRarity(biasFiltered, currentGold);
     const averagePrices = calculateAveragePrices(biasFiltered, currentGold);
 
@@ -251,6 +269,7 @@ export const generateShop = ({
         rarityDistribution,
         selectedCategories: Array.from(selectedCategories),
         selectedSubcategories: Array.from(selectedSubcategories),
+        selectedTraits: Array.from(selectedTraits),
         averagePricesByRarity: Object.entries(averagePrices.byRarity).reduce((obj, [rarity, price]) => {
             obj[rarity] = price.toFixed(2) + ' gp';
             return obj;

@@ -20,6 +20,7 @@ import PropTypes from 'prop-types';
 import './LeftSidebar.css';
 import GenerateButton from './GenerateButton';
 import CategoryFilter from './categoryfilter/CategoryFilter';
+import TraitFilter from './traitfilter/TraitFilter';
 
 function LeftSidebar({ children, onGenerate }) {
     const sidebarRef = useRef(null);
@@ -90,6 +91,9 @@ function LeftSidebar({ children, onGenerate }) {
                 ))}
                 <div className="parameter-section">
                     <CategoryFilter />
+                </div>
+                <div className="parameter-section">
+                    <TraitFilter />
                 </div>
             </div>
             <div 
