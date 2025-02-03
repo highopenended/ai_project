@@ -64,14 +64,8 @@ function BiasGrid({ onChange }) {
                 {/* Grid labels */}
                 <div className="grid-label top">Expensive</div>
                 <div className="grid-label bottom">Cheap</div>
-                <div className="grid-label left">
-                    <div>Low</div>
-                    <div>Variety</div>
-                </div>
-                <div className="grid-label right">
-                    <div>High</div>
-                    <div>Variety</div>
-                </div>
+                <div className="grid-label left">Low Variety</div>
+                <div className="grid-label right">High Variety</div>
 
                 {/* Grid lines */}
                 <div className="grid-lines horizontal" />
