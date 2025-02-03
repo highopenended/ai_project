@@ -13,13 +13,14 @@ function TraitFilter() {
     const [traitFilter, setTraitFilter] = useState('');
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    // Filter traits based on search
-    const filteredTraits = traitList
-        .map(trait => trait.Trait)
-        .filter(trait => 
-            trait.toLowerCase().includes(traitFilter.toLowerCase())
-        )
-        .sort();
+    // Filter traits based on search and remove duplicates
+    const filteredTraits = Array.from(new Set(
+        traitList
+            .map(trait => trait.Trait)
+            .filter(trait => 
+                trait.toLowerCase().includes(traitFilter.toLowerCase())
+            )
+    )).sort();
 
     return (
         <div className="trait-filter">

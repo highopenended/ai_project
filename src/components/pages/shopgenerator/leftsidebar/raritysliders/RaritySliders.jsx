@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 /* eslint-enable no-unused-vars */
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
@@ -20,14 +20,41 @@ function RaritySliders({ onChange }) {
     const [preEditValue, setPreEditValue] = useState(null);
     const [lockedRarities, setLockedRarities] = useState(new Set());
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isMounted, setIsMounted] = useState(true);
 
-    // Set CSS variables for rarity colors
-    React.useEffect(() => {
+    // Set CSS variables for rarity colors and handle cleanup
+    useEffect(() => {
         const root = document.documentElement;
         Object.entries(RARITY_COLORS).forEach(([rarity, color]) => {
             root.style.setProperty(`--rarity-${rarity.toLowerCase()}-color`, color);
         });
+
+        return () => {
+            setIsMounted(false);
+        };
     }, []);
+
+    // Safe state update function
+    const safeSetState = useCallback((setter, value) => {
+        if (isMounted) {
+            setter(value);
+        }
+    }, [isMounted]);
+
+    // Reset function
+    const handleReset = useCallback(() => {
+        if (!isMounted) return;
+        
+        safeSetState(setDistribution, DEFAULT_DISTRIBUTION);
+        safeSetState(setLockedRarities, new Set());
+        safeSetState(setEditingRarity, null);
+        safeSetState(setEditValue, '');
+        safeSetState(setPreEditValue, null);
+        
+        if (onChange) {
+            onChange(DEFAULT_DISTRIBUTION);
+        }
+    }, [isMounted, safeSetState, onChange]);
 
     const adjustDistribution = (newValue, changedRarity) => {
         // Start with current distribution
@@ -93,12 +120,12 @@ function RaritySliders({ onChange }) {
         if (lockedRarities.has(rarity)) return;
         const newValue = Math.min(100, Math.max(0, value));
         const newDistribution = adjustDistribution(newValue, rarity);
-        setDistribution(newDistribution);
+        safeSetState(setDistribution, newDistribution);
         onChange(newDistribution);
     };
 
     const handleInputChange = (value) => {
-        setEditValue(value);
+        safeSetState(setEditValue, value);
     };
 
     const handleInputBlur = () => {
@@ -108,19 +135,19 @@ function RaritySliders({ onChange }) {
             // Only adjust if the value actually changed
             if (Math.abs(newValue - distribution[editingRarity]) >= 0.01) {
                 const newDistribution = adjustDistribution(newValue, editingRarity);
-                setDistribution(newDistribution);
+                safeSetState(setDistribution, newDistribution);
                 onChange(newDistribution);
             }
         }
-        setEditingRarity(null);
-        setPreEditValue(null);
+        safeSetState(setEditingRarity, null);
+        safeSetState(setPreEditValue, null);
     };
 
     const handleInputFocus = (rarity) => {
         if (lockedRarities.has(rarity)) return;
-        setEditingRarity(rarity);
-        setPreEditValue(distribution[rarity]);
-        setEditValue(distribution[rarity].toFixed(2));
+        safeSetState(setEditingRarity, rarity);
+        safeSetState(setPreEditValue, distribution[rarity]);
+        safeSetState(setEditValue, distribution[rarity].toFixed(2));
     };
 
     const handleKeyDown = (e) => {
@@ -128,9 +155,9 @@ function RaritySliders({ onChange }) {
             e.preventDefault();
             e.target.blur();
         } else if (e.key === 'Escape') {
-            setEditValue(preEditValue.toFixed(2));
-            setEditingRarity(null);
-            setPreEditValue(null);
+            safeSetState(setEditValue, preEditValue.toFixed(2));
+            safeSetState(setEditingRarity, null);
+            safeSetState(setPreEditValue, null);
         }
     };
 
@@ -141,7 +168,7 @@ function RaritySliders({ onChange }) {
         } else {
             newLockedRarities.add(rarity);
         }
-        setLockedRarities(newLockedRarities);
+        safeSetState(setLockedRarities, newLockedRarities);
     };
 
     const formatPercentage = (value) => {
@@ -192,11 +219,7 @@ function RaritySliders({ onChange }) {
                 <div className="buttons">
                     <button 
                         className="reset-button" 
-                        onClick={() => {
-                            setDistribution(DEFAULT_DISTRIBUTION);
-                            setLockedRarities(new Set());
-                            onChange(DEFAULT_DISTRIBUTION);
-                        }}
+                        onClick={handleReset}
                         title="Reset to default values"
                     >
                         <svg 
@@ -214,7 +237,7 @@ function RaritySliders({ onChange }) {
                     </button>
                     <button
                         className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
-                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        onClick={() => safeSetState(setIsCollapsed, !isCollapsed)}
                         title={isCollapsed ? "Expand rarity distribution" : "Collapse rarity distribution"}
                     >
                         <svg
@@ -235,7 +258,10 @@ function RaritySliders({ onChange }) {
             {!isCollapsed && (
                 <div className="rarity-sliders-content">
                     {RARITIES.map(rarity => (
-                        <div key={rarity} className="rarity-slider-container">
+                        <div 
+                            key={rarity} 
+                            className={`rarity-slider-container rarity-${rarity.toLowerCase()}`}
+                        >
                             <label htmlFor={`rarity-${rarity}`}>{rarity}</label>
                             <div className="slider-input-group">
                                 <input
@@ -246,7 +272,7 @@ function RaritySliders({ onChange }) {
                                     step="0.01"
                                     value={distribution[rarity]}
                                     onChange={(e) => handleSliderChange(rarity, parseFloat(e.target.value))}
-                                    className={`rarity-slider ${lockedRarities.has(rarity) ? 'locked' : ''}`}
+                                    className={`rarity-slider rarity-${rarity.toLowerCase()} ${lockedRarities.has(rarity) ? 'locked' : ''}`}
                                     disabled={lockedRarities.has(rarity)}
                                 />
                                 <div className="percentage-input-container">

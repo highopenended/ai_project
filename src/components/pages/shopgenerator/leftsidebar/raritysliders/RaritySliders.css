@@ -111,9 +111,6 @@
     gap: 0;
 }
 
-.rarity-slider-container:last-child {
-    margin-bottom: 0;
-}
 
 .rarity-slider-container label {
     color: var(--text-secondary);
@@ -230,17 +227,17 @@
 }
 
 /* Rarity-specific slider colors */
-.rarity-slider-container:nth-child(2) .rarity-slider::-webkit-slider-thumb { background: var(--rarity-common-color); }
-.rarity-slider-container:nth-child(2) .rarity-slider::-moz-range-thumb { background: var(--rarity-common-color); }
+.rarity-slider.rarity-common::-webkit-slider-thumb { background: var(--rarity-common-color); }
+.rarity-slider.rarity-common::-moz-range-thumb { background: var(--rarity-common-color); }
 
-.rarity-slider-container:nth-child(3) .rarity-slider::-webkit-slider-thumb { background: var(--rarity-uncommon-color); }
-.rarity-slider-container:nth-child(3) .rarity-slider::-moz-range-thumb { background: var(--rarity-uncommon-color); }
+.rarity-slider.rarity-uncommon::-webkit-slider-thumb { background: var(--rarity-uncommon-color); }
+.rarity-slider.rarity-uncommon::-moz-range-thumb { background: var(--rarity-uncommon-color); }
 
-.rarity-slider-container:nth-child(4) .rarity-slider::-webkit-slider-thumb { background: var(--rarity-rare-color); }
-.rarity-slider-container:nth-child(4) .rarity-slider::-moz-range-thumb { background: var(--rarity-rare-color); }
+.rarity-slider.rarity-rare::-webkit-slider-thumb { background: var(--rarity-rare-color); }
+.rarity-slider.rarity-rare::-moz-range-thumb { background: var(--rarity-rare-color); }
 
-.rarity-slider-container:nth-child(5) .rarity-slider::-webkit-slider-thumb { background: var(--rarity-unique-color); }
-.rarity-slider-container:nth-child(5) .rarity-slider::-moz-range-thumb { background: var(--rarity-unique-color); }
+.rarity-slider.rarity-unique::-webkit-slider-thumb { background: var(--rarity-unique-color); }
+.rarity-slider.rarity-unique::-moz-range-thumb { background: var(--rarity-unique-color); }
 
 /* Disabled states */
 .rarity-slider.locked {
