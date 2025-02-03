@@ -219,6 +219,8 @@ const createItemSelection = () => {
     return {
         addItem: (item, price) => {
             const itemKey = `${item.url}-${item.name}`;
+            // Convert traits string to array if it exists
+            const traits = item.trait ? item.trait.split(',').map(t => t.trim()) : [];
 
             if (items.has(itemKey)) {
                 const existing = items.get(itemKey);
@@ -227,6 +229,7 @@ const createItemSelection = () => {
             } else {
                 items.set(itemKey, {
                     ...item,
+                    traits, // Add the traits array
                     count: 1,
                     total: price
                 });
