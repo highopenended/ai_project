@@ -15,6 +15,19 @@
     border-radius: 4px;
     cursor: crosshair;
     margin: 1.5rem 0;
+    /* Prevent text selection */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Add a class for when dragging is active */
+.bias-grid-dragging {
+    /* Prevent any pointer events outside the grid while dragging */
+    cursor: grabbing !important;
+    /* Prevent scrolling on mobile */
+    touch-action: none;
 }
 
 /* Grid lines */

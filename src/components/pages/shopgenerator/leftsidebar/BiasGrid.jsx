@@ -19,17 +19,24 @@ function BiasGrid({ onChange }) {
     };
 
     const handleMouseDown = (e) => {
+        e.preventDefault(); // Prevent text selection
         setIsDragging(true);
         updatePosition(e.clientX, e.clientY);
+        
+        // Add dragging class to body to prevent unwanted interactions
+        document.body.classList.add('bias-grid-dragging');
     };
 
     const handleMouseMove = (e) => {
         if (!isDragging) return;
+        e.preventDefault();
         updatePosition(e.clientX, e.clientY);
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
+        // Remove dragging class from body
+        document.body.classList.remove('bias-grid-dragging');
     };
 
     useEffect(() => {
@@ -41,6 +48,8 @@ function BiasGrid({ onChange }) {
         return () => {
             window.removeEventListener('mousemove', handleMouseMove);
             window.removeEventListener('mouseup', handleMouseUp);
+            // Cleanup: ensure we remove the class if component unmounts while dragging
+            document.body.classList.remove('bias-grid-dragging');
         };
     }, [isDragging]);
 
@@ -48,7 +57,7 @@ function BiasGrid({ onChange }) {
         <div className="bias-grid-container">
             <h3>Shop Bias</h3>
             <div 
-                className="bias-grid"
+                className={`bias-grid ${isDragging ? 'dragging' : ''}`}
                 ref={gridRef}
                 onMouseDown={handleMouseDown}
             >
