@@ -37,6 +37,7 @@ function ShopGenerator() {
     const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
+    const [hasInitialSort, setHasInitialSort] = useState(false);
     const [rarityDistribution, setRarityDistribution] = useState({
         Common: 95.00,
         Uncommon: 4.50,
@@ -66,12 +67,16 @@ function ShopGenerator() {
             setAllItems(formattedData);
             setLoading(false);
             
-            
+            // Set initial sort only once when component mounts
+            if (!hasInitialSort) {
+                setSortConfig([{ column: 'total', direction: 'desc' }]);
+                setHasInitialSort(true);
+            }
         } catch (error) {
             console.error('Error loading items:', error);
             setLoading(false);
         }
-    }, []);
+    }, [hasInitialSort]);
 
     const convertPriceToGold = (priceString) => {
         if (!priceString) return 0;
@@ -217,7 +222,7 @@ function ShopGenerator() {
             allItems
         });
 
-        setSortConfig([{ column: 'total', direction: 'desc' }]);
+        // Don't modify sort config here anymore
         setItems(sortItems(result.items));
     };
 
