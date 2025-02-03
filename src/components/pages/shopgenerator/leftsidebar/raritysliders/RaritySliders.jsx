@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 /* eslint-enable no-unused-vars */
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
@@ -13,6 +13,21 @@ const DEFAULT_DISTRIBUTION = {
     Unique: 0.01
 };
 
+// Debounce helper
+const useDebounce = (callback, delay) => {
+    const timeoutRef = useRef(null);
+    
+    return useCallback((...args) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        
+        timeoutRef.current = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    }, [callback, delay]);
+};
+
 function RaritySliders({ onChange }) {
     const [distribution, setDistribution] = useState(DEFAULT_DISTRIBUTION);
     const [editingRarity, setEditingRarity] = useState(null);
@@ -20,43 +35,20 @@ function RaritySliders({ onChange }) {
     const [preEditValue, setPreEditValue] = useState(null);
     const [lockedRarities, setLockedRarities] = useState(new Set());
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [isMounted, setIsMounted] = useState(true);
+    const isDraggingRef = useRef(false);
 
-    // Set CSS variables for rarity colors and handle cleanup
+    // Debounced onChange to reduce updates during dragging
+    const debouncedOnChange = useDebounce(onChange, 100);
+
+    // Set CSS variables for rarity colors
     useEffect(() => {
         const root = document.documentElement;
         Object.entries(RARITY_COLORS).forEach(([rarity, color]) => {
             root.style.setProperty(`--rarity-${rarity.toLowerCase()}-color`, color);
         });
-
-        return () => {
-            setIsMounted(false);
-        };
     }, []);
 
-    // Safe state update function
-    const safeSetState = useCallback((setter, value) => {
-        if (isMounted) {
-            setter(value);
-        }
-    }, [isMounted]);
-
-    // Reset function
-    const handleReset = useCallback(() => {
-        if (!isMounted) return;
-        
-        safeSetState(setDistribution, DEFAULT_DISTRIBUTION);
-        safeSetState(setLockedRarities, new Set());
-        safeSetState(setEditingRarity, null);
-        safeSetState(setEditValue, '');
-        safeSetState(setPreEditValue, null);
-        
-        if (onChange) {
-            onChange(DEFAULT_DISTRIBUTION);
-        }
-    }, [isMounted, safeSetState, onChange]);
-
-    const adjustDistribution = (newValue, changedRarity) => {
+    const adjustDistribution = useCallback((newValue, changedRarity) => {
         // Start with current distribution
         const newDistribution = { ...distribution };
         
@@ -70,6 +62,10 @@ function RaritySliders({ onChange }) {
             r !== changedRarity && !lockedRarities.has(r)
         );
 
+        if (unlockedRarities.length === 0) {
+            return distribution; // Return current distribution if all rarities are locked
+        }
+
         // Cap new value at available space
         const availableForChange = Number((100 - lockedTotal).toFixed(2));
         const cappedValue = Number(Math.min(newValue, availableForChange).toFixed(2));
@@ -77,101 +73,96 @@ function RaritySliders({ onChange }) {
         // Set the new value
         newDistribution[changedRarity] = cappedValue;
 
-        if (unlockedRarities.length > 0) {
-            // Calculate exact remaining space
-            const remainingSpace = Number((100 - lockedTotal - cappedValue).toFixed(2));
-            
-            // Calculate base value (floor to 2 decimals to ensure we don't go over)
-            const baseValuePerRarity = Math.floor((remainingSpace / unlockedRarities.length) * 100) / 100;
-            
-            // Calculate total pennies to distribute
-            const totalPennies = Math.round((remainingSpace - (baseValuePerRarity * unlockedRarities.length)) * 100);
-            
-            // Set base values first
-            unlockedRarities.forEach(rarity => {
-                newDistribution[rarity] = baseValuePerRarity;
-            });
+        // Calculate remaining space and distribute evenly
+        const remainingSpace = Number((100 - lockedTotal - cappedValue).toFixed(2));
+        const baseValuePerRarity = Number((remainingSpace / unlockedRarities.length).toFixed(2));
+        
+        // Distribute base values
+        unlockedRarities.forEach(rarity => {
+            newDistribution[rarity] = baseValuePerRarity;
+        });
 
-            // Distribute remaining pennies
-            let remainingPennies = totalPennies;
-            for (let i = 0; remainingPennies > 0 && i < unlockedRarities.length; i++) {
-                const penny = 0.01;
-                newDistribution[unlockedRarities[i]] = Number((newDistribution[unlockedRarities[i]] + penny).toFixed(2));
-                remainingPennies--;
-            }
-        }
-
-        // Verify total is exactly 100
+        // Adjust for rounding errors
         const total = Number(Object.values(newDistribution).reduce((sum, val) => sum + val, 0).toFixed(2));
         if (total !== 100) {
-            console.warn(`Distribution total is ${total}, adjusting...`);
             const diff = Number((100 - total).toFixed(2));
-            // Add or subtract the difference from the first unlocked rarity
-            if (unlockedRarities.length > 0) {
-                const adjustRarity = unlockedRarities[0];
-                newDistribution[adjustRarity] = Number((newDistribution[adjustRarity] + diff).toFixed(2));
-            }
+            newDistribution[unlockedRarities[0]] = Number((newDistribution[unlockedRarities[0]] + diff).toFixed(2));
         }
 
         return newDistribution;
-    };
+    }, [distribution, lockedRarities]);
 
-    const handleSliderChange = (rarity, value) => {
+    const handleSliderChange = useCallback((rarity, value) => {
         if (lockedRarities.has(rarity)) return;
+        
         const newValue = Math.min(100, Math.max(0, value));
         const newDistribution = adjustDistribution(newValue, rarity);
-        safeSetState(setDistribution, newDistribution);
-        onChange(newDistribution);
-    };
+        
+        setDistribution(newDistribution);
+        
+        if (isDraggingRef.current) {
+            debouncedOnChange(newDistribution);
+        } else {
+            onChange(newDistribution);
+        }
+    }, [lockedRarities, adjustDistribution, onChange, debouncedOnChange]);
 
-    const handleInputChange = (value) => {
-        safeSetState(setEditValue, value);
-    };
+    const handleSliderMouseDown = useCallback(() => {
+        isDraggingRef.current = true;
+    }, []);
 
-    const handleInputBlur = () => {
+    const handleSliderMouseUp = useCallback(() => {
+        isDraggingRef.current = false;
+        onChange(distribution);
+    }, [distribution, onChange]);
+
+    const handleInputChange = useCallback((value) => {
+        setEditValue(value);
+    }, []);
+
+    const handleInputBlur = useCallback(() => {
         if (editingRarity && !lockedRarities.has(editingRarity)) {
             const value = parseFloat(editValue) || 0;
             const newValue = Math.min(100, Math.max(0, value));
             // Only adjust if the value actually changed
             if (Math.abs(newValue - distribution[editingRarity]) >= 0.01) {
                 const newDistribution = adjustDistribution(newValue, editingRarity);
-                safeSetState(setDistribution, newDistribution);
+                setDistribution(newDistribution);
                 onChange(newDistribution);
             }
         }
-        safeSetState(setEditingRarity, null);
-        safeSetState(setPreEditValue, null);
-    };
+        setEditingRarity(null);
+        setPreEditValue(null);
+    }, [editingRarity, editValue, lockedRarities, distribution, adjustDistribution, onChange]);
 
-    const handleInputFocus = (rarity) => {
+    const handleInputFocus = useCallback((rarity) => {
         if (lockedRarities.has(rarity)) return;
-        safeSetState(setEditingRarity, rarity);
-        safeSetState(setPreEditValue, distribution[rarity]);
-        safeSetState(setEditValue, distribution[rarity].toFixed(2));
-    };
+        setEditingRarity(rarity);
+        setPreEditValue(distribution[rarity]);
+        setEditValue(distribution[rarity].toFixed(2));
+    }, [lockedRarities, distribution]);
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = useCallback((e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             e.target.blur();
         } else if (e.key === 'Escape') {
-            safeSetState(setEditValue, preEditValue.toFixed(2));
-            safeSetState(setEditingRarity, null);
-            safeSetState(setPreEditValue, null);
+            setEditValue(preEditValue.toFixed(2));
+            setEditingRarity(null);
+            setPreEditValue(null);
         }
-    };
+    }, [preEditValue]);
 
-    const toggleLock = (rarity) => {
-        const newLockedRarities = new Set(lockedRarities);
-        if (lockedRarities.has(rarity)) {
-            newLockedRarities.delete(rarity);
-        } else {
-            newLockedRarities.add(rarity);
-        }
-        safeSetState(setLockedRarities, newLockedRarities);
-    };
+    const handleReset = useCallback(() => {
+        setDistribution(DEFAULT_DISTRIBUTION);
+        setLockedRarities(new Set());
+        setEditingRarity(null);
+        setEditValue('');
+        setPreEditValue(null);
+        onChange(DEFAULT_DISTRIBUTION);
+    }, [onChange]);
 
-    const formatPercentage = (value) => {
+    const formatPercentage = useCallback((value) => {
         // Convert to number and fix to 2 decimal places
         const num = Number(value);
         if (Number.isInteger(num)) {
@@ -182,7 +173,7 @@ function RaritySliders({ onChange }) {
             return num.toFixed(1);
         }
         return num.toFixed(2);
-    };
+    }, []);
 
     const LockIcon = ({ locked }) => (
         <svg 
@@ -237,7 +228,7 @@ function RaritySliders({ onChange }) {
                     </button>
                     <button
                         className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
-                        onClick={() => safeSetState(setIsCollapsed, !isCollapsed)}
+                        onClick={() => setIsCollapsed(prev => !prev)}
                         title={isCollapsed ? "Expand rarity distribution" : "Collapse rarity distribution"}
                     >
                         <svg
@@ -272,6 +263,10 @@ function RaritySliders({ onChange }) {
                                     step="0.01"
                                     value={distribution[rarity]}
                                     onChange={(e) => handleSliderChange(rarity, parseFloat(e.target.value))}
+                                    onMouseDown={handleSliderMouseDown}
+                                    onMouseUp={handleSliderMouseUp}
+                                    onTouchStart={handleSliderMouseDown}
+                                    onTouchEnd={handleSliderMouseUp}
                                     className={`rarity-slider rarity-${rarity.toLowerCase()} ${lockedRarities.has(rarity) ? 'locked' : ''}`}
                                     disabled={lockedRarities.has(rarity)}
                                 />
@@ -304,7 +299,15 @@ function RaritySliders({ onChange }) {
                             <button
                                 type="button"
                                 className={`lock-button ${lockedRarities.has(rarity) ? 'locked' : ''}`}
-                                onClick={() => toggleLock(rarity)}
+                                onClick={() => setLockedRarities(prev => {
+                                    const newLockedRarities = new Set(prev);
+                                    if (newLockedRarities.has(rarity)) {
+                                        newLockedRarities.delete(rarity);
+                                    } else {
+                                        newLockedRarities.add(rarity);
+                                    }
+                                    return newLockedRarities;
+                                })}
                                 aria-label={`${lockedRarities.has(rarity) ? 'Unlock' : 'Lock'} ${rarity} rarity`}
                             >
                                 <LockIcon locked={lockedRarities.has(rarity)} />
