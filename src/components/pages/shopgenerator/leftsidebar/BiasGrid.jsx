@@ -114,6 +114,12 @@ function BiasGrid({ onChange }) {
                         <div className="grid-lines horizontal" />
                         <div className="grid-lines vertical" />
 
+                        {/* Values readout */}
+                        <div className="grid-readout">
+                            <span>V: {(position.x * 100).toFixed(0)}%</span>
+                            <span>C: {(position.y * 100).toFixed(0)}%</span>
+                        </div>
+
                         {/* Center marker */}
                         <div className="grid-center-marker" />
 
@@ -125,17 +131,6 @@ function BiasGrid({ onChange }) {
                                 top: `${(1 - position.y) * 100}%` 
                             }}
                         />
-                    </div>
-
-                    <div className="bias-values">
-                        <div className="bias-value">
-                            <span className="bias-label">Variety:</span>
-                            <span className="bias-number">{(position.x * 100).toFixed(0)}%</span>
-                        </div>
-                        <div className="bias-value">
-                            <span className="bias-label">Cost:</span>
-                            <span className="bias-number">{(position.y * 100).toFixed(0)}%</span>
-                        </div>
                     </div>
                 </div>
             )}
