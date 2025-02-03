@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import './shopgenerator/ShopGenerator.css';
 import GoldInput from './shopgenerator/leftsidebar/GoldInput';
 import LevelInput from './shopgenerator/leftsidebar/LevelInput';
-import BiasSlider from './shopgenerator/leftsidebar/BiasSlider';
+import BiasGrid from './shopgenerator/leftsidebar/BiasGrid';
 import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySliders';
 import ItemTable from './shopgenerator/ItemTable';
@@ -36,7 +36,7 @@ function ShopGenerator() {
     const [lowestLevel, setLowestLevel] = useState(0);
     const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
-    const [itemBias, setItemBias] = useState(0.5); // Default to balanced distribution
+    const [itemBias, setItemBias] = useState({ x: 0.5, y: 0.5 }); // Default to center
     const [hasInitialSort, setHasInitialSort] = useState(false);
     const [rarityDistribution, setRarityDistribution] = useState({
         Common: 95.00,
@@ -241,7 +241,7 @@ function ShopGenerator() {
                         onLowestLevelChange={handleLowestLevelChange}
                         onHighestLevelChange={handleHighestLevelChange}
                     />
-                    <BiasSlider onChange={handleBiasChange} />
+                    <BiasGrid onChange={handleBiasChange} />
                     <RaritySliders onChange={handleRarityDistributionChange} />
                 </LeftSidebar>
                 <div className="shop-generator-main">

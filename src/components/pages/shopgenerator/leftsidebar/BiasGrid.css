@@ -1,0 +1,110 @@
+.bias-grid-container {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.bias-grid {
+    position: relative;
+    width: 100%;
+    /* Make it square */
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(163, 177, 255, 0.15);
+    border-radius: 4px;
+    cursor: crosshair;
+    margin: 1.5rem 0;
+}
+
+/* Grid lines */
+.grid-lines {
+    position: absolute;
+    background-image: linear-gradient(
+        rgba(163, 177, 255, 0.1) 1px,
+        transparent 1px
+    );
+    background-size: 20% 20%;
+}
+
+.grid-lines.horizontal {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.grid-lines.vertical {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(
+        90deg,
+        rgba(163, 177, 255, 0.1) 1px,
+        transparent 1px
+    );
+}
+
+/* Grid labels */
+.grid-label {
+    position: absolute;
+    color: var(--text-color);
+    font-size: 0.8rem;
+    opacity: 0.7;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.grid-label.top {
+    top: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.grid-label.bottom {
+    bottom: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.grid-label.left {
+    left: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: right center;
+}
+
+.grid-label.right {
+    right: -0.5rem;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    transform-origin: left center;
+}
+
+/* Draggable dot */
+.grid-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--accent-color);
+    border: 2px solid white;
+    border-radius: 50%;
+    transform: translate(-50%, 50%);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    transition: box-shadow 0.2s ease;
+}
+
+.bias-grid:active .grid-dot {
+    box-shadow: 0 0 0 4px rgba(163, 177, 255, 0.3);
+}
+
+/* Debug values display */
+.bias-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-color-secondary);
+    padding: 0 0.5rem;
+} 

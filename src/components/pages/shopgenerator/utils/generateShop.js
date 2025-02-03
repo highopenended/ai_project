@@ -50,9 +50,9 @@ const filterByCategory = (items, selectedCategories, selectedSubcategories) => {
 };
 
 /**
- * Filter items based on their price relative to other items, influenced by quantity/quality bias
+ * Filter items based on their price relative to other items, influenced by 2D bias
  * @param {Array} items - Array of items to filter
- * @param {number} itemBias - Value between 0 (quantity) and 1 (quality)
+ * @param {Object} itemBias - {x: variety (0-1), y: cost (0-1)}
  * @returns {Array} Filtered items based on bias
  */
 const filterByBias = (items, itemBias) => {
@@ -72,40 +72,35 @@ const filterByBias = (items, itemBias) => {
     // Sort by price
     itemsWithPrice.sort((a, b) => a.price - b.price);
 
-    // Calculate group boundaries
-    const groupSize = Math.ceil(itemsWithPrice.length / PRICE_GROUPS);
-    const groups = Array.from({ length: PRICE_GROUPS }, (_, i) => {
-        const start = i * groupSize;
-        const end = Math.min(start + groupSize, itemsWithPrice.length);
-        return itemsWithPrice.slice(start, end);
-    });
+    // Calculate price percentiles for grouping
+    const priceWindow = 0.4; // Window size for price filtering (40% of price range)
+    const priceCenter = itemBias.y; // Center of the window based on cost bias
+    const priceStart = Math.max(0, priceCenter - priceWindow/2);
+    const priceEnd = Math.min(1, priceCenter + priceWindow/2);
 
-    // Log group statistics for debugging
-    groups.forEach((group, i) => {
-        if (group.length > 0) {
-            const avgPrice = group.reduce((sum, x) => sum + x.price, 0) / group.length;
-            const minPrice = group[0].price;
-            const maxPrice = group[group.length - 1].price;
-            console.log(`Price group ${i + 1}: ${group.length} items, avg: ${avgPrice.toFixed(2)} gp, range: ${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)} gp`);
-        }
-    });
+    // Calculate item indices for price range
+    const startIndex = Math.floor(priceStart * itemsWithPrice.length);
+    const endIndex = Math.ceil(priceEnd * itemsWithPrice.length);
 
-    // Determine which group the bias falls into (0-based index)
-    const biasGroup = Math.floor(itemBias * PRICE_GROUPS);
+    // Get items within the price range
+    const priceFilteredItems = itemsWithPrice.slice(startIndex, endIndex);
+
+    // Calculate how many unique items to keep based on variety bias
+    const varietyPercentage = itemBias.x;
+    const targetUniqueItems = Math.max(1, Math.ceil(priceFilteredItems.length * varietyPercentage));
     
-    // Calculate the range of groups to keep (include current group and neighbors)
-    const keepStart = Math.max(0, biasGroup - 1);
-    const keepEnd = Math.min(PRICE_GROUPS - 1, biasGroup + 1);
-    
-    // Select the groups to keep
-    const groupsToKeep = groups.slice(keepStart, keepEnd + 1);
-
-    console.log(`Bias ${itemBias.toFixed(2)} falls in group ${biasGroup + 1}, keeping groups ${keepStart + 1} through ${keepEnd + 1}`);
+    // If we want low variety (x close to 0), keep fewer random items
+    const shuffled = [...priceFilteredItems].sort(() => Math.random() - 0.5);
+    const selectedItems = shuffled.slice(0, targetUniqueItems);
 
     // Create a Set of kept items for efficient lookup
-    const keptItems = new Set(groupsToKeep.flat().map(x => x.item));
+    const keptItems = new Set(selectedItems.map(x => x.item));
     
-    // Return only the items that were in the kept groups
+    // Log statistics
+    console.log(`Price filtering: keeping items from ${startIndex} to ${endIndex} (${priceFilteredItems.length} items)`);
+    console.log(`Variety filtering: keeping ${targetUniqueItems} unique items`);
+
+    // Return only the items that were selected
     return items.filter(item => keptItems.has(item));
 };
 
@@ -312,7 +307,9 @@ export const generateShop = ({
 
         // Handle empty bucket
         if (isEmptyBucket(selectedRarity)) {
-            if (tryIncreaseQuantity(selectedRarity)) break;
+            // Adjust quantity increase chance based on variety bias
+            const shouldIncreaseQuantity = Math.random() > itemBias.x;
+            if (shouldIncreaseQuantity && tryIncreaseQuantity(selectedRarity)) break;
             continue;
         }
 
