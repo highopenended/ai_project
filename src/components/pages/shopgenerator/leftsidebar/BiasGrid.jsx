@@ -40,6 +40,12 @@ function BiasGrid({ onChange }) {
         document.body.classList.remove('bias-grid-dragging');
     };
 
+    const handleReset = () => {
+        setPosition({ x: 0.5, y: 0.5 });
+        onChange({ x: 0.5, y: 0.5 });
+        setPingKey(k => k + 1); // Trigger ping effect on reset
+    };
+
     useEffect(() => {
         if (isDragging) {
             window.addEventListener('mousemove', handleMouseMove);
@@ -56,7 +62,27 @@ function BiasGrid({ onChange }) {
 
     return (
         <div className="bias-grid-container">
-            <h3>Shop Bias</h3>
+            <div className="header-row">
+                <h3>Shop Bias</h3>
+                <button 
+                    className="reset-button" 
+                    onClick={handleReset}
+                    title="Reset to default values"
+                >
+                    <svg 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path 
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                            fill="currentColor"
+                        />
+                    </svg>
+                </button>
+            </div>
             <div className="bias-grid-wrapper">
                 <div className="grid-label top">Expensive</div>
                 <div className="grid-label bottom">Cheap</div>
@@ -99,8 +125,6 @@ function BiasGrid({ onChange }) {
                     />
                 </div>
             </div>
-
-            {/* Value display */}
             <div className="bias-values">
                 <div className="bias-value">
                     <span className="bias-label">Variety:</span>
