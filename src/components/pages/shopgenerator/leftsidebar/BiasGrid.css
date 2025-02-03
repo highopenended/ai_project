@@ -81,18 +81,21 @@
     transform: translateX(-50%);
 }
 
-.grid-label.left {
-    left: -0.5rem;
+.grid-label.left,
+.grid-label.right {
+    transform: none;
     top: 50%;
-    transform: translateY(-50%) rotate(-90deg);
-    transform-origin: right center;
+    transform: translateY(-50%);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.grid-label.left {
+    left: -1rem;
 }
 
 .grid-label.right {
-    right: -0.5rem;
-    top: 50%;
-    transform: translateY(-50%) rotate(90deg);
-    transform-origin: left center;
+    right: -1rem;
 }
 
 /* Draggable dot */
