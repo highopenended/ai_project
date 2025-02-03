@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useTraitContext } from '../../../../../context/TraitContext';
+import { useTraitContext, TRAIT_STATES } from '../../../../../context/TraitContext';
 import traitList from '../../../../../../public/trait-list.json';
 import './TraitFilter.css';
 
 function TraitFilter() {
     const {
-        selectedTraits,
+        getTraitState,
         toggleTrait,
         clearTraitSelections
     } = useTraitContext();
@@ -21,6 +21,14 @@ function TraitFilter() {
                 trait.toLowerCase().includes(traitFilter.toLowerCase())
             )
     )).sort();
+
+    const getTagClassName = (trait) => {
+        const state = getTraitState(trait);
+        const baseClass = 'tag';
+        if (state === TRAIT_STATES.INCLUDE) return `${baseClass} included`;
+        if (state === TRAIT_STATES.EXCLUDE) return `${baseClass} excluded`;
+        return baseClass;
+    };
 
     return (
         <div className="trait-filter">
@@ -79,11 +87,14 @@ function TraitFilter() {
                             {filteredTraits.map(trait => (
                                 <button
                                     key={trait}
-                                    className={`tag ${selectedTraits.has(trait) ? 'selected' : ''}`}
+                                    className={getTagClassName(trait)}
                                     onClick={() => toggleTrait(trait)}
                                     title={traitList.find(t => t.Trait === trait)?.Description || ''}
                                 >
                                     {trait}
+                                    {getTraitState(trait) === TRAIT_STATES.EXCLUDE && (
+                                        <span className="exclude-indicator">✕</span>
+                                    )}
                                 </button>
                             ))}
                         </div>

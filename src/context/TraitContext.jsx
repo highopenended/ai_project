@@ -3,28 +3,52 @@ import PropTypes from 'prop-types';
 
 const TraitContext = createContext();
 
+export const TRAIT_STATES = {
+    IGNORE: 0,
+    INCLUDE: 1,
+    EXCLUDE: -1
+};
+
 export function TraitProvider({ children }) {
-    const [selectedTraits, setSelectedTraits] = useState(new Set());
+    const [traitStates, setTraitStates] = useState(new Map());
 
     const toggleTrait = (trait) => {
-        setSelectedTraits(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(trait)) {
-                newSet.delete(trait);
+        setTraitStates(prev => {
+            const newMap = new Map(prev);
+            const currentState = prev.get(trait) || TRAIT_STATES.IGNORE;
+            
+            // Cycle through states: IGNORE -> INCLUDE -> EXCLUDE -> IGNORE
+            let nextState;
+            if (currentState === TRAIT_STATES.IGNORE) {
+                nextState = TRAIT_STATES.INCLUDE;
+            } else if (currentState === TRAIT_STATES.INCLUDE) {
+                nextState = TRAIT_STATES.EXCLUDE;
             } else {
-                newSet.add(trait);
+                nextState = TRAIT_STATES.IGNORE;
             }
-            return newSet;
+
+            if (nextState === TRAIT_STATES.IGNORE) {
+                newMap.delete(trait);
+            } else {
+                newMap.set(trait, nextState);
+            }
+            
+            return newMap;
         });
     };
 
     const clearTraitSelections = () => {
-        setSelectedTraits(new Set());
+        setTraitStates(new Map());
+    };
+
+    const getTraitState = (trait) => {
+        return traitStates.get(trait) || TRAIT_STATES.IGNORE;
     };
 
     return (
         <TraitContext.Provider value={{
-            selectedTraits,
+            traitStates,
+            getTraitState,
             toggleTrait,
             clearTraitSelections
         }}>

@@ -31,37 +31,66 @@ const filterByLevel = (items, lowestLevel, highestLevel) => {
 };
 
 /**
- * Filter items based on selected categories and subcategories
+ * Filter items based on included and excluded categories and subcategories
  * @param {Array} items - Array of items to filter
- * @param {Set} selectedCategories - Set of selected item categories
- * @param {Set} selectedSubcategories - Set of selected item subcategories
+ * @param {Array} includedCategories - Array of categories that must be included
+ * @param {Array} excludedCategories - Array of categories that must be excluded
+ * @param {Array} includedSubcategories - Array of subcategories that must be included
+ * @param {Array} excludedSubcategories - Array of subcategories that must be excluded
  * @returns {Array} Filtered items matching category criteria
  */
-const filterByCategory = (items, selectedCategories, selectedSubcategories) => {
+const filterByCategory = (items, includedCategories, excludedCategories, includedSubcategories, excludedSubcategories) => {
     return items.filter(item => {
-        if (selectedCategories.size > 0 && !selectedCategories.has(item.item_category)) {
+        // Check for excluded categories first
+        if (excludedCategories.includes(item.item_category)) {
             return false;
         }
-        if (selectedSubcategories.size > 0 && !selectedSubcategories.has(item.item_subcategory)) {
+
+        // Check for excluded subcategories
+        if (excludedSubcategories.includes(item.item_subcategory)) {
             return false;
         }
+
+        // If there are included categories, item must be in one of them
+        if (includedCategories.length > 0 && !includedCategories.includes(item.item_category)) {
+            return false;
+        }
+
+        // If there are included subcategories, item must be in one of them
+        if (includedSubcategories.length > 0 && !includedSubcategories.includes(item.item_subcategory)) {
+            return false;
+        }
+
         return true;
     });
 };
 
 /**
- * Filter items based on selected traits
+ * Filter items based on included and excluded traits
  * @param {Array} items - Array of items to filter
- * @param {Set} selectedTraits - Set of selected traits
+ * @param {Array} includedTraits - Array of traits that must be included
+ * @param {Array} excludedTraits - Array of traits that must be excluded
  * @returns {Array} Filtered items matching trait criteria
  */
-const filterByTraits = (items, selectedTraits) => {
-    if (selectedTraits.size === 0) return items;
+const filterByTraits = (items, includedTraits, excludedTraits) => {
+    if (includedTraits.length === 0 && excludedTraits.length === 0) return items;
     
     return items.filter(item => {
-        if (!item.trait) return false;
+        if (!item.trait) return includedTraits.length === 0; // Only keep items without traits if no traits are required
+        
         const itemTraits = item.trait.split(',').map(t => t.trim());
-        return itemTraits.some(trait => selectedTraits.has(trait));
+        
+        // Check for excluded traits first
+        if (excludedTraits.some(trait => itemTraits.includes(trait))) {
+            return false;
+        }
+        
+        // If there are included traits, item must have at least one of them
+        if (includedTraits.length > 0 && !includedTraits.some(trait => itemTraits.includes(trait))) {
+            return false;
+        }
+        
+        return true;
     });
 };
 
@@ -239,19 +268,27 @@ export const generateShop = ({
     highestLevel,
     itemBias,
     rarityDistribution,
-    selectedCategories,
-    selectedSubcategories,
-    selectedTraits,
+    includedCategories,
+    excludedCategories,
+    includedSubcategories,
+    excludedSubcategories,
+    includedTraits,
+    excludedTraits,
     allItems
 }) => {
-
     // If the current gold is less than or equal to 0, return an empty array
     if (currentGold <= 0) return { items: [] };
 
     // Apply filters
     const levelFiltered = filterByLevel(allItems, lowestLevel, highestLevel);
-    const categoryFiltered = filterByCategory(levelFiltered, selectedCategories, selectedSubcategories);
-    const traitFiltered = filterByTraits(categoryFiltered, selectedTraits);
+    const categoryFiltered = filterByCategory(
+        levelFiltered,
+        includedCategories,
+        excludedCategories,
+        includedSubcategories,
+        excludedSubcategories
+    );
+    const traitFiltered = filterByTraits(categoryFiltered, includedTraits, excludedTraits);
     const biasFiltered = filterByBias(traitFiltered, itemBias);
     const rarityBuckets = groupByRarity(biasFiltered, currentGold);
     const averagePrices = calculateAveragePrices(biasFiltered, currentGold);
@@ -267,9 +304,12 @@ export const generateShop = ({
         highestLevel,
         itemBias,
         rarityDistribution,
-        selectedCategories: Array.from(selectedCategories),
-        selectedSubcategories: Array.from(selectedSubcategories),
-        selectedTraits: Array.from(selectedTraits),
+        includedCategories,
+        excludedCategories,
+        includedSubcategories,
+        excludedSubcategories,
+        includedTraits,
+        excludedTraits,
         averagePricesByRarity: Object.entries(averagePrices.byRarity).reduce((obj, [rarity, price]) => {
             obj[rarity] = price.toFixed(2) + ' gp';
             return obj;

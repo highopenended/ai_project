@@ -113,21 +113,33 @@
     white-space: nowrap;
     height: 1.5rem;
     flex: 0 0 auto;
+    gap: 0.25rem;
 }
 
 .tag:hover {
     background: rgba(255, 255, 255, 0.1);
 }
 
-.tag.selected {
+.tag.included {
     background: #2c5282;
     border-color: #2b6cb0;
+}
+
+.tag.excluded {
+    background: #822c2c;
+    border-color: #b02b2b;
 }
 
 .tag .count {
     margin-left: 0.25rem;
     opacity: 0.7;
     font-size: 0.7rem;
+}
+
+.exclude-indicator {
+    font-size: 0.7em;
+    opacity: 0.8;
+    margin-left: 0.15rem;
 }
 
 /* Scrollbar styling */

@@ -9,8 +9,8 @@ import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
 import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySliders';
 import ItemTable from './shopgenerator/ItemTable';
 import itemData from '../../../public/item-table.json';  // Import JSON directly
-import { useCategoryContext } from '../../context/CategoryContext';
-import { useTraitContext } from '../../context/TraitContext';
+import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
+import { useTraitContext, TRAIT_STATES } from '../../context/TraitContext';
 import { generateShop } from './shopgenerator/utils/generateShop';
 
 /**
@@ -26,12 +26,12 @@ import { generateShop } from './shopgenerator/utils/generateShop';
  */
 function ShopGenerator() {
     const {
-        selectedCategories,
-        selectedSubcategories
+        categoryStates,
+        subcategoryStates
     } = useCategoryContext();
 
     const {
-        selectedTraits
+        traitStates
     } = useTraitContext();
 
     const [items, setItems] = useState([]);
@@ -216,15 +216,43 @@ function ShopGenerator() {
     };
 
     const handleGenerateClick = () => {
+        // Convert Maps to arrays of included/excluded items
+        const includedCategories = Array.from(categoryStates.entries())
+            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+            .map(([category]) => category);
+        
+        const excludedCategories = Array.from(categoryStates.entries())
+            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+            .map(([category]) => category);
+
+        const includedSubcategories = Array.from(subcategoryStates.entries())
+            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+            .map(([subcategory]) => subcategory);
+        
+        const excludedSubcategories = Array.from(subcategoryStates.entries())
+            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+            .map(([subcategory]) => subcategory);
+
+        const includedTraits = Array.from(traitStates.entries())
+            .filter(([, state]) => state === TRAIT_STATES.INCLUDE)
+            .map(([trait]) => trait);
+        
+        const excludedTraits = Array.from(traitStates.entries())
+            .filter(([, state]) => state === TRAIT_STATES.EXCLUDE)
+            .map(([trait]) => trait);
+
         const result = generateShop({
             currentGold,
             lowestLevel,
             highestLevel,
             itemBias,
             rarityDistribution,
-            selectedCategories,
-            selectedSubcategories,
-            selectedTraits,
+            includedCategories,
+            excludedCategories,
+            includedSubcategories,
+            excludedSubcategories,
+            includedTraits,
+            excludedTraits,
             allItems
         });
 
@@ -249,13 +277,11 @@ function ShopGenerator() {
                     <BiasGrid onChange={handleBiasChange} />
                     <RaritySliders onChange={handleRarityDistributionChange} />
                 </LeftSidebar>
-                <div className="shop-generator-main">
-                    <ItemTable 
-                        items={sortItems(items)} 
-                        sortConfig={sortConfig}
-                        onSort={handleSort}
-                    />
-                </div>
+                <ItemTable
+                    items={items}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
+                />
             </div>
         </div>
     );

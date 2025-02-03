@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useCategoryContext } from '../../../../../context/CategoryContext';
+import { useCategoryContext, SELECTION_STATES } from '../../../../../context/CategoryContext';
 import './CategoryFilter.css';
 
 function CategoryFilter() {
     const {
         categoryData,
-        selectedCategories,
-        selectedSubcategories,
+        getCategoryState,
+        getSubcategoryState,
         toggleCategory,
         toggleSubcategory,
         clearCategorySelections,
@@ -27,13 +27,17 @@ function CategoryFilter() {
 
     // Get all unique subcategories from selected categories
     const getRelevantSubcategories = () => {
-        if (selectedCategories.size === 0) {
+        const includedCategories = Object.keys(categoryData).filter(
+            cat => getCategoryState(cat) === SELECTION_STATES.INCLUDE
+        );
+
+        if (includedCategories.length === 0) {
             return Object.values(categoryData)
                 .flatMap(cat => cat.subcategories)
                 .filter((value, index, self) => self.indexOf(value) === index)
                 .sort();
         }
-        return Array.from(selectedCategories)
+        return includedCategories
             .flatMap(category => categoryData[category]?.subcategories || [])
             .filter((value, index, self) => self.indexOf(value) === index)
             .sort();
@@ -44,6 +48,13 @@ function CategoryFilter() {
         .filter(subcategory => 
             subcategory.toLowerCase().includes(subcategoryFilter.toLowerCase())
         );
+
+    const getTagClassName = (state) => {
+        const baseClass = 'tag';
+        if (state === SELECTION_STATES.INCLUDE) return `${baseClass} included`;
+        if (state === SELECTION_STATES.EXCLUDE) return `${baseClass} excluded`;
+        return baseClass;
+    };
 
     return (
         <div className="category-filter">
@@ -102,11 +113,14 @@ function CategoryFilter() {
                             {filteredCategories.map(category => (
                                 <button
                                     key={category}
-                                    className={`tag ${selectedCategories.has(category) ? 'selected' : ''}`}
+                                    className={getTagClassName(getCategoryState(category))}
                                     onClick={() => toggleCategory(category)}
                                 >
                                     {category}
                                     <span className="count">({categoryData[category].count})</span>
+                                    {getCategoryState(category) === SELECTION_STATES.EXCLUDE && (
+                                        <span className="exclude-indicator">✕</span>
+                                    )}
                                 </button>
                             ))}
                         </div>
@@ -169,10 +183,13 @@ function CategoryFilter() {
                             {filteredSubcategories.map(subcategory => (
                                 <button
                                     key={subcategory}
-                                    className={`tag ${selectedSubcategories.has(subcategory) ? 'selected' : ''}`}
+                                    className={getTagClassName(getSubcategoryState(subcategory))}
                                     onClick={() => toggleSubcategory(subcategory)}
                                 >
                                     {subcategory}
+                                    {getSubcategoryState(subcategory) === SELECTION_STATES.EXCLUDE && (
+                                        <span className="exclude-indicator">✕</span>
+                                    )}
                                 </button>
                             ))}
                         </div>

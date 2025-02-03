@@ -4,6 +4,12 @@ import itemData from '../../public/item-table.json';
 
 const CategoryContext = createContext();
 
+export const SELECTION_STATES = {
+    IGNORE: 0,
+    INCLUDE: 1,
+    EXCLUDE: -1
+};
+
 export function useCategoryContext() {
     const context = useContext(CategoryContext);
     if (!context) {
@@ -51,46 +57,67 @@ export function CategoryProvider({ children }) {
         return extracted;
     });
 
-    const [selectedCategories, setSelectedCategories] = useState(new Set());
-    const [selectedSubcategories, setSelectedSubcategories] = useState(new Set());
+    const [categoryStates, setCategoryStates] = useState(new Map());
+    const [subcategoryStates, setSubcategoryStates] = useState(new Map());
 
-    // Provide methods to modify selections
+    const toggleState = (currentState) => {
+        if (currentState === SELECTION_STATES.IGNORE) return SELECTION_STATES.INCLUDE;
+        if (currentState === SELECTION_STATES.INCLUDE) return SELECTION_STATES.EXCLUDE;
+        return SELECTION_STATES.IGNORE;
+    };
+
     const toggleCategory = (category) => {
-        setSelectedCategories(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(category)) {
-                newSet.delete(category);
+        setCategoryStates(prev => {
+            const newMap = new Map(prev);
+            const currentState = prev.get(category) || SELECTION_STATES.IGNORE;
+            const nextState = toggleState(currentState);
+            
+            if (nextState === SELECTION_STATES.IGNORE) {
+                newMap.delete(category);
             } else {
-                newSet.add(category);
+                newMap.set(category, nextState);
             }
-            return newSet;
+            return newMap;
         });
     };
 
     const toggleSubcategory = (subcategory) => {
-        setSelectedSubcategories(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(subcategory)) {
-                newSet.delete(subcategory);
+        setSubcategoryStates(prev => {
+            const newMap = new Map(prev);
+            const currentState = prev.get(subcategory) || SELECTION_STATES.IGNORE;
+            const nextState = toggleState(currentState);
+            
+            if (nextState === SELECTION_STATES.IGNORE) {
+                newMap.delete(subcategory);
             } else {
-                newSet.add(subcategory);
+                newMap.set(subcategory, nextState);
             }
-            return newSet;
+            return newMap;
         });
     };
 
     const clearCategorySelections = () => {
-        setSelectedCategories(new Set());
+        setCategoryStates(new Map());
     };
 
     const clearSubcategorySelections = () => {
-        setSelectedSubcategories(new Set());
+        setSubcategoryStates(new Map());
+    };
+
+    const getCategoryState = (category) => {
+        return categoryStates.get(category) || SELECTION_STATES.IGNORE;
+    };
+
+    const getSubcategoryState = (subcategory) => {
+        return subcategoryStates.get(subcategory) || SELECTION_STATES.IGNORE;
     };
 
     const value = {
         categoryData,
-        selectedCategories,
-        selectedSubcategories,
+        categoryStates,
+        subcategoryStates,
+        getCategoryState,
+        getSubcategoryState,
         toggleCategory,
         toggleSubcategory,
         clearCategorySelections,
