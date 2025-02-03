@@ -50,6 +50,66 @@ const filterByCategory = (items, selectedCategories, selectedSubcategories) => {
 };
 
 /**
+ * Filter items based on their price relative to other items, influenced by quantity/quality bias
+ * @param {Array} items - Array of items to filter
+ * @param {number} itemBias - Value between 0 (quantity) and 1 (quality)
+ * @returns {Array} Filtered items based on bias
+ */
+const filterByBias = (items, itemBias) => {
+    const PRICE_GROUPS = 5; // Must be an odd number
+    if (PRICE_GROUPS % 2 === 0) {
+        console.warn('PRICE_GROUPS should be an odd number for proper centering');
+    }
+    
+    // Calculate prices for all items
+    const itemsWithPrice = items.map(item => ({
+        item,
+        price: convertPriceToGold(item.price)
+    })).filter(x => x.price > 0);
+
+    if (itemsWithPrice.length === 0) return items;
+
+    // Sort by price
+    itemsWithPrice.sort((a, b) => a.price - b.price);
+
+    // Calculate group boundaries
+    const groupSize = Math.ceil(itemsWithPrice.length / PRICE_GROUPS);
+    const groups = Array.from({ length: PRICE_GROUPS }, (_, i) => {
+        const start = i * groupSize;
+        const end = Math.min(start + groupSize, itemsWithPrice.length);
+        return itemsWithPrice.slice(start, end);
+    });
+
+    // Log group statistics for debugging
+    groups.forEach((group, i) => {
+        if (group.length > 0) {
+            const avgPrice = group.reduce((sum, x) => sum + x.price, 0) / group.length;
+            const minPrice = group[0].price;
+            const maxPrice = group[group.length - 1].price;
+            console.log(`Price group ${i + 1}: ${group.length} items, avg: ${avgPrice.toFixed(2)} gp, range: ${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)} gp`);
+        }
+    });
+
+    // Determine which group the bias falls into (0-based index)
+    const biasGroup = Math.floor(itemBias * PRICE_GROUPS);
+    
+    // Calculate the range of groups to keep (include current group and neighbors)
+    const keepStart = Math.max(0, biasGroup - 1);
+    const keepEnd = Math.min(PRICE_GROUPS - 1, biasGroup + 1);
+    
+    // Select the groups to keep
+    const groupsToKeep = groups.slice(keepStart, keepEnd + 1);
+
+    console.log(`Bias ${itemBias.toFixed(2)} falls in group ${biasGroup + 1}, keeping groups ${keepStart + 1} through ${keepEnd + 1}`);
+
+    // Create a Set of kept items for efficient lookup
+    const keptItems = new Set(groupsToKeep.flat().map(x => x.item));
+    
+    // Return only the items that were in the kept groups
+    return items.filter(item => keptItems.has(item));
+};
+
+/**
  * Group items into rarity buckets and filter by maximum price
  * @param {Array} items - Array of items to group
  * @param {number} maxItemPrice - Maximum allowed price per item
@@ -176,15 +236,12 @@ export const generateShop = ({
     // If the current gold is less than or equal to 0, return an empty array
     if (currentGold <= 0) return { items: [] };
 
-    // Calculate price limits based on quantity/quality bias
-    const maxPricePercentage = 0.1 + (itemBias * 0.8); // Scales from 10% to 90%
-    const maxItemPrice = currentGold * maxPricePercentage;
-
-    // Apply filters and group items
+    // Apply filters
     const levelFiltered = filterByLevel(allItems, lowestLevel, highestLevel);
     const categoryFiltered = filterByCategory(levelFiltered, selectedCategories, selectedSubcategories);
-    const rarityBuckets = groupByRarity(categoryFiltered, maxItemPrice);
-    const averagePrices = calculateAveragePrices(categoryFiltered, maxItemPrice);
+    const biasFiltered = filterByBias(categoryFiltered, itemBias);
+    const rarityBuckets = groupByRarity(biasFiltered, currentGold);
+    const averagePrices = calculateAveragePrices(biasFiltered, currentGold);
 
     // Log initial state
     Object.entries(rarityBuckets).forEach(([rarity, items]) => {
@@ -205,7 +262,7 @@ export const generateShop = ({
         }, {})
     });
     
-    console.log(`Price limits: max ${maxItemPrice.toFixed(2)} gp per item (${(maxPricePercentage * 100).toFixed(1)}% of total)`);
+    console.log(`Price limits: max ${currentGold.toFixed(2)} gp per item (100% of total)`);
 
     // Initialize tracking objects
     const selection = createItemSelection();
