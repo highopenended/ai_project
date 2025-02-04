@@ -9,6 +9,7 @@ import BiasGrid from './leftsidebar/BiasGrid';
 import RaritySliders from './leftsidebar/raritysliders/RaritySliders';
 import MiddleBar from './middlebar/MiddleBar';
 import RightSidebar from './rightsidebar/RightSidebar';
+import ItemTable from './middlebar/ItemTable';
 import itemData from '../../../../public/item-table.json';
 import { useCategoryContext, SELECTION_STATES } from '../../../context/CategoryContext';
 import { useTraitContext, TRAIT_STATES } from '../../../context/TraitContext';
@@ -250,6 +251,28 @@ function ShopGenerator() {
         setItems(sortedItems);
     };
 
+    // Add handler functions
+    const handleGoldChange = (gold) => {
+        console.log('Gold value received:', gold, typeof gold);
+        setCurrentGold(gold);
+    };
+
+    const handleLowestLevelChange = (level) => {
+        setLowestLevel(level);
+    };
+
+    const handleHighestLevelChange = (level) => {
+        setHighestLevel(level);
+    };
+
+    const handleBiasChange = (bias) => {
+        setItemBias(bias);
+    };
+
+    const handleRarityDistributionChange = (newDistribution) => {
+        setRarityDistribution(newDistribution);
+    };
+
     if (loading) {
         return <div className="content-area">Loading...</div>;
     }
@@ -258,21 +281,23 @@ function ShopGenerator() {
         <div className="content-area">
             <div className="content-container">
                 <LeftSidebar onGenerate={handleGenerateClick}>
-                    <GoldInput onChange={setCurrentGold} />
+                    <GoldInput onChange={handleGoldChange} />
                     <LevelInput
                         lowestLevel={lowestLevel}
                         highestLevel={highestLevel}
-                        onLowestLevelChange={setLowestLevel}
-                        onHighestLevelChange={setHighestLevel}
+                        onLowestLevelChange={handleLowestLevelChange}
+                        onHighestLevelChange={handleHighestLevelChange}
                     />
-                    <BiasGrid onChange={setItemBias} />
-                    <RaritySliders onChange={setRarityDistribution} />
+                    <BiasGrid onChange={handleBiasChange} />
+                    <RaritySliders onChange={handleRarityDistributionChange} />
                 </LeftSidebar>
-                <MiddleBar 
-                    items={items}
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                />
+                <MiddleBar>
+                    <ItemTable
+                        items={items}
+                        sortConfig={sortConfig}
+                        onSort={handleSort}
+                    />
+                </MiddleBar>
                 <RightSidebar />
             </div>
         </div>

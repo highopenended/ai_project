@@ -1,8 +1,18 @@
+import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 
 function RightSidebar() {
+    const sidebarRef = useRef(null);
+    const [sidebarWidth, setSidebarWidth] = useState(40);
+
+
+
     return (
-        <div className="right-sidebar">
+        <div 
+            className="right-sidebar" 
+            ref={sidebarRef}
+            style={{ width: sidebarWidth }}
+        >           
             <div className="right-sidebar-content">
                 <h2>Shop Details</h2>
                 <div className="shop-details">

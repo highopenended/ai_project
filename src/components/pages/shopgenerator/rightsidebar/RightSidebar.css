@@ -1,11 +1,17 @@
 .right-sidebar {
     flex: 1;
     padding: 1rem;
+    padding-left: calc(1rem + 8px);
     background-color: var(--background-secondary);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     max-height: calc(100vh - 2rem);
     overflow-y: auto;
+    position: relative;
+    min-width: 250px;
+    max-width: 500px;
+    width: 300px;
+    flex-shrink: 0;
 }
 
 .right-sidebar-content {

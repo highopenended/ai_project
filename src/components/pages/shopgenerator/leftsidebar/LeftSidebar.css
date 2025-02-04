@@ -138,7 +138,6 @@
 .parameter-section:hover {
     background-color: rgba(255, 255, 255, 0.02);
 }
-
 /* Resize handle */
 .resize-handle {
     position: absolute;
@@ -166,3 +165,4 @@
 .shop-generator-sidebar::-webkit-resizer {
     display: none;
 } 
+
