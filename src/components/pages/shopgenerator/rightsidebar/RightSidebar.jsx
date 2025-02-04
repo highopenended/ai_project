@@ -1,22 +1,8 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 // Import Firebase
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import { initializeApp } from 'firebase/app';
-
-// Firebase configuration
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../../../../firebaseConfig';
 
 function RightSidebar() {
     const sidebarRef = useRef(null);
@@ -102,6 +88,11 @@ function RightSidebar() {
         }
     };
 
+    // Function to check if all shop details are filled
+    const areAllDetailsFilled = () => {
+        return Object.values(shopDetails).every(detail => detail.trim() !== '');
+    };
+
     return (
         <div 
             className="right-sidebar" 
@@ -152,9 +143,45 @@ function RightSidebar() {
                             onChange={handleInputChange}
                         />
                     </div>
+                    <div className="detail-section">
+                        <h3>Shopkeeper Description</h3>
+                        <input
+                            type="text"
+                            name="shopkeeperDescription"
+                            placeholder="Enter shopkeeper description"
+                            value={shopDetails.shopkeeperDescription}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div className="detail-section">
+                        <h3>Shop Details</h3>
+                        <input
+                            type="text"
+                            name="shopDetails"
+                            placeholder="Enter shop details"
+                            value={shopDetails.shopDetails}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    <div className="detail-section">
+                        <h3>Shopkeeper Details</h3>
+                        <input
+                            type="text"
+                            name="shopkeeperDetails"
+                            placeholder="Enter shopkeeper details"
+                            value={shopDetails.shopkeeperDetails}
+                            onChange={handleInputChange}
+                        />
+                    </div>
                 </div>
                 <div className="shop-actions">
-                    <button className="action-button" onClick={saveShopToFirebase}>Save Shop</button>
+                    <button 
+                        className="action-button" 
+                        onClick={saveShopToFirebase} 
+                        disabled={!areAllDetailsFilled()}
+                    >
+                        Save Shop
+                    </button>
                     <button className="action-button">Export to PDF</button>
                 </div>
             </div>
