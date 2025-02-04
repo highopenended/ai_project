@@ -22,9 +22,9 @@ function ImportExport({ handleImportShop, handleExportShop }) {
                 onClick={() => document.getElementById('file-input').click()}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
-                aria-label="Drag and drop a shop file here or click to select"
+                aria-label="Drag and drop or Select File"
             >
-                Drag and drop a shop file here or click to select
+                Drag and drop or Select File
             </div>
             <input 
                 id="file-input"
