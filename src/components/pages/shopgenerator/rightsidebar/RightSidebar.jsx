@@ -14,6 +14,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
+import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
@@ -36,46 +37,6 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
-// Function to encode shop data into a shareable code
-const encodeShopData = (shopData) => {
-    console.log('Encoding shop data:', shopData);
-    const dataToEncode = {
-        // Shop details
-        type: shopData.type,
-        name: shopData.name,
-        keeper: shopData.keeper,
-        location: shopData.location,
-        shopkeeperDescription: shopData.shopkeeperDescription,
-        shopDetails: shopData.shopDetails,
-        shopkeeperDetails: shopData.shopkeeperDetails,
-        // Shop parameters
-        goldAmount: shopData.goldAmount,
-        levelRange: shopData.levelRange,
-        shopBias: shopData.shopBias,
-        rarityDistribution: shopData.rarityDistribution,
-        // Categories and traits
-        categories: shopData.categories,
-        subcategories: shopData.subcategories,
-        traits: shopData.traits,
-        // Current stock
-        currentStock: shopData.currentStock
-    };
-    console.log('Data being encoded:', dataToEncode);
-    return btoa(JSON.stringify(dataToEncode));
-};
-
-// Function to decode shop data from a shareable code
-const decodeShopData = (code) => {
-    try {
-        const decodedData = JSON.parse(atob(code));
-        console.log('Decoded shop data:', decodedData);
-        return decodedData;
-    } catch (error) {
-        console.error('Error decoding shop data:', error);
-        return null;
-    }
-};
-
 function RightSidebar({ onSave, onLoad }) {
     const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
@@ -85,7 +46,6 @@ function RightSidebar({ onSave, onLoad }) {
     const [savedShops, setSavedShops] = useState([]);
     const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
     const [expandedFields, setExpandedFields] = useState({});
-    const [importCode, setImportCode] = useState('');
 
     // Debug logging for auth state changes
     useEffect(() => {
@@ -324,10 +284,14 @@ function RightSidebar({ onSave, onLoad }) {
         try {
             const shopData = await onSave(shopDetails);
             const exportCode = encodeShopData(shopData);
-            console.log('Generated export code:', exportCode);
-            // Copy to clipboard
-            await navigator.clipboard.writeText(exportCode);
-            alert('Shop code copied to clipboard!');
+            const blob = new Blob([exportCode], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${shopDetails.name || 'shop'}.shop`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('Shop exported successfully!');
         } catch (error) {
             console.error('Error exporting shop:', error);
             alert('Error exporting shop. Please try again.');
@@ -335,29 +299,35 @@ function RightSidebar({ onSave, onLoad }) {
     };
 
     // Function to handle shop import
-    const handleImportShop = () => {
-        try {
-            const importedData = decodeShopData(importCode);
-            if (!importedData) {
-                alert('Invalid shop code. Please check and try again.');
-                return;
+    const handleImportShop = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = decodeShopData(e.target.result);
+                if (!importedData) {
+                    alert('Invalid shop file. Please check and try again.');
+                    return;
+                }
+                onLoad(importedData);
+                setShopDetails({
+                    type: importedData.type || '',
+                    name: importedData.name || '',
+                    keeper: importedData.keeper || '',
+                    location: importedData.location || '',
+                    shopkeeperDescription: importedData.shopkeeperDescription || '',
+                    shopDetails: importedData.shopDetails || '',
+                    shopkeeperDetails: importedData.shopkeeperDetails || ''
+                });
+                alert('Shop imported successfully!');
+            } catch (error) {
+                console.error('Error importing shop:', error);
+                alert('Error importing shop. Please check the file and try again.');
             }
-            onLoad(importedData);
-            setShopDetails({
-                type: importedData.type || '',
-                name: importedData.name || '',
-                keeper: importedData.keeper || '',
-                location: importedData.location || '',
-                shopkeeperDescription: importedData.shopkeeperDescription || '',
-                shopDetails: importedData.shopDetails || '',
-                shopkeeperDetails: importedData.shopkeeperDetails || ''
-            });
-            setImportCode('');
-            alert('Shop imported successfully!');
-        } catch (error) {
-            console.error('Error importing shop:', error);
-            alert('Error importing shop. Please check the code and try again.');
-        }
+        };
+        reader.readAsText(file);
     };
 
     return (
@@ -402,6 +372,19 @@ function RightSidebar({ onSave, onLoad }) {
                             </option>
                         ))}
                     </select>
+                    <input 
+                        type="file" 
+                        accept=".shop"
+                        onChange={handleImportShop}
+                        aria-label="Import Shop"
+                    />
+                    <button 
+                        className="action-button"
+                        onClick={handleExportShop}
+                        aria-label="Export Shop"
+                    >
+                        Export Shop
+                    </button>
                 </div>
 
                 <h2>Shop Details</h2>
@@ -421,37 +404,6 @@ function RightSidebar({ onSave, onLoad }) {
                 >
                     Save Shop
                 </button>
-
-                {/* Import/Export Section */}
-                <div className="shop-import-export">
-                    <h3>Import/Export Shop</h3>
-                    <div className="import-export-actions">
-                        <button 
-                            className="action-button"
-                            onClick={handleExportShop}
-                            aria-label="Export Shop"
-                        >
-                            Export Shop
-                        </button>
-                        <div className="import-section">
-                            <input
-                                type="text"
-                                value={importCode}
-                                onChange={(e) => setImportCode(e.target.value)}
-                                placeholder="Paste shop code here"
-                                aria-label="Import shop code"
-                            />
-                            <button 
-                                className="action-button"
-                                onClick={handleImportShop}
-                                disabled={!importCode}
-                                aria-label="Import Shop"
-                            >
-                                Import
-                            </button>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div 
                 className={`right-resize-handle ${isDragging ? 'dragging' : ''}`}
