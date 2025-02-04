@@ -415,43 +415,43 @@ function RightSidebar({ onSave, onLoad }) {
                     ))}
                 </div>
 
-                <div className="shop-actions">
-                    <button 
-                        className="action-button" 
-                        onClick={saveShopToFirebase} 
-                        disabled={!areAllDetailsFilled()}
-                        aria-label="Save Shop"
-                    >
-                        Save Shop
-                    </button>
-                    <button 
-                        className="action-button"
-                        onClick={handleExportShop}
-                        aria-label="Export Shop"
-                    >
-                        Export Shop
-                    </button>
-                </div>
+                <button 
+                    className="action-button" 
+                    onClick={saveShopToFirebase} 
+                    disabled={!areAllDetailsFilled()}
+                    aria-label="Save Shop"
+                >
+                    Save Shop
+                </button>
 
-                {/* Import Section */}
+                {/* Import/Export Section */}
                 <div className="shop-import-export">
-                    <h3>Import Shop</h3>
-                    <div className="import-section">
-                        <input
-                            type="text"
-                            value={importCode}
-                            onChange={(e) => setImportCode(e.target.value)}
-                            placeholder="Paste shop code here"
-                            aria-label="Import shop code"
-                        />
+                    <h3>Import/Export Shop</h3>
+                    <div className="import-export-actions">
                         <button 
                             className="action-button"
-                            onClick={handleImportShop}
-                            disabled={!importCode}
-                            aria-label="Import Shop"
+                            onClick={handleExportShop}
+                            aria-label="Export Shop"
                         >
-                            Import
+                            Export Shop
                         </button>
+                        <div className="import-section">
+                            <input
+                                type="text"
+                                value={importCode}
+                                onChange={(e) => setImportCode(e.target.value)}
+                                placeholder="Paste shop code here"
+                                aria-label="Import shop code"
+                            />
+                            <button 
+                                className="action-button"
+                                onClick={handleImportShop}
+                                disabled={!importCode}
+                                aria-label="Import Shop"
+                            >
+                                Import
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
