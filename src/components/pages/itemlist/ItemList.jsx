@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import './itemlist/ItemList.css';
-import itemData from '../../../public/item-table.json';  // Import JSON directly
+import './ItemList.css';
+import itemData from '../../../../public/item-table.json';  // Import JSON directly
 
 function ItemList() {
     const [items, setItems] = useState([]);

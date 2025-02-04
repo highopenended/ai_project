@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
 import Layout from "./components/Layout.jsx";
-import Login from "./components/pages/Login.jsx";
-import Home from "./components/pages/Home.jsx";
-import ShopGenerator from "./components/pages/ShopGenerator.jsx";
-import ItemList from "./components/pages/ItemList.jsx";
+import Login from "./components/pages/login/Login.jsx";
+import Home from "./components/pages/home/Home.jsx";
+import ShopGenerator from "./components/pages/shopgenerator/ShopGenerator.jsx";
+import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import CategoryProvider from './context/CategoryContext';
 import { TraitProvider } from './context/TraitContext';

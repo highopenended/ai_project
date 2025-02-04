@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from 'prop-types';
-import './home/Home.css';
-import { useAuth } from "../../context/AuthContext";
-import { saveConversation, updateConversation } from "../../lib/firebase/chatHistory";
+import './Home.css';
+import { useAuth } from "../../../context/AuthContext";
+import { saveConversation, updateConversation } from "../../../lib/firebase/chatHistory";
 import { useLocation, useNavigate } from "react-router-dom";
-import ChatHeader from "./home/chat/ChatHeader";
-import MessageInput from "./home/chat/MessageInput";
-import MessageList from "./home/chat/MessageList";
+import ChatHeader from "./chat/ChatHeader";
+import MessageInput from "./chat/MessageInput";
+import MessageList from "./chat/MessageList";
 
 /**
  * Home Component
