@@ -9,7 +9,7 @@ function GenerateButton({ onClick }) {
             onClick={onClick}
             type="button"
         >
-            Generate Shop
+            Generate Inventory
         </button>
     );
 }
