@@ -106,35 +106,12 @@
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
-.shop-select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid var(--border-color);
-    border-radius: 6px;
-    background-color: var(--background-tertiary);
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.shop-select:hover {
-    border-color: var(--primary-color);
-}
-
-.shop-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
-}
-
 /* Input Fields */
 .detail-section input,
 .detail-section textarea {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid var(--border-color);
+    border: 2px solid white;
     border-radius: 6px;
     background-color: var(--background-tertiary);
     color: var(--text-primary);
@@ -170,12 +147,12 @@
 
 .multiline-field textarea {
     width: 100%;
-    padding: 0.5rem;
-    border: 2px solid var(--border-color);
-    border-radius: 4px;
+    padding: 0.75rem;
+    border: 2px solid white;
+    border-radius: 6px;
     background-color: var(--background-tertiary);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     resize: vertical;
     min-height: 38px;
     transition: all 0.2s ease;
@@ -222,6 +199,8 @@
     flex-direction: column;
     gap: 0.75rem;
     margin-top: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .action-button {
@@ -268,23 +247,74 @@
 
 /* Import/Export Section */
 .shop-import-export {
-    margin-top: 1.5rem;
-    padding: 1rem;
+    margin-top: 2rem;
+    padding: 1.5rem;
     background-color: var(--background-primary);
+    border: 2px solid var(--text-primary);
     border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.shop-import-export h3 {
+    margin: 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
 }
 
 .import-section {
-    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .import-section input {
     width: 100%;
     padding: 0.75rem;
-    border: 2px solid var(--border-color);
+    border: 2px solid white;
     border-radius: 6px;
     background-color: var(--background-tertiary);
     color: var(--text-primary);
     font-size: 0.95rem;
-    margin-top: 0.5rem;
+}
+
+/* Dropdown Styling */
+.shop-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid white;
+    border-radius: 6px;
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.shop-select:hover {
+    border-color: var(--primary-color);
+}
+
+.shop-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Import/Export Buttons */
+.shop-import-export .action-button {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    border: 2px solid var(--text-primary);
+}
+
+.shop-import-export .action-button:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
 }
