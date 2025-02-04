@@ -1,40 +1,219 @@
-.table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    margin-top: 1rem;
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: var(--background-primary);
-}
-
-.data-table th,
-.data-table td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.data-table th {
-    background-color: var(--background-secondary);
-    font-weight: 600;
-    cursor: pointer;
-    user-select: none;
+.item-table-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     position: relative;
 }
 
-.data-table th:hover {
-    background-color: var(--background-hover);
+.item-table-container {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px 8px 0 0;
+    background-color: rgba(13, 17, 23, 0.7);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    max-height: calc(100vh - 3rem - 4rem - 2rem - 60px); /* Adjusted to account for totals height */
+    overflow-y: auto;
 }
 
-.sort-order {
-    font-size: 0.75rem;
-    margin-left: 0.25rem;
-    color: var(--text-secondary);
+.item-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
 }
 
-.data-table tbody tr:hover {
-    background-color: var(--background-hover);
+
+/* Header styling */
+.item-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: rgba(22, 27, 34, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.item-table th,
+.item-table td {
+    padding: 12px 16px;
+    text-align: left;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Column widths */
+.col-count { 
+    width: 80px;
+    font-variant-numeric: tabular-nums;
+}
+
+.count-prefix {
+    font-size: 0.85em;
+    opacity: 0.7;
+    margin-right: 1px;
+    font-weight: 300;
+}
+
+.col-level { width: 80px; }
+.col-price { width: 100px; }
+.col-total { width: 100px; }
+.col-rarity { width: 100px; }
+.col-category { width: 120px; }
+.col-subcategory { width: 120px; }
+.col-name { width: auto; }
+
+/* Rarity colors */
+.rarity-common {
+    color: #ffffff;
+}
+
+.rarity-uncommon {
+    color: #1eff00;
+}
+
+.rarity-rare {
+    color: #0070dd;
+}
+
+.rarity-unique {
+    color: #a335ee;
+}
+
+/* Sorting */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.sortable-header:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sort-indicator {
+    margin-left: 8px;
+    opacity: 0.7;
+}
+
+.sort-indicator sup {
+    font-size: 0.7em;
+    margin-left: 2px;
+    opacity: 0.8;
+}
+
+/* Row hover effect */
+.item-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Scrollbar */
+.item-table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.item-table-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.item-table-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.item-table-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Totals section */
+.table-totals {
+    background-color: rgba(22, 27, 34, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 14px 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.totals-content {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 32px;
+    font-weight: 500;
+}
+
+.total-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.counts-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.total-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rarity-count-list {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-left: 4px;
+}
+
+.rarity-count {
+    display: flex;
+    align-items: center;
+    font-size: 0.92em;
+    letter-spacing: 0.2px;
+}
+
+.rarity-separator {
+    margin-left: 12px;
+    width: 3px;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+
+.totals-divider {
+    width: 1px;
+    align-self: stretch;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 0 8px;
+}
+
+.total-label {
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    font-size: 0.92em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.total-label.unique-count {
+    text-transform: none;
+    margin-left: 12px;
+    font-size: 0.85em;
+    letter-spacing: 0;
+    opacity: 0.7;
+}
+
+.total-value {
+    color: rgba(255, 255, 255, 0.95);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.decimal-part {
+    font-size: 0.55em;
+    opacity: 0.7;
+    font-weight: 500;
+    position: relative;
+    top: -0.45em;
 } 

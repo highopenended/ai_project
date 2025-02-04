@@ -3,6 +3,10 @@ import React, { useState, useEffect } from 'react';
 /* eslint-enable no-unused-vars */
 import './ShopGenerator.css';
 import LeftSidebar from './leftsidebar/LeftSidebar';
+import GoldInput from './leftsidebar/GoldInput';
+import LevelInput from './leftsidebar/LevelInput';
+import BiasGrid from './leftsidebar/BiasGrid';
+import RaritySliders from './leftsidebar/raritysliders/RaritySliders';
 import MiddleBar from './middlebar/MiddleBar';
 import RightSidebar from './rightsidebar/RightSidebar';
 import itemData from '../../../../public/item-table.json';
@@ -253,16 +257,17 @@ function ShopGenerator() {
     return (
         <div className="content-area">
             <div className="content-container">
-                <LeftSidebar 
-                    onGenerate={handleGenerateClick}
-                    onGoldChange={setCurrentGold}
-                    onLowestLevelChange={setLowestLevel}
-                    onHighestLevelChange={setHighestLevel}
-                    onBiasChange={setItemBias}
-                    onRarityDistributionChange={setRarityDistribution}
-                    lowestLevel={lowestLevel}
-                    highestLevel={highestLevel}
-                />
+                <LeftSidebar onGenerate={handleGenerateClick}>
+                    <GoldInput onChange={setCurrentGold} />
+                    <LevelInput
+                        lowestLevel={lowestLevel}
+                        highestLevel={highestLevel}
+                        onLowestLevelChange={setLowestLevel}
+                        onHighestLevelChange={setHighestLevel}
+                    />
+                    <BiasGrid onChange={setItemBias} />
+                    <RaritySliders onChange={setRarityDistribution} />
+                </LeftSidebar>
                 <MiddleBar 
                     items={items}
                     sortConfig={sortConfig}

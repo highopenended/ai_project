@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import ItemTable from '../ItemTable';
+import ItemTable from './ItemTable';
 import './MiddleBar.css';
 
 function MiddleBar({ items, sortConfig, onSort }) {
