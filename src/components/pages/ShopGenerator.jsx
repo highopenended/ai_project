@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 /* eslint-enable no-unused-vars */
-import './shopgenerator/ShopGenerator.css';
+import './ShopGenerator.css';
 import GoldInput from './shopgenerator/leftsidebar/GoldInput';
 import LevelInput from './shopgenerator/leftsidebar/LevelInput';
 import BiasGrid from './shopgenerator/leftsidebar/BiasGrid';
