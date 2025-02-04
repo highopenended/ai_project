@@ -82,19 +82,19 @@
 
 .right-resize-handle {
     position: absolute;
-    left: -3px;
+    left: -5px;
     top: 0;
     bottom: 0;
-    width: 8px;
+    width: 10px;
     cursor: ew-resize;
-    background: transparent;
+    background: rgba(163, 177, 255, 0.3);
     transition: background-color 0.2s ease;
     z-index: 1000;
 }
 
 .right-resize-handle:hover,
 .right-resize-handle.dragging {
-    background-color: rgba(163, 177, 255, 0.3);
+    background-color: rgba(163, 177, 255, 0.5);
 }
 
 .right-resize-handle.dragging {
