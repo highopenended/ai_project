@@ -28,8 +28,16 @@ const useDebounce = (callback, delay) => {
     }, [callback, delay]);
 };
 
-function RaritySliders({ onChange }) {
-    const [distribution, setDistribution] = useState(DEFAULT_DISTRIBUTION);
+function RaritySliders({ onChange, value }) {
+    const [distribution, setDistribution] = useState(value || DEFAULT_DISTRIBUTION);
+
+    // Update distribution when value prop changes
+    useEffect(() => {
+        if (value) {
+            setDistribution(value);
+        }
+    }, [value]);
+
     const [editingRarity, setEditingRarity] = useState(null);
     const [editValue, setEditValue] = useState('');
     const [preEditValue, setPreEditValue] = useState(null);
@@ -322,6 +330,7 @@ function RaritySliders({ onChange }) {
 
 RaritySliders.propTypes = {
     onChange: PropTypes.func.isRequired,
+    value: PropTypes.object,
 };
 
 export default RaritySliders;

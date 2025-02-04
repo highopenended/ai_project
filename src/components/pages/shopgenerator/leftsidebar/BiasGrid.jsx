@@ -2,11 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './BiasGrid.css';
 
-function BiasGrid({ onChange }) {
+function BiasGrid({ onChange, value }) {
     const gridRef = useRef(null);
-    const [position, setPosition] = useState({ x: 0.5, y: 0.5 }); // Center by default
+    const [position, setPosition] = useState(value || { x: 0.5, y: 0.5 }); // Use value if provided, otherwise center
     const [isDragging, setIsDragging] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+
+    // Update position when value prop changes
+    useEffect(() => {
+        if (value) {
+            setPosition(value);
+        }
+    }, [value]);
 
     const updatePosition = (clientX, clientY) => {
         if (!gridRef.current) return;
@@ -139,7 +146,8 @@ function BiasGrid({ onChange }) {
 }
 
 BiasGrid.propTypes = {
-    onChange: PropTypes.func.isRequired
+    onChange: PropTypes.func.isRequired,
+    value: PropTypes.object
 };
 
 export default BiasGrid; 

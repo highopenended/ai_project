@@ -50,7 +50,7 @@ function RightSidebar({ onSave, onLoad }) {
 
     // Function to load a specific shop
     const loadShop = (shop) => {
-        // Extract only the shop details fields
+        // Extract shop details fields
         const shopDetailsFields = {
             type: shop.type || '',
             name: shop.name || '',
@@ -61,7 +61,26 @@ function RightSidebar({ onSave, onLoad }) {
             shopkeeperDetails: shop.shopkeeperDetails || ''
         };
         setShopDetails(shopDetailsFields);
-        onLoad(shop);  // Pass the full shop data to parent
+
+        // Pass all shop data to parent, including settings
+        const shopData = {
+            ...shop,
+            goldAmount: shop.goldAmount || 5000,
+            levelRange: shop.levelRange || { low: 0, high: 10 },
+            shopBias: shop.shopBias || { x: 0.5, y: 0.5 },
+            rarityDistribution: shop.rarityDistribution || {
+                Common: 95.00,
+                Uncommon: 4.50,
+                Rare: 0.49,
+                Unique: 0.01
+            },
+            categories: shop.categories || {},
+            subcategories: shop.subcategories || {},
+            traits: shop.traits || {},
+            currentStock: shop.currentStock || []
+        };
+        
+        onLoad(shopData);  // Pass the full shop data to parent
     };
 
     const handleMouseDown = useCallback((e) => {

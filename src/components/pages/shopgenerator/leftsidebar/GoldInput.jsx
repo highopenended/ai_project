@@ -1,16 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './GoldInput.css';
 
-function GoldInput({ onChange }) {
-    // Initialize with formatted default value
-    const [goldAmount, setGoldAmount] = useState('5,000');
-
-    // Call onChange with initial value
-    useState(() => {
-        onChange(5000);
-    }, []);
-
+function GoldInput({ onChange, value }) {
     const formatNumber = (value) => {
         if (!value) return '';
 
@@ -25,6 +17,30 @@ function GoldInput({ onChange }) {
 
         return formattedWhole + formattedDecimal;
     };
+
+    // Initialize with formatted default value or provided value
+    const [goldAmount, setGoldAmount] = useState(() => {
+        if (value !== undefined) {
+            return formatNumber(value.toString());
+        }
+        return '5,000';
+    });
+
+    // Update when value prop changes
+    useEffect(() => {
+        if (value !== undefined) {
+            setGoldAmount(formatNumber(value.toString()));
+        }
+    }, [value]);
+
+    // Call onChange with initial value
+    useEffect(() => {
+        if (value !== undefined) {
+            onChange(value);
+        } else {
+            onChange(5000);
+        }
+    }, [onChange, value]);
 
     const handleChange = (e) => {
         const value = e.target.value;
@@ -91,6 +107,7 @@ function GoldInput({ onChange }) {
 
 GoldInput.propTypes = {
     onChange: PropTypes.func.isRequired,
+    value: PropTypes.number,
 };
 
 export default GoldInput; 

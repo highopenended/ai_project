@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './LevelInput.css';
 
@@ -12,11 +12,17 @@ function LevelInput({
     const [lowestDisplay, setLowestDisplay] = useState(lowestLevel.toString());
     const [highestDisplay, setHighestDisplay] = useState(highestLevel.toString());
 
+    // Update displays when props change
+    useEffect(() => {
+        setLowestDisplay(lowestLevel.toString());
+        setHighestDisplay(highestLevel.toString());
+    }, [lowestLevel, highestLevel]);
+
     // Set initial values
-    useState(() => {
-        onLowestLevelChange(0);
-        onHighestLevelChange(10);
-    }, []);
+    useEffect(() => {
+        onLowestLevelChange(lowestLevel);
+        onHighestLevelChange(highestLevel);
+    }, [onLowestLevelChange, onHighestLevelChange, lowestLevel, highestLevel]);
 
     const handleLowestLevelChange = (e) => {
         const value = e.target.value;
