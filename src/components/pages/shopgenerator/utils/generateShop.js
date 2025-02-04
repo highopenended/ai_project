@@ -297,9 +297,9 @@ export const generateShop = ({
     const averagePrices = calculateAveragePrices(biasFiltered, currentGold);
 
     // Log initial state
-    Object.entries(rarityBuckets).forEach(([rarity, items]) => {
-        console.log(`-- ${rarity} bucket size: ${items.length}`);
-    });
+    // Object.entries(rarityBuckets).forEach(([rarity, items]) => {
+    //     console.log(`-- ${rarity} bucket size: ${items.length}`);
+    // });
 
     console.log('Generate clicked with settings:', {
         currentGold,
@@ -319,7 +319,7 @@ export const generateShop = ({
         }, {})
     });
     
-    console.log(`Price limits: max ${currentGold.toFixed(2)} gp per item (100% of total)`);
+    // console.log(`Price limits: max ${currentGold.toFixed(2)} gp per item (100% of total)`);
 
     // Initialize tracking objects
     const selection = createItemSelection();

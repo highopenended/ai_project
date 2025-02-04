@@ -49,12 +49,151 @@
     color: var(--text-secondary);
     font-size: 1rem;
     font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .detail-section p {
     margin: 0;
     color: var(--text-primary);
     font-size: 1rem;
+}
+
+/* Saved Shops Section */
+.saved-shops-section {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--background-primary);
+    border-radius: 4px;
+}
+
+.saved-shops-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.saved-shops-header h3 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.new-shop-button {
+    padding: 0.25rem 0.75rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.new-shop-button:hover {
+    background-color: var(--primary-color-hover);
+}
+
+.shop-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shop-select:hover {
+    border-color: var(--primary-color);
+}
+
+.shop-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Input Fields */
+.detail-section input {
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.detail-section input:hover {
+    border-color: var(--primary-color);
+}
+
+.detail-section input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Multiline Fields */
+.multiline-field {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.multiline-field textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 38px;
+    transition: all 0.2s ease;
+}
+
+.multiline-field.expanded textarea {
+    min-height: 150px;
+}
+
+.multiline-field textarea:hover {
+    border-color: var(--primary-color);
+}
+
+.multiline-field textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.toggle-expand {
+    padding: 0.25rem;
+    background: var(--background-tertiary);
+    border: none;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    width: 24px;
+    height: 24px;
+}
+
+.toggle-expand:hover {
+    background: var(--background-primary);
+    color: var(--text-primary);
 }
 
 /* Action Buttons */
@@ -74,7 +213,7 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
 }
 
 .action-button:hover {
@@ -106,61 +245,4 @@
 .right-resize-handle:hover,
 .right-resize-handle.dragging {
     background-color: rgba(163, 177, 255, 0.5);
-}
-
-/* Saved Shops Section */
-.saved-shops-section {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    background-color: var(--background-primary);
-    border-radius: 4px;
-}
-
-.saved-shops-section h3 {
-    margin: 0 0 0.5rem 0;
-    color: var(--text-secondary);
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.shop-select {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--background-secondary);
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    cursor: pointer;
-}
-
-.shop-select:hover {
-    border-color: var(--primary-color);
-}
-
-.shop-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
-}
-
-/* Input Fields */
-.detail-section input {
-    padding: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--background-secondary);
-    color: var(--text-primary);
-    font-size: 0.9rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.detail-section input:hover {
-    border-color: var(--primary-color);
-}
-
-.detail-section input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
 }

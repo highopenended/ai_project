@@ -26,6 +26,9 @@ const INITIAL_SHOP_DETAILS = {
     shopkeeperDetails: ''
 };
 
+// Define which fields should be multiline
+const MULTILINE_FIELDS = ['shopkeeperDescription', 'shopDetails', 'shopkeeperDetails'];
+
 // Sidebar size constraints
 const SIDEBAR_CONSTRAINTS = {
     MIN_WIDTH: 250,
@@ -41,6 +44,7 @@ function RightSidebar({ onSave, onLoad }) {
     const dragInfo = useRef({ startX: 0, startWidth: 0 });
     const [savedShops, setSavedShops] = useState([]);
     const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
+    const [expandedFields, setExpandedFields] = useState({});
 
     // Load saved shops when component mounts
     useEffect(() => {
@@ -77,26 +81,7 @@ function RightSidebar({ onSave, onLoad }) {
             shopkeeperDetails: shop.shopkeeperDetails || ''
         };
         setShopDetails(shopDetailsFields);
-
-        // Pass all shop data to parent, including settings
-        const shopData = {
-            ...shop,
-            goldAmount: shop.goldAmount || 5000,
-            levelRange: shop.levelRange || { low: 0, high: 10 },
-            shopBias: shop.shopBias || { x: 0.5, y: 0.5 },
-            rarityDistribution: shop.rarityDistribution || {
-                Common: 95.00,
-                Uncommon: 4.50,
-                Rare: 0.49,
-                Unique: 0.01
-            },
-            categories: shop.categories || {},
-            subcategories: shop.subcategories || {},
-            traits: shop.traits || {},
-            currentStock: shop.currentStock || []
-        };
-        
-        onLoad(shopData);  // Pass the full shop data to parent
+        onLoad(shop);  // Pass the full shop data to parent
     };
 
     const handleMouseDown = useCallback((e) => {
@@ -142,13 +127,95 @@ function RightSidebar({ onSave, onLoad }) {
         };
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
-    // New function to handle input changes
+    // Function to create a new shop
+    const handleNewShop = () => {
+        setShopDetails(INITIAL_SHOP_DETAILS);
+        setExpandedFields({});
+        // Pass empty shop data to parent to reset everything
+        onLoad({
+            type: '',
+            name: '',
+            keeper: '',
+            location: '',
+            shopkeeperDescription: '',
+            shopDetails: '',
+            shopkeeperDetails: '',
+            goldAmount: 5000,
+            levelRange: { low: 0, high: 10 },
+            shopBias: { x: 0.5, y: 0.5 },
+            rarityDistribution: {
+                Common: 95.00,
+                Uncommon: 4.50,
+                Rare: 0.49,
+                Unique: 0.01
+            },
+            categories: {},
+            subcategories: {},
+            traits: {},
+            currentStock: []
+        });
+    };
+
+    // Function to toggle field expansion
+    const toggleFieldExpansion = (fieldName) => {
+        setExpandedFields(prev => ({
+            ...prev,
+            [fieldName]: !prev[fieldName]
+        }));
+    };
+
+    // Modified input change handler
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setShopDetails(prevDetails => ({
             ...prevDetails,
             [name]: value
         }));
+    };
+
+    // Function to render input field based on type
+    const renderInputField = (key) => {
+        const isMultiline = MULTILINE_FIELDS.includes(key);
+        const isExpanded = expandedFields[key];
+        const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
+
+        if (isMultiline) {
+            return (
+                <div className={`multiline-field ${isExpanded ? 'expanded' : ''}`}>
+                    <h3>
+                        {label}
+                        <button
+                            className="toggle-expand"
+                            onClick={() => toggleFieldExpansion(key)}
+                            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
+                        >
+                            {isExpanded ? '▼' : '▲'}
+                        </button>
+                    </h3>
+                    <textarea
+                        name={key}
+                        placeholder={`Enter ${label.toLowerCase()}`}
+                        value={shopDetails[key]}
+                        onChange={handleInputChange}
+                        aria-label={label}
+                    />
+                </div>
+            );
+        }
+
+        return (
+            <>
+                <h3>{label}</h3>
+                <input
+                    type="text"
+                    name={key}
+                    placeholder={`Enter ${label.toLowerCase()}`}
+                    value={shopDetails[key]}
+                    onChange={handleInputChange}
+                    aria-label={label}
+                />
+            </>
+        );
     };
 
     // Function to save shop data to Firebase
@@ -191,7 +258,16 @@ function RightSidebar({ onSave, onLoad }) {
                 
                 {/* Saved Shops Section */}
                 <div className="saved-shops-section">
-                    <h3>Saved Shops</h3>
+                    <div className="saved-shops-header">
+                        <h3>Saved Shops</h3>
+                        <button 
+                            className="new-shop-button"
+                            onClick={handleNewShop}
+                            aria-label="Create New Shop"
+                        >
+                            New Shop
+                        </button>
+                    </div>
                     <select 
                         className="shop-select"
                         onChange={(e) => {
@@ -216,15 +292,7 @@ function RightSidebar({ onSave, onLoad }) {
                 <div className="shop-details">
                     {Object.keys(INITIAL_SHOP_DETAILS).map((key) => (
                         <div key={key} className="detail-section">
-                            <h3>{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}</h3>
-                            <input
-                                type="text"
-                                name={key}
-                                placeholder={`Enter ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
-                                value={shopDetails[key]}
-                                onChange={handleInputChange}
-                                aria-label={key.replace(/([A-Z])/g, ' $1')}
-                            />
+                            {renderInputField(key)}
                         </div>
                     ))}
                 </div>
