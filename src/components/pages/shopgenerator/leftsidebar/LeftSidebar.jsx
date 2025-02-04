@@ -97,7 +97,7 @@ function LeftSidebar({ children, onGenerate }) {
                 </div>
             </div>
             <div 
-                className={`resize-handle ${isDragging ? 'dragging' : ''}`}
+                className={`left-resize-handle ${isDragging ? 'dragging' : ''}`}
                 onMouseDown={handleMouseDown}
             />
         </div>

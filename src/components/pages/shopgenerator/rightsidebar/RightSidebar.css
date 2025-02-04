@@ -1,5 +1,5 @@
 .right-sidebar {
-    flex: 1;
+    flex: 0 0 auto;
     padding: 1rem;
     padding-left: calc(1rem + 8px);
     background-color: var(--background-secondary);
@@ -78,4 +78,26 @@
 
 .action-button:active {
     background-color: var(--primary-color-active);
+}
+
+.right-resize-handle {
+    position: absolute;
+    left: -3px;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: ew-resize;
+    background: transparent;
+    transition: background-color 0.2s ease;
+    z-index: 1000;
+}
+
+.right-resize-handle:hover,
+.right-resize-handle.dragging {
+    background-color: rgba(163, 177, 255, 0.3);
+}
+
+.right-resize-handle.dragging {
+    background-color: rgba(163, 177, 255, 0.5);
+    width: 10px;
 }

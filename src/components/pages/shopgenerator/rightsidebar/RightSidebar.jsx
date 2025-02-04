@@ -3,9 +3,52 @@ import './RightSidebar.css';
 
 function RightSidebar() {
     const sidebarRef = useRef(null);
-    const [sidebarWidth, setSidebarWidth] = useState(40);
+    const [sidebarWidth, setSidebarWidth] = useState(300);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragInfo = useRef({ startX: 0, startWidth: 0 });
 
+    const handleMouseDown = useCallback((e) => {
+        e.preventDefault();
+        dragInfo.current = {
+            startX: e.clientX,
+            startWidth: sidebarRef.current?.offsetWidth || 300
+        };
+        setIsDragging(true);
+    }, []);
 
+    const handleMouseMove = useCallback((e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const { startX, startWidth } = dragInfo.current;
+        const width = startWidth - (e.clientX - startX);
+        const minWidth = 250;
+        const maxWidth = 500;
+        const newWidth = Math.max(minWidth, Math.min(maxWidth, width));
+        
+        setSidebarWidth(newWidth);
+        document.body.style.cursor = 'ew-resize';
+    }, [isDragging]);
+
+    const handleMouseUp = useCallback(() => {
+        setIsDragging(false);
+        document.body.style.cursor = '';
+    }, []);
+
+    useEffect(() => {
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        } else {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+        
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isDragging, handleMouseMove, handleMouseUp]);
 
     return (
         <div 
@@ -38,6 +81,10 @@ function RightSidebar() {
                     <button className="action-button">Export to PDF</button>
                 </div>
             </div>
+            <div 
+                className={`right-resize-handle ${isDragging ? 'dragging' : ''}`}
+                onMouseDown={handleMouseDown}
+            />
         </div>
     );
 }

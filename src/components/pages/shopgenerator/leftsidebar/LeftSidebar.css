@@ -138,27 +138,28 @@
 .parameter-section:hover {
     background-color: rgba(255, 255, 255, 0.02);
 }
+
 /* Resize handle */
-.resize-handle {
+.left-resize-handle {
     position: absolute;
     right: -3px;
     top: 0;
     bottom: 0;
-    width: 8px; /* Slightly wider for easier grabbing */
+    width: 8px;
     cursor: ew-resize;
     background: transparent;
     transition: background-color 0.2s ease;
-    z-index: 1000; /* Ensure it's above other elements */
+    z-index: 1000;
 }
 
-.resize-handle:hover,
-.resize-handle.dragging {
+.left-resize-handle:hover,
+.left-resize-handle.dragging {
     background-color: rgba(163, 177, 255, 0.3);
 }
 
-.resize-handle.dragging {
+.left-resize-handle.dragging {
     background-color: rgba(163, 177, 255, 0.5);
-    width: 10px; /* Even wider when dragging */
+    width: 10px;
 }
 
 /* Remove the webkit resizer styles since we're not using native resize */
