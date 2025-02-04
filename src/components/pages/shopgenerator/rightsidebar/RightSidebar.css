@@ -101,3 +101,38 @@
     background-color: rgba(163, 177, 255, 0.5);
     width: 10px;
 }
+
+.saved-shops-section {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: var(--background-primary);
+    border-radius: 4px;
+}
+
+.saved-shops-section h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.shop-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.shop-select:hover {
+    border-color: var(--primary-color);
+}
+
+.shop-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
