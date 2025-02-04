@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTraitContext, TRAIT_STATES } from '../../context/TraitContext';
 import traitList from '../../../../../../public/trait-list.json';
 import './TraitFilter.css';
+import DropdownArrow from '../../components/DropdownArrow';
 
 function TraitFilter() {
     const {
@@ -57,20 +58,9 @@ function TraitFilter() {
                         <button
                             className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            title={isCollapsed ? "Expand traits" : "Collapse traits"}
+                            title={isCollapsed ? 'Expand traits' : 'Collapse traits'}
                         >
-                            <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M7 10l5 5 5-5H7z"
-                                    fill="currentColor"
-                                />
-                            </svg>
+                            <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
                         </button>
                     </div>
                 </div>

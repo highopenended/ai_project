@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
 import { RARITY_COLORS } from '../../../../../constants/rarityColors';
+import DropdownArrow from '../../components/DropdownArrow';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
 const DEFAULT_DISTRIBUTION = {
@@ -237,20 +238,9 @@ function RaritySliders({ onChange, value }) {
                     <button
                         className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
                         onClick={() => setIsCollapsed(prev => !prev)}
-                        title={isCollapsed ? "Expand rarity distribution" : "Collapse rarity distribution"}
+                        title={isCollapsed ? 'Expand rarity distribution' : 'Collapse rarity distribution'}
                     >
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M7 10l5 5 5-5H7z"
-                                fill="currentColor"
-                            />
-                        </svg>
+                        <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(prev => !prev)} />
                     </button>
                 </div>
             </div>

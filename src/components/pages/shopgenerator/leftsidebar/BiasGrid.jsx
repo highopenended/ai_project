@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './BiasGrid.css';
+import DropdownArrow from '../components/DropdownArrow';
 
 function BiasGrid({ onChange, value }) {
     const gridRef = useRef(null);
@@ -85,24 +86,7 @@ function BiasGrid({ onChange, value }) {
                             />
                         </svg>
                     </button>
-                    <button
-                        className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        title={isCollapsed ? "Expand shop bias" : "Collapse shop bias"}
-                    >
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M7 10l5 5 5-5H7z"
-                                fill="currentColor"
-                            />
-                        </svg>
-                    </button>
+                    <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
                 </div>
             </div>
             {!isCollapsed && (
