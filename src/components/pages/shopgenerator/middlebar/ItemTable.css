@@ -216,4 +216,20 @@
     font-weight: 500;
     position: relative;
     top: -0.45em;
+}
+
+.empty-message {
+    text-align: center;
+    padding: 2rem !important;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.empty-state .item-table-container {
+    background-color: rgba(13, 17, 23, 0.4);
+}
+
+.empty-state .table-totals {
+    opacity: 0.7;
 } 

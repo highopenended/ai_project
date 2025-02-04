@@ -3,8 +3,88 @@ import './ItemTable.css';
 import { RARITY_COLORS } from '../../../../constants/rarityColors';
 
 function ItemTable({ items, sortConfig, onSort }) {
+    // Helper function to get sort indicator and order
+    const getSortInfo = (columnName) => {
+        const sortItem = sortConfig.find(item => item.column === columnName);
+        if (!sortItem) return { indicator: '', order: 0 };
+        
+        const order = sortConfig.findIndex(item => item.column === columnName) + 1;
+        return {
+            indicator: sortItem.direction === 'asc' ? '↑' : '↓',
+            order: sortConfig.length > 1 ? order : 0
+        };
+    };
+
+    // Helper function to render column header with sort indicator
+    const renderColumnHeader = (columnName, displayName) => {
+        const { indicator, order } = getSortInfo(columnName);
+        return (
+            <th onClick={() => onSort(columnName)} className={`sortable-header col-${columnName}`}>
+                {displayName}
+                <span className="sort-indicator">
+                    {indicator}
+                    {order > 0 && <sup>{order}</sup>}
+                </span>
+            </th>
+        );
+    };
+
     if (!items || items.length === 0) {
-        return null;
+        return (
+            <div className="item-table-wrapper empty-state">
+                <div className="item-table-container">
+                    <table className="item-table">
+                        <thead>
+                            <tr>
+                                {renderColumnHeader('count', 'Count')}
+                                {renderColumnHeader('name', 'Item Name')}
+                                {renderColumnHeader('rarity', 'Rarity')}
+                                {renderColumnHeader('level', 'Level')}
+                                {renderColumnHeader('item_category', 'Category')}
+                                {renderColumnHeader('item_subcategory', 'Subcategory')}
+                                {renderColumnHeader('traits', 'Traits')}
+                                {renderColumnHeader('price', 'Price')}
+                                {renderColumnHeader('total', 'Total')}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colSpan="9" className="empty-message">
+                                    Click &ldquo;Generate Shop&rdquo; to populate the table with items
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div className="table-totals">
+                    <div className="totals-content">
+                        <div className="total-item counts-group">
+                            <div className="total-row">
+                                <span className="total-label">Items:</span>
+                                <span className="total-value">
+                                    <span className="count-prefix">×</span>
+                                    0
+                                </span>
+                                <span className="total-label unique-count">(0 unique)</span>
+                            </div>
+                        </div>
+                        <div className="totals-divider" />
+                        <div className="total-item">
+                            <span className="total-label">Avg Level:</span>
+                            <span className="total-value">0.0</span>
+                        </div>
+                        <div className="total-item">
+                            <span className="total-label">Avg Price:</span>
+                            <span className="total-value">0.00 gp</span>
+                        </div>
+                        <div className="total-item">
+                            <span className="total-label">Total Value:</span>
+                            <span className="total-value">0.00 gp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     // Helper function to format gold amount into gp, sp, cp
@@ -33,32 +113,6 @@ function ItemTable({ items, sortConfig, onSort }) {
             <>
                 {wholeWithCommas}<span className="decimal-part">.{decimal}</span> gp
             </>
-        );
-    };
-
-    // Helper function to get sort indicator and order
-    const getSortInfo = (columnName) => {
-        const sortItem = sortConfig.find(item => item.column === columnName);
-        if (!sortItem) return { indicator: '', order: 0 };
-        
-        const order = sortConfig.findIndex(item => item.column === columnName) + 1;
-        return {
-            indicator: sortItem.direction === 'asc' ? '↑' : '↓',
-            order: sortConfig.length > 1 ? order : 0
-        };
-    };
-
-    // Helper function to render column header with sort indicator
-    const renderColumnHeader = (columnName, displayName) => {
-        const { indicator, order } = getSortInfo(columnName);
-        return (
-            <th onClick={() => onSort(columnName)} className={`sortable-header col-${columnName}`}>
-                {displayName}
-                <span className="sort-indicator">
-                    {indicator}
-                    {order > 0 && <sup>{order}</sup>}
-                </span>
-            </th>
         );
     };
 
