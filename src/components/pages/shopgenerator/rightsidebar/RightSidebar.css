@@ -1,3 +1,4 @@
+/* Main Container */
 .right-sidebar {
     flex: 0 0 auto;
     padding: 1rem;
@@ -14,12 +15,14 @@
     flex-shrink: 0;
 }
 
+/* Content Layout */
 .right-sidebar-content {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
+/* Headings */
 .right-sidebar h2 {
     margin: 0;
     padding-bottom: 1rem;
@@ -28,6 +31,7 @@
     font-size: 1.5rem;
 }
 
+/* Shop Details Section */
 .shop-details {
     display: flex;
     flex-direction: column;
@@ -53,6 +57,7 @@
     font-size: 1rem;
 }
 
+/* Action Buttons */
 .shop-actions {
     display: flex;
     flex-direction: column;
@@ -80,6 +85,12 @@
     background-color: var(--primary-color-active);
 }
 
+.action-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Resize Handle */
 .right-resize-handle {
     position: absolute;
     left: -5px;
@@ -97,11 +108,7 @@
     background-color: rgba(163, 177, 255, 0.5);
 }
 
-.right-resize-handle.dragging {
-    background-color: rgba(163, 177, 255, 0.5);
-    width: 10px;
-}
-
+/* Saved Shops Section */
 .saved-shops-section {
     margin-bottom: 1rem;
     padding: 1rem;
@@ -132,6 +139,27 @@
 }
 
 .shop-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+/* Input Fields */
+.detail-section input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.detail-section input:hover {
+    border-color: var(--primary-color);
+}
+
+.detail-section input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);

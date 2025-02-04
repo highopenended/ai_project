@@ -1,3 +1,12 @@
+/**
+ * RightSidebar component for managing shop details and saved shops.
+ * Provides functionality to save, load, and edit shop information.
+ * 
+ * @component
+ * @param {Object} props
+ * @param {Function} props.onSave - Callback function when saving a shop
+ * @param {Function} props.onLoad - Callback function when loading a shop
+ */
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
@@ -6,25 +15,32 @@ import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 
+// Initial shop details state
+const INITIAL_SHOP_DETAILS = {
+    type: '',
+    name: '',
+    keeper: '',
+    location: '',
+    shopkeeperDescription: '',
+    shopDetails: '',
+    shopkeeperDetails: ''
+};
+
+// Sidebar size constraints
+const SIDEBAR_CONSTRAINTS = {
+    MIN_WIDTH: 250,
+    MAX_WIDTH: 500,
+    DEFAULT_WIDTH: 300
+};
 
 function RightSidebar({ onSave, onLoad }) {
     const { currentUser } = useAuth();
     const sidebarRef = useRef(null);
-    const [sidebarWidth, setSidebarWidth] = useState(300);
+    const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
     const [isDragging, setIsDragging] = useState(false);
     const dragInfo = useRef({ startX: 0, startWidth: 0 });
     const [savedShops, setSavedShops] = useState([]);
-
-    // New state for shop details
-    const [shopDetails, setShopDetails] = useState({
-        type: '',
-        name: '',
-        keeper: '',
-        location: '',
-        shopkeeperDescription: '',
-        shopDetails: '',
-        shopkeeperDetails: ''
-    });
+    const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
 
     // Load saved shops when component mounts
     useEffect(() => {
@@ -153,11 +169,11 @@ function RightSidebar({ onSave, onLoad }) {
     };
 
     // Function to check if all shop details are filled
-    const areAllDetailsFilled = () => {
+    const areAllDetailsFilled = useCallback(() => {
         return Object.values(shopDetails).every(detail => 
             detail && typeof detail === 'string' && detail.trim() !== ''
         );
-    };
+    }, [shopDetails]);
 
     return (
         <div 
@@ -166,9 +182,14 @@ function RightSidebar({ onSave, onLoad }) {
             style={{ width: sidebarWidth }}
         >
             <div className="right-sidebar-content">
-                <button className="action-button">Generate Shop Details</button>
+                <button 
+                    className="action-button"
+                    aria-label="Generate Shop Details"
+                >
+                    Generate Shop Details
+                </button>
                 
-                {/* Add dropdown for saved shops */}
+                {/* Saved Shops Section */}
                 <div className="saved-shops-section">
                     <h3>Saved Shops</h3>
                     <select 
@@ -180,6 +201,7 @@ function RightSidebar({ onSave, onLoad }) {
                             }
                         }}
                         value={shopDetails.name || ""}
+                        aria-label="Select a saved shop"
                     >
                         <option value="">Select a saved shop</option>
                         {savedShops.map((shop) => (
@@ -192,91 +214,42 @@ function RightSidebar({ onSave, onLoad }) {
 
                 <h2>Shop Details</h2>
                 <div className="shop-details">
-                    <div className="detail-section">
-                        <h3>Shop Type</h3>
-                        <input
-                            type="text"
-                            name="type"
-                            placeholder="Enter shop type"
-                            value={shopDetails.type}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="detail-section">
-                        <h3>Shop Name</h3>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="Enter shop name"
-                            value={shopDetails.name}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="detail-section">
-                        <h3>Shopkeeper</h3>
-                        <input
-                            type="text"
-                            name="keeper"
-                            placeholder="Enter shopkeeper's name"
-                            value={shopDetails.keeper}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="detail-section">
-                        <h3>Location</h3>
-                        <input
-                            type="text"
-                            name="location"
-                            placeholder="Enter location"
-                            value={shopDetails.location}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="detail-section">
-                        <h3>Shopkeeper Description</h3>
-                        <input
-                            type="text"
-                            name="shopkeeperDescription"
-                            placeholder="Enter shopkeeper description"
-                            value={shopDetails.shopkeeperDescription}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="detail-section">
-                        <h3>Shop Details</h3>
-                        <input
-                            type="text"
-                            name="shopDetails"
-                            placeholder="Enter shop details"
-                            value={shopDetails.shopDetails}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-                    <div className="detail-section">
-                        <h3>Shopkeeper Details</h3>
-                        <input
-                            type="text"
-                            name="shopkeeperDetails"
-                            placeholder="Enter shopkeeper details"
-                            value={shopDetails.shopkeeperDetails}
-                            onChange={handleInputChange}
-                        />
-                    </div>
+                    {Object.keys(INITIAL_SHOP_DETAILS).map((key) => (
+                        <div key={key} className="detail-section">
+                            <h3>{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}</h3>
+                            <input
+                                type="text"
+                                name={key}
+                                placeholder={`Enter ${key.replace(/([A-Z])/g, ' $1').toLowerCase()}`}
+                                value={shopDetails[key]}
+                                onChange={handleInputChange}
+                                aria-label={key.replace(/([A-Z])/g, ' $1')}
+                            />
+                        </div>
+                    ))}
                 </div>
                 <div className="shop-actions">
                     <button 
                         className="action-button" 
                         onClick={saveShopToFirebase} 
                         disabled={!areAllDetailsFilled()}
+                        aria-label="Save Shop"
                     >
                         Save Shop
                     </button>
-                    <button className="action-button">Export to PDF</button>
+                    <button 
+                        className="action-button"
+                        aria-label="Export to PDF"
+                    >
+                        Export to PDF
+                    </button>
                 </div>
             </div>
             <div 
                 className={`right-resize-handle ${isDragging ? 'dragging' : ''}`}
                 onMouseDown={handleMouseDown}
+                role="separator"
+                aria-label="Resize sidebar"
             />
         </div>
     );
