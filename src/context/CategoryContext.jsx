@@ -121,7 +121,9 @@ export function CategoryProvider({ children }) {
         toggleCategory,
         toggleSubcategory,
         clearCategorySelections,
-        clearSubcategorySelections
+        clearSubcategorySelections,
+        setCategoryStates,
+        setSubcategoryStates
     };
 
     return (

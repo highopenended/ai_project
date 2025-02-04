@@ -4,9 +4,10 @@ import { useAuth } from "../../../../context/AuthContext";
 // Import Firebase
 import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
+import PropTypes from 'prop-types';
 
 
-function RightSidebar() {
+function RightSidebar({ onSave, onLoad }) {
     const { currentUser } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(300);
@@ -49,7 +50,18 @@ function RightSidebar() {
 
     // Function to load a specific shop
     const loadShop = (shop) => {
-        setShopDetails(shop);
+        // Extract only the shop details fields
+        const shopDetailsFields = {
+            type: shop.type || '',
+            name: shop.name || '',
+            keeper: shop.keeper || '',
+            location: shop.location || '',
+            shopkeeperDescription: shop.shopkeeperDescription || '',
+            shopDetails: shop.shopDetails || '',
+            shopkeeperDetails: shop.shopkeeperDetails || ''
+        };
+        setShopDetails(shopDetailsFields);
+        onLoad(shop);  // Pass the full shop data to parent
     };
 
     const handleMouseDown = useCallback((e) => {
@@ -112,13 +124,10 @@ function RightSidebar() {
         }
 
         try {
-            const shopData = {
-                ...shopDetails,
-                // Add LeftSidebar parameters and ItemTable info here
-                // Example: goldAmount, shopBias, rarityDistributions, etc.
-            };
+            const shopData = await onSave(shopDetails);
             await setDoc(doc(db, `users/${currentUser.uid}/shops/${shopDetails.name}`), shopData);
             console.log('Shop saved successfully!');
+            loadSavedShops(); // Refresh the list of saved shops
         } catch (error) {
             console.error('Error saving shop:', error);
         }
@@ -126,7 +135,9 @@ function RightSidebar() {
 
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
-        return Object.values(shopDetails).every(detail => detail.trim() !== '');
+        return Object.values(shopDetails).every(detail => 
+            detail && typeof detail === 'string' && detail.trim() !== ''
+        );
     };
 
     return (
@@ -144,14 +155,16 @@ function RightSidebar() {
                     <select 
                         className="shop-select"
                         onChange={(e) => {
-                            const selected = savedShops.find(shop => shop.id === e.target.value);
-                            if (selected) loadShop(selected);
+                            if (e.target.value) {
+                                const selected = savedShops.find(shop => shop.name === e.target.value);
+                                if (selected) loadShop(selected);
+                            }
                         }}
-                        value=""
+                        value={shopDetails.name || ""}
                     >
                         <option value="">Select a saved shop</option>
                         {savedShops.map((shop) => (
-                            <option key={shop.id} value={shop.id}>
+                            <option key={shop.name} value={shop.name}>
                                 {shop.name}
                             </option>
                         ))}
@@ -249,5 +262,10 @@ function RightSidebar() {
         </div>
     );
 }
+
+RightSidebar.propTypes = {
+    onSave: PropTypes.func.isRequired,
+    onLoad: PropTypes.func.isRequired
+};
 
 export default RightSidebar;

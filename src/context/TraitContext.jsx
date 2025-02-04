@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 
 const TraitContext = createContext();
@@ -50,7 +50,8 @@ export function TraitProvider({ children }) {
             traitStates,
             getTraitState,
             toggleTrait,
-            clearTraitSelections
+            clearTraitSelections,
+            setTraitStates
         }}>
             {children}
         </TraitContext.Provider>

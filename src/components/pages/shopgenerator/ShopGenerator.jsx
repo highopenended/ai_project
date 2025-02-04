@@ -29,11 +29,14 @@ import { generateShop } from './utils/generateShop';
 function ShopGenerator() {
     const {
         categoryStates,
-        subcategoryStates
+        subcategoryStates,
+        setCategoryStates,
+        setSubcategoryStates
     } = useCategoryContext();
 
     const {
-        traitStates
+        traitStates,
+        setTraitStates
     } = useTraitContext();
 
     // State management
@@ -273,6 +276,107 @@ function ShopGenerator() {
         setRarityDistribution(newDistribution);
     };
 
+    // Add these props to pass to RightSidebar
+    const handleSaveShop = async (shopDetails) => {
+        const shopData = {
+            ...shopDetails,
+            // LeftSidebar Parameters
+            goldAmount: currentGold,
+            levelRange: {
+                low: lowestLevel,
+                high: highestLevel
+            },
+            shopBias: itemBias,
+            rarityDistribution,
+            categories: {
+                included: Array.from(categoryStates.entries())
+                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                    .map(([category]) => category),
+                excluded: Array.from(categoryStates.entries())
+                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                    .map(([category]) => category)
+            },
+            subcategories: {
+                included: Array.from(subcategoryStates.entries())
+                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                    .map(([subcategory]) => subcategory),
+                excluded: Array.from(subcategoryStates.entries())
+                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                    .map(([subcategory]) => subcategory)
+            },
+            traits: {
+                included: Array.from(traitStates.entries())
+                    .filter(([, state]) => state === TRAIT_STATES.INCLUDE)
+                    .map(([trait]) => trait),
+                excluded: Array.from(traitStates.entries())
+                    .filter(([, state]) => state === TRAIT_STATES.EXCLUDE)
+                    .map(([trait]) => trait)
+            },
+            // MiddleBar Data
+            currentStock: items
+        };
+        return shopData;
+    };
+
+    const handleLoadShop = (shopData) => {
+        try {
+            // Update LeftSidebar state
+            setCurrentGold(shopData.goldAmount || 0);
+            setLowestLevel(shopData.levelRange?.low || 0);
+            setHighestLevel(shopData.levelRange?.high || 10);
+            setItemBias(shopData.shopBias || { x: 0.5, y: 0.5 });
+            setRarityDistribution(shopData.rarityDistribution || {
+                Common: 95.00,
+                Uncommon: 4.50,
+                Rare: 0.49,
+                Unique: 0.01
+            });
+
+            // Clear existing states
+            const newCategoryStates = new Map();
+            const newSubcategoryStates = new Map();
+            const newTraitStates = new Map();
+
+            // Update category states
+            if (shopData.categories) {
+                shopData.categories.included?.forEach(category => {
+                    newCategoryStates.set(category, SELECTION_STATES.INCLUDE);
+                });
+                shopData.categories.excluded?.forEach(category => {
+                    newCategoryStates.set(category, SELECTION_STATES.EXCLUDE);
+                });
+            }
+            setCategoryStates(newCategoryStates);
+
+            // Update subcategory states
+            if (shopData.subcategories) {
+                shopData.subcategories.included?.forEach(subcategory => {
+                    newSubcategoryStates.set(subcategory, SELECTION_STATES.INCLUDE);
+                });
+                shopData.subcategories.excluded?.forEach(subcategory => {
+                    newSubcategoryStates.set(subcategory, SELECTION_STATES.EXCLUDE);
+                });
+            }
+            setSubcategoryStates(newSubcategoryStates);
+
+            // Update trait states
+            if (shopData.traits) {
+                shopData.traits.included?.forEach(trait => {
+                    newTraitStates.set(trait, TRAIT_STATES.INCLUDE);
+                });
+                shopData.traits.excluded?.forEach(trait => {
+                    newTraitStates.set(trait, TRAIT_STATES.EXCLUDE);
+                });
+            }
+            setTraitStates(newTraitStates);
+
+            // Update items
+            setItems(shopData.currentStock || []);
+        } catch (error) {
+            console.error('Error loading shop data:', error);
+        }
+    };
+
     if (loading) {
         return <div className="content-area">Loading...</div>;
     }
@@ -281,15 +385,15 @@ function ShopGenerator() {
         <div className="content-area">
             <div className="content-container">
                 <LeftSidebar onGenerate={handleGenerateClick}>
-                    <GoldInput onChange={handleGoldChange} />
+                    <GoldInput onChange={handleGoldChange} value={currentGold} />
                     <LevelInput
                         lowestLevel={lowestLevel}
                         highestLevel={highestLevel}
                         onLowestLevelChange={handleLowestLevelChange}
                         onHighestLevelChange={handleHighestLevelChange}
                     />
-                    <BiasGrid onChange={handleBiasChange} />
-                    <RaritySliders onChange={handleRarityDistributionChange} />
+                    <BiasGrid onChange={handleBiasChange} value={itemBias} />
+                    <RaritySliders onChange={handleRarityDistributionChange} value={rarityDistribution} />
                 </LeftSidebar>
                 <MiddleBar>
                     <ItemTable
@@ -298,7 +402,10 @@ function ShopGenerator() {
                         onSort={handleSort}
                     />
                 </MiddleBar>
-                <RightSidebar />
+                <RightSidebar 
+                    onSave={handleSaveShop}
+                    onLoad={handleLoadShop}
+                />
             </div>
         </div>
     );

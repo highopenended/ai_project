@@ -383,7 +383,7 @@ export const generateShop = ({
         
         if (selection.getTotalSpent() + itemPrice > currentGold) {
             bucket.splice(randomIndex, 1);
-            console.log(`Removed ${selectedItem.name} (${selectedItem.rarity}, ${selectedItem.price}) from bucket - would exceed target`);
+            // console.log(`Removed ${selectedItem.name} (${selectedItem.rarity}, ${selectedItem.price}) from bucket - would exceed target`);
             continue;
         }
 
