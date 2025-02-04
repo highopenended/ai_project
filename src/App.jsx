@@ -6,8 +6,8 @@ import Home from "./components/pages/home/Home.jsx";
 import ShopGenerator from "./components/pages/shopgenerator/ShopGenerator.jsx";
 import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import CategoryProvider from './context/CategoryContext';
-import { TraitProvider } from './context/TraitContext';
+import CategoryProvider from './components/pages/shopgenerator/context/CategoryContext';
+import { TraitProvider } from './components/pages/shopgenerator/context/TraitContext';
 
 /**
  * App Component

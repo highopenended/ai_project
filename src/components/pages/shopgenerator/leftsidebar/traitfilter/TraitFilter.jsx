@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTraitContext, TRAIT_STATES } from '../../../../../context/TraitContext';
+import { useTraitContext, TRAIT_STATES } from '../../context/TraitContext';
 import traitList from '../../../../../../public/trait-list.json';
 import './TraitFilter.css';
 

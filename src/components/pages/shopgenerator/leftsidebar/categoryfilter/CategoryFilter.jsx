@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCategoryContext, SELECTION_STATES } from '../../../../../context/CategoryContext';
+import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
 import './CategoryFilter.css';
 
 function CategoryFilter() {

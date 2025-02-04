@@ -11,8 +11,8 @@ import MiddleBar from './middlebar/MiddleBar';
 import RightSidebar from './rightsidebar/RightSidebar';
 import ItemTable from './middlebar/ItemTable';
 import itemData from '../../../../public/item-table.json';
-import { useCategoryContext, SELECTION_STATES } from '../../../context/CategoryContext';
-import { useTraitContext, TRAIT_STATES } from '../../../context/TraitContext';
+import { useCategoryContext, SELECTION_STATES } from './context/CategoryContext';
+import { useTraitContext, TRAIT_STATES } from './context/TraitContext';
 import { generateShop } from './utils/generateShop';
 
 /**
@@ -256,7 +256,6 @@ function ShopGenerator() {
 
     // Add handler functions
     const handleGoldChange = (gold) => {
-        console.log('Gold value received:', gold, typeof gold);
         setCurrentGold(gold);
     };
 
