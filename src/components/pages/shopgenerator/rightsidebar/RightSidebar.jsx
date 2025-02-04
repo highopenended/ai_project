@@ -15,6 +15,7 @@ import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
+import ImportExport from './ImportExport';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
@@ -372,20 +373,12 @@ function RightSidebar({ onSave, onLoad }) {
                             </option>
                         ))}
                     </select>
-                    <input 
-                        type="file" 
-                        accept=".shop"
-                        onChange={handleImportShop}
-                        aria-label="Import Shop"
-                    />
-                    <button 
-                        className="action-button"
-                        onClick={handleExportShop}
-                        aria-label="Export Shop"
-                    >
-                        Export Shop
-                    </button>
                 </div>
+
+                <ImportExport 
+                    handleImportShop={handleImportShop} 
+                    handleExportShop={handleExportShop} 
+                />
 
                 <h2>Shop Details</h2>
                 <div className="shop-details">
