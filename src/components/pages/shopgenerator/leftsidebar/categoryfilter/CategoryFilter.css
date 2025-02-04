@@ -31,7 +31,7 @@
     gap: 0.5rem;
 }
 
-.reset-button, .collapse-button {
+.reset-button {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,16 +57,6 @@
 
 .reset-button:hover svg path {
     transform: rotate(180deg);
-}
-
-.collapse-button svg {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s ease;
-}
-
-.collapse-button.collapsed svg {
-    transform: rotate(-90deg);
 }
 
 .search-input {
