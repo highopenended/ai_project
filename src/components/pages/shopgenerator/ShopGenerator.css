@@ -144,4 +144,17 @@
 
 .item-table tbody tr:hover {
     background-color: var(--background-hover);
+}
+
+.content-area {
+    flex: 1;
+    padding: 1rem;
+    overflow: hidden;
+}
+
+.content-container {
+    display: flex;
+    gap: 1rem;
+    height: 100%;
+    max-height: calc(100vh - 2rem);
 } 

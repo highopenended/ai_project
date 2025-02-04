@@ -1,0 +1,40 @@
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 1rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--background-primary);
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background-color: var(--background-secondary);
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+.data-table th:hover {
+    background-color: var(--background-hover);
+}
+
+.sort-order {
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--background-hover);
+} 

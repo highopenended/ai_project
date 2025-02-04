@@ -1,0 +1,75 @@
+.right-sidebar {
+    flex: 1;
+    padding: 1rem;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
+.right-sidebar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.right-sidebar h2 {
+    margin: 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+}
+
+.shop-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.detail-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.detail-section h3 {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.detail-section p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.shop-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.action-button {
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.action-button:hover {
+    background-color: var(--primary-color-hover);
+}
+
+.action-button:active {
+    background-color: var(--primary-color-active);
+}
