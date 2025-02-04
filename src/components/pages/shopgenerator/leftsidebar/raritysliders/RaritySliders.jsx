@@ -235,13 +235,8 @@ function RaritySliders({ onChange, value }) {
                             />
                         </svg>
                     </button>
-                    <button
-                        className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
-                        onClick={() => setIsCollapsed(prev => !prev)}
-                        title={isCollapsed ? 'Expand rarity distribution' : 'Collapse rarity distribution'}
-                    >
-                        <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(prev => !prev)} />
-                    </button>
+                    <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(prev => !prev)} />
+
                 </div>
             </div>
             {!isCollapsed && (

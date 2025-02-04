@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
 import './CategoryFilter.css';
+import DropdownArrow from '../../components/DropdownArrow';
 
 function CategoryFilter() {
     const {
@@ -80,24 +81,7 @@ function CategoryFilter() {
                                 />
                             </svg>
                         </button>
-                        <button
-                            className={`collapse-button ${isCategoryCollapsed ? 'collapsed' : ''}`}
-                            onClick={() => setIsCategoryCollapsed(!isCategoryCollapsed)}
-                            title={isCategoryCollapsed ? "Expand categories" : "Collapse categories"}
-                        >
-                            <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M7 10l5 5 5-5H7z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        </button>
+                        <DropdownArrow isCollapsed={isCategoryCollapsed} toggleCollapse={() => setIsCategoryCollapsed(!isCategoryCollapsed)} />
                     </div>
                 </div>
                 {!isCategoryCollapsed && (
@@ -150,24 +134,7 @@ function CategoryFilter() {
                                 />
                             </svg>
                         </button>
-                        <button
-                            className={`collapse-button ${isSubcategoryCollapsed ? 'collapsed' : ''}`}
-                            onClick={() => setIsSubcategoryCollapsed(!isSubcategoryCollapsed)}
-                            title={isSubcategoryCollapsed ? "Expand subcategories" : "Collapse subcategories"}
-                        >
-                            <svg
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M7 10l5 5 5-5H7z"
-                                    fill="currentColor"
-                                />
-                            </svg>
-                        </button>
+                        <DropdownArrow isCollapsed={isSubcategoryCollapsed} toggleCollapse={() => setIsSubcategoryCollapsed(!isSubcategoryCollapsed)} />
                     </div>
                 </div>
                 {!isSubcategoryCollapsed && (
