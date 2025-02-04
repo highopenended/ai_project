@@ -36,8 +36,48 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
+// Function to encode shop data into a shareable code
+const encodeShopData = (shopData) => {
+    console.log('Encoding shop data:', shopData);
+    const dataToEncode = {
+        // Shop details
+        type: shopData.type,
+        name: shopData.name,
+        keeper: shopData.keeper,
+        location: shopData.location,
+        shopkeeperDescription: shopData.shopkeeperDescription,
+        shopDetails: shopData.shopDetails,
+        shopkeeperDetails: shopData.shopkeeperDetails,
+        // Shop parameters
+        goldAmount: shopData.goldAmount,
+        levelRange: shopData.levelRange,
+        shopBias: shopData.shopBias,
+        rarityDistribution: shopData.rarityDistribution,
+        // Categories and traits
+        categories: shopData.categories,
+        subcategories: shopData.subcategories,
+        traits: shopData.traits,
+        // Current stock
+        currentStock: shopData.currentStock
+    };
+    console.log('Data being encoded:', dataToEncode);
+    return btoa(JSON.stringify(dataToEncode));
+};
+
+// Function to decode shop data from a shareable code
+const decodeShopData = (code) => {
+    try {
+        const decodedData = JSON.parse(atob(code));
+        console.log('Decoded shop data:', decodedData);
+        return decodedData;
+    } catch (error) {
+        console.error('Error decoding shop data:', error);
+        return null;
+    }
+};
+
 function RightSidebar({ onSave, onLoad }) {
-    const { currentUser } = useAuth();
+    const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
     const [isDragging, setIsDragging] = useState(false);
@@ -45,26 +85,65 @@ function RightSidebar({ onSave, onLoad }) {
     const [savedShops, setSavedShops] = useState([]);
     const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
     const [expandedFields, setExpandedFields] = useState({});
+    const [importCode, setImportCode] = useState('');
+
+    // Debug logging for auth state changes
+    useEffect(() => {
+        console.log('Auth state changed:', { 
+            isAuthenticated: !!currentUser,
+            uid: currentUser?.uid,
+            email: currentUser?.email,
+            loading,
+            providerData: currentUser?.providerData
+        });
+    }, [currentUser, loading]);
 
     // Load saved shops when component mounts
     useEffect(() => {
-        if (currentUser) {
+        console.log('Load shops effect triggered:', { 
+            isAuthenticated: !!currentUser,
+            isLoading: loading,
+            uid: currentUser?.uid 
+        });
+        if (!loading && currentUser) {
             loadSavedShops();
         }
-    }, [currentUser]);
+    }, [currentUser, loading]);
 
     // Function to load saved shops from Firebase
     const loadSavedShops = async () => {
+        if (!currentUser) {
+            console.log('No user authenticated, skipping load');
+            return;
+        }
         try {
+            console.log('Starting to load shops:', {
+                uid: currentUser.uid,
+                path: `users/${currentUser.uid}/shops`
+            });
             const shopsRef = collection(db, `users/${currentUser.uid}/shops`);
+            console.log('Collection reference created');
             const shopsSnapshot = await getDocs(shopsRef);
+            console.log('Got shops snapshot:', {
+                empty: shopsSnapshot.empty,
+                size: shopsSnapshot.size
+            });
             const shops = [];
             shopsSnapshot.forEach((doc) => {
                 shops.push({ id: doc.id, ...doc.data() });
             });
+            console.log('Processed shops:', {
+                count: shops.length,
+                names: shops.map(s => s.name)
+            });
             setSavedShops(shops);
         } catch (error) {
-            console.error('Error loading shops:', error);
+            console.error('Error loading shops:', {
+                code: error.code,
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+            });
         }
     };
 
@@ -242,6 +321,47 @@ function RightSidebar({ onSave, onLoad }) {
         );
     }, [shopDetails]);
 
+    // Function to handle shop export
+    const handleExportShop = async () => {
+        try {
+            const shopData = await onSave(shopDetails);
+            const exportCode = encodeShopData(shopData);
+            console.log('Generated export code:', exportCode);
+            // Copy to clipboard
+            await navigator.clipboard.writeText(exportCode);
+            alert('Shop code copied to clipboard!');
+        } catch (error) {
+            console.error('Error exporting shop:', error);
+            alert('Error exporting shop. Please try again.');
+        }
+    };
+
+    // Function to handle shop import
+    const handleImportShop = () => {
+        try {
+            const importedData = decodeShopData(importCode);
+            if (!importedData) {
+                alert('Invalid shop code. Please check and try again.');
+                return;
+            }
+            onLoad(importedData);
+            setShopDetails({
+                type: importedData.type || '',
+                name: importedData.name || '',
+                keeper: importedData.keeper || '',
+                location: importedData.location || '',
+                shopkeeperDescription: importedData.shopkeeperDescription || '',
+                shopDetails: importedData.shopDetails || '',
+                shopkeeperDetails: importedData.shopkeeperDetails || ''
+            });
+            setImportCode('');
+            alert('Shop imported successfully!');
+        } catch (error) {
+            console.error('Error importing shop:', error);
+            alert('Error importing shop. Please check the code and try again.');
+        }
+    };
+
     return (
         <div 
             className="right-sidebar" 
@@ -258,16 +378,14 @@ function RightSidebar({ onSave, onLoad }) {
                 
                 {/* Saved Shops Section */}
                 <div className="saved-shops-section">
-                    <div className="saved-shops-header">
-                        <h3>Saved Shops</h3>
-                        <button 
-                            className="new-shop-button"
-                            onClick={handleNewShop}
-                            aria-label="Create New Shop"
-                        >
-                            New Shop
-                        </button>
-                    </div>
+                    <button 
+                        className="new-shop-button"
+                        onClick={handleNewShop}
+                        aria-label="Create New Shop"
+                    >
+                        New Shop
+                    </button>
+                    <h3>Saved Shops</h3>
                     <select 
                         className="shop-select"
                         onChange={(e) => {
@@ -296,6 +414,7 @@ function RightSidebar({ onSave, onLoad }) {
                         </div>
                     ))}
                 </div>
+
                 <div className="shop-actions">
                     <button 
                         className="action-button" 
@@ -307,10 +426,33 @@ function RightSidebar({ onSave, onLoad }) {
                     </button>
                     <button 
                         className="action-button"
-                        aria-label="Export to PDF"
+                        onClick={handleExportShop}
+                        aria-label="Export Shop"
                     >
-                        Export to PDF
+                        Export Shop
                     </button>
+                </div>
+
+                {/* Import Section */}
+                <div className="shop-import-export">
+                    <h3>Import Shop</h3>
+                    <div className="import-section">
+                        <input
+                            type="text"
+                            value={importCode}
+                            onChange={(e) => setImportCode(e.target.value)}
+                            placeholder="Paste shop code here"
+                            aria-label="Import shop code"
+                        />
+                        <button 
+                            className="action-button"
+                            onClick={handleImportShop}
+                            disabled={!importCode}
+                            aria-label="Import Shop"
+                        >
+                            Import
+                        </button>
+                    </div>
                 </div>
             </div>
             <div 

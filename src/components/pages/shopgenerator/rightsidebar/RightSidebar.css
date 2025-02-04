@@ -35,7 +35,8 @@
 .shop-details {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
+    margin-top: 1rem;
 }
 
 .detail-section {
@@ -46,7 +47,7 @@
 
 .detail-section h3 {
     margin: 0;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 1rem;
     font-weight: 600;
     display: flex;
@@ -62,10 +63,13 @@
 
 /* Saved Shops Section */
 .saved-shops-section {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     padding: 1rem;
     background-color: var(--background-primary);
-    border-radius: 4px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .saved-shops-header {
@@ -77,36 +81,42 @@
 
 .saved-shops-header h3 {
     margin: 0;
-    color: var(--text-secondary);
-    font-size: 1rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
     font-weight: 600;
 }
 
 .new-shop-button {
-    padding: 0.25rem 0.75rem;
+    padding: 0.5rem 1rem;
     background-color: var(--primary-color);
     color: white;
     border: none;
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    width: fit-content;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .new-shop-button:hover {
     background-color: var(--primary-color-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .shop-select {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border: 2px solid var(--border-color);
-    border-radius: 4px;
-    background-color: var(--background-secondary);
+    border-radius: 6px;
+    background-color: var(--background-tertiary);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .shop-select:hover {
@@ -120,24 +130,34 @@
 }
 
 /* Input Fields */
-.detail-section input {
-    padding: 0.5rem;
+.detail-section input,
+.detail-section textarea {
+    width: 100%;
+    padding: 0.75rem;
     border: 2px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
     background-color: var(--background-tertiary);
     color: var(--text-primary);
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     transition: all 0.2s ease;
+    margin-top: 0.5rem;
 }
 
-.detail-section input:hover {
+.detail-section input:hover,
+.detail-section textarea:hover {
     border-color: var(--primary-color);
 }
 
-.detail-section input:focus {
+.detail-section input:focus,
+.detail-section textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+}
+
+.detail-section textarea {
+    min-height: 100px;
+    resize: vertical;
 }
 
 /* Multiline Fields */
@@ -205,23 +225,22 @@
 }
 
 .action-button {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: 4px;
+    padding: 0.75rem 1.5rem;
     background-color: var(--primary-color);
     color: white;
-    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.action-button:hover {
+.action-button:hover:not(:disabled) {
     background-color: var(--primary-color-hover);
-}
-
-.action-button:active {
-    background-color: var(--primary-color-active);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .action-button:disabled {
@@ -245,4 +264,27 @@
 .right-resize-handle:hover,
 .right-resize-handle.dragging {
     background-color: rgba(163, 177, 255, 0.5);
+}
+
+/* Import/Export Section */
+.shop-import-export {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background-color: var(--background-primary);
+    border-radius: 8px;
+}
+
+.import-section {
+    margin-top: 1rem;
+}
+
+.import-section input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
 }
