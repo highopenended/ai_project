@@ -1,8 +1,5 @@
 /* Main Container */
 .right-sidebar {
-    flex: 0 0 auto;
-    padding: 1rem;
-    padding-left: calc(1rem + 8px);
     background-color: var(--background-secondary);
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

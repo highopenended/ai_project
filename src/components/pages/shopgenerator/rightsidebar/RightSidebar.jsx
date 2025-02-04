@@ -178,9 +178,7 @@ function RightSidebar({ onSave, onLoad }) {
         
         const { startX, startWidth } = dragInfo.current;
         const width = startWidth - (e.clientX - startX);
-        const minWidth = 250;
-        const maxWidth = 500;
-        const newWidth = Math.max(minWidth, Math.min(maxWidth, width));
+        const newWidth = Math.max(SIDEBAR_CONSTRAINTS.MIN_WIDTH, Math.min(SIDEBAR_CONSTRAINTS.MAX_WIDTH, width));
         
         setSidebarWidth(newWidth);
         document.body.style.cursor = 'ew-resize';
