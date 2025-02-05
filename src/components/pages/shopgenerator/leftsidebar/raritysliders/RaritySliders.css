@@ -29,34 +29,6 @@
     gap: 0.5rem;
 }
 
-.reset-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #666;
-    border-radius: 4px;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-}
-
-.reset-button svg {
-    width: 20px;
-    height: 20px;
-}
-
-.reset-button svg path {
-    transition: transform 0.2s ease;
-    transform-origin: center;
-}
-
-.reset-button:hover svg path {
-    transform: rotate(180deg);
-}
-
 /* Lock button styles */
 .lock-button {
     background: none;

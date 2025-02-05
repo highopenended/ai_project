@@ -22,30 +22,6 @@
     gap: 0.5rem;
 }
 
-.reset-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #666;
-    border-radius: 4px;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-}
-
-.reset-button svg {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s ease;
-}
-
-.reset-button:hover svg {
-    transform: rotate(180deg);
-}
-
 .search-input {
     padding: 0.5rem;
     border: 1px solid #666;
@@ -130,4 +106,14 @@
 
 .tag-container::-webkit-scrollbar-thumb:hover {
     background: #888;
+}
+
+.reset-button svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+}
+
+.reset-button:hover svg {
+    transform: rotate(180deg);
 } 
