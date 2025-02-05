@@ -1,24 +1,20 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
 import '../ShopGenerator.css';
+import Tag from './Tag';
 
 
 
-const TagContainer = ({ tags, getTagClassName, onTagClick }) => {
+const TagContainer = ({ tags, onTagClick }) => {
     return (
         <div className="tag-container">
             {tags.map(tag => (
-                <button
+                <Tag 
                     key={tag.name}
-                    className={getTagClassName(tag.state)}
+                    name={tag.name}
+                    state={tag.state}
                     onClick={() => onTagClick(tag.name)}
-                >
-                    {tag.name}
-                    <span className="count">({tag.count})</span>
-                    {tag.state === 'EXCLUDE' && (
-                        <span className="exclude-indicator">✕</span>
-                    )}
-                </button>
+                />
             ))}
         </div>
     );
@@ -30,7 +26,6 @@ TagContainer.propTypes = {
         state: PropTypes.string.isRequired,
         count: PropTypes.number.isRequired,
     })).isRequired,
-    getTagClassName: PropTypes.func.isRequired,
     onTagClick: PropTypes.func.isRequired,
 };
 

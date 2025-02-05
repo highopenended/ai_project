@@ -218,12 +218,8 @@ function RaritySliders({ onChange, value }) {
             <div className="section-header">
                 <h3>Rarity Distribution</h3>
                 <div className="buttons">
-                    <ResetButton 
-                        onClick={handleReset}
-                        title="Reset to default values"
-                    />
+                    <ResetButton onClick={handleReset} title="Reset to default values"/>                        
                     <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(prev => !prev)} />
-
                 </div>
             </div>
             {!isCollapsed && (

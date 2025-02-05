@@ -4,6 +4,7 @@ import './SubcategoryFilter.css';
 import DropdownArrow from '../../components/DropdownArrow';
 import TagContainer from '../../components/TagContainer';
 import ResetButton from '../../components/ResetButton';
+import Tag from '../../components/Tag';
 
 function SubcategoryFilter() {
     const {
@@ -15,8 +16,8 @@ function SubcategoryFilter() {
     } = useCategoryContext();
 
     const [subcategoryFilter, setSubcategoryFilter] = useState('');
-    const [isSubcategoryCollapsed, setIsSubcategoryCollapsed] = useState(false);
-
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    
     // Get all unique subcategories from selected categories
     const getRelevantSubcategories = () => {
         const includedCategories = Object.keys(categoryData).filter(
@@ -49,19 +50,23 @@ function SubcategoryFilter() {
         return baseClass;
     };
 
+    // Ensure getSubcategoryState returns a string
+    const getSubcategoryStateString = (subcategory) => {
+        const state = getSubcategoryState(subcategory);
+        return state === SELECTION_STATES.INCLUDE ? 'INCLUDE' :
+               state === SELECTION_STATES.EXCLUDE ? 'EXCLUDE' : 'NONE';
+    };
+
     return (
         <div className="subcategory-section">
             <div className="section-header">
                 <h3>Subcategories</h3>
                 <div className="buttons">
-                    <ResetButton 
-                        onClick={clearSubcategorySelections}
-                        title="Reset subcategory selections"
-                    />
-                    <DropdownArrow isCollapsed={isSubcategoryCollapsed} toggleCollapse={() => setIsSubcategoryCollapsed(!isSubcategoryCollapsed)} />
+                    <ResetButton onClick={clearSubcategorySelections} title="Reset subcategory selections"/>   
+                    <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
                 </div>
             </div>
-            {!isSubcategoryCollapsed && (
+            {!isCollapsed && (
                 <>
                     <input
                         type="text"
@@ -73,12 +78,21 @@ function SubcategoryFilter() {
                     <TagContainer 
                         tags={filteredSubcategories.map(subcategory => ({
                             name: subcategory,
-                            state: getSubcategoryState(subcategory),
+                            state: getSubcategoryStateString(subcategory),
                             count: 0 // Assuming count is not used here
                         }))}
                         onTagClick={toggleSubcategory}
                         getTagClassName={getTagClassName}
-                    />
+                    >
+                        {filteredSubcategories.map(subcategory => (
+                            <Tag 
+                                key={subcategory}
+                                name={subcategory}
+                                state={getSubcategoryStateString(subcategory)}
+                                onClick={() => toggleSubcategory(subcategory)}
+                            />
+                        ))}
+                    </TagContainer>
                 </>
             )}
         </div>
