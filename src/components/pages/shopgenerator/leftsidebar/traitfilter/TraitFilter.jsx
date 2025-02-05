@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { useTraitContext, TRAIT_STATES } from '../../context/TraitContext';
 import traitList from '../../../../../../public/trait-list.json';
 import './TraitFilter.css';
-import DropdownArrow from '../../components/DropdownArrow';
 import TagContainer from '../../components/TagContainer';
-import ResetButton from '../../components/ResetButton';
-
+import Section from '../../components/Section';
+import ButtonGroup from '../../components/ButtonGroup';
 function TraitFilter() {
     const {
         getTraitState,
@@ -43,16 +42,13 @@ function TraitFilter() {
     return (
         <div className="trait-filter">
             <div className="trait-section">
-                <div className="section-header">
-                    <h3>Traits</h3>
-                    <div className="buttons">
-                        <ResetButton onClick={clearTraitSelections} title="Reset trait selections"/>   
-                        <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
-                    </div>
-                </div>
+                <Section title="Subcategories">
+                    <ButtonGroup handleReset={clearTraitSelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                </Section>
                 {!isCollapsed && (
                     <>
                         <input
+
                             type="text"
                             placeholder="Search traits..."
                             value={traitFilter}

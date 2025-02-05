@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-function DropdownArrow({ isCollapsed, toggleCollapse }) {
+function CollapseExpandButton({ isCollapsed, toggleCollapse }) {
     return (
         <button
             className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
@@ -14,9 +14,9 @@ function DropdownArrow({ isCollapsed, toggleCollapse }) {
     );
 }
 
-DropdownArrow.propTypes = {
+CollapseExpandButton.propTypes = {
     isCollapsed: PropTypes.bool.isRequired,
     toggleCollapse: PropTypes.func.isRequired,
 };
 
-export default DropdownArrow; 
+export default CollapseExpandButton; 

@@ -31,7 +31,7 @@ function LeftSidebar({ children, onGenerate }) {
     const handleGenerateClick = (e) => {
         if (e) e.preventDefault();
         onGenerate();
-    };
+    }; 
 
     const handleMouseDown = useCallback((e) => {
         e.preventDefault();

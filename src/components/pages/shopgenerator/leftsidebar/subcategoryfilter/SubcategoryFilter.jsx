@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
 import './SubcategoryFilter.css';
-import DropdownArrow from '../../components/DropdownArrow';
 import TagContainer from '../../components/TagContainer';
-import ResetButton from '../../components/ResetButton';
 import Tag from '../../components/Tag';
+import Section from '../../components/Section';
+import ButtonGroup from '../../components/ButtonGroup';
 
 function SubcategoryFilter() {
     const {
@@ -59,13 +59,9 @@ function SubcategoryFilter() {
 
     return (
         <div className="category-section">
-            <div className="section-header">
-                <h3>Subcategories</h3>
-                <div className="buttons">
-                    <ResetButton onClick={clearSubcategorySelections} title="Reset subcategory selections"/>   
-                    <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
-                </div>
-            </div>
+            <Section title="Subcategories">
+                    <ButtonGroup handleReset={clearSubcategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            </Section>
             {!isCollapsed && (
                 <>
                     <input
@@ -84,14 +80,14 @@ function SubcategoryFilter() {
                         onTagClick={toggleSubcategory}
                         getTagClassName={getTagClassName}
                     >
-                        {filteredSubcategories.map(subcategory => (
-                            <Tag 
-                                key={subcategory}
-                                name={subcategory}
-                                state={getSubcategoryStateString(subcategory)}
-                                onClick={() => toggleSubcategory(subcategory)}
-                            />
-                        ))}
+                    {filteredSubcategories.map(subcategory => (
+                        <Tag 
+                            key={subcategory}
+                            name={subcategory}
+                            state={getSubcategoryStateString(subcategory)}
+                            onClick={() => toggleSubcategory(subcategory)}
+                        />
+                    ))}
                     </TagContainer>
                 </>
             )}

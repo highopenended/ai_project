@@ -75,7 +75,7 @@ function LevelInput({
     };
 
     return (
-        <div className="level-input-container">
+        <div className="section-header">
             <h3>Level Range</h3>
             <div className="level-input-group">
                 <input

@@ -103,14 +103,6 @@
     box-sizing: border-box;
 }
 
-.parameter-section h3 {
-    margin: 0 0 0.75rem 0;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.85rem;
-    font-weight: 600;
-    line-height: 1;
-}
-
 .parameter-section input {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(163, 177, 255, 0.15);

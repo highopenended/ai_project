@@ -1,26 +1,5 @@
-/* .subcategory-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-} */
-
-.section-header h3 {
+/* .section-header h3 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
-}
-
-.search-input {
-    padding: 0.5rem;
-    border: 1px solid #666;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.2);
-    color: #fff;
-    font-size: 0.9rem;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.search-input::placeholder {
-    color: #999;
-}
+} */

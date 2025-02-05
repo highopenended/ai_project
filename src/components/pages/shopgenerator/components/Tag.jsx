@@ -10,15 +10,7 @@ const Tag = ({ name, state, onClick }) => {
     };
 
     return (
-        <button
-            className={getTagClassName(state)}
-            onClick={onClick}
-        >
-            {name}
-            {state === 'EXCLUDE' && (
-                <span className="exclude-indicator">✕</span>
-            )}
-        </button>
+        <button className={getTagClassName(state)} onClick={onClick}> {name}</button>
     );
 };
 

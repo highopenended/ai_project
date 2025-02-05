@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
 import './CategoryFilter.css';
-import DropdownArrow from '../../components/DropdownArrow';
-import ResetButton from '../../components/ResetButton';
 import SubcategoryFilter from '../subcategoryfilter/SubcategoryFilter';
 import TagContainer from '../../components/TagContainer';
-
+import Section from '../../components/Section';
+import ButtonGroup from '../../components/ButtonGroup';
 
 function CategoryFilter() {
     const {
@@ -43,13 +42,9 @@ function CategoryFilter() {
     return (
         <div className="category-filter">
             <div className="category-section">
-                <div className="section-header">
-                    <h3>Categories</h3>
-                    <div className="buttons">
-                        <ResetButton onClick={clearCategorySelections} title="Reset category selections"/>
-                        <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
-                    </div>
-                </div>
+                <Section title="Categories">
+                    <ButtonGroup handleReset={clearCategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+                </Section>
                 {!isCollapsed && (
                     <>
                         <input

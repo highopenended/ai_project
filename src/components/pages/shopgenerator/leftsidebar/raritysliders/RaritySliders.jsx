@@ -4,10 +4,11 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
 import { RARITY_COLORS } from '../../../../../constants/rarityColors';
-import DropdownArrow from '../../components/DropdownArrow';
-import ResetButton from '../../components/ResetButton';
+import Section from '../../components/Section';
+import ButtonGroup from '../../components/ButtonGroup';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
+
 const DEFAULT_DISTRIBUTION = {
     Common: 95.00,
     Uncommon: 4.50,
@@ -215,13 +216,9 @@ function RaritySliders({ onChange, value }) {
 
     return (
         <div>
-            <div className="section-header">
-                <h3>Rarity Distribution</h3>
-                <div className="buttons">
-                    <ResetButton onClick={handleReset} title="Reset to default values"/>                        
-                    <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(prev => !prev)} />
-                </div>
-            </div>
+            <Section title="Rarity Distribution">
+                    <ButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            </Section>
             {!isCollapsed && (
                 <div>
                     {RARITIES.map(rarity => (

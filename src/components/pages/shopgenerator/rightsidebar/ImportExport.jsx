@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import './ImportExport.css';
 import { useCallback, useState } from 'react';
-
+import CollapseExpandButton from '../components/CollapseExpandButton';
 function ImportExport({ handleImportShop, handleExportShop }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -25,10 +25,9 @@ function ImportExport({ handleImportShop, handleExportShop }) {
         <div className="import-export-wrapper">
             <div className="import-export-header">
                 <h3>Import/Export</h3>
-                <button onClick={toggleCollapse} className="collapse-button">
-                    {isCollapsed ? 'Expand' : 'Collapse'}
-                </button>
+                <CollapseExpandButton isCollapsed={isCollapsed} toggleCollapse={toggleCollapse} />
             </div>
+
             {!isCollapsed && (
                 <div className="import-export-section">
                     <div 
