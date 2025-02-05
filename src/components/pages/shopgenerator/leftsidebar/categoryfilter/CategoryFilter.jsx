@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useCategoryContext, SELECTION_STATES } from "../../context/CategoryContext";
-import "./CategoryFilter.css";
 import TagContainer from "../../components/TagContainer";
 import Section from "../../components/Section";
 import ButtonGroup from "../../components/ButtonGroup";

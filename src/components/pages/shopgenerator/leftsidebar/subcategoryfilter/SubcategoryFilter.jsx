@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
-import './SubcategoryFilter.css';
 import TagContainer from '../../components/TagContainer';
 import Tag from '../../components/Tag';
 import Section from '../../components/Section';
@@ -60,7 +59,7 @@ function SubcategoryFilter() {
     return (
         <div>
              <Section
-                title="TEST VALUE"
+                title="Subcategories"
 
                 buttonGroup={
                     <ButtonGroup handleReset={clearSubcategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />

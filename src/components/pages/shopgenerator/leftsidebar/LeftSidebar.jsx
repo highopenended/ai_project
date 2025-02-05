@@ -19,8 +19,6 @@ import React, { useRef, useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './LeftSidebar.css';
 import GenerateButton from './generatebutton/GenerateButton';
-import CategoryFilter from './categoryfilter/CategoryFilter';
-import TraitFilter from './traitfilter/TraitFilter';
 
 function LeftSidebar({ children, onGenerate }) {
     const sidebarRef = useRef(null);
@@ -89,12 +87,6 @@ function LeftSidebar({ children, onGenerate }) {
                         {child}
                     </div>
                 ))}
-                <div className="parameter-section">
-                    <CategoryFilter />
-                </div>
-                <div className="parameter-section">
-                    <TraitFilter />
-                </div>
             </div>
             <div 
                 className={`left-resize-handle ${isDragging ? 'dragging' : ''}`}

@@ -14,10 +14,14 @@ import itemData from '../../../../public/item-table.json';
 import { useCategoryContext, SELECTION_STATES } from './context/CategoryContext';
 import { useTraitContext, TRAIT_STATES } from './context/TraitContext';
 import { generateShop } from './utils/generateShop';
+import CategoryFilter from './leftsidebar/categoryfilter/CategoryFilter';
+import SubcategoryFilter from './leftsidebar/subcategoryfilter/SubcategoryFilter';
+import TraitFilter from './leftsidebar/traitfilter/TraitFilter';
 
 /**
  * Shop Generator Component
  * 
+
  * A tool for generating fantasy shops and their inventories.
  * 
  * Features:
@@ -393,6 +397,9 @@ function ShopGenerator() {
                     />
                     <BiasGrid onChange={handleBiasChange} value={itemBias} />
                     <RaritySliders onChange={handleRarityDistributionChange} value={rarityDistribution} />
+                    <CategoryFilter />
+                    <SubcategoryFilter />
+                    <TraitFilter />
                 </LeftSidebar>
                 <MiddleBar>
                     <ItemTable
@@ -411,3 +418,4 @@ function ShopGenerator() {
 }
 
 export default ShopGenerator; 
+
