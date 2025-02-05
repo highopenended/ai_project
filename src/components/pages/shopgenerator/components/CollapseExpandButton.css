@@ -1,0 +1,30 @@
+/* Collapse/expand sidebar button styles */
+.collapse-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid #666;
+    border-radius: 4px;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.collapse-button svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s ease;
+}
+
+.collapse-button.collapsed svg {
+    transform: rotate(180deg);
+}
+
+.collapse-button:hover {
+    background: rgba(163, 177, 255, 0.15);
+    border-color: rgba(163, 177, 255, 0.3);
+}

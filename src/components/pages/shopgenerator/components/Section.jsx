@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
-import '../ShopGenerator.css';
+import './Section.css';
+
 
 const Section = ({ title, buttonGroup, children}) => {
     return (

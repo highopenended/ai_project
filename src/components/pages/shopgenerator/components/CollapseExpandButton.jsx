@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import './CollapseExpandButton.css';
 
 function CollapseExpandButton({ isCollapsed, toggleCollapse }) {
     return (

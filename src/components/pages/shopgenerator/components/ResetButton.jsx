@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import '../ShopGenerator.css';
+import './ResetButton.css';
 
 const ResetButton = ({ onClick, title }) => {
     return (

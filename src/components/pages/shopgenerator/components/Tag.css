@@ -1,0 +1,38 @@
+/* Individual tag styles */
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.0rem 0.2rem;
+    background: transparent;
+    border: 1px solid #666;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    height: 1.5rem;
+    flex: 0 0 auto;
+    gap: 0.25rem;
+}
+
+.tag:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Tag states for included/excluded items */
+.tag.included {
+    background: #2c5282;
+    border-color: #2b6cb0;
+}
+
+.tag.excluded {
+    background: #822c2c;
+    border-color: #b02b2b;
+}
+
+.tag .count {
+    margin-left: 0.25rem;
+    opacity: 0.7;
+    font-size: 0.7rem;
+}
