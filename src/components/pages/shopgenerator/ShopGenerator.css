@@ -332,6 +332,12 @@
     border-color: rgba(163, 177, 255, 0.3);
 }
 
+.section{
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 /* Section header styles for different components */
 .section-header {
     display: flex;
