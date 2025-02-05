@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useTraitContext, TRAIT_STATES } from "../../context/TraitContext";
-import traitList from "../../../../../../public/trait-list.json";
-import TagContainer from "../../components/TagContainer";
-import Section from "../../components/Section";
-import ButtonGroup from "../../components/ButtonGroup";
+import { useTraitContext, TRAIT_STATES } from "../context/TraitContext";
+import traitList from "../../../../../public/trait-list.json";
+import TagContainer from "../components/TagContainer";
+import Section from "../components/Section";
+import ButtonGroup from "../components/ButtonGroup";
 function TraitFilter() {
     const { getTraitState, toggleTrait, clearTraitSelections } = useTraitContext();
 

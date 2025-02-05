@@ -1,26 +1,25 @@
 .level-input-group {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
+    justify-content: center;
+    gap: .3rem;
     flex: 1;
 }
 
 .level-input-group input {
     padding: 4px 8px;
     font-size: 0.9rem;
-    width: 45px;
     text-align: center;
+    margin: 0rem 0.2rem;
 }
+
+
+
 
 .level-input-group input::-webkit-inner-spin-button,
 .level-input-group input::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-
-.level-input-group input[type=number] {
-    -moz-appearance: textfield;
 }
 
 .level-input-separator {

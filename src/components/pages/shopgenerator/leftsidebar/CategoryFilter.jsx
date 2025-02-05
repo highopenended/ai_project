@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useCategoryContext, SELECTION_STATES } from "../../context/CategoryContext";
-import TagContainer from "../../components/TagContainer";
-import Section from "../../components/Section";
-import ButtonGroup from "../../components/ButtonGroup";
+import { useCategoryContext, SELECTION_STATES } from "../context/CategoryContext";
+import TagContainer from "../components/TagContainer";
+import Section from "../components/Section";
+import ButtonGroup from "../components/ButtonGroup";
 
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useCategoryContext();
