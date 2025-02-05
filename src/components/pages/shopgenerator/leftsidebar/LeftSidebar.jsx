@@ -18,7 +18,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './LeftSidebar.css';
-import GenerateButton from './GenerateButton';
+import GenerateButton from './generatebutton/GenerateButton';
 import CategoryFilter from './categoryfilter/CategoryFilter';
 import TraitFilter from './traitfilter/TraitFilter';
 

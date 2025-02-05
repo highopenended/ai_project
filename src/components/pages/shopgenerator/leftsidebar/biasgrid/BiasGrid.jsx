@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './BiasGrid.css';
-import DropdownArrow from '../components/DropdownArrow';
+import DropdownArrow from '../../components/DropdownArrow';
 
 function BiasGrid({ onChange, value }) {
     const gridRef = useRef(null);

@@ -2,18 +2,16 @@
 import React, { useState, useEffect } from 'react';
 /* eslint-enable no-unused-vars */
 import './ShopGenerator.css';
-import LeftSidebar from './leftsidebar/LeftSidebar';
-import GoldInput from './leftsidebar/goldinput/GoldInput';
-import LevelInput from './leftsidebar/levelinput/LevelInput';
-import BiasGrid from './leftsidebar/biasgrid/BiasGrid';
-import RaritySliders from './leftsidebar/raritysliders/RaritySliders';
-import MiddleBar from './middlebar/MiddleBar';
-import RightSidebar from './rightsidebar/RightSidebar';
-import ItemTable from './middlebar/ItemTable';
-import itemData from '../../../../public/item-table.json';
-import { useCategoryContext, SELECTION_STATES } from './context/CategoryContext';
-import { useTraitContext, TRAIT_STATES } from './context/TraitContext';
-import { generateShop } from './utils/generateShop';
+import GoldInput from './shopgenerator/leftsidebar/goldinput/GoldInput';
+import LevelInput from './shopgenerator/leftsidebar/levelinput/LevelInput';
+import BiasGrid from './shopgenerator/leftsidebar/biasgrid/BiasGrid';
+import LeftSidebar from './shopgenerator/leftsidebar/LeftSidebar';
+import RaritySliders from './shopgenerator/leftsidebar/raritysliders/RaritySliders';
+import ItemTable from './shopgenerator/ItemTable';
+import itemData from '../../../public/item-table.json';  // Import JSON directly
+import { useCategoryContext, SELECTION_STATES } from './shopgenerator/context/CategoryContext';
+import { useTraitContext, TRAIT_STATES } from './shopgenerator/context/TraitContext';
+import { generateShop } from './shopgenerator/utils/generateShop';
 
 /**
  * Shop Generator Component
@@ -29,17 +27,13 @@ import { generateShop } from './utils/generateShop';
 function ShopGenerator() {
     const {
         categoryStates,
-        subcategoryStates,
-        setCategoryStates,
-        setSubcategoryStates
+        subcategoryStates
     } = useCategoryContext();
 
     const {
-        traitStates,
-        setTraitStates
+        traitStates
     } = useTraitContext();
 
-    // State management
     const [items, setItems] = useState([]);
     const [allItems, setAllItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -64,7 +58,6 @@ function ShopGenerator() {
         'Unique': 4
     };
 
-    // Initial data loading
     useEffect(() => {
         try {
             // Format and process the imported data
@@ -90,14 +83,6 @@ function ShopGenerator() {
         }
     }, [hasInitialSort]);
 
-    // Handle sorting when sortConfig changes
-    useEffect(() => {
-        if (items.length > 0) {
-            setItems(sortItems(items));
-        }
-    }, [sortConfig]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // Price conversion helper
     const convertPriceToGold = (priceString) => {
         if (!priceString) return 0;
         
@@ -117,7 +102,28 @@ function ShopGenerator() {
         }
     };
 
-    // Sorting functionality
+    const handleGoldChange = (gold) => {
+        console.log('Gold value received:', gold, typeof gold);
+        setCurrentGold(gold);
+    };
+
+    const handleLowestLevelChange = (level) => {
+        setLowestLevel(level);
+    };
+
+    const handleHighestLevelChange = (level) => {
+        setHighestLevel(level);
+    };
+
+    const handleBiasChange = (bias) => {
+        setItemBias(bias);
+    };
+
+    const handleRarityDistributionChange = (newDistribution) => {
+        setRarityDistribution(newDistribution);
+    };
+
+    // Helper function to get the next sort direction
     const getNextSortDirection = (currentDirection, columnName) => {
         // Special handling for text-based columns
         if (columnName === 'name' || columnName === 'item_category' || columnName === 'item_subcategory') {
@@ -138,6 +144,7 @@ function ShopGenerator() {
         }
     };
 
+    // Handle column header clicks for sorting
     const handleSort = (columnName) => {
         setSortConfig(prevConfig => {
             // Remove the column if it exists in the current config
@@ -158,10 +165,11 @@ function ShopGenerator() {
         });
     };
 
-    const sortItems = (itemsToSort) => {
-        if (!sortConfig.length) return itemsToSort;
+    // Apply multi-column sorting
+    const sortItems = (items) => {
+        if (!sortConfig.length) return items;
 
-        return [...itemsToSort].sort((a, b) => {
+        return [...items].sort((a, b) => {
             for (const { column, direction } of sortConfig) {
                 let comparison = 0;
                 
@@ -207,7 +215,6 @@ function ShopGenerator() {
         });
     };
 
-    // Shop generation
     const handleGenerateClick = () => {
         // Convert Maps to arrays of included/excluded items
         const includedCategories = Array.from(categoryStates.entries())
@@ -249,131 +256,7 @@ function ShopGenerator() {
             allItems
         });
 
-        // Apply sorting to the newly generated items
-        const sortedItems = sortItems(result.items);
-        setItems(sortedItems);
-    };
-
-    // Add handler functions
-    const handleGoldChange = (gold) => {
-        setCurrentGold(gold);
-    };
-
-    const handleLowestLevelChange = (level) => {
-        setLowestLevel(level);
-    };
-
-    const handleHighestLevelChange = (level) => {
-        setHighestLevel(level);
-    };
-
-    const handleBiasChange = (bias) => {
-        setItemBias(bias);
-    };
-
-    const handleRarityDistributionChange = (newDistribution) => {
-        setRarityDistribution(newDistribution);
-    };
-
-    // Add these props to pass to RightSidebar
-    const handleSaveShop = async (shopDetails) => {
-        const shopData = {
-            ...shopDetails,
-            // LeftSidebar Parameters
-            goldAmount: currentGold,
-            levelRange: {
-                low: lowestLevel,
-                high: highestLevel
-            },
-            shopBias: itemBias,
-            rarityDistribution,
-            categories: {
-                included: Array.from(categoryStates.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                    .map(([category]) => category),
-                excluded: Array.from(categoryStates.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                    .map(([category]) => category)
-            },
-            subcategories: {
-                included: Array.from(subcategoryStates.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                    .map(([subcategory]) => subcategory),
-                excluded: Array.from(subcategoryStates.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                    .map(([subcategory]) => subcategory)
-            },
-            traits: {
-                included: Array.from(traitStates.entries())
-                    .filter(([, state]) => state === TRAIT_STATES.INCLUDE)
-                    .map(([trait]) => trait),
-                excluded: Array.from(traitStates.entries())
-                    .filter(([, state]) => state === TRAIT_STATES.EXCLUDE)
-                    .map(([trait]) => trait)
-            },
-            // MiddleBar Data
-            currentStock: items
-        };
-        return shopData;
-    };
-
-    const handleLoadShop = (shopData) => {
-        try {
-            // Update LeftSidebar state
-            setCurrentGold(shopData.goldAmount || 0);
-            setLowestLevel(shopData.levelRange?.low || 0);
-            setHighestLevel(shopData.levelRange?.high || 10);
-            setItemBias(shopData.shopBias || { x: 0.5, y: 0.5 });
-            setRarityDistribution(shopData.rarityDistribution || {
-                Common: 95.00,
-                Uncommon: 4.50,
-                Rare: 0.49,
-                Unique: 0.01
-            });
-
-            // Clear existing states
-            const newCategoryStates = new Map();
-            const newSubcategoryStates = new Map();
-            const newTraitStates = new Map();
-
-            // Update category states
-            if (shopData.categories) {
-                shopData.categories.included?.forEach(category => {
-                    newCategoryStates.set(category, SELECTION_STATES.INCLUDE);
-                });
-                shopData.categories.excluded?.forEach(category => {
-                    newCategoryStates.set(category, SELECTION_STATES.EXCLUDE);
-                });
-            }
-            setCategoryStates(newCategoryStates);
-
-            // Update subcategory states
-            if (shopData.subcategories) {
-                shopData.subcategories.included?.forEach(subcategory => {
-                    newSubcategoryStates.set(subcategory, SELECTION_STATES.INCLUDE);
-                });
-                shopData.subcategories.excluded?.forEach(subcategory => {
-                    newSubcategoryStates.set(subcategory, SELECTION_STATES.EXCLUDE);
-                });
-            }
-            setSubcategoryStates(newSubcategoryStates);
-
-            // Update trait states
-            if (shopData.traits) {
-                shopData.traits.included?.forEach(trait => {
-                    newTraitStates.set(trait, TRAIT_STATES.INCLUDE);
-                });
-                shopData.traits.excluded?.forEach(trait => {
-                    newTraitStates.set(trait, TRAIT_STATES.EXCLUDE);
-                });
-            }
-            setTraitStates(newTraitStates);
-
-            // Update items
-            setItems(shopData.currentStock || []);
-        } catch (error) {
-            console.error('Error loading shop data:', error);
-        }
+        setItems(sortItems(result.items));
     };
 
     if (loading) {
@@ -384,26 +267,20 @@ function ShopGenerator() {
         <div className="content-area">
             <div className="content-container">
                 <LeftSidebar onGenerate={handleGenerateClick}>
-                    <GoldInput onChange={handleGoldChange} value={currentGold} />
+                    <GoldInput onChange={handleGoldChange} />
                     <LevelInput
                         lowestLevel={lowestLevel}
                         highestLevel={highestLevel}
                         onLowestLevelChange={handleLowestLevelChange}
                         onHighestLevelChange={handleHighestLevelChange}
                     />
-                    <BiasGrid onChange={handleBiasChange} value={itemBias} />
-                    <RaritySliders onChange={handleRarityDistributionChange} value={rarityDistribution} />
+                    <BiasGrid onChange={handleBiasChange} />
+                    <RaritySliders onChange={handleRarityDistributionChange} />
                 </LeftSidebar>
-                <MiddleBar>
-                    <ItemTable
-                        items={items}
-                        sortConfig={sortConfig}
-                        onSort={handleSort}
-                    />
-                </MiddleBar>
-                <RightSidebar 
-                    onSave={handleSaveShop}
-                    onLoad={handleLoadShop}
+                <ItemTable
+                    items={items}
+                    sortConfig={sortConfig}
+                    onSort={handleSort}
                 />
             </div>
         </div>

@@ -16,7 +16,7 @@ function CategoryFilter() {
     } = useCategoryContext();
 
     const [categoryFilter, setCategoryFilter] = useState('');
-    const [isCategoryCollapsed, setIsCategoryCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     // Filter categories based on search
     const filteredCategories = Object.keys(categoryData)
@@ -47,10 +47,10 @@ function CategoryFilter() {
                     <h3>Categories</h3>
                     <div className="buttons">
                         <ResetButton onClick={clearCategorySelections} title="Reset category selections"/>
-                        <DropdownArrow isCollapsed={isCategoryCollapsed} toggleCollapse={() => setIsCategoryCollapsed(!isCategoryCollapsed)} />
+                        <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
                     </div>
                 </div>
-                {!isCategoryCollapsed && (
+                {!isCollapsed && (
                     <>
                         <input
                             type="text"

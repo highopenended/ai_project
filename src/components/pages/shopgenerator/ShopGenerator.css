@@ -292,6 +292,25 @@
     transform-origin: center;
 }
 
-.reset-button:hover svg path {
-    transform: rotate(180deg);
-} 
+.reset-button:hover, .reset-button:hover svg path {
+    background: rgba(163, 177, 255, 0.15);
+    border-color: rgba(163, 177, 255, 0.3);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.section-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.section-header .buttons {
+    display: flex;
+    gap: 0.5rem;
+}

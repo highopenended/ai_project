@@ -47,16 +47,7 @@ function TraitFilter() {
                     <h3>Traits</h3>
                     <div className="buttons">
                         <ResetButton onClick={clearTraitSelections} title="Reset trait selections"/>   
-                        <DropdownArrow isCollapsed={isSubcategoryCollapsed} toggleCollapse={() => setIsSubcategoryCollapsed(!isSubcategoryCollapsed)} />
-                
-                        <button
-                            className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
-                            onClick={() => setIsCollapsed(!isCollapsed)}
-                            title={isCollapsed ? 'Expand traits' : 'Collapse traits'}
-                        >
-                            
-                            <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
-                        </button>
+                        <DropdownArrow isCollapsed={isCollapsed} toggleCollapse={() => setIsCollapsed(!isCollapsed)} />
                     </div>
                 </div>
                 {!isCollapsed && (

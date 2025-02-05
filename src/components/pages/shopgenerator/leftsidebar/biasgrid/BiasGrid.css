@@ -4,7 +4,7 @@
     padding: 0.5rem;
 }
 
-.bias-grid-container h3, .section-header h3, .header-row h3 {
+.bias-grid-container h3 {
     font-size: 1rem;
     font-weight: 500;
     margin: 0;
@@ -21,45 +21,6 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-}
-
-.section-header, .header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
-    padding: 0.25rem 0;
-    white-space: nowrap;
-}
-
-.section-header .buttons {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.reset-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid #666;
-    border-radius: 4px;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.reset-button:hover, .reset-button:hover svg path {
-    background: rgba(163, 177, 255, 0.15);
-    border-color: rgba(163, 177, 255, 0.3);
-    transform: rotate(180deg);
-}
-
-.reset-button svg {
-    width: 20px;
-    height: 20px;
 }
 
 .bias-grid-content {
