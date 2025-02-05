@@ -50,7 +50,7 @@
 }
 
 /* Sidebar component styles - contains shop generation parameters */
-.shop-generator-sidebar {
+.left-sidebar {
     width: 300px;
     flex-shrink: 0;
     background-color: var(--background-secondary);

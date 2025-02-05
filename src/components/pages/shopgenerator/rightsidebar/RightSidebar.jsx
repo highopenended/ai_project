@@ -198,13 +198,6 @@ function RightSidebar({ onSave, onLoad }) {
         });
     };
 
-    // Function to toggle field expansion
-    const toggleFieldExpansion = (fieldName) => {
-        setExpandedFields(prev => ({
-            ...prev,
-            [fieldName]: !prev[fieldName]
-        }));
-    };
 
     // Modified input change handler
     const handleInputChange = (e) => {

@@ -3,7 +3,7 @@ import Section from '../../components/Section';
 import ButtonGroup from '../../components/ButtonGroup';
 import { useState } from 'react';
 
-const ActionButtonsSection = ({ onGenerate, onSave, areAllDetailsFilled }) => {
+const ActionButtonsSection = ({ onSave, areAllDetailsFilled }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     return (
         <Section title="Actions" 
