@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
 import './SubcategoryFilter.css';
 import DropdownArrow from '../../components/DropdownArrow';
+import TagContainer from '../../components/TagContainer';
 
 function SubcategoryFilter() {
     const {
@@ -39,10 +40,11 @@ function SubcategoryFilter() {
             subcategory.toLowerCase().includes(subcategoryFilter.toLowerCase())
         );
 
+    // Define getTagClassName function
     const getTagClassName = (state) => {
         const baseClass = 'tag';
-        if (state === SELECTION_STATES.INCLUDE) return `${baseClass} included`;
-        if (state === SELECTION_STATES.EXCLUDE) return `${baseClass} excluded`;
+        if (state === 'INCLUDE') return `${baseClass} included`;
+        if (state === 'EXCLUDE') return `${baseClass} excluded`;
         return baseClass;
     };
 
@@ -81,20 +83,15 @@ function SubcategoryFilter() {
                         onChange={(e) => setSubcategoryFilter(e.target.value)}
                         className="search-input"
                     />
-                    <div className="tag-container">
-                        {filteredSubcategories.map(subcategory => (
-                            <button
-                                key={subcategory}
-                                className={getTagClassName(getSubcategoryState(subcategory))}
-                                onClick={() => toggleSubcategory(subcategory)}
-                            >
-                                {subcategory}
-                                {getSubcategoryState(subcategory) === SELECTION_STATES.EXCLUDE && (
-                                    <span className="exclude-indicator">✕</span>
-                                )}
-                            </button>
-                        ))}
-                    </div>
+                    <TagContainer 
+                        tags={filteredSubcategories.map(subcategory => ({
+                            name: subcategory,
+                            state: getSubcategoryState(subcategory),
+                            count: 0 // Assuming count is not used here
+                        }))}
+                        onTagClick={toggleSubcategory}
+                        getTagClassName={getTagClassName}
+                    />
                 </>
             )}
         </div>

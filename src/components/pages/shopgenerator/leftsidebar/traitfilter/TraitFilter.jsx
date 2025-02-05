@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useTraitContext, TRAIT_STATES } from '../../context/TraitContext';
+import { useTraitContext } from '../../context/TraitContext';
 import traitList from '../../../../../../public/trait-list.json';
 import './TraitFilter.css';
 import DropdownArrow from '../../components/DropdownArrow';
+import TagContainer from '../../components/TagContainer';
 
 function TraitFilter() {
     const {
@@ -23,11 +24,11 @@ function TraitFilter() {
             )
     )).sort();
 
-    const getTagClassName = (trait) => {
-        const state = getTraitState(trait);
+    // Define getTagClassName function
+    const getTagClassName = (state) => {
         const baseClass = 'tag';
-        if (state === TRAIT_STATES.INCLUDE) return `${baseClass} included`;
-        if (state === TRAIT_STATES.EXCLUDE) return `${baseClass} excluded`;
+        if (state === 'INCLUDE') return `${baseClass} included`;
+        if (state === 'EXCLUDE') return `${baseClass} excluded`;
         return baseClass;
     };
 
@@ -73,21 +74,15 @@ function TraitFilter() {
                             onChange={(e) => setTraitFilter(e.target.value)}
                             className="search-input"
                         />
-                        <div className="tag-container">
-                            {filteredTraits.map(trait => (
-                                <button
-                                    key={trait}
-                                    className={getTagClassName(trait)}
-                                    onClick={() => toggleTrait(trait)}
-                                    title={traitList.find(t => t.Trait === trait)?.Description || ''}
-                                >
-                                    {trait}
-                                    {getTraitState(trait) === TRAIT_STATES.EXCLUDE && (
-                                        <span className="exclude-indicator">✕</span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
+                        <TagContainer 
+                            tags={filteredTraits.map(trait => ({
+                                name: trait,
+                                state: getTraitState(trait),
+                                count: 0 // Assuming count is not used here
+                            }))}
+                            onTagClick={toggleTrait}
+                            getTagClassName={getTagClassName}
+                        />
                     </>
                 )}
             </div>
