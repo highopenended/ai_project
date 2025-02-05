@@ -7,7 +7,7 @@
     background-color: var(--background-secondary);
     border-radius: 0 8px 8px 0;
     border-right: 3px solid var(--accent-color);
-    box-shadow: 10px 0 10px rgba(0, 0, 0, .2);
+    box-shadow: 10px 0 10px rgba(0, 0, 0, 0.4);
     padding: 0.5rem 0 0 0;
     margin: 0;
     display: flex;
@@ -23,12 +23,11 @@
 .parameter-sections {
     display: flex;
     flex-direction: column;
+    gap: 0.2rem;
     width: 100%;
     flex: 1 1 auto;
     overflow-y: auto;
-    scrollbar-width: 2rem;
-    scrollbar-color: var(--border-color) transparent;
-    background-color: rgba(0, 0, 0, 0.2);
+    scrollbar-width: 2rem; 
 }
 
 .parameter-sections::-webkit-scrollbar {
@@ -67,7 +66,7 @@
 /* Parameter Section Styling */
 .parameter-section {
     background-color: var(--background-primary);
-    border-bottom: 2px solid rgba(163, 177, 255, 0.1);
+    border-bottom: 2px solid rgba(4, 8, 31, 0.1);
     width: 100%;
     position: relative;
 }
@@ -98,7 +97,7 @@
 
 /* Input Styling */
 .parameter-section input {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: var(--dark-background-color);
     border: 1px solid rgba(163, 177, 255, 0.15);
     border-radius: 4px;
     color: var(--text-color);

@@ -19,6 +19,7 @@ import SavedShopsSection from './selectshoptab/SavedShopsSection';
 import ShopDetailsSection from './shopdetailstab/ShopDetailsSection';
 import ImportExportSection from './selectshoptab/ImportExportSection';
 import ActionButtonsSection from './shopdetailstab/ActionButtonsSection';
+import TabArea from './TabArea';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
@@ -360,20 +361,7 @@ function RightSidebar({ onSave, onLoad }) {
             ref={sidebarRef}
             style={{ width: sidebarWidth }}
         >
-            <div className="tab-header">
-                <button 
-                    className={`tab-button ${activeTab === 'chooseShop' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('chooseShop')}
-                >
-                    Choose Shop
-                </button>
-                <button 
-                    className={`tab-button ${activeTab === 'shopDetails' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('shopDetails')}
-                >
-                    Shop Details
-                </button>
-            </div>
+            <TabArea activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="right-sidebar-content scrollable">
                 {renderTabContent()}
             </div>
