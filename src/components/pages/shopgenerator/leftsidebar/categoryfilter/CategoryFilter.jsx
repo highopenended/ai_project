@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { useCategoryContext, SELECTION_STATES } from '../../context/CategoryContext';
+import { useCategoryContext } from '../../context/CategoryContext';
 import './CategoryFilter.css';
 import DropdownArrow from '../../components/DropdownArrow';
 import SubcategoryFilter from '../subcategoryfilter/SubcategoryFilter';
+import TagContainer from '../../components/TagContainer';
+
 
 function CategoryFilter() {
     const {
@@ -22,10 +24,11 @@ function CategoryFilter() {
         )
         .sort();
 
+    // Define getTagClassName function
     const getTagClassName = (state) => {
         const baseClass = 'tag';
-        if (state === SELECTION_STATES.INCLUDE) return `${baseClass} included`;
-        if (state === SELECTION_STATES.EXCLUDE) return `${baseClass} excluded`;
+        if (state === 'INCLUDE') return `${baseClass} included`;
+        if (state === 'EXCLUDE') return `${baseClass} excluded`;
         return baseClass;
     };
 
@@ -65,21 +68,15 @@ function CategoryFilter() {
                             onChange={(e) => setCategoryFilter(e.target.value)}
                             className="search-input"
                         />
-                        <div className="tag-container">
-                            {filteredCategories.map(category => (
-                                <button
-                                    key={category}
-                                    className={getTagClassName(getCategoryState(category))}
-                                    onClick={() => toggleCategory(category)}
-                                >
-                                    {category}
-                                    <span className="count">({categoryData[category].count})</span>
-                                    {getCategoryState(category) === SELECTION_STATES.EXCLUDE && (
-                                        <span className="exclude-indicator">✕</span>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
+                        <TagContainer 
+                            tags={filteredCategories.map(category => ({
+                                name: category,
+                                state: getCategoryState(category),
+                                count: categoryData[category].count
+                            }))}
+                            onTagClick={toggleCategory}
+                            getTagClassName={getTagClassName}
+                        />
                     </>
                 )}
             </div>
