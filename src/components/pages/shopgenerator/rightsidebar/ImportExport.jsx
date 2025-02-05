@@ -30,7 +30,7 @@ function ImportExport({ handleImportShop, handleExportShop }) {
             {/* <div className="import-export-header">
                 <h3>Import/Export</h3>
                 <CollapseExpandButton isCollapsed={isCollapsed} toggleCollapse={toggleCollapse} />
-            </div> */}
+            </div>
             <Section
                 title="Import/Export"
                 buttonGroup={
@@ -65,7 +65,7 @@ function ImportExport({ handleImportShop, handleExportShop }) {
                     </button>
                 </div>
             )}
-            </Section>
+            </Section> */}
         </div>
     );
 }

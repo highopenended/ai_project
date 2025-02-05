@@ -15,7 +15,10 @@ import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
-import ImportExport from './ImportExport';
+import SavedShopsSection from './SavedShopsSection';
+import ShopDetailsSection from './ShopDetailsSection';
+import ImportExportSection from './ImportExportSection';
+import ActionButtonsSection from './ActionButtonsSection';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
@@ -338,65 +341,25 @@ function RightSidebar({ onSave, onLoad }) {
             style={{ width: sidebarWidth }}
         >
             <div className="right-sidebar-content">
-                <button 
-                    className="action-button"
-                    aria-label="Generate Shop Details"
-                >
-                    Generate Shop Details
-                </button>
-                
-                {/* Saved Shops Section */}
-                <div className="saved-shops-section">
-                    <button 
-                        className="new-shop-button"
-                        onClick={handleNewShop}
-                        aria-label="Create New Shop"
-                    >
-                        New Shop
-                    </button>
-                    <h3>Saved Shops</h3>
-                    <select 
-                        className="shop-select"
-                        onChange={(e) => {
-                            if (e.target.value) {
-                                const selected = savedShops.find(shop => shop.name === e.target.value);
-                                if (selected) loadShop(selected);
-                            }
-                        }}
-                        value={shopDetails.name || ""}
-                        aria-label="Select a saved shop"
-                    >
-                        <option value="">Select a saved shop</option>
-                        {savedShops.map((shop) => (
-                            <option key={shop.name} value={shop.name}>
-                                {shop.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <ImportExport 
+                <ActionButtonsSection 
+                    onGenerate={() => {}} // Placeholder for generate function
+                    onSave={saveShopToFirebase} 
+                    areAllDetailsFilled={areAllDetailsFilled} 
+                />
+                <SavedShopsSection 
+                    savedShops={savedShops} 
+                    shopDetails={shopDetails} 
+                    loadShop={loadShop} 
+                    handleNewShop={handleNewShop} 
+                />
+                <ImportExportSection 
                     handleImportShop={handleImportShop} 
                     handleExportShop={handleExportShop} 
                 />
-
-                <h2>Shop Details</h2>
-                <div className="shop-details">
-                    {Object.keys(INITIAL_SHOP_DETAILS).map((key) => (
-                        <div key={key} className="detail-section">
-                            {renderInputField(key)}
-                        </div>
-                    ))}
-                </div>
-
-                <button 
-                    className="action-button" 
-                    onClick={saveShopToFirebase} 
-                    disabled={!areAllDetailsFilled()}
-                    aria-label="Save Shop"
-                >
-                    Save Shop
-                </button>
+                <ShopDetailsSection 
+                    shopDetails={shopDetails} 
+                    renderInputField={renderInputField} 
+                />
             </div>
             <div 
                 className={`right-resize-handle ${isDragging ? 'dragging' : ''}`}

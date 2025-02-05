@@ -30,7 +30,6 @@ function CategoryFilter() {
     };
 
     return (
-        <div>
             <Section
                 title="Categories"
                 buttonGroup={
@@ -58,7 +57,6 @@ function CategoryFilter() {
                     </>
                 )}
             </Section>
-        </div>
     );
 }
 

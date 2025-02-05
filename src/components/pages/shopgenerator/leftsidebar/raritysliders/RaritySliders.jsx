@@ -215,13 +215,12 @@ function RaritySliders({ onChange, value }) {
     };
 
     return (
-        <div>
-            <Section
-                title="Rarity Distribution"
-                buttonGroup={
-                    <ButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-                }
-            >
+        <Section
+            title="Rarity Distribution"
+            buttonGroup={
+                <ButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            }
+        >
             {!isCollapsed && (
                 <div>
                     {RARITIES.map(rarity => (
@@ -292,8 +291,7 @@ function RaritySliders({ onChange, value }) {
                     ))}
                 </div>
             )}
-            </Section>
-        </div>
+        </Section>
     );
 }
 

@@ -32,7 +32,6 @@ function BiasGrid({ onChange, value }) {
         e.preventDefault(); // Prevent text selection
         setIsDragging(true);
         updatePosition(e.clientX, e.clientY);
-        document.body.classList.add("bias-grid-dragging");
     };
 
     const handleMouseMove = (e) => {
@@ -43,7 +42,6 @@ function BiasGrid({ onChange, value }) {
 
     const handleMouseUp = () => {
         setIsDragging(false);
-        document.body.classList.remove("bias-grid-dragging");
     };
 
     const handleReset = () => {
@@ -60,7 +58,6 @@ function BiasGrid({ onChange, value }) {
         return () => {
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
-            document.body.classList.remove("bias-grid-dragging");
         };
     }, [isDragging]);
 

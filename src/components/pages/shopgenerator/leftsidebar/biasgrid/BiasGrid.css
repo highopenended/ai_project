@@ -1,27 +1,3 @@
-.bias-grid-container {
-    width: 180px;
-    margin: 0 auto;
-    padding: 0.5rem;
-}
-
-.bias-grid-container h3 {
-    font-size: 1rem;
-    font-weight: 500;
-    margin: 0;
-}
-
-.bias-grid-wrapper {
-    position: relative;
-    width: 80%;
-    margin: 0.75rem 0;
-}
-
-.bias-grid {
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
-}
 
 .bias-grid-content {
     position: relative;
@@ -64,9 +40,6 @@
     transition: box-shadow 0.2s ease;
 }
 
-.bias-grid-area.dragging .grid-dot {
-    box-shadow: 0 0 0 4px rgba(163, 177, 255, 0.5);
-}
 
 .grid-label {
     position: absolute;
@@ -99,12 +72,6 @@
     line-height: 1;
 }
 
-body.bias-grid-dragging {
-    user-select: none;
-    -webkit-user-select: none;
-    cursor: grabbing !important;
-    touch-action: none;
-}
 
 .grid-lines {
     position: absolute;

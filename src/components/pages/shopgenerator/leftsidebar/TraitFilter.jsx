@@ -34,39 +34,37 @@ function TraitFilter() {
     };
 
     return (
-        <div>
-            <Section
-                title="Traits"
-                buttonGroup={
-                    <ButtonGroup
-                        handleReset={clearTraitSelections}
-                        isCollapsed={isCollapsed}
-                        setIsCollapsed={setIsCollapsed}
+        <Section
+            title="Traits"
+            buttonGroup={
+                <ButtonGroup
+                    handleReset={clearTraitSelections}
+                    isCollapsed={isCollapsed}
+                    setIsCollapsed={setIsCollapsed}
+                />
+            }
+        >
+            {!isCollapsed && (
+                <>
+                    <input
+                        type="text"
+                        placeholder="Search traits..."
+                        value={traitFilter}
+                        onChange={(e) => setTraitFilter(e.target.value)}
+                        className="search-input"
                     />
-                }
-            >
-                {!isCollapsed && (
-                    <>
-                        <input
-                            type="text"
-                            placeholder="Search traits..."
-                            value={traitFilter}
-                            onChange={(e) => setTraitFilter(e.target.value)}
-                            className="search-input"
-                        />
-                        <TagContainer
-                            tags={filteredTraits.map((trait) => ({
-                                name: trait,
-                                state: getTraitStateString(trait),
-                                count: 0, // Assuming count is not used here
-                            }))}
-                            onTagClick={toggleTrait}
-                            getTagClassName={getTagClassName}
-                        />
-                    </>
-                )}
-            </Section>
-        </div>
+                    <TagContainer
+                        tags={filteredTraits.map((trait) => ({
+                            name: trait,
+                            state: getTraitStateString(trait),
+                            count: 0, // Assuming count is not used here
+                        }))}
+                        onTagClick={toggleTrait}
+                        getTagClassName={getTagClassName}
+                    />
+                </>
+            )}
+        </Section>
     );
 }
 

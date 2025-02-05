@@ -57,45 +57,43 @@ function SubcategoryFilter() {
     };
 
     return (
-        <div>
-             <Section
-                title="Subcategories"
+        <Section
+            title="Subcategories"
 
-                buttonGroup={
-                    <ButtonGroup handleReset={clearSubcategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-                }
-            >
-                {!isCollapsed && (
-                    <>
-                        <input
-                            type="text"
-                            placeholder="Search subcategories..."
-                            value={subcategoryFilter}
-                            onChange={(e) => setSubcategoryFilter(e.target.value)}
-                            className="search-input"
+            buttonGroup={
+                <ButtonGroup handleReset={clearSubcategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            }
+        >
+            {!isCollapsed && (
+                <>
+                    <input
+                        type="text"
+                        placeholder="Search subcategories..."
+                        value={subcategoryFilter}
+                        onChange={(e) => setSubcategoryFilter(e.target.value)}
+                        className="search-input"
+                    />
+                    <TagContainer 
+                        tags={filteredSubcategories.map(subcategory => ({
+                            name: subcategory,
+                            state: getSubcategoryStateString(subcategory),
+                            count: 0 // Assuming count is not used here
+                        }))}
+                        onTagClick={toggleSubcategory}
+                        getTagClassName={getTagClassName}
+                    >
+                    {filteredSubcategories.map(subcategory => (
+                        <Tag 
+                            key={subcategory}
+                            name={subcategory}
+                            state={getSubcategoryStateString(subcategory)}
+                            onClick={() => toggleSubcategory(subcategory)}
                         />
-                        <TagContainer 
-                            tags={filteredSubcategories.map(subcategory => ({
-                                name: subcategory,
-                                state: getSubcategoryStateString(subcategory),
-                                count: 0 // Assuming count is not used here
-                            }))}
-                            onTagClick={toggleSubcategory}
-                            getTagClassName={getTagClassName}
-                        >
-                        {filteredSubcategories.map(subcategory => (
-                            <Tag 
-                                key={subcategory}
-                                name={subcategory}
-                                state={getSubcategoryStateString(subcategory)}
-                                onClick={() => toggleSubcategory(subcategory)}
-                            />
-                        ))}
-                        </TagContainer>
-                    </>
-                )}
-            </Section>
-        </div>
+                    ))}
+                    </TagContainer>
+                </>
+            )}
+        </Section>
     );
 }
 
