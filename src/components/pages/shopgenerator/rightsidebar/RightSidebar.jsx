@@ -15,10 +15,10 @@ import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
-import SavedShopsSection from './SavedShopsSection';
-import ShopDetailsSection from './ShopDetailsSection';
-import ImportExportSection from './ImportExportSection';
-import ActionButtonsSection from './ActionButtonsSection';
+import SavedShopsSection from './selectshoptab/SavedShopsSection';
+import ShopDetailsSection from './shopdetailstab/ShopDetailsSection';
+import ImportExportSection from './selectshoptab/ImportExportSection';
+import ActionButtonsSection from './shopdetailstab/ActionButtonsSection';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
@@ -50,6 +50,7 @@ function RightSidebar({ onSave, onLoad }) {
     const [savedShops, setSavedShops] = useState([]);
     const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
     const [expandedFields, setExpandedFields] = useState({});
+    const [activeTab, setActiveTab] = useState('chooseShop'); // State to track active tab
 
     // Debug logging for auth state changes
     useEffect(() => {
@@ -224,14 +225,7 @@ function RightSidebar({ onSave, onLoad }) {
             return (
                 <div className={`multiline-field ${isExpanded ? 'expanded' : ''}`}>
                     <h3>
-                        {label}
-                        <button
-                            className="toggle-expand"
-                            onClick={() => toggleFieldExpansion(key)}
-                            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${label}`}
-                        >
-                            {isExpanded ? '▼' : '▲'}
-                        </button>
+                        {label}                       
                     </h3>
                     <textarea
                         name={key}
@@ -334,32 +328,61 @@ function RightSidebar({ onSave, onLoad }) {
         reader.readAsText(file);
     };
 
+    const renderTabContent = () => {
+        if (activeTab === 'chooseShop') {
+            return (
+                <>
+                    <SavedShopsSection 
+                        savedShops={savedShops} 
+                        shopDetails={shopDetails} 
+                        loadShop={loadShop} 
+                        handleNewShop={handleNewShop} 
+                    />
+                    <ImportExportSection 
+                        handleImportShop={handleImportShop} 
+                        handleExportShop={handleExportShop} 
+                    />
+                </>
+            );
+        } else if (activeTab === 'shopDetails') {
+            return (
+                <>
+                    <ActionButtonsSection 
+                        onGenerate={() => {}} // Placeholder for generate function
+                        onSave={saveShopToFirebase} 
+                        areAllDetailsFilled={areAllDetailsFilled} 
+                    />
+                    <ShopDetailsSection 
+                        shopDetails={shopDetails} 
+                        renderInputField={renderInputField} 
+                    />
+                </>
+            );
+        }
+    };
+
     return (
         <div 
             className="right-sidebar" 
             ref={sidebarRef}
             style={{ width: sidebarWidth }}
         >
-            <div className="right-sidebar-content">
-                <ActionButtonsSection 
-                    onGenerate={() => {}} // Placeholder for generate function
-                    onSave={saveShopToFirebase} 
-                    areAllDetailsFilled={areAllDetailsFilled} 
-                />
-                <SavedShopsSection 
-                    savedShops={savedShops} 
-                    shopDetails={shopDetails} 
-                    loadShop={loadShop} 
-                    handleNewShop={handleNewShop} 
-                />
-                <ImportExportSection 
-                    handleImportShop={handleImportShop} 
-                    handleExportShop={handleExportShop} 
-                />
-                <ShopDetailsSection 
-                    shopDetails={shopDetails} 
-                    renderInputField={renderInputField} 
-                />
+            <div className="tab-header">
+                <button 
+                    className={`tab-button ${activeTab === 'chooseShop' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('chooseShop')}
+                >
+                    Choose Shop
+                </button>
+                <button 
+                    className={`tab-button ${activeTab === 'shopDetails' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('shopDetails')}
+                >
+                    Shop Details
+                </button>
+            </div>
+            <div className="right-sidebar-content scrollable">
+                {renderTabContent()}
             </div>
             <div 
                 className={`right-resize-handle ${isDragging ? 'dragging' : ''}`}

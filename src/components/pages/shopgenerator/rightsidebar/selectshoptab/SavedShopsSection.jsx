@@ -1,16 +1,16 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
-import Section from '../components/Section';
+import Section from '../../components/Section';
 
 const SavedShopsSection = ({ savedShops, shopDetails, loadShop, handleNewShop }) => {
     return (
         <Section title="Saved Shops">
             <button 
-                className="new-shop-button"
+                className="action-button"
                 onClick={handleNewShop}
                 aria-label="Create New Shop"
             >
-                New Shop
+                CreateNew Shop
             </button>
             <select 
                 className="shop-select"

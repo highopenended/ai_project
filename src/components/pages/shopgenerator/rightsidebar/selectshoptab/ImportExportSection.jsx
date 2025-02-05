@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import './ImportExport.css';
 import { useCallback } from 'react';
-import Section from '../components/Section';
+import Section from '../../components/Section';
 
 const ImportExportSection = ({ handleImportShop, handleExportShop }) => {
     const handleDrop = useCallback((event) => {
@@ -19,9 +19,6 @@ const ImportExportSection = ({ handleImportShop, handleExportShop }) => {
     return (
         <Section title="Import/Export">
             <div className="import-export-wrapper">
-                <div className="import-export-header">
-                    <h3>Import/Export</h3>
-                </div>
                 <div className="import-export-section">
                     <div 
                         className="drag-drop-zone"
