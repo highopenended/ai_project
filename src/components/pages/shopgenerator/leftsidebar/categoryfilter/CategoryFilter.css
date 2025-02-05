@@ -6,8 +6,7 @@
     padding: 0;
 }
 
-.category-section,
-.subcategory-section {
+.category-section {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;

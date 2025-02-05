@@ -58,7 +58,7 @@ function SubcategoryFilter() {
     };
 
     return (
-        <div className="subcategory-section">
+        <div className="category-section">
             <div className="section-header">
                 <h3>Subcategories</h3>
                 <div className="buttons">

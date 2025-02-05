@@ -12,33 +12,6 @@
     gap: 0.5rem;
 }
 
-
-
-
-.reset-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    border: 1px solid #666;
-    border-radius: 4px;
-    background: transparent;
-    color: #fff;
-    cursor: pointer;
-}
-
-.reset-button svg {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s ease;
-}
-
-.reset-button:hover svg {
-    transform: rotate(180deg);
-}
-
 .search-input {
     padding: 0.5rem;
     border: 1px solid #666;
@@ -53,74 +26,3 @@
 .search-input::placeholder {
     color: #999;
 }
-
-.tag-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    padding: 0.25rem;
-    border: 1px solid #666;
-    border-radius: 4px;
-    background: rgba(0, 0, 0, 0.2);
-    height: 150px;
-    overflow-y: auto;
-    margin: 0 -0.25rem;
-    width: calc(100% + 0.5rem);
-    align-content: flex-start;
-}
-
-.tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.2rem 0.35rem;
-    background: transparent;
-    border: 1px solid #666;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-    height: 1.5rem;
-    flex: 0 0 auto;
-    gap: 0.25rem;
-}
-
-.tag:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.tag.included {
-    background: #2c5282;
-    border-color: #2b6cb0;
-}
-
-.tag.excluded {
-    background: #822c2c;
-    border-color: #b02b2b;
-}
-
-.exclude-indicator {
-    font-size: 0.7em;
-    opacity: 0.8;
-    margin-left: 0.15rem;
-}
-
-/* Scrollbar styling */
-.tag-container::-webkit-scrollbar {
-    width: 8px;
-}
-
-.tag-container::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-}
-
-.tag-container::-webkit-scrollbar-thumb {
-    background: #666;
-    border-radius: 4px;
-}
-
-.tag-container::-webkit-scrollbar-thumb:hover {
-    background: #888;
-} 

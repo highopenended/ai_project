@@ -214,7 +214,7 @@ function RaritySliders({ onChange, value }) {
     };
 
     return (
-        <div className="rarity-sliders">
+        <div>
             <div className="section-header">
                 <h3>Rarity Distribution</h3>
                 <div className="buttons">
@@ -223,7 +223,7 @@ function RaritySliders({ onChange, value }) {
                 </div>
             </div>
             {!isCollapsed && (
-                <div className="rarity-sliders-content">
+                <div>
                     {RARITIES.map(rarity => (
                         <div 
                             key={rarity} 
