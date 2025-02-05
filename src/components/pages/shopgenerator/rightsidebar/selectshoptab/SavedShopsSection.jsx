@@ -4,7 +4,7 @@ import Section from '../../components/Section';
 
 const SavedShopsSection = ({ savedShops, shopDetails, loadShop, handleNewShop }) => {
     return (
-        <Section title="Saved Shops">
+        <Section title="">
             <button 
                 className="action-button"
                 onClick={handleNewShop}

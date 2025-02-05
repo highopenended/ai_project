@@ -2,8 +2,6 @@ import ResetButton from './ResetButton';
 import CollapseExpandButton from './CollapseExpandButton';
 import PropTypes from 'prop-types';
 
-
-
 export default function ButtonGroup({ handleReset, isCollapsed, setIsCollapsed }) {
     return (
         <div className="buttons">
@@ -12,7 +10,6 @@ export default function ButtonGroup({ handleReset, isCollapsed, setIsCollapsed }
         </div>
     );
 }
-
 
 ButtonGroup.propTypes = {
     handleReset: PropTypes.func,

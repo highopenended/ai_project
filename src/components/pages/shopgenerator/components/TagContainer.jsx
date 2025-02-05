@@ -3,9 +3,6 @@ import PropTypes from 'prop-types';
 import './TagContainer.css';
 import Tag from './Tag';
 
-
-
-
 const TagContainer = ({ tags, onTagClick }) => {
     return (
         <div className="tag-container">
