@@ -11,11 +11,10 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
 // Import Firebase
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
-import { importShop, exportShop } from '../utils/importExportShop';
-import { loadSavedShops } from '../utils/firebaseShopUtils';
+import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
 import SavedShopsSection from './selectshoptab/SavedShopsSection';
 import ShopDetailsSection from './shopdetailstab/ShopDetailsSection';
 import ImportExportSection from './selectshoptab/ImportExportSection';
@@ -51,8 +50,10 @@ function RightSidebar({ onSave, onLoad }) {
     const dragInfo = useRef({ startX: 0, startWidth: 0 });
     const [savedShops, setSavedShops] = useState([]);
     const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
-    const [expandedFields, setExpandedFields] = useState({});
     const [activeTab, setActiveTab] = useState('chooseShop'); // State to track active tab
+
+    // Add memoized isMultilineField function
+    const isMultilineField = useCallback((key) => MULTILINE_FIELDS.includes(key), []);
 
     // Debug logging for auth state changes
     useEffect(() => {
@@ -73,11 +74,46 @@ function RightSidebar({ onSave, onLoad }) {
             uid: currentUser?.uid 
         });
         if (!loading && currentUser) {
-            loadSavedShops(currentUser.uid)
-                .then(shops => setSavedShops(shops))
-                .catch(error => console.error('Error loading shops:', error));
+            loadSavedShops();
         }
     }, [currentUser, loading]);
+
+    // Function to load saved shops from Firebase
+    const loadSavedShops = async () => {
+        if (!currentUser) {
+            console.log('No user authenticated, skipping load');
+            return;
+        }
+        try {
+            console.log('Starting to load shops:', {
+                uid: currentUser.uid,
+                path: `users/${currentUser.uid}/shops`
+            });
+            const shopsRef = collection(db, `users/${currentUser.uid}/shops`);
+            console.log('Collection reference created');
+            const shopsSnapshot = await getDocs(shopsRef);
+            console.log('Got shops snapshot:', {
+                empty: shopsSnapshot.empty,
+                size: shopsSnapshot.size
+            });
+            const shops = [];
+            shopsSnapshot.forEach((doc) => {
+                shops.push({ id: doc.id, ...doc.data() });
+            });
+            console.log('Processed shops:', {
+                count: shops.length,
+                names: shops.map(s => s.name)
+            });
+            setSavedShops(shops);
+        } catch (error) {
+            console.error('Error loading shops:', {
+                code: error.code,
+                message: error.message,
+                name: error.name,
+                stack: error.stack
+            });
+        }
+    };
 
     // Function to load a specific shop
     const loadShop = (shop) => {
@@ -139,7 +175,6 @@ function RightSidebar({ onSave, onLoad }) {
     // Function to create a new shop
     const handleNewShop = () => {
         setShopDetails(INITIAL_SHOP_DETAILS);
-        setExpandedFields({});
         // Pass empty shop data to parent to reset everything
         onLoad({
             type: '',
@@ -165,7 +200,6 @@ function RightSidebar({ onSave, onLoad }) {
         });
     };
 
-
     // Modified input change handler
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -175,43 +209,12 @@ function RightSidebar({ onSave, onLoad }) {
         }));
     };
 
-    // Function to render input field based on type
-    const renderInputField = (key) => {
-        const isMultiline = MULTILINE_FIELDS.includes(key);
-        const isExpanded = expandedFields[key];
-        const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1');
-
-        if (isMultiline) {
-            return (
-                <div className={`multiline-field ${isExpanded ? 'expanded' : ''}`}>
-                    <h3>
-                        {label}                       
-                    </h3>
-                    <textarea
-                        name={key}
-                        placeholder={`Enter ${label.toLowerCase()}`}
-                        value={shopDetails[key]}
-                        onChange={handleInputChange}
-                        aria-label={label}
-                    />
-                </div>
-            );
-        }
-
-        return (
-            <>
-                <h3>{label}</h3>
-                <input
-                    type="text"
-                    name={key}
-                    placeholder={`Enter ${label.toLowerCase()}`}
-                    value={shopDetails[key]}
-                    onChange={handleInputChange}
-                    aria-label={label}
-                />
-            </>
+    // Function to check if all shop details are filled
+    const areAllDetailsFilled = useCallback(() => {
+        return Object.values(shopDetails).every(detail => 
+            detail && typeof detail === 'string' && detail.trim() !== ''
         );
-    };
+    }, [shopDetails]);
 
     // Function to save shop data to Firebase
     const saveShopToFirebase = async () => {
@@ -224,26 +227,24 @@ function RightSidebar({ onSave, onLoad }) {
             const shopData = await onSave(shopDetails);
             await setDoc(doc(db, `users/${currentUser.uid}/shops/${shopDetails.name}`), shopData);
             console.log('Shop saved successfully!');
-            loadSavedShops(currentUser.uid)
-                .then(shops => setSavedShops(shops))
-                .catch(error => console.error('Error loading shops:', error));
+            loadSavedShops(); // Refresh the list of saved shops
         } catch (error) {
             console.error('Error saving shop:', error);
         }
     };
 
-    // Function to check if all shop details are filled
-    const areAllDetailsFilled = useCallback(() => {
-        return Object.values(shopDetails).every(detail => 
-            detail && typeof detail === 'string' && detail.trim() !== ''
-        );
-    }, [shopDetails]);
-
     // Function to handle shop export
     const handleExportShop = async () => {
         try {
             const shopData = await onSave(shopDetails);
-            await exportShop(shopData);
+            const exportCode = encodeShopData(shopData);
+            const blob = new Blob([exportCode], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${shopDetails.name || 'shop'}.shop`;
+            a.click();
+            URL.revokeObjectURL(url);
             alert('Shop exported successfully!');
         } catch (error) {
             console.error('Error exporting shop:', error);
@@ -252,24 +253,35 @@ function RightSidebar({ onSave, onLoad }) {
     };
 
     // Function to handle shop import
-    const handleImportShop = async (event) => {
-        try {
-            const importedData = await importShop(event.target.files[0]);
-            onLoad(importedData);
-            setShopDetails({
-                type: importedData.type || '',
-                name: importedData.name || '',
-                keeper: importedData.keeper || '',
-                location: importedData.location || '',
-                shopkeeperDescription: importedData.shopkeeperDescription || '',
-                shopDetails: importedData.shopDetails || '',
-                shopkeeperDetails: importedData.shopkeeperDetails || ''
-            });
-            alert('Shop imported successfully!');
-        } catch (error) {
-            console.error('Error importing shop:', error);
-            alert(error.message || 'Error importing shop. Please check the file and try again.');
-        }
+    const handleImportShop = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = decodeShopData(e.target.result);
+                if (!importedData) {
+                    alert('Invalid shop file. Please check and try again.');
+                    return;
+                }
+                onLoad(importedData);
+                setShopDetails({
+                    type: importedData.type || '',
+                    name: importedData.name || '',
+                    keeper: importedData.keeper || '',
+                    location: importedData.location || '',
+                    shopkeeperDescription: importedData.shopkeeperDescription || '',
+                    shopDetails: importedData.shopDetails || '',
+                    shopkeeperDetails: importedData.shopkeeperDetails || ''
+                });
+                alert('Shop imported successfully!');
+            } catch (error) {
+                console.error('Error importing shop:', error);
+                alert('Error importing shop. Please check the file and try again.');
+            }
+        };
+        reader.readAsText(file);
     };
 
     const renderTabContent = () => {
@@ -298,7 +310,8 @@ function RightSidebar({ onSave, onLoad }) {
                     />
                     <ShopDetailsSection 
                         shopDetails={shopDetails} 
-                        renderInputField={renderInputField} 
+                        isMultilineField={isMultilineField}
+                        onInputChange={handleInputChange}
                     />
                 </>
             );
