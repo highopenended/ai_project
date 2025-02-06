@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import './LevelInput.css';
-import Section from '../../components/Section';
+import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import "./LevelInput.css";
+import Section from "../../components/Section";
+import Section_OneLine from "../../components/Section_OneLine";
 
+function LevelInput({
+    lowestLevel = 0, // Default to 0
+    highestLevel = 10, // Default to 10
 
-
-function LevelInput({ 
-    lowestLevel = 0,  // Default to 0
-    highestLevel = 10,  // Default to 10
-
-    onLowestLevelChange, 
-    onHighestLevelChange 
+    onLowestLevelChange,
+    onHighestLevelChange,
 }) {
     // Track the display value separately from the actual number value
     const [lowestDisplay, setLowestDisplay] = useState(lowestLevel.toString());
@@ -31,14 +30,14 @@ function LevelInput({
     const handleLowestLevelChange = (e) => {
         const value = e.target.value;
         setLowestDisplay(value);
-        const newValue = value === '' ? 0 : parseInt(value) || 0;
+        const newValue = value === "" ? 0 : parseInt(value) || 0;
         onLowestLevelChange(newValue);
     };
 
     const handleHighestLevelChange = (e) => {
         const value = e.target.value;
         setHighestDisplay(value);
-        const newValue = value === '' ? 0 : parseInt(value) || 0;
+        const newValue = value === "" ? 0 : parseInt(value) || 0;
         onHighestLevelChange(newValue);
     };
 
@@ -73,19 +72,15 @@ function LevelInput({
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
             e.target.blur();
         }
     };
 
     return (
-        <Section    
-            title="Level Range"            
-        >
-            {/* <h3>Level Range</h3> */}
+        <Section_OneLine title="Level Range">
             <div className="level-input-group">
                 <input
-
                     type="number"
                     id="lowest-level"
                     value={lowestDisplay}
@@ -109,10 +104,9 @@ function LevelInput({
                     required
                 />
             </div>
-        </Section>
+        </Section_OneLine>
     );
 }
-
 
 LevelInput.propTypes = {
     lowestLevel: PropTypes.number.isRequired,
@@ -121,4 +115,4 @@ LevelInput.propTypes = {
     onHighestLevelChange: PropTypes.func.isRequired,
 };
 
-export default LevelInput; 
+export default LevelInput;

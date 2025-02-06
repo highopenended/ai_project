@@ -5,6 +5,9 @@
     gap: .3rem;
     flex: 1;
 }
+.level-input-container{
+    display: flex;
+}
 
 .level-input-group input {
     padding: 4px 8px;
@@ -12,8 +15,6 @@
     text-align: center;
     margin: 0rem 0.2rem;
 }
-
-
 
 
 .level-input-group input::-webkit-inner-spin-button,

@@ -11,10 +11,11 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
 // Import Firebase
-import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
-import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
+import { importShop, exportShop } from '../utils/importExportShop';
+import { loadSavedShops } from '../utils/firebaseShopUtils';
 import SavedShopsSection from './selectshoptab/SavedShopsSection';
 import ShopDetailsSection from './shopdetailstab/ShopDetailsSection';
 import ImportExportSection from './selectshoptab/ImportExportSection';
@@ -72,46 +73,11 @@ function RightSidebar({ onSave, onLoad }) {
             uid: currentUser?.uid 
         });
         if (!loading && currentUser) {
-            loadSavedShops();
+            loadSavedShops(currentUser.uid)
+                .then(shops => setSavedShops(shops))
+                .catch(error => console.error('Error loading shops:', error));
         }
     }, [currentUser, loading]);
-
-    // Function to load saved shops from Firebase
-    const loadSavedShops = async () => {
-        if (!currentUser) {
-            console.log('No user authenticated, skipping load');
-            return;
-        }
-        try {
-            console.log('Starting to load shops:', {
-                uid: currentUser.uid,
-                path: `users/${currentUser.uid}/shops`
-            });
-            const shopsRef = collection(db, `users/${currentUser.uid}/shops`);
-            console.log('Collection reference created');
-            const shopsSnapshot = await getDocs(shopsRef);
-            console.log('Got shops snapshot:', {
-                empty: shopsSnapshot.empty,
-                size: shopsSnapshot.size
-            });
-            const shops = [];
-            shopsSnapshot.forEach((doc) => {
-                shops.push({ id: doc.id, ...doc.data() });
-            });
-            console.log('Processed shops:', {
-                count: shops.length,
-                names: shops.map(s => s.name)
-            });
-            setSavedShops(shops);
-        } catch (error) {
-            console.error('Error loading shops:', {
-                code: error.code,
-                message: error.message,
-                name: error.name,
-                stack: error.stack
-            });
-        }
-    };
 
     // Function to load a specific shop
     const loadShop = (shop) => {
@@ -258,7 +224,9 @@ function RightSidebar({ onSave, onLoad }) {
             const shopData = await onSave(shopDetails);
             await setDoc(doc(db, `users/${currentUser.uid}/shops/${shopDetails.name}`), shopData);
             console.log('Shop saved successfully!');
-            loadSavedShops(); // Refresh the list of saved shops
+            loadSavedShops(currentUser.uid)
+                .then(shops => setSavedShops(shops))
+                .catch(error => console.error('Error loading shops:', error));
         } catch (error) {
             console.error('Error saving shop:', error);
         }
@@ -275,14 +243,7 @@ function RightSidebar({ onSave, onLoad }) {
     const handleExportShop = async () => {
         try {
             const shopData = await onSave(shopDetails);
-            const exportCode = encodeShopData(shopData);
-            const blob = new Blob([exportCode], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${shopDetails.name || 'shop'}.shop`;
-            a.click();
-            URL.revokeObjectURL(url);
+            await exportShop(shopData);
             alert('Shop exported successfully!');
         } catch (error) {
             console.error('Error exporting shop:', error);
@@ -291,35 +252,24 @@ function RightSidebar({ onSave, onLoad }) {
     };
 
     // Function to handle shop import
-    const handleImportShop = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const importedData = decodeShopData(e.target.result);
-                if (!importedData) {
-                    alert('Invalid shop file. Please check and try again.');
-                    return;
-                }
-                onLoad(importedData);
-                setShopDetails({
-                    type: importedData.type || '',
-                    name: importedData.name || '',
-                    keeper: importedData.keeper || '',
-                    location: importedData.location || '',
-                    shopkeeperDescription: importedData.shopkeeperDescription || '',
-                    shopDetails: importedData.shopDetails || '',
-                    shopkeeperDetails: importedData.shopkeeperDetails || ''
-                });
-                alert('Shop imported successfully!');
-            } catch (error) {
-                console.error('Error importing shop:', error);
-                alert('Error importing shop. Please check the file and try again.');
-            }
-        };
-        reader.readAsText(file);
+    const handleImportShop = async (event) => {
+        try {
+            const importedData = await importShop(event.target.files[0]);
+            onLoad(importedData);
+            setShopDetails({
+                type: importedData.type || '',
+                name: importedData.name || '',
+                keeper: importedData.keeper || '',
+                location: importedData.location || '',
+                shopkeeperDescription: importedData.shopkeeperDescription || '',
+                shopDetails: importedData.shopDetails || '',
+                shopkeeperDetails: importedData.shopkeeperDetails || ''
+            });
+            alert('Shop imported successfully!');
+        } catch (error) {
+            console.error('Error importing shop:', error);
+            alert(error.message || 'Error importing shop. Please check the file and try again.');
+        }
     };
 
     const renderTabContent = () => {
