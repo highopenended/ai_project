@@ -10,8 +10,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
-// Import Firebase
-import { doc, setDoc, collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
@@ -19,8 +18,8 @@ import SavedShopsSection from './selectshoptab/SavedShopsSection';
 import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExportSection from './selectshoptab/ImportExportSection';
-import ActionButtonsSection from './shopdetailstab/ActionButtonsSection';
 import TabArea from './TabArea';
+import SaveShopButton from './shopdetailstab/SaveShopButton';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
@@ -217,23 +216,6 @@ function RightSidebar({ onSave, onLoad }) {
         );
     }, [shopDetails]);
 
-    // Function to save shop data to Firebase
-    const saveShopToFirebase = async () => {
-        if (!currentUser) {
-            console.error('User is not authenticated');
-            return;
-        }
-
-        try {
-            const shopData = await onSave(shopDetails);
-            await setDoc(doc(db, `users/${currentUser.uid}/shops/${shopDetails.name}`), shopData);
-            console.log('Shop saved successfully!');
-            loadSavedShops(); // Refresh the list of saved shops
-        } catch (error) {
-            console.error('Error saving shop:', error);
-        }
-    };
-
     // Function to handle shop export
     const handleExportShop = async () => {
         try {
@@ -304,10 +286,9 @@ function RightSidebar({ onSave, onLoad }) {
         } else if (activeTab === 'shopDetails') {
             return (
                 <>
-                    <ActionButtonsSection 
-                        onGenerate={() => {}} // Placeholder for generate function
-                        onSave={saveShopToFirebase} 
-                        areAllDetailsFilled={areAllDetailsFilled} 
+                    <SaveShopButton
+                        onSave={onSave}
+                        areAllDetailsFilled={areAllDetailsFilled}
                     />
                     <ShopDetailsShort 
                         shopDetails={shopDetails} 
