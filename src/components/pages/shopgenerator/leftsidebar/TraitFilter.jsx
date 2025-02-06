@@ -4,6 +4,8 @@ import traitList from "../../../../../public/trait-list.json";
 import TagContainer from "../components/TagContainer";
 import Section from "../components/Section";
 import ButtonGroup from "../components/ButtonGroup";
+import SearchBar from '../components/SearchBar';
+
 function TraitFilter() {
     const { getTraitState, toggleTrait, clearTraitSelections } = useTraitContext();
 
@@ -46,8 +48,7 @@ function TraitFilter() {
         >
             {!isCollapsed && (
                 <>
-                    <input
-                        type="text"
+                    <SearchBar
                         placeholder="Search traits..."
                         value={traitFilter}
                         onChange={(e) => setTraitFilter(e.target.value)}

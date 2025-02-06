@@ -3,6 +3,7 @@ import { useCategoryContext, SELECTION_STATES } from "../context/CategoryContext
 import TagContainer from "../components/TagContainer";
 import Section from "../components/Section";
 import ButtonGroup from "../components/ButtonGroup";
+import SearchBar from '../components/SearchBar';
 
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useCategoryContext();
@@ -38,8 +39,7 @@ function CategoryFilter() {
             >
                 {!isCollapsed && (
                     <>
-                        <input
-                            type="text"
+                        <SearchBar
                             placeholder="Search categories..."
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}

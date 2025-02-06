@@ -4,6 +4,7 @@ import TagContainer from '../components/TagContainer';
 import Tag from '../components/Tag';
 import Section from '../components/Section';
 import ButtonGroup from '../components/ButtonGroup';
+import SearchBar from '../components/SearchBar';
 
 function SubcategoryFilter() {
     const {
@@ -66,8 +67,7 @@ function SubcategoryFilter() {
         >
             {!isCollapsed && (
                 <>
-                    <input
-                        type="text"
+                    <SearchBar
                         placeholder="Search subcategories..."
                         value={subcategoryFilter}
                         onChange={(e) => setSubcategoryFilter(e.target.value)}
