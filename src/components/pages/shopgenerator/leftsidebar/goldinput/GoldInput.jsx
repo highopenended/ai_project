@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './GoldInput.css';
+import Section_OneLine from '../../components/Section_OneLine';
 
 function GoldInput({ onChange, value }) {
     const formatNumber = (value) => {
@@ -84,8 +85,9 @@ function GoldInput({ onChange, value }) {
     };
 
     return (
-        <div className="gold-input-container">
-            <div className="gold-input-wrapper">
+        
+        <Section_OneLine>
+            <div>
                 <div className="input-with-suffix">
                     <input
                         type="text"
@@ -101,7 +103,7 @@ function GoldInput({ onChange, value }) {
                     <span className="suffix">gp</span>
                 </div>
             </div>
-        </div>
+        </Section_OneLine>
     );
 }
 

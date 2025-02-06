@@ -3,7 +3,7 @@ import './Section.css';
 
 const Section_OneLine = ({ title, children}) => {
     return (
-        <div className="section-oneline">
+        <div className="section">
             <div className="section-header">
                 {title && <h3>{title}</h3>}
                 {children}
@@ -12,11 +12,9 @@ const Section_OneLine = ({ title, children}) => {
     );
 };
 
-
 Section_OneLine.propTypes = {
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     children: PropTypes.node,
 };
-
 
 export default Section_OneLine;
