@@ -17,7 +17,7 @@ import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
 import SavedShopsSection from './selectshoptab/SavedShopsSection';
 import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
-import ImportExportSection from './selectshoptab/ImportExportSection';
+import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
 
@@ -277,7 +277,7 @@ function RightSidebar({ onSave, onLoad }) {
                         loadShop={loadShop} 
                         handleNewShop={handleNewShop} 
                     />
-                    <ImportExportSection 
+                    <ImportExport 
                         handleImportShop={handleImportShop} 
                         handleExportShop={handleExportShop} 
                     />

@@ -3,7 +3,7 @@ import './ImportExport.css';
 import { useCallback } from 'react';
 import Section from '../../components/Section';
 
-const ImportExportSection = ({ handleImportShop, handleExportShop }) => {
+const ImportExport = ({ handleImportShop, handleExportShop }) => {
     const handleDrop = useCallback((event) => {
         event.preventDefault();
         const file = event.dataTransfer.files[0];
@@ -57,9 +57,9 @@ const ImportExportSection = ({ handleImportShop, handleExportShop }) => {
     );
 };
 
-ImportExportSection.propTypes = {
+ImportExport.propTypes = {
     handleImportShop: PropTypes.func.isRequired,
     handleExportShop: PropTypes.func.isRequired,
 };
 
-export default ImportExportSection; 
+export default ImportExport; 
