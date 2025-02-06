@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import Section from '../../components/Section';
+import Section_OneLine from '../../components/Section_OneLine';
 
 const ShopDetailsSection = ({ shopDetails, renderInputField }) => {
     return (
