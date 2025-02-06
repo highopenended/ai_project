@@ -16,7 +16,8 @@ import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
 import SavedShopsSection from './selectshoptab/SavedShopsSection';
-import ShopDetailsSection from './shopdetailstab/ShopDetailsSection';
+import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
+import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExportSection from './selectshoptab/ImportExportSection';
 import ActionButtonsSection from './shopdetailstab/ActionButtonsSection';
 import TabArea from './TabArea';
@@ -308,7 +309,12 @@ function RightSidebar({ onSave, onLoad }) {
                         onSave={saveShopToFirebase} 
                         areAllDetailsFilled={areAllDetailsFilled} 
                     />
-                    <ShopDetailsSection 
+                    <ShopDetailsShort 
+                        shopDetails={shopDetails} 
+                        isMultilineField={isMultilineField}
+                        onInputChange={handleInputChange}
+                    />
+                    <ShopDetailsLong 
                         shopDetails={shopDetails} 
                         isMultilineField={isMultilineField}
                         onInputChange={handleInputChange}
