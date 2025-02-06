@@ -27,8 +27,15 @@ const ImportExportSection = ({ handleImportShop, handleExportShop }) => {
                         onDragOver={handleDragOver}
                         aria-label="Drag and drop or Select File"
                     >
-                        Drag and drop or Select File
+                        Drag and drop
+                        <br />
+                        <small className="small-text">-- or --</small>
+                        <br />
+                        Select File
                     </div>
+
+
+
                     <input 
                         id="file-input"
                         type="file" 

@@ -32,7 +32,9 @@
     transition: background-color 0.2s ease, color 0.2s ease;
     font-weight: bold;
     cursor: pointer;
+    font-size: 1rem;
 }
+
 
 .drag-drop-zone:hover {
     background-color: var(--background-secondary);
@@ -87,4 +89,8 @@
 .import-export-header h3 {
     margin: 0;
     color: var(--text-primary);
+}
+.small-text {
+    font-size: .75rem;
+    margin: 1rem;
 }
