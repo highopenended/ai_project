@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './LevelInput.css';
+import Section from '../../components/Section';
+
+
 
 function LevelInput({ 
     lowestLevel = 0,  // Default to 0
     highestLevel = 10,  // Default to 10
+
     onLowestLevelChange, 
     onHighestLevelChange 
 }) {
@@ -75,10 +79,13 @@ function LevelInput({
     };
 
     return (
-        <div className="section-header">
-            <h3>Level Range</h3>
+        <Section    
+            title="Level Range"            
+        >
+            {/* <h3>Level Range</h3> */}
             <div className="level-input-group">
                 <input
+
                     type="number"
                     id="lowest-level"
                     value={lowestDisplay}
@@ -102,9 +109,10 @@ function LevelInput({
                     required
                 />
             </div>
-        </div>
+        </Section>
     );
 }
+
 
 LevelInput.propTypes = {
     lowestLevel: PropTypes.number.isRequired,

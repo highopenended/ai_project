@@ -7,7 +7,7 @@ const Section = ({ title, buttonGroup, children}) => {
         <div className="section">
             <div className="section-header">
                 <h3 className="section-header">{title}</h3>
-                {buttonGroup}
+                {buttonGroup && buttonGroup}
             </div>
             {children}
         </div>
