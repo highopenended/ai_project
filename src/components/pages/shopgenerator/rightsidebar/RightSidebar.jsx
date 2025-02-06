@@ -14,7 +14,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
 import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
-import SavedShopsSection from './selectshoptab/SavedShopsSection';
+import SavedShops from './selectshoptab/SavedShops';
 import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
@@ -271,7 +271,7 @@ function RightSidebar({ onSave, onLoad }) {
         if (activeTab === 'chooseShop') {
             return (
                 <>
-                    <SavedShopsSection 
+                    <SavedShops
                         savedShops={savedShops} 
                         shopDetails={shopDetails} 
                         loadShop={loadShop} 
