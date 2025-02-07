@@ -1,9 +1,9 @@
 .short-detail-container {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid var(--border-color);
+    /* gap: 0.5rem; */
+    padding: .2rem .2rem .2rem .2rem;
+    border: 1px solid var(--dark-border-color);
     border-radius: 6px;
     background-color: var(--background-secondary);
     box-sizing: border-box;

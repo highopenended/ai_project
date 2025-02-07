@@ -35,51 +35,6 @@
     font-size: 1.5rem;
 }
 
-/* Shop Details Section */
-.shop-details {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-top: 1rem;
-}
-
-.detail-section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-/* Input and Button Styling */
-.detail-section input,
-.detail-section textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid white;
-    border-radius: 6px;
-    background-color: var(--background-tertiary);
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-    margin-top: 0.5rem;
-}
-
-.detail-section input:hover,
-.detail-section textarea:hover {
-    border-color: var(--primary-color);
-}
-
-.detail-section input:focus,
-.detail-section textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
-}
-
-.detail-section textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
 .multiline-field {
     position: relative;
     display: flex;
@@ -128,12 +83,6 @@
     border: 2px solid white;
 }
 
-.new-shop-button:hover {
-    background-color: var(--primary-color-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
 /* Resize Handle */
 .right-resize-handle {
     position: absolute;
@@ -156,32 +105,6 @@
     background-color: rgba(163, 177, 255, 0.5);
     width: 10px;
 }
-
-/* Dropdown and Tab Styling */
-.shop-select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid white;
-    border-radius: 6px;
-    background-color: var(--background-tertiary);
-    color: var(--text-primary);
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, .1 );
-}
-
-
-.shop-select:hover {
-    border-color: var(--primary-color);
-}
-
-.shop-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
-}
-
 /* Enhanced Tab Header Styling */
 .tab-header {
     display: flex;
