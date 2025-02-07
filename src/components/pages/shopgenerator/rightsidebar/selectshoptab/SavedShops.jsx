@@ -12,7 +12,7 @@ const SavedShops = ({ savedShops, loadShop }) => {
                 <ul className="shop-list">
                     {savedShops.map((shop) => (
                         <li key={shop.id} onClick={() => loadShop(shop)} className="shop-item">
-                            {shop.name || 'Unnamed Shop'}
+                            {shop.shortData.shopName || 'Unnamed Shop'}
                         </li>
                     ))}
                 </ul>

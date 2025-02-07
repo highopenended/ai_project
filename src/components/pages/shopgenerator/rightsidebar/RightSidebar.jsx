@@ -10,14 +10,14 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
-// import PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import SavedShops from './selectshoptab/SavedShops';
 import ShopDetailsShort from './shopdetailstab/shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
-import { saveOrUpdateShopData, loadShopData } from '../utils/firebaseShopUtils';
+import { loadShopData } from '../utils/firebaseShopUtils';
 import { exportShopData } from '../utils/shopFileUtils';
 
 // Initial shop details state
@@ -61,7 +61,7 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
-function RightSidebar() {
+function RightSidebar({ onSave }) {
     const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
@@ -207,26 +207,6 @@ function RightSidebar() {
         exportShopData(shopDetails);
     };
 
-    // Function to save shop to Firebase
-    const handleSaveShop = async () => {
-        try {
-            const userId = currentUser.uid;
-            const shopDataWithId = {
-                ...shopDetails,
-                dateLastEdited: new Date()
-            };
-            const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
-            setShopDetails(prevDetails => ({
-                ...prevDetails,
-                id: shopId
-            }));
-            alert('Shop saved successfully!');
-        } catch (error) {
-            console.error('Error saving shop:', error);
-            alert('Error saving shop. Please try again.');
-        }
-    };
-
     const renderTabContent = () => {
         if (activeTab === 'chooseShop') {
             return (
@@ -248,7 +228,7 @@ function RightSidebar() {
             return (
                 <>
                     <SaveShopButton
-                        onSave={handleSaveShop}
+                        onSave={onSave}
                         areAllDetailsFilled={areAllDetailsFilled}
                     />
                     <ShopDetailsShort 
@@ -284,6 +264,8 @@ function RightSidebar() {
     );
 }
 
-// RightSidebar.propTypes = {};
+RightSidebar.propTypes = {
+    onSave: PropTypes.func.isRequired,
+};
 
 export default RightSidebar;

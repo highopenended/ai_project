@@ -21,18 +21,21 @@ function TraitFilter() {
         )
     ).sort();
 
+    // Ensure getTraitState returns a string
+    const getTraitStateString = (trait) => {
+        const state = getTraitState(trait);
+        return state === TRAIT_STATES.INCLUDE ? "INCLUDE" : state === TRAIT_STATES.EXCLUDE ? "EXCLUDE" : "NONE";
+    };
+
+    // console.log('Filtered Traits:', filteredTraits);
+    // console.log('Trait States:', filteredTraits.map(trait => ({ trait, state: getTraitStateString(trait) })));
+
     // Define getTagClassName function
     const getTagClassName = (state) => {
         const baseClass = "tag";
         if (state === "INCLUDE") return `${baseClass} included`;
         if (state === "EXCLUDE") return `${baseClass} excluded`;
         return baseClass;
-    };
-
-    // Ensure getTraitState returns a string
-    const getTraitStateString = (trait) => {
-        const state = getTraitState(trait);
-        return state === TRAIT_STATES.INCLUDE ? "INCLUDE" : state === TRAIT_STATES.EXCLUDE ? "EXCLUDE" : "NONE";
     };
 
     return (
