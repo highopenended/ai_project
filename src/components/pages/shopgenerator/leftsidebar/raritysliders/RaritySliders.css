@@ -49,7 +49,7 @@
 }
 
 .rarity-slider-container label {
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 0.75rem;
     min-width: 4.25rem;
     line-height: 1;

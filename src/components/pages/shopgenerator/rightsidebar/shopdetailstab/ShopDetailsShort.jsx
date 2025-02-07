@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import Section from "../../components/Section";
 import Section_OneLine from "../../components/Section_OneLine";
+import ShortDetailBlock from './ShortDetailBlock';
 
 const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
 
@@ -21,10 +22,30 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
     return (
         <Section title="Basic Details">
             <div>
-                <Section_OneLine title="Shop Name">{renderInputField("shopName")}</Section_OneLine>
-                <Section_OneLine title="ShopKeeper">{renderInputField("shopKeeperName")}</Section_OneLine>
-                <Section_OneLine title="Shop Type">{renderInputField("type")}</Section_OneLine>
-                <Section_OneLine title="Location">{renderInputField("location")}</Section_OneLine>
+                <ShortDetailBlock
+                    title="Shop Name"
+                    value={shopDetails.shortData.shopName}
+                    onChange={onInputChange}
+                    name="shopName"
+                />
+                <ShortDetailBlock
+                    title="ShopKeeper"
+                    value={shopDetails.shortData.shopKeeperName}
+                    onChange={onInputChange}
+                    name="shopKeeperName"
+                />
+                <ShortDetailBlock
+                    title="Shop Type"
+                    value={shopDetails.shortData.type}
+                    onChange={onInputChange}
+                    name="type"
+                />
+                <ShortDetailBlock
+                    title="Location"
+                    value={shopDetails.shortData.location}
+                    onChange={onInputChange}
+                    name="location"
+                />
             </div>
         </Section>
     );

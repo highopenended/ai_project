@@ -1,0 +1,33 @@
+.short-detail-block {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.2rem 0.5rem 0.2rem 0.0rem;
+    /* margin-bottom: 0.5rem; */
+    background-color: var(--background-tertiary);
+}
+
+.short-detail-title {
+    flex: 0 0 80px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-align: right;  
+    margin-right: 0.5rem;
+}
+
+.short-detail-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--light-background-color);
+    color: var(--text-secondary);
+    transition: border-color 0.2s ease;
+}
+
+.short-detail-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+} 

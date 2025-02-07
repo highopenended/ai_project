@@ -43,7 +43,7 @@
 
 .grid-label {
     position: absolute;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-size: 0.75rem;
     line-height: 1;
     pointer-events: none;
@@ -63,7 +63,7 @@
     flex-direction: column;
     gap: 1px;
     font-size: 0.65rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     background: rgba(0, 0, 0, 0.4);
     padding: 3px 4px;
     border-radius: 3px;
