@@ -2,13 +2,16 @@ import PropTypes from 'prop-types';
 import './ImportExport.css';
 import { useCallback } from 'react';
 import Section from '../../components/Section';
+import { importShopData } from '../../utils/shopFileUtils';
 
-const ImportExport = ({ handleImportShop, handleExportShop }) => {
+const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData }) => {
     const handleDrop = useCallback((event) => {
         event.preventDefault();
         const file = event.dataTransfer.files[0];
         if (file) {
-            handleImportShop({ target: { files: [file] } });
+            importShopData(file, (importedData) => {
+                handleImportShop(importedData);
+            });
         }
     }, [handleImportShop]);
 
@@ -33,9 +36,6 @@ const ImportExport = ({ handleImportShop, handleExportShop }) => {
                         <br />
                         Select File
                     </div>
-
-
-
                     <input 
                         id="file-input"
                         type="file" 
@@ -46,7 +46,7 @@ const ImportExport = ({ handleImportShop, handleExportShop }) => {
                     />
                     <button 
                         className="action-button"
-                        onClick={handleExportShop}
+                        onClick={() => exportShop(shopData)}
                         aria-label="Export Shop"
                     >
                         Export Shop
@@ -60,6 +60,7 @@ const ImportExport = ({ handleImportShop, handleExportShop }) => {
 ImportExport.propTypes = {
     handleImportShop: PropTypes.func.isRequired,
     handleExportShop: PropTypes.func.isRequired,
+    shopData: PropTypes.object.isRequired,
 };
 
 export default ImportExport; 

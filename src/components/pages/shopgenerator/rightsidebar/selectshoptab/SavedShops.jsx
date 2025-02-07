@@ -4,16 +4,9 @@ import Section from '../../components/Section';
 import Scrollbar from '../../components/Scrollbar';
 import './SavedShops.css';
 
-const SavedShops = ({ savedShops, loadShop, handleNewShop }) => {
+const SavedShops = ({ savedShops, loadShop }) => {
     return (
-        <Section title="">
-            <button 
-                className="action-button"
-                onClick={handleNewShop}
-                aria-label="Create New Shop"
-            >
-                Create New Shop
-            </button>
+        <Section title="Saved Shops">           
             <Scrollbar style={{ maxHeight: '200px', minHeight: '100px', overflowY: 'auto' }}>
                 <ul className="shop-list">
                     {savedShops.map((shop) => (

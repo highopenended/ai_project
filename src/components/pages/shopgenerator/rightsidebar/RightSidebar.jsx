@@ -10,30 +10,49 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../../../firebaseConfig';
-import PropTypes from 'prop-types';
-import { encodeShopData, decodeShopData } from '../utils/encodeDecodeShopData';
+// import PropTypes from 'prop-types';
 import SavedShops from './selectshoptab/SavedShops';
 import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
+import { saveShopData, loadShopData } from '../utils/firebaseShopUtils';
+import { exportShopData } from '../utils/shopFileUtils';
 
 // Initial shop details state
 const INITIAL_SHOP_DETAILS = {
-    type: '',
-    name: '',
-    keeper: '',
-    location: '',
-    shopkeeperDescription: '',
-    shopDetails: '',
-    shopkeeperDetails: ''
+    shortData: {
+        shopName: '',
+        shopKeeperName: '',
+        type: '',
+        location: ''
+    },
+    longData: {
+        shopDetails: '',
+        shopkeeperDetails: ''
+    },
+    parameters: {
+        goldAmount: 5000,
+        levelLow: 0,
+        levelHigh: 10,
+        shopBias: { x: 50.00, y: 50.00 },
+        rarityDistribution: {
+            common: 95.00,
+            uncommon: 4.00,
+            rare: 0.90,
+            unique: 0.10
+        },
+        categories: [],
+        subcategories: [],
+        traits: [],
+        currentStock: []
+    },
+    id: '',
+    dateCreated: new Date(),
+    dateLastEdited: new Date()
 };
 
-// Define which fields should be multiline
-const MULTILINE_FIELDS = ['shopkeeperDescription', 'shopDetails', 'shopkeeperDetails'];
 
 // Sidebar size constraints
 const SIDEBAR_CONSTRAINTS = {
@@ -42,18 +61,16 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
-function RightSidebar({ onSave, onLoad }) {
+function RightSidebar() {
     const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
     const [isDragging, setIsDragging] = useState(false);
     const dragInfo = useRef({ startX: 0, startWidth: 0 });
-    const [savedShops, setSavedShops] = useState([]);
+    const [savedShops, setSavedShops] = useState([]); // The list of saved shops
     const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
     const [activeTab, setActiveTab] = useState('chooseShop'); // State to track active tab
 
-    // Add memoized isMultilineField function
-    const isMultilineField = useCallback((key) => MULTILINE_FIELDS.includes(key), []);
 
     // Debug logging for auth state changes
     useEffect(() => {
@@ -78,58 +95,7 @@ function RightSidebar({ onSave, onLoad }) {
         }
     }, [currentUser, loading]);
 
-    // Function to load saved shops from Firebase
-    const loadSavedShops = async () => {
-        if (!currentUser) {
-            console.log('No user authenticated, skipping load');
-            return;
-        }
-        try {
-            console.log('Starting to load shops:', {
-                uid: currentUser.uid,
-                path: `users/${currentUser.uid}/shops`
-            });
-            const shopsRef = collection(db, `users/${currentUser.uid}/shops`);
-            console.log('Collection reference created');
-            const shopsSnapshot = await getDocs(shopsRef);
-            console.log('Got shops snapshot:', {
-                empty: shopsSnapshot.empty,
-                size: shopsSnapshot.size
-            });
-            const shops = [];
-            shopsSnapshot.forEach((doc) => {
-                shops.push({ id: doc.id, ...doc.data() });
-            });
-            console.log('Processed shops:', {
-                count: shops.length,
-                names: shops.map(s => s.name)
-            });
-            setSavedShops(shops);
-        } catch (error) {
-            console.error('Error loading shops:', {
-                code: error.code,
-                message: error.message,
-                name: error.name,
-                stack: error.stack
-            });
-        }
-    };
-
-    // Function to load a specific shop
-    const loadShop = (shop) => {
-        // Extract shop details fields
-        const shopDetailsFields = {
-            type: shop.type || '',
-            name: shop.name || '',
-            keeper: shop.keeper || '',
-            location: shop.location || '',
-            shopkeeperDescription: shop.shopkeeperDescription || '',
-            shopDetails: shop.shopDetails || '',
-            shopkeeperDetails: shop.shopkeeperDetails || ''
-        };
-        setShopDetails(shopDetailsFields);
-        onLoad(shop);  // Pass the full shop data to parent
-    };
+ 
 
     const handleMouseDown = useCallback((e) => {
         e.preventDefault();
@@ -172,99 +138,88 @@ function RightSidebar({ onSave, onLoad }) {
         };
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
-    // Function to create a new shop
-    const handleNewShop = () => {
-        setShopDetails(INITIAL_SHOP_DETAILS);
-        // Pass empty shop data to parent to reset everything
-        onLoad({
-            type: '',
-            name: '',
-            keeper: '',
-            location: '',
-            shopkeeperDescription: '',
-            shopDetails: '',
-            shopkeeperDetails: '',
-            goldAmount: 5000,
-            levelRange: { low: 0, high: 10 },
-            shopBias: { x: 0.5, y: 0.5 },
-            rarityDistribution: {
-                Common: 95.00,
-                Uncommon: 4.50,
-                Rare: 0.49,
-                Unique: 0.01
-            },
-            categories: {},
-            subcategories: {},
-            traits: {},
-            currentStock: []
-        });
-    };
+
 
     // Modified input change handler
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setShopDetails(prevDetails => ({
-            ...prevDetails,
-            [name]: value
-        }));
+        setShopDetails(prevDetails => {
+            if (name in prevDetails.shortData) {
+                return {
+                    ...prevDetails,
+                    shortData: {
+                        ...prevDetails.shortData,
+                        [name]: value
+                    }
+                };
+            } else if (name in prevDetails.longData) {
+                return {
+                    ...prevDetails,
+                    longData: {
+                        ...prevDetails.longData,
+                        [name]: value
+                    }
+                };
+            }
+            return prevDetails;
+        });
     };
 
     // Function to check if all shop details are filled
     const areAllDetailsFilled = useCallback(() => {
-        return Object.values(shopDetails).every(detail => 
-            detail && typeof detail === 'string' && detail.trim() !== ''
-        );
+        const checkDataFilled = (data) => {
+            return Object.values(data).every(value => value && typeof value === 'string' && value.trim() !== '');
+        };
+        return checkDataFilled(shopDetails.shortData) && checkDataFilled(shopDetails.longData);
     }, [shopDetails]);
 
-    // Function to handle shop export
-    const handleExportShop = async () => {
-        try {
-            const shopData = await onSave(shopDetails);
-            const exportCode = encodeShopData(shopData);
-            const blob = new Blob([exportCode], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${shopDetails.name || 'shop'}.shop`;
-            a.click();
-            URL.revokeObjectURL(url);
-            alert('Shop exported successfully!');
-        } catch (error) {
-            console.error('Error exporting shop:', error);
-            alert('Error exporting shop. Please try again.');
-        }
+
+    // Function to create a new shop
+    const handleNewShop = () => {
+        setShopDetails(INITIAL_SHOP_DETAILS);
     };
 
-    // Function to handle shop import
-    const handleImportShop = (event) => {
-        const file = event.target.files[0];
-        if (!file) return;
+   // Function to load saved shops from Firebase
+   const loadSavedShops = async () => {
+     try {
+        const userId = currentUser.uid;
+        const shops = await loadShopData(userId);
+        setSavedShops(shops);
+    } catch (error) {
+        console.error('Error loading shops:', error);
+    }
+   };
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            try {
-                const importedData = decodeShopData(e.target.result);
-                if (!importedData) {
-                    alert('Invalid shop file. Please check and try again.');
-                    return;
-                }
-                onLoad(importedData);
-                setShopDetails({
-                    type: importedData.type || '',
-                    name: importedData.name || '',
-                    keeper: importedData.keeper || '',
-                    location: importedData.location || '',
-                    shopkeeperDescription: importedData.shopkeeperDescription || '',
-                    shopDetails: importedData.shopDetails || '',
-                    shopkeeperDetails: importedData.shopkeeperDetails || ''
-                });
-                alert('Shop imported successfully!');
-            } catch (error) {
-                console.error('Error importing shop:', error);
-                alert('Error importing shop. Please check the file and try again.');
-            }
-        };
-        reader.readAsText(file);
+   // Function to load a specific shop
+   const loadShop = (shop) => {
+      setShopDetails(shop);
+   };
+
+    // Function to handle shop import
+    const handleImportShop = (importedData) => {
+        setShopDetails(importedData);
+    };
+
+    // Function to handle shop export
+    const handleExportShop = () => {
+        exportShopData(shopDetails);
+    };
+
+    // Function to save shop to Firebase
+    const handleSaveShop = async () => {
+        try {
+            const userId = currentUser.uid;
+            const shopId = await saveShopData(userId, shopDetails);
+            setShopDetails(prevDetails => ({
+                ...prevDetails,
+                id: shopId,
+                dateLastEdited: new Date()
+            }));
+            alert('Shop saved successfully!');
+        } catch (error) {
+            console.error('Error saving shop:', error);
+            alert('Error saving shop. Please try again.');
+        }
     };
 
     const renderTabContent = () => {
@@ -280,6 +235,7 @@ function RightSidebar({ onSave, onLoad }) {
                     <ImportExport 
                         handleImportShop={handleImportShop} 
                         handleExportShop={handleExportShop} 
+                        shopData={shopDetails} 
                     />
                 </>
             );
@@ -287,17 +243,15 @@ function RightSidebar({ onSave, onLoad }) {
             return (
                 <>
                     <SaveShopButton
-                        onSave={onSave}
+                        onSave={handleSaveShop}
                         areAllDetailsFilled={areAllDetailsFilled}
                     />
                     <ShopDetailsShort 
                         shopDetails={shopDetails} 
-                        isMultilineField={isMultilineField}
                         onInputChange={handleInputChange}
                     />
                     <ShopDetailsLong 
                         shopDetails={shopDetails} 
-                        isMultilineField={isMultilineField}
                         onInputChange={handleInputChange}
                     />
                 </>
@@ -325,9 +279,6 @@ function RightSidebar({ onSave, onLoad }) {
     );
 }
 
-RightSidebar.propTypes = {
-    onSave: PropTypes.func.isRequired,
-    onLoad: PropTypes.func.isRequired
-};
+// RightSidebar.propTypes = {};
 
 export default RightSidebar;
