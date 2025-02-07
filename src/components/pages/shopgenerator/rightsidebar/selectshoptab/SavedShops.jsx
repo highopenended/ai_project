@@ -5,13 +5,14 @@ import Scrollbar from '../../components/Scrollbar';
 import './SavedShops.css';
 
 const SavedShops = ({ savedShops, loadShop }) => {
+    console.log('SavedShops data:', savedShops); // Debug log
     return (
         <Section title="Saved Shops">           
             <Scrollbar style={{ maxHeight: '200px', minHeight: '100px', overflowY: 'auto' }}>
                 <ul className="shop-list">
                     {savedShops.map((shop) => (
-                        <li key={shop.name} onClick={() => loadShop(shop)} className="shop-item">
-                            {shop.name}
+                        <li key={shop.id} onClick={() => loadShop(shop)} className="shop-item">
+                            {shop.name || 'Unnamed Shop'}
                         </li>
                     ))}
                 </ul>

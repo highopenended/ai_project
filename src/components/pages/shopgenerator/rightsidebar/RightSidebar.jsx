@@ -17,7 +17,7 @@ import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
-import { saveShopData, loadShopData } from '../utils/firebaseShopUtils';
+import { saveOrUpdateShopData, loadShopData } from '../utils/firebaseShopUtils';
 import { exportShopData } from '../utils/shopFileUtils';
 
 // Initial shop details state
@@ -184,6 +184,7 @@ function RightSidebar() {
      try {
         const userId = currentUser.uid;
         const shops = await loadShopData(userId);
+        console.log('Loaded shops:', shops); // Debug log
         setSavedShops(shops);
     } catch (error) {
         console.error('Error loading shops:', error);
@@ -197,6 +198,7 @@ function RightSidebar() {
 
     // Function to handle shop import
     const handleImportShop = (importedData) => {
+        console.log('Imported data:', importedData); // Debug log
         setShopDetails(importedData);
     };
 
@@ -209,11 +211,14 @@ function RightSidebar() {
     const handleSaveShop = async () => {
         try {
             const userId = currentUser.uid;
-            const shopId = await saveShopData(userId, shopDetails);
+            const shopDataWithId = {
+                ...shopDetails,
+                dateLastEdited: new Date()
+            };
+            const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
             setShopDetails(prevDetails => ({
                 ...prevDetails,
-                id: shopId,
-                dateLastEdited: new Date()
+                id: shopId
             }));
             alert('Shop saved successfully!');
         } catch (error) {

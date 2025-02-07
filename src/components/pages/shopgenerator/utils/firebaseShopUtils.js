@@ -1,15 +1,22 @@
 import { db } from '../../../../firebaseConfig';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
 
-// Function to save shop data to Firebase
-export async function saveShopData(userId, shopData) {
+// Function to save or update shop data in Firebase
+export async function saveOrUpdateShopData(userId, shopData) {
   try {
     const shopsRef = collection(db, `users/${userId}/shops`);
-    const docRef = await addDoc(shopsRef, shopData);
-    console.log('Shop data saved with ID:', docRef.id);
-    return docRef.id;
+    if (shopData.id) {
+      const shopDoc = doc(shopsRef, shopData.id);
+      await setDoc(shopDoc, shopData);
+      console.log('Shop data updated with ID:', shopData.id);
+      return shopData.id;
+    } else {
+      const docRef = await addDoc(shopsRef, shopData);
+      console.log('Shop data saved with ID:', docRef.id);
+      return docRef.id;
+    }
   } catch (error) {
-    console.error('Error saving shop data:', error);
+    console.error('Error saving or updating shop data:', error);
     throw error;
   }
 }
