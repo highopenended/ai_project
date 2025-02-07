@@ -265,7 +265,7 @@ const createItemSelection = () => {
 /**
  * Main shop generation function
  */
-export const generateShop = ({
+export const generateShopInventory = ({
     currentGold,
     lowestLevel,
     highestLevel,

@@ -13,7 +13,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
 import PropTypes from 'prop-types';
-import { encodeShopData, decodeShopData } from '../utils/shopDataUtils';
+import { encodeShopData, decodeShopData } from '../utils/encodeDecodeShopData';
 import SavedShops from './selectshoptab/SavedShops';
 import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';

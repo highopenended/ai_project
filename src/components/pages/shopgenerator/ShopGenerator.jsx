@@ -13,7 +13,7 @@ import ItemTable from './middlebar/ItemTable';
 import itemData from '../../../../public/item-table.json';
 import { useCategoryContext, SELECTION_STATES } from './context/CategoryContext';
 import { useTraitContext, TRAIT_STATES } from './context/TraitContext';
-import { generateShop } from './utils/generateShop';
+import { generateShopInventory } from './utils/generateShopInventory';
 import CategoryFilter from './leftsidebar/CategoryFilter';
 import SubcategoryFilter from './leftsidebar/SubcategoryFilter';
 import TraitFilter from './leftsidebar/TraitFilter';
@@ -238,7 +238,7 @@ function ShopGenerator() {
             .filter(([, state]) => state === TRAIT_STATES.EXCLUDE)
             .map(([trait]) => trait);
 
-        const result = generateShop({
+        const result = generateShopInventory({
             currentGold,
             lowestLevel,
             highestLevel,

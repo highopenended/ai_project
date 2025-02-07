@@ -12,7 +12,7 @@ const SavedShops = ({ savedShops, loadShop, handleNewShop }) => {
                 onClick={handleNewShop}
                 aria-label="Create New Shop"
             >
-                CreateNew Shop
+                Create New Shop
             </button>
             <Scrollbar style={{ maxHeight: '200px', minHeight: '100px', overflowY: 'auto' }}>
                 <ul className="shop-list">

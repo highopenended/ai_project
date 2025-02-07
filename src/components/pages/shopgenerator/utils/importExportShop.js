@@ -1,4 +1,4 @@
-import { encodeShopData, decodeShopData } from './shopDataUtils';
+import { encodeShopData, decodeShopData } from './encodeDecodeShopData';
 
 /**
  * Exports shop data to a downloadable file
