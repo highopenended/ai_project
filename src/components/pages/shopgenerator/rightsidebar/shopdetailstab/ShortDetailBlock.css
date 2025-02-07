@@ -1,11 +1,11 @@
 .short-detail-block {
     display: flex;
     align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.2rem 0.5rem 0.2rem 0.0rem;
-    /* margin-bottom: 0.5rem; */
+    /* border: 1px solid var(--light-border-color); */
+    /* border-radius: 6px; */
+    padding: 0rem 0.1rem 0rem 0rem;
     background-color: var(--background-tertiary);
+
 }
 
 .short-detail-title {
@@ -20,14 +20,23 @@
 .short-detail-input {
     flex: 1;
     padding: 0.5rem;
-    border: 1px solid var(--border-color);
+    /* border: 1px solid var(--border-color); */
     border-radius: 4px;
     background-color: var(--light-background-color);
-    color: var(--text-secondary);
+    color: var(--dark-text-primary);
     transition: border-color 0.2s ease;
+    font-size: 0.8rem;
+    font-weight: bold;
 }
 
 .short-detail-input:focus {
     outline: none;
     border-color: var(--primary-color);
+}
+
+.short-detail-input::placeholder {
+    /* color: var(--text-placeholder); */
+    font-weight: normal;
+    font-style: oblique;
+    opacity: 0.7; /* Adjust opacity for lighter appearance */
 } 
