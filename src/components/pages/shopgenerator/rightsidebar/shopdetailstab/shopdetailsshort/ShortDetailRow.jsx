@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
-import './ShortDetailBlock.css';
+import './ShortDetailRow.css';
 
-const ShortDetailBlock = ({ title, value, onChange, name }) => {
+const ShortDetailRow = ({ title, value, onChange, name }) => {
     return (
         <div className="short-detail-block">
             <span className="short-detail-title">{title}</span>
@@ -19,11 +19,11 @@ const ShortDetailBlock = ({ title, value, onChange, name }) => {
     );
 };
 
-ShortDetailBlock.propTypes = {
+ShortDetailRow.propTypes = {
     title: PropTypes.string.isRequired,
     value: PropTypes.string.isRequired,
     onChange: PropTypes.func.isRequired,
     name: PropTypes.string.isRequired,
 };
 
-export default ShortDetailBlock; 
+export default ShortDetailRow; 

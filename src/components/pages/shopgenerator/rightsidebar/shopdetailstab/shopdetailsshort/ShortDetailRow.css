@@ -5,7 +5,6 @@
     /* border-radius: 6px; */
     padding: 0rem 0.1rem 0rem 0rem;
     background-color: var(--background-tertiary);
-
 }
 
 .short-detail-title {
@@ -15,6 +14,7 @@
     color: var(--text-primary);
     text-align: right;  
     margin-right: 0.5rem;
+    text-wrap: nowrap;
 }
 
 .short-detail-input {
@@ -25,6 +25,7 @@
     background-color: var(--light-background-color);
     color: var(--dark-text-primary);
     transition: border-color 0.2s ease;
+
     font-size: 0.8rem;
     font-weight: bold;
 }

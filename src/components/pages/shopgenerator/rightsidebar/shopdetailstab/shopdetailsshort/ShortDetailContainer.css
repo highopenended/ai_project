@@ -1,0 +1,11 @@
+.short-detail-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-secondary);
+    box-sizing: border-box;
+    max-width: 100%;
+} 

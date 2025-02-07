@@ -12,7 +12,7 @@ import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
 // import PropTypes from 'prop-types';
 import SavedShops from './selectshoptab/SavedShops';
-import ShopDetailsShort from './shopdetailstab/ShopDetailsShort';
+import ShopDetailsShort from './shopdetailstab/shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';

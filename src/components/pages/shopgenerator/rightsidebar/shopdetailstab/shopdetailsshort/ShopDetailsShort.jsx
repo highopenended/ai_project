@@ -1,7 +1,8 @@
 import PropTypes from "prop-types";
-import Section from "../../components/Section";
-import Section_OneLine from "../../components/Section_OneLine";
-import ShortDetailBlock from './ShortDetailBlock';
+import Section from "../../../components/Section";
+import Section_OneLine from "../../../components/Section_OneLine";
+import ShortDetailRow from './ShortDetailRow';
+import ShortDetailContainer from './ShortDetailContainer';
 
 const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
 
@@ -20,34 +21,34 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
     };
 
     return (
-        <Section title="Basic Details">
-            <div>
-                <ShortDetailBlock
+        // <Section title="Basic Details">
+            <ShortDetailContainer>
+                <ShortDetailRow
                     title="Shop Name"
                     value={shopDetails.shortData.shopName}
                     onChange={onInputChange}
                     name="shopName"
                 />
-                <ShortDetailBlock
+                <ShortDetailRow
                     title="ShopKeeper"
                     value={shopDetails.shortData.shopKeeperName}
                     onChange={onInputChange}
                     name="shopKeeperName"
                 />
-                <ShortDetailBlock
+                <ShortDetailRow
                     title="Shop Type"
                     value={shopDetails.shortData.type}
                     onChange={onInputChange}
                     name="type"
                 />
-                <ShortDetailBlock
+                <ShortDetailRow
                     title="Location"
                     value={shopDetails.shortData.location}
                     onChange={onInputChange}
                     name="location"
                 />
-            </div>
-        </Section>
+            </ShortDetailContainer>
+        // </Section>
     );
 };
 
