@@ -12,7 +12,7 @@ import RightSidebar from './rightsidebar/RightSidebar';
 import ItemTable from './middlebar/ItemTable';
 import itemData from '../../../../public/item-table.json';
 import { useCategoryContext, SELECTION_STATES } from './context/CategoryContext';
-import { TRAIT_STATES } from './context/TraitContext';
+import { useTraitContext, TRAIT_STATES } from './context/TraitContext';
 import { generateShopInventory } from './utils/generateShopInventory';
 import CategoryFilter from './leftsidebar/CategoryFilter';
 import SubcategoryFilter from './leftsidebar/SubcategoryFilter';
@@ -24,7 +24,6 @@ import { useAuth } from '../../../context/AuthContext';
 /**
  * Shop Generator Component
  * 
-
  * A tool for generating fantasy shops and their inventories.
  * 
  * Features:
@@ -36,9 +35,12 @@ import { useAuth } from '../../../context/AuthContext';
 function ShopGenerator() {
     const {
         categoryStates,
-        subcategoryStates,
-        traitStates
+        subcategoryStates
     } = useCategoryContext();
+
+    const {
+        traitStates
+    } = useTraitContext();
 
     const { currentUser } = useAuth();
 
@@ -280,12 +282,42 @@ function ShopGenerator() {
         setRarityDistribution(newDistribution);
     };
 
+    // Function to safely convert Map to array of included/excluded items
+    const getFilteredArray = (stateMap, includeState, defaultMap = new Map()) => {
+        if (!stateMap) stateMap = defaultMap;
+        return Array.from(stateMap.entries())
+            .filter(([, state]) => state === includeState)
+            .map(([item]) => item);
+    };
+
     // Function to save shop to Firebase
     const handleSaveShop = async () => {
         try {
             const userId = currentUser.uid;
+            // Ensure we have the latest state of everything
             const shopDataWithId = {
                 ...currentShop,
+                parameters: {
+                    ...currentShop.parameters,
+                    goldAmount: currentGold,
+                    levelLow: lowestLevel,
+                    levelHigh: highestLevel,
+                    shopBias: itemBias,
+                    rarityDistribution,
+                    categories: {
+                        included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE)
+                    },
+                    subcategories: {
+                        included: getFilteredArray(subcategoryStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE)
+                    },
+                    traits: {
+                        included: getFilteredArray(traitStates, TRAIT_STATES.INCLUDE),
+                        excluded: getFilteredArray(traitStates, TRAIT_STATES.EXCLUDE)
+                    },
+                    currentStock: items
+                },
                 dateLastEdited: new Date()
             };
             const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
