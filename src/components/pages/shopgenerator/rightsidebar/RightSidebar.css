@@ -23,8 +23,10 @@
 .scrollable {
     overflow-y: auto;
     flex-grow: 1;
-    padding: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
+
 
 /* Typography */
 .right-sidebar h2 {

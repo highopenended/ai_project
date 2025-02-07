@@ -1,11 +1,12 @@
 .short-detail-container {
     display: flex;
     flex-direction: column;
-    /* gap: 0.5rem; */
     padding: .2rem .2rem .2rem .2rem;
     border: 1px solid var(--dark-border-color);
     border-radius: 6px;
     background-color: var(--background-secondary);
     box-sizing: border-box;
     max-width: 100%;
+    margin-left:.4rem;
+    margin-right:.4rem;
 } 
