@@ -1,51 +1,58 @@
 import PropTypes from "prop-types";
-import Section from "../../../components/Section";
-import Section_OneLine from "../../../components/Section_OneLine";
 import ShortDetailRow from './ShortDetailRow';
 import ShortDetailContainer from './ShortDetailContainer';
+import { useRef } from 'react';
 
 const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
+    const shopNameRef = useRef(null);
+    const shopKeeperNameRef = useRef(null);
+    const typeRef = useRef(null);
+    const locationRef = useRef(null);
 
-    const renderInputField = (key) => {
-        const label = key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1");
-        return (
-            <input
-                type="text"
-                name={key}
-                placeholder={`Enter ${label.toLowerCase()}`}
-                value={shopDetails.shortData[key]}
-                onChange={onInputChange}
-                aria-label={label}
-            />
-        );
+    const handleEnterPress = (nextRef) => {
+        if (nextRef.current) {
+            nextRef.current.focus();
+        }
     };
 
     return (
         // <Section title="Basic Details">
             <ShortDetailContainer>
                 <ShortDetailRow
-                    title="Shop Name"
+                    ref={shopNameRef}
+                    title="Shop Name"                    
                     value={shopDetails.shortData.shopName}
                     onChange={onInputChange}
                     name="shopName"
+                    onEnterPress={() => handleEnterPress(shopKeeperNameRef)}
+                    placeholder="Enter the shop's name"
                 />
                 <ShortDetailRow
+                    ref={shopKeeperNameRef}
                     title="ShopKeeper"
                     value={shopDetails.shortData.shopKeeperName}
                     onChange={onInputChange}
                     name="shopKeeperName"
+                    onEnterPress={() => handleEnterPress(typeRef)}
+                    placeholder="Enter the shopkeeper's name"
                 />
                 <ShortDetailRow
+                    ref={typeRef}
                     title="Shop Type"
                     value={shopDetails.shortData.type}
                     onChange={onInputChange}
                     name="type"
+                    onEnterPress={() => handleEnterPress(locationRef)}
+                    placeholder="Enter the type of shop"
                 />
                 <ShortDetailRow
+                    ref={locationRef}
                     title="Location"
                     value={shopDetails.shortData.location}
                     onChange={onInputChange}
                     name="location"
+                    onEnterPress={() => handleEnterPress(shopNameRef)}
+                    placeholder="Enter the shop's location"
                 />
             </ShortDetailContainer>
         // </Section>

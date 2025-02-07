@@ -1,10 +1,7 @@
 .short-detail-block {
     display: flex;
     align-items: center;
-    /* border: 1px solid var(--light-border-color); */
-    /* border-radius: 6px; */
     padding: 0rem 0.1rem 0rem 0rem;
-    background-color: var(--background-tertiary);
 }
 
 .short-detail-title {
