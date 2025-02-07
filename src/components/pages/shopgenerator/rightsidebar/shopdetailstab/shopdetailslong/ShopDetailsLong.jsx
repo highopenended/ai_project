@@ -1,25 +1,22 @@
 import './ShopDetailsLong.css';
 import PropTypes from 'prop-types';
+import LongDetailsContainer from './LongDetailsContainer';
+import LongDetailRow from './LongDetailRow';
 
 const ShopDetailsLong = ({ shopDetails, onInputChange, placeholders }) => {
     return (
-        <div className="long-detail-container">
+        <LongDetailsContainer>
             {Object.keys(shopDetails.longData).map((key) => (
-                <div key={key} className="long-detail-block">
-                    <div className="long-detail-header">
-                        <span className="long-detail-title">{key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}</span>
-                    </div>
-                    <textarea
-                        className="long-detail-input"
-                        name={key}
-                        placeholder={placeholders[key] || `Enter ${key.toLowerCase()}`}
-                        value={shopDetails.longData[key]}
-                        onChange={onInputChange}
-                        aria-label={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-                    />
-                </div>
+                <LongDetailRow
+                    key={key}
+                    title={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                    value={shopDetails.longData[key]}
+                    onChange={onInputChange}
+                    name={key}
+                    placeholder={placeholders[key] || `Enter ${key.toLowerCase()}`}
+                />
             ))}
-        </div>
+        </LongDetailsContainer>
     );
 }
 

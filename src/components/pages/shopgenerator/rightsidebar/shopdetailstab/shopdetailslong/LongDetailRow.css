@@ -1,0 +1,44 @@
+.long-detail-block {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.5rem 0;
+}
+
+.long-detail-header {
+    margin-bottom: 0.5rem;
+}
+
+.long-detail-title {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    text-align: left;
+    margin-bottom: 0.2rem;
+}
+
+.long-detail-input {
+    width: 100%;
+    resize: vertical;
+    padding: 0.5rem;
+    border: 1px solid var(--light-border-color);
+    border-radius: 4px;
+    background-color: var(--light-background-color);
+    color: var(--dark-text-primary);
+    transition: border-color 0.2s ease;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+    min-height: 40px;
+}
+
+.long-detail-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.long-detail-input::placeholder {
+    font-weight: normal;
+    font-style: oblique;
+    opacity: 0.7;
+} 
