@@ -35,11 +35,14 @@ import { useAuth } from '../../../context/AuthContext';
 function ShopGenerator() {
     const {
         categoryStates,
-        subcategoryStates
+        subcategoryStates,
+        setCategoryStates,
+        setSubcategoryStates
     } = useCategoryContext();
 
     const {
-        traitStates
+        traitStates,
+        setTraitStates
     } = useTraitContext();
 
     const { currentUser } = useAuth();
@@ -356,6 +359,54 @@ function ShopGenerator() {
         }
     };
 
+    // Function to load a specific shop
+    const handleLoadShop = (shop) => {
+        console.log('Loading shop:', shop);
+        // Update all state variables from the loaded shop
+        setCurrentShop(shop);
+        setCurrentGold(shop.parameters.goldAmount || 0);
+        setLowestLevel(shop.parameters.levelLow || 0);
+        setHighestLevel(shop.parameters.levelHigh || 10);
+        setItemBias(shop.parameters.shopBias || { x: 0.5, y: 0.5 });
+        setRarityDistribution(shop.parameters.rarityDistribution || {
+            Common: 95.00,
+            Uncommon: 4.50,
+            Rare: 0.49,
+            Unique: 0.01
+        });
+        setItems(shop.parameters.currentStock || []);
+
+        // Update category states
+        const categoryMap = new Map();
+        shop.parameters.categories?.included?.forEach(category => 
+            categoryMap.set(category, SELECTION_STATES.INCLUDE)
+        );
+        shop.parameters.categories?.excluded?.forEach(category => 
+            categoryMap.set(category, SELECTION_STATES.EXCLUDE)
+        );
+        setCategoryStates(categoryMap);
+
+        // Update subcategory states
+        const subcategoryMap = new Map();
+        shop.parameters.subcategories?.included?.forEach(subcategory => 
+            subcategoryMap.set(subcategory, SELECTION_STATES.INCLUDE)
+        );
+        shop.parameters.subcategories?.excluded?.forEach(subcategory => 
+            subcategoryMap.set(subcategory, SELECTION_STATES.EXCLUDE)
+        );
+        setSubcategoryStates(subcategoryMap);
+
+        // Update trait states
+        const traitMap = new Map();
+        shop.parameters.traits?.included?.forEach(trait => 
+            traitMap.set(trait, TRAIT_STATES.INCLUDE)
+        );
+        shop.parameters.traits?.excluded?.forEach(trait => 
+            traitMap.set(trait, TRAIT_STATES.EXCLUDE)
+        );
+        setTraitStates(traitMap);
+    };
+
     useEffect(() => {
         loadShops();
     }, []);
@@ -461,6 +512,7 @@ function ShopGenerator() {
                     savedShops={savedShops}
                     currentShop={currentShop}
                     onShopDetailsChange={handleShopDetailsChange}
+                    onLoadShop={handleLoadShop}
                 />
             </div>
         </div>

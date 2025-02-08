@@ -26,7 +26,7 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
-function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange }) {
+function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, onLoadShop }) {
     const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
@@ -100,10 +100,11 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange }) 
         setActiveTab('shopDetails');
     };
 
-    // Function to load a specific shop
-    const loadShop = (shop) => {
-        console.log('Loading shop:', shop);  // Log the shop being loaded
-        setActiveTab('shopDetails');
+    // Function to handle loading a shop
+    const handleLoadShop = (shop) => {
+        console.log('Loading shop in RightSidebar:', shop);  // Debug log
+        onLoadShop(shop);  // Call the parent's load function
+        setActiveTab('shopDetails');  // Switch to details tab
     };
 
     // Function to handle shop import
@@ -123,7 +124,7 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange }) 
                 <>
                     <SavedShops
                         savedShops={savedShops} 
-                        loadShop={loadShop} 
+                        loadShop={handleLoadShop} 
                         handleNewShop={handleNewShop} 
                     />
                     <ImportExport 
@@ -178,6 +179,7 @@ RightSidebar.propTypes = {
     savedShops: PropTypes.array.isRequired,
     currentShop: PropTypes.object.isRequired,
     onShopDetailsChange: PropTypes.func.isRequired,
+    onLoadShop: PropTypes.func.isRequired,
 };
 
 export default RightSidebar;
