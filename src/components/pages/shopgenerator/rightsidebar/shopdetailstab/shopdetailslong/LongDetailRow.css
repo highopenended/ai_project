@@ -2,11 +2,11 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    padding: 0.5rem 0;
+    margin-bottom: 0.5rem;
 }
 
 .long-detail-header {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.2rem;
 }
 
 .long-detail-title {
@@ -15,7 +15,7 @@
     font-weight: bold;
     color: var(--text-primary);
     text-align: left;
-    margin-bottom: 0.2rem;
+    /* margin-bottom: 0.2rem; */
 }
 
 .long-detail-input {
