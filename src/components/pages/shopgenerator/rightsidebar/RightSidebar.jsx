@@ -17,42 +17,7 @@ import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
-import { loadShopData } from '../utils/firebaseShopUtils';
 import { exportShopData } from '../utils/shopFileUtils';
-
-// Initial shop details state
-const INITIAL_SHOP_DETAILS = {
-    shortData: {
-        shopName: '',
-        shopKeeperName: '',
-        type: '',
-        location: ''
-    },
-    longData: {
-        shopDetails: '',
-        shopkeeperDetails: ''
-    },
-    parameters: {
-        goldAmount: 5000,
-        levelLow: 0,
-        levelHigh: 10,
-        shopBias: { x: 50.00, y: 50.00 },
-        rarityDistribution: {
-            common: 95.00,
-            uncommon: 4.00,
-            rare: 0.90,
-            unique: 0.10
-        },
-        categories: [],
-        subcategories: [],
-        traits: [],
-        currentStock: []
-    },
-    id: '',
-    dateCreated: new Date(),
-    dateLastEdited: new Date()
-};
-
 
 // Sidebar size constraints
 const SIDEBAR_CONSTRAINTS = {
@@ -61,16 +26,13 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
-function RightSidebar({ onSave }) {
+function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange }) {
     const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
     const [isDragging, setIsDragging] = useState(false);
     const dragInfo = useRef({ startX: 0, startWidth: 0 });
-    const [savedShops, setSavedShops] = useState([]); // The list of saved shops
-    const [shopDetails, setShopDetails] = useState(INITIAL_SHOP_DETAILS);
-    const [activeTab, setActiveTab] = useState('chooseShop'); // State to track active tab
-
+    const [activeTab, setActiveTab] = useState('chooseShop');
 
     // Debug logging for auth state changes
     useEffect(() => {
@@ -82,20 +44,6 @@ function RightSidebar({ onSave }) {
             providerData: currentUser?.providerData
         });
     }, [currentUser, loading]);
-
-    // Load saved shops when component mounts
-    useEffect(() => {
-        console.log('Load shops effect triggered:', { 
-            isAuthenticated: !!currentUser,
-            isLoading: loading,
-            uid: currentUser?.uid 
-        });
-        if (!loading && currentUser) {
-            loadSavedShops();
-        }
-    }, [currentUser, loading]);
-
- 
 
     const handleMouseDown = useCallback((e) => {
         e.preventDefault();
@@ -138,73 +86,35 @@ function RightSidebar({ onSave }) {
         };
     }, [isDragging, handleMouseMove, handleMouseUp]);
 
-
-
-    // Modified input change handler
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setShopDetails(prevDetails => {
-            if (name in prevDetails.shortData) {
-                return {
-                    ...prevDetails,
-                    shortData: {
-                        ...prevDetails.shortData,
-                        [name]: value
-                    }
-                };
-            } else if (name in prevDetails.longData) {
-                return {
-                    ...prevDetails,
-                    longData: {
-                        ...prevDetails.longData,
-                        [name]: value
-                    }
-                };
-            }
-            return prevDetails;
-        });
-    };
-
     // Function to check if all shop details are filled
     const areAllDetailsFilled = useCallback(() => {
         const checkDataFilled = (data) => {
             return Object.values(data).every(value => value && typeof value === 'string' && value.trim() !== '');
         };
-        return checkDataFilled(shopDetails.shortData) && checkDataFilled(shopDetails.longData);
-    }, [shopDetails]);
-
+        return checkDataFilled(currentShop.shortData) && checkDataFilled(currentShop.longData);
+    }, [currentShop]);
 
     // Function to create a new shop
     const handleNewShop = () => {
-        setShopDetails(INITIAL_SHOP_DETAILS);
+        // This will be handled by the parent component through state reset
+        setActiveTab('shopDetails');
     };
 
-   // Function to load saved shops from Firebase
-   const loadSavedShops = async () => {
-     try {
-        const userId = currentUser.uid;
-        const shops = await loadShopData(userId);
-        console.log('Loaded shops:', shops); // Debug log
-        setSavedShops(shops);
-    } catch (error) {
-        console.error('Error loading shops:', error);
-    }
-   };
-
-   // Function to load a specific shop
-   const loadShop = (shop) => {
-      setShopDetails(shop);
-   };
+    // Function to load a specific shop
+    const loadShop = (shop) => {
+        console.log('Loading shop:', shop);  // Log the shop being loaded
+        setActiveTab('shopDetails');
+    };
 
     // Function to handle shop import
     const handleImportShop = (importedData) => {
-        console.log('Imported data:', importedData); // Debug log
-        setShopDetails(importedData);
+        console.log('Imported data:', importedData);
+        setActiveTab('shopDetails');
     };
 
     // Function to handle shop export
     const handleExportShop = () => {
-        exportShopData(shopDetails);
+        exportShopData(currentShop);
     };
 
     const renderTabContent = () => {
@@ -213,14 +123,13 @@ function RightSidebar({ onSave }) {
                 <>
                     <SavedShops
                         savedShops={savedShops} 
-                        shopDetails={shopDetails} 
                         loadShop={loadShop} 
                         handleNewShop={handleNewShop} 
                     />
                     <ImportExport 
                         handleImportShop={handleImportShop} 
                         handleExportShop={handleExportShop} 
-                        shopData={shopDetails} 
+                        shopData={currentShop} 
                     />
                 </>
             );
@@ -232,12 +141,12 @@ function RightSidebar({ onSave }) {
                         areAllDetailsFilled={areAllDetailsFilled}
                     />
                     <ShopDetailsShort 
-                        shopDetails={shopDetails} 
-                        onInputChange={handleInputChange}
+                        shopDetails={currentShop} 
+                        onInputChange={onShopDetailsChange}
                     />
                     <ShopDetailsLong 
-                        shopDetails={shopDetails} 
-                        onInputChange={handleInputChange}
+                        shopDetails={currentShop} 
+                        onInputChange={onShopDetailsChange}
                     />
                 </>
             );
@@ -266,6 +175,9 @@ function RightSidebar({ onSave }) {
 
 RightSidebar.propTypes = {
     onSave: PropTypes.func.isRequired,
+    savedShops: PropTypes.array.isRequired,
+    currentShop: PropTypes.object.isRequired,
+    onShopDetailsChange: PropTypes.func.isRequired,
 };
 
 export default RightSidebar;

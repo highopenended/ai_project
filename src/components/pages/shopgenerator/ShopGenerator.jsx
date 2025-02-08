@@ -297,6 +297,17 @@ function ShopGenerator() {
             // Ensure we have the latest state of everything
             const shopDataWithId = {
                 ...currentShop,
+                id: currentShop.id || '', // Preserve existing ID if it exists
+                shortData: {
+                    shopName: currentShop.shortData.shopName || '',
+                    shopKeeperName: currentShop.shortData.shopKeeperName || '',
+                    type: currentShop.shortData.type || '',
+                    location: currentShop.shortData.location || ''
+                },
+                longData: {
+                    shopDetails: currentShop.longData.shopDetails || '',
+                    shopKeeperDetails: currentShop.longData.shopKeeperDetails || '' // Fixed capitalization
+                },
                 parameters: {
                     ...currentShop.parameters,
                     goldAmount: currentGold,
@@ -318,13 +329,15 @@ function ShopGenerator() {
                     },
                     currentStock: items
                 },
-                dateLastEdited: new Date()
+                dateLastEdited: new Date(),
+                dateCreated: currentShop.dateCreated || new Date() // Preserve creation date or set new one
             };
             const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
             setCurrentShop(prevDetails => ({
                 ...prevDetails,
                 id: shopId
             }));
+            console.log('Shop saved with ID:', shopId); // Debug log
             alert('Shop saved successfully!');
         } catch (error) {
             console.error('Error saving shop:', error);
@@ -386,6 +399,34 @@ function ShopGenerator() {
         }));
     }, [currentGold, lowestLevel, highestLevel, itemBias, rarityDistribution, categoryStates, subcategoryStates, traitStates, items]);
 
+    // Add this new handler function after the other handlers
+    const handleShopDetailsChange = (e) => {
+        const { name, value } = e.target;
+        console.log('Handling shop details change:', { name, value }); // Debug log
+        setCurrentShop(prevShop => {
+            // Create a copy of the previous shop
+            const newShop = { ...prevShop };
+
+            // Check if this is a shortData field
+            if (Object.keys(prevShop.shortData).includes(name)) {
+                newShop.shortData = {
+                    ...prevShop.shortData,
+                    [name]: value
+                };
+            }
+            // Check if this is a longData field
+            else if (Object.keys(prevShop.longData).includes(name)) {
+                newShop.longData = {
+                    ...prevShop.longData,
+                    [name]: value
+                };
+            }
+
+            console.log('Updated shop:', newShop); // Debug log
+            return newShop;
+        });
+    };
+
     if (loading) {
         return <div className="content-area">Loading...</div>;
     }
@@ -418,6 +459,8 @@ function ShopGenerator() {
                 <RightSidebar 
                     onSave={handleSaveShop}
                     savedShops={savedShops}
+                    currentShop={currentShop}
+                    onShopDetailsChange={handleShopDetailsChange}
                 />
             </div>
         </div>

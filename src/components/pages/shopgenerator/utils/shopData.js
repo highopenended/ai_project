@@ -4,13 +4,11 @@ const shopData = {
     shopName: '',
     shopKeeperName: '',
     type: '',
-    location: '',
-    shopDetails: '',
-    shopKeeperDetails: ''
+    location: ''
   },
   longData: {
     shopDetails: '',
-    shopkeeperDetails: ''
+    shopKeeperDetails: ''
   },
   parameters: {
     goldAmount: 0,
