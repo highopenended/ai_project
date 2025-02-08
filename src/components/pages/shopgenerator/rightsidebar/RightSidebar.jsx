@@ -6,17 +6,20 @@
  * @param {Object} props
  * @param {Function} props.onSave - Callback function when saving a shop
  * @param {Function} props.onLoad - Callback function when loading a shop
+ * @param {Function} props.onNewShop - Callback function when creating a new shop
  */
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
 import { useAuth } from "../../../../context/AuthContext";
 import PropTypes from 'prop-types';
 import SavedShops from './selectshoptab/SavedShops';
+import NewShopButton from './selectshoptab/NewShopButton';
 import ShopDetailsShort from './shopdetailstab/shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
 import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
+import CloneShopButton from './shopdetailstab/CloneShopButton';
 import { exportShopData } from '../utils/shopFileUtils';
 
 // Sidebar size constraints
@@ -26,7 +29,7 @@ const SIDEBAR_CONSTRAINTS = {
     DEFAULT_WIDTH: 300
 };
 
-function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, onLoadShop }) {
+function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, onLoadShop, onNewShop }) {
     const { currentUser, loading } = useAuth();
     const sidebarRef = useRef(null);
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_CONSTRAINTS.DEFAULT_WIDTH);
@@ -96,7 +99,7 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, on
 
     // Function to create a new shop
     const handleNewShop = () => {
-        // This will be handled by the parent component through state reset
+        onNewShop(); // Call parent's reset function
         setActiveTab('shopDetails');
     };
 
@@ -118,10 +121,26 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, on
         exportShopData(currentShop);
     };
 
+    // Function to handle cloning a shop
+    const handleCloneShop = () => {
+        const clonedShop = {
+            ...currentShop,
+            id: '', // Clear the ID so a new one will be generated
+            dateCreated: new Date(),
+            dateLastEdited: new Date(),
+            shortData: {
+                ...currentShop.shortData,
+                shopName: `${currentShop.shortData.shopName} (Clone)`
+            }
+        };
+        onLoadShop(clonedShop);
+    };
+
     const renderTabContent = () => {
         if (activeTab === 'chooseShop') {
             return (
                 <>
+                    <NewShopButton handleNewShop={handleNewShop} />
                     <SavedShops
                         savedShops={savedShops} 
                         loadShop={handleLoadShop} 
@@ -140,6 +159,10 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, on
                     <SaveShopButton
                         onSave={onSave}
                         areAllDetailsFilled={areAllDetailsFilled}
+                    />
+                    <CloneShopButton
+                        onClone={handleCloneShop}
+                        shopId={currentShop.id}
                     />
                     <ShopDetailsShort 
                         shopDetails={currentShop} 
@@ -180,6 +203,7 @@ RightSidebar.propTypes = {
     currentShop: PropTypes.object.isRequired,
     onShopDetailsChange: PropTypes.func.isRequired,
     onLoadShop: PropTypes.func.isRequired,
+    onNewShop: PropTypes.func.isRequired,
 };
 
 export default RightSidebar;

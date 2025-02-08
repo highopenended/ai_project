@@ -507,6 +507,28 @@ function ShopGenerator() {
         });
     };
 
+    // Function to handle creating a new shop
+    const handleNewShop = () => {
+        // Reset all state to initial values
+        setCurrentShop(shopData);
+        setCurrentGold(0);
+        setLowestLevel(0);
+        setHighestLevel(10);
+        setItemBias({ x: 0.5, y: 0.5 });
+        setRarityDistribution({
+            Common: 95.00,
+            Uncommon: 4.50,
+            Rare: 0.49,
+            Unique: 0.01
+        });
+        setItems([]);
+
+        // Clear all filters
+        setCategoryStates(new Map());
+        setSubcategoryStates(new Map());
+        setTraitStates(new Map());
+    };
+
     if (loading) {
         return <div className="content-area">Loading...</div>;
     }
@@ -547,6 +569,7 @@ function ShopGenerator() {
                     currentShop={currentShop}
                     onShopDetailsChange={handleShopDetailsChange}
                     onLoadShop={handleLoadShop}
+                    onNewShop={handleNewShop}
                 />
             </div>
         </div>
