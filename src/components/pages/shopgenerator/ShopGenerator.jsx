@@ -24,15 +24,30 @@ import { useAuth } from '../../../context/AuthContext';
 /**
  * Shop Generator Component
  * 
- * A tool for generating fantasy shops and their inventories.
+ * This is the main stateful component that manages the entire shop generation system.
+ * It serves as the single source of truth for all state and handles all data persistence.
  * 
- * Features:
- * - Generate different types of shops
- * - Customize shop parameters
- * - Generate and manage inventories
- * - Save favorite shops
+ * Architecture Notes for AI:
+ * - This component is the top-level manager for all shop-related state and operations
+ * - All saving/loading/state management happens here, child components are "dumb" UI components
+ * - Child components receive state and callbacks as props, maintaining unidirectional data flow
+ * 
+ * Key State Categories:
+ * 1. Shop Configuration: currentGold, levels, itemBias, rarityDistribution
+ * 2. Filtering State: categoryStates, subcategoryStates, traitStates (managed via contexts)
+ * 3. Shop Data: currentShop (details), items (inventory)
+ * 4. UI State: loading, sortConfig
+ * 
+ * Data Flow:
+ * - User actions in child components → callbacks here → state updates → props update children
+ * - Save/Load operations are centralized here to maintain data consistency
+ * - State updates trigger useEffect hooks to keep derived state in sync
+ * 
+ * @component
  */
 function ShopGenerator() {
+    // Context hooks for filter states
+    // These are used by the Category/Subcategory/Trait filters in the left sidebar
     const {
         categoryStates,
         subcategoryStates,
@@ -47,9 +62,10 @@ function ShopGenerator() {
 
     const { currentUser } = useAuth();
 
-    // State management
-    const [items, setItems] = useState([]);
-    const [allItems, setAllItems] = useState([]);
+    // Core state management
+    // These states represent the complete state of the shop generator
+    const [items, setItems] = useState([]); // Current shop inventory
+    const [allItems, setAllItems] = useState([]); // Master list of all possible items
     const [loading, setLoading] = useState(true);
     const [currentGold, setCurrentGold] = useState(0);
     const [lowestLevel, setLowestLevel] = useState(0);
@@ -63,6 +79,10 @@ function ShopGenerator() {
         Rare: 0.49,
         Unique: 0.01
     });
+    
+    // Shop state management
+    // currentShop contains all metadata and parameters for the current shop
+    // savedShops maintains the list of all shops for the current user
     const [currentShop, setCurrentShop] = useState(shopData);
     const [savedShops, setSavedShops] = useState([]);
 
@@ -293,11 +313,15 @@ function ShopGenerator() {
             .map(([item]) => item);
     };
 
-    // Function to save shop to Firebase
+    /**
+     * Handles saving the current shop state to Firebase
+     * This is the single point of persistence for shop data
+     * Called by the RightSidebar's SaveShopButton
+     */
     const handleSaveShop = async () => {
         try {
             const userId = currentUser.uid;
-            // Ensure we have the latest state of everything
+            // Construct a complete snapshot of current shop state
             const shopDataWithId = {
                 ...currentShop,
                 id: currentShop.id || '', // Preserve existing ID if it exists
@@ -309,7 +333,7 @@ function ShopGenerator() {
                 },
                 longData: {
                     shopDetails: currentShop.longData.shopDetails || '',
-                    shopKeeperDetails: currentShop.longData.shopKeeperDetails || '' // Fixed capitalization
+                    shopKeeperDetails: currentShop.longData.shopKeeperDetails || ''
                 },
                 parameters: {
                     ...currentShop.parameters,
@@ -333,14 +357,14 @@ function ShopGenerator() {
                     currentStock: items
                 },
                 dateLastEdited: new Date(),
-                dateCreated: currentShop.dateCreated || new Date() // Preserve creation date or set new one
+                dateCreated: currentShop.dateCreated || new Date()
             };
             const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
             setCurrentShop(prevDetails => ({
                 ...prevDetails,
                 id: shopId
             }));
-            console.log('Shop saved with ID:', shopId); // Debug log
+            console.log('Shop saved with ID:', shopId);
             alert('Shop saved successfully!');
         } catch (error) {
             console.error('Error saving shop:', error);
@@ -348,7 +372,10 @@ function ShopGenerator() {
         }
     };
 
-    // Function to load shops from Firebase
+    /**
+     * Loads all shops for the current user from Firebase
+     * Called on component mount and after successful saves
+     */
     const loadShops = async () => {
         try {
             const userId = currentUser.uid;
@@ -359,7 +386,11 @@ function ShopGenerator() {
         }
     };
 
-    // Function to load a specific shop
+    /**
+     * Handles loading a specific shop's data
+     * This is the central point for restoring all shop state
+     * Called when a user selects a shop from the saved shops list
+     */
     const handleLoadShop = (shop) => {
         console.log('Loading shop:', shop);
         // Update all state variables from the loaded shop
@@ -376,7 +407,7 @@ function ShopGenerator() {
         });
         setItems(shop.parameters.currentStock || []);
 
-        // Update category states
+        // Restore filter states from saved data
         const categoryMap = new Map();
         shop.parameters.categories?.included?.forEach(category => 
             categoryMap.set(category, SELECTION_STATES.INCLUDE)
@@ -386,7 +417,6 @@ function ShopGenerator() {
         );
         setCategoryStates(categoryMap);
 
-        // Update subcategory states
         const subcategoryMap = new Map();
         shop.parameters.subcategories?.included?.forEach(subcategory => 
             subcategoryMap.set(subcategory, SELECTION_STATES.INCLUDE)
@@ -396,7 +426,6 @@ function ShopGenerator() {
         );
         setSubcategoryStates(subcategoryMap);
 
-        // Update trait states
         const traitMap = new Map();
         shop.parameters.traits?.included?.forEach(trait => 
             traitMap.set(trait, TRAIT_STATES.INCLUDE)
@@ -485,6 +514,7 @@ function ShopGenerator() {
     return (
         <div className="content-area">
             <div className="content-container">
+                {/* Left sidebar contains all shop generation parameters */}
                 <LeftSidebar onGenerate={handleGenerateClick}>
                     <GoldInput onChange={handleGoldChange} value={currentGold} />
                     <LevelInput
@@ -499,6 +529,8 @@ function ShopGenerator() {
                     <SubcategoryFilter />
                     <TraitFilter />
                 </LeftSidebar>
+                
+                {/* Middle section displays the generated inventory */}
                 <MiddleBar>
                     <ItemTable
                         items={items}
@@ -507,6 +539,8 @@ function ShopGenerator() {
                         currentShop={currentShop.shortData.shopName || 'Unnamed Shop'}
                     />
                 </MiddleBar>
+                
+                {/* Right sidebar handles shop metadata and persistence */}
                 <RightSidebar 
                     onSave={handleSaveShop}
                     savedShops={savedShops}
