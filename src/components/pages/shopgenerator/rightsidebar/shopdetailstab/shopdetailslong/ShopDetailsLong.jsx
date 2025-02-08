@@ -1,4 +1,3 @@
-import './ShopDetailsLong.css';
 import PropTypes from 'prop-types';
 import LongDetailsContainer from './LongDetailsContainer';
 import LongDetailRow from './LongDetailRow';

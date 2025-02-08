@@ -1,0 +1,29 @@
+.shop-dates-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    width: calc(100% - 0.8rem);
+    margin: 0.4rem;
+    padding: 0.8rem;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--dark-border-color);
+    border-radius: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.shop-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.date-label {
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.date-value {
+    font-family: monospace;
+    opacity: 0.7;
+} 

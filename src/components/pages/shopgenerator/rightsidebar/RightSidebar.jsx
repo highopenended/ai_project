@@ -20,6 +20,7 @@ import ImportExport from './selectshoptab/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
 import CloneShopButton from './shopdetailstab/CloneShopButton';
+import ShopDates from './shopdetailstab/ShopDates';
 import { exportShopData } from '../utils/shopFileUtils';
 
 // Sidebar size constraints
@@ -123,9 +124,9 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, on
 
     // Function to handle cloning a shop
     const handleCloneShop = () => {
+        const { id, ...shopWithoutId } = currentShop; // Remove the ID from the current shop
         const clonedShop = {
-            ...currentShop,
-            id: '', // Clear the ID so a new one will be generated
+            ...shopWithoutId,
             dateCreated: new Date(),
             dateLastEdited: new Date(),
             shortData: {
@@ -171,6 +172,10 @@ function RightSidebar({ onSave, savedShops, currentShop, onShopDetailsChange, on
                     <ShopDetailsLong 
                         shopDetails={currentShop} 
                         onInputChange={onShopDetailsChange}
+                    />
+                    <ShopDates
+                        dateCreated={currentShop.dateCreated}
+                        dateLastEdited={currentShop.dateLastEdited}
                     />
                 </>
             );

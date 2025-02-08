@@ -4,19 +4,20 @@ import './SaveShopButton.css';
 const SaveShopButton = ({ onSave, areAllDetailsFilled }) => {
     return (
         <button 
-            className="save-shop-button" 
-            onClick={onSave} 
+            className="save-shop-button"
+            onClick={onSave}
             disabled={!areAllDetailsFilled()}
-            aria-label="Save Shop"
+            aria-label="Save shop"
         >
-            Save Shop
+            <span className="save-icon">&#128427;</span>
+            <span className="save-text">Save Shop</span>
         </button>
     );
 };
 
 SaveShopButton.propTypes = {
     onSave: PropTypes.func.isRequired,
-    areAllDetailsFilled: PropTypes.func.isRequired,
+    areAllDetailsFilled: PropTypes.func.isRequired
 };
 
 export default SaveShopButton; 

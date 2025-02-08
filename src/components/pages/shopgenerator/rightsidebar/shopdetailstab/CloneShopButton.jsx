@@ -30,17 +30,15 @@ const CloneShopButton = ({ onClone, shopId }) => {
 
     return (
         <>
-            <div className="clone-button-container">
-                <button 
-                    className="clone-shop-button"
-                    onClick={handleCloneClick}
-                    aria-label="Clone shop"
-                >
-                    <span className="clone-icon">⧉</span>
-                    <span className="clone-text">Clone Shop</span>
-                </button>
-                {shopId && <span className="shop-id">ID: {shopId}</span>}
-            </div>
+            <button 
+                className="clone-shop-button"
+                onClick={handleCloneClick}
+                aria-label="Clone shop"
+            >
+                <span className="clone-icon">⧉</span>
+                <span className="clone-text">Clone Shop</span>
+            </button>
+            {shopId && <span className="shop-id">ID: {shopId}</span>}
 
             {showConfirm && (
                 <div className="clone-confirm-overlay" onClick={handleCancel}>

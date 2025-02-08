@@ -324,7 +324,6 @@ function ShopGenerator() {
             // Construct a complete snapshot of current shop state
             const shopDataWithId = {
                 ...currentShop,
-                id: currentShop.id || '', // Preserve existing ID if it exists
                 shortData: {
                     shopName: currentShop.shortData.shopName || '',
                     shopKeeperName: currentShop.shortData.shopKeeperName || '',
@@ -359,11 +358,18 @@ function ShopGenerator() {
                 dateLastEdited: new Date(),
                 dateCreated: currentShop.dateCreated || new Date()
             };
+
             const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
+            
+            // Update the current shop with the new ID
             setCurrentShop(prevDetails => ({
                 ...prevDetails,
                 id: shopId
             }));
+
+            // Refresh the shops list
+            await loadShops();
+            
             console.log('Shop saved with ID:', shopId);
             alert('Shop saved successfully!');
         } catch (error) {
