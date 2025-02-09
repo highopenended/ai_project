@@ -4,8 +4,9 @@ import './TabContainer.css';
 
 function TabContainer({ tabs, onTabMove }) {
     const [activeTab, setActiveTab] = useState(tabs[0]);
-    const [draggingTab, setDraggingTab] = useState(null);
-    const [dragOverIndex, setDragOverIndex] = useState(null);
+    const [draggedTab, setDraggedTab] = useState(null);
+    const [draggedIndex, setDraggedIndex] = useState(null);
+    const [dropIndex, setDropIndex] = useState(null);
     const tabRefs = useRef({});
 
     const handleTabClick = (tab) => {
@@ -13,7 +14,8 @@ function TabContainer({ tabs, onTabMove }) {
     };
 
     const handleDragStart = (e, tab, index) => {
-        setDraggingTab(tab);
+        setDraggedTab(tab);
+        setDraggedIndex(index);
         e.dataTransfer.setData('text/plain', index);
         e.dataTransfer.effectAllowed = 'move';
 
@@ -27,33 +29,49 @@ function TabContainer({ tabs, onTabMove }) {
 
     const handleDragOver = (e, index) => {
         e.preventDefault();
-        if (draggingTab && dragOverIndex !== index) {
-            setDragOverIndex(index);
+        if (draggedTab && dropIndex !== index) {
+            setDropIndex(index);
         }
     };
 
-    const handleDragLeave = () => {
-        setDragOverIndex(null);
+    const getTabStyle = (index) => {
+        if (draggedIndex === null || dropIndex === null) return {};
+        
+        if (index === draggedIndex) {
+            return { opacity: 0.5 };
+        }
+        
+        if (dropIndex > draggedIndex && index > draggedIndex && index <= dropIndex) {
+            return { transform: 'translateX(-100%)' };
+        }
+        
+        if (dropIndex < draggedIndex && index < draggedIndex && index >= dropIndex) {
+            return { transform: 'translateX(100%)' };
+        }
+        
+        return {};
     };
 
-    const handleDrop = (e, dropIndex) => {
+    const handleDrop = (e, targetIndex) => {
         e.preventDefault();
-        const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
         
-        if (dragIndex !== dropIndex) {
+        if (sourceIndex !== targetIndex) {
             const newTabs = [...tabs];
-            const [draggedTab] = newTabs.splice(dragIndex, 1);
-            newTabs.splice(dropIndex, 0, draggedTab);
+            const [draggedTab] = newTabs.splice(sourceIndex, 1);
+            newTabs.splice(targetIndex, 0, draggedTab);
             onTabMove(newTabs);
         }
         
-        setDraggingTab(null);
-        setDragOverIndex(null);
+        setDraggedTab(null);
+        setDraggedIndex(null);
+        setDropIndex(null);
     };
 
     const handleDragEnd = () => {
-        setDraggingTab(null);
-        setDragOverIndex(null);
+        setDraggedTab(null);
+        setDraggedIndex(null);
+        setDropIndex(null);
     };
 
     return (
@@ -64,15 +82,15 @@ function TabContainer({ tabs, onTabMove }) {
                         ref={el => tabRefs.current[index] = el}
                         key={`${tab.type.name}-${index}`}
                         className={`tab ${tab === activeTab ? 'active' : ''} 
-                            ${draggingTab === tab ? 'dragging' : ''} 
-                            ${dragOverIndex === index ? 'drag-over' : ''}`}
+                            ${draggedTab === tab ? 'dragging' : ''} 
+                            ${dropIndex === index ? 'drag-over' : ''}`}
                         onClick={() => handleTabClick(tab)}
                         draggable
                         onDragStart={(e) => handleDragStart(e, tab, index)}
                         onDragOver={(e) => handleDragOver(e, index)}
-                        onDragLeave={handleDragLeave}
                         onDrop={(e) => handleDrop(e, index)}
                         onDragEnd={handleDragEnd}
+                        style={getTabStyle(index)}
                     >
                         {tab}
                     </div>
