@@ -14,16 +14,39 @@ function TabContainer({ tabs, onTabMove }) {
     };
 
     const handleDragStart = (e, tab, index) => {
+        console.log('Drag start:', { tab, index });
+        
+        // Get the original element's rect
+        const rect = e.currentTarget.getBoundingClientRect();
+        
+        // Calculate where within the element the user clicked
+        const offsetX = e.clientX - rect.left;
+        const offsetY = e.clientY - rect.top;
+        
         setDraggedTab(tab);
         setDraggedIndex(index);
-        e.dataTransfer.setData('text/plain', index);
+        e.dataTransfer.setData('text/plain', index.toString());
         e.dataTransfer.effectAllowed = 'move';
 
-        // Create a drag image (optional)
-        const dragImage = e.target.cloneNode(true);
+        // Create a drag image that maintains size
+        const dragImage = e.currentTarget.cloneNode(true);
+        
+        // Set explicit size to match original
+        dragImage.style.width = `${rect.width}px`;
+        dragImage.style.height = `${rect.height}px`;
         dragImage.style.opacity = '0.5';
+        
+        // Position offscreen while maintaining size
+        dragImage.style.position = 'fixed';
+        dragImage.style.top = '-1000px';
+        dragImage.style.backgroundColor = 'var(--background-tertiary)';
+        dragImage.style.padding = window.getComputedStyle(e.currentTarget).padding;
+        
         document.body.appendChild(dragImage);
-        e.dataTransfer.setDragImage(dragImage, 0, 0);
+        
+        // Use the calculated offset to position the drag image relative to the cursor
+        e.dataTransfer.setDragImage(dragImage, offsetX, offsetY);
+        
         setTimeout(() => document.body.removeChild(dragImage), 0);
     };
 
