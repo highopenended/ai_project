@@ -5,13 +5,14 @@ import Tab1 from './tabs/Tab1';
 import Tab2 from './tabs/Tab2';
 import Tab3 from './tabs/tab3';
 import Tab4 from './tabs/Tab4';
+import Tab5 from './tabs/Tab5';
 
 
 
 
 function NewTest() {
     const [tabGroups, setTabGroups] = useState([
-        [<Tab1 key="Tab1-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />]
+        [<Tab1 key="Tab1-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]
     ]);
 
     const handleTabMove = (newTabs) => {

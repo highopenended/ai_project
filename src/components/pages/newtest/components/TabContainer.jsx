@@ -8,6 +8,7 @@ function TabContainer({ tabs, onTabMove }) {
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [dropIndex, setDropIndex] = useState(null);
     const tabRefs = useRef({});
+    const originalPositions = useRef([]);
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -23,6 +24,18 @@ function TabContainer({ tabs, onTabMove }) {
         const offsetX = e.clientX - rect.left;
         const offsetY = e.clientY - rect.top;
         
+        // Store original positions of all tabs
+        const tabElements = Array.from(e.currentTarget.parentElement.children);
+        originalPositions.current = tabElements.map(tab => {
+            const rect = tab.getBoundingClientRect();
+            return {
+                left: rect.left,
+                right: rect.right,
+                width: rect.width,
+                center: rect.left + rect.width / 2
+            };
+        });
+        
         setDraggedTab(tab);
         setDraggedIndex(index);
         e.dataTransfer.setData('text/plain', index.toString());
@@ -30,23 +43,16 @@ function TabContainer({ tabs, onTabMove }) {
 
         // Create a drag image that maintains size
         const dragImage = e.currentTarget.cloneNode(true);
-        
-        // Set explicit size to match original
         dragImage.style.width = `${rect.width}px`;
         dragImage.style.height = `${rect.height}px`;
         dragImage.style.opacity = '0.5';
-        
-        // Position offscreen while maintaining size
         dragImage.style.position = 'fixed';
         dragImage.style.top = '-1000px';
         dragImage.style.backgroundColor = 'var(--background-tertiary)';
         dragImage.style.padding = window.getComputedStyle(e.currentTarget).padding;
         
         document.body.appendChild(dragImage);
-        
-        // Use the calculated offset to position the drag image relative to the cursor
         e.dataTransfer.setDragImage(dragImage, offsetX, offsetY);
-        
         setTimeout(() => document.body.removeChild(dragImage), 0);
     };
 
@@ -56,25 +62,29 @@ function TabContainer({ tabs, onTabMove }) {
         if (!tabHeader) return;
 
         const mouseX = e.clientX;
-        const tabElements = Array.from(tabHeader.children);
         
-        // Find the insertion point based on mouse position
-        let newDropIndex = tabElements.length;
-        for (let i = 0; i < tabElements.length; i++) {
-            const tab = tabElements[i];
-            const rect = tab.getBoundingClientRect();
-            const tabCenter = rect.left + rect.width / 2;
-            
-            if (mouseX < tabCenter) {
-                newDropIndex = i;
-                break;
+        // Find the insertion point based on original positions
+        let newDropIndex = originalPositions.current.length;
+        
+        // Special case: if we're before the first tab's center
+        if (mouseX < originalPositions.current[0]?.center) {
+            newDropIndex = 0;
+        } else {
+            // Find the gap we're currently in
+            for (let i = 1; i < originalPositions.current.length; i++) {
+                const prevCenter = originalPositions.current[i - 1]?.center;
+                const currentCenter = originalPositions.current[i]?.center;
+                
+                if (mouseX >= prevCenter && mouseX < currentCenter) {
+                    newDropIndex = i;
+                    break;
+                }
             }
         }
 
+        // Only update if we've actually crossed a transition point
         if (dropIndex !== newDropIndex) {
-            const tab = tabElements[newDropIndex];
-            const rect = tab?.getBoundingClientRect();
-            console.log(`Transition point: Mouse at ${mouseX} crossed tab ${newDropIndex} center at ${rect?.left + (rect?.width || 0) / 2}`);
+            console.log(`Transition point: Mouse at ${mouseX} crossed between centers at ${originalPositions.current[Math.max(0, newDropIndex - 1)]?.center} and ${originalPositions.current[newDropIndex]?.center}`);
             setDropIndex(newDropIndex);
         }
     };
@@ -89,14 +99,17 @@ function TabContainer({ tabs, onTabMove }) {
         const draggedRect = tabRefs.current[draggedIndex]?.getBoundingClientRect();
         const tabWidth = draggedRect ? draggedRect.width : 0;
         
-        // If dropping after current index, move left
-        if (index >= dropIndex && index < draggedIndex) {
-            return { transform: `translateX(${tabWidth}px)` };
-        }
-        
-        // If dropping before current index, move right
-        if (index <= dropIndex && index > draggedIndex) {
-            return { transform: `translateX(-${tabWidth}px)` };
+        // Only move tabs that are between the drag source and drop target
+        if (draggedIndex < dropIndex) {
+            // Moving right: only move tabs between source and target to the left
+            if (index > draggedIndex && index <= dropIndex) {
+                return { transform: `translateX(-${tabWidth}px)` };
+            }
+        } else if (draggedIndex > dropIndex) {
+            // Moving left: only move tabs between target and source to the right
+            if (index >= dropIndex && index < draggedIndex) {
+                return { transform: `translateX(${tabWidth}px)` };
+            }
         }
         
         return {};
