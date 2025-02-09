@@ -107,7 +107,33 @@ function TabContainer({ tabs, onTabMove }) {
 
     return (
         <div className="tab-container">
-            <div className="tab-header">
+            <div 
+                className="tab-header"
+                onDragOver={(e) => {
+                    e.preventDefault();
+                    handleDragOver(e);
+                }}
+                onDragEnter={(e) => {
+                    e.preventDefault();
+                }}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    console.log('Drop event triggered');
+                    const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    console.log('Drop details:', { sourceIndex, dropIndex });
+                    
+                    if (sourceIndex !== dropIndex && dropIndex !== null) {
+                        const newTabs = [...tabs];
+                        const [draggedTab] = newTabs.splice(sourceIndex, 1);
+                        newTabs.splice(dropIndex, 0, draggedTab);
+                        console.log('Moving tab:', { from: sourceIndex, to: dropIndex, newTabs });
+                        onTabMove(newTabs);
+                    }
+                    setDraggedTab(null);
+                    setDraggedIndex(null);
+                    setDropIndex(null);
+                }}
+            >
                 {tabs.map((tab, index) => (
                     <div
                         ref={el => tabRefs.current[index] = el}
@@ -116,26 +142,12 @@ function TabContainer({ tabs, onTabMove }) {
                             ${draggedTab === tab ? 'dragging' : ''} 
                             ${dropIndex === index ? 'drag-over' : ''}`}
                         onClick={() => handleTabClick(tab)}
-                        draggable
+                        draggable="true"
                         onDragStart={(e) => handleDragStart(e, tab, index)}
-                        onDragOver={handleDragOver}
-                        onDrop={(e) => {
-                            e.preventDefault();
-                            const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                            if (sourceIndex !== dropIndex && dropIndex !== null) {
-                                const newTabs = [...tabs];
-                                const [draggedTab] = newTabs.splice(sourceIndex, 1);
-                                newTabs.splice(dropIndex, 0, draggedTab);
-                                onTabMove(newTabs);
-                            }
-                            setDraggedTab(null);
-                            setDraggedIndex(null);
-                            setDropIndex(null);
-                        }}
                         onDragEnd={handleDragEnd}
                         style={getTabStyle(index)}
                     >
-                        {tab}
+                        {tab.type.name}
                     </div>
                 ))}
             </div>
