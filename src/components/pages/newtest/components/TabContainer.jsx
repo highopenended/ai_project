@@ -80,15 +80,20 @@ function TabContainer({ tabs, onTabMove }) {
         if (draggedIndex === null || dropIndex === null) return {};
         
         if (index === draggedIndex) {
-            return { opacity: 0.5 };
+            return { visibility: 'hidden' }; // Hide original position but maintain space
         }
         
-        if (dropIndex > draggedIndex && index > draggedIndex && index <= dropIndex) {
-            return { transform: 'translateX(-100%)' };
+        const draggedRect = tabRefs.current[draggedIndex]?.getBoundingClientRect();
+        const tabWidth = draggedRect ? draggedRect.width : 0;
+        
+        // If dropping after current index, move left
+        if (index >= dropIndex && index < draggedIndex) {
+            return { transform: `translateX(${tabWidth}px)` };
         }
         
-        if (dropIndex < draggedIndex && index < draggedIndex && index >= dropIndex) {
-            return { transform: 'translateX(100%)' };
+        // If dropping before current index, move right
+        if (index <= dropIndex && index > draggedIndex) {
+            return { transform: `translateX(-${tabWidth}px)` };
         }
         
         return {};
