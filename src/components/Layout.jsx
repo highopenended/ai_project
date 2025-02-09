@@ -51,6 +51,9 @@ function Layout() {
                             <Link to="/shop-generator" className="nav-link">
                                 Shop Generator
                             </Link>
+                            <Link to="/newtest" className="nav-link">
+                                NewTest
+                            </Link>
                             {/* <Link to="/item-list" className="nav-link">
                                 Item List
                             </Link> */}

@@ -8,6 +8,7 @@ import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import CategoryProvider from './components/pages/shopgenerator/context/CategoryContext';
 import { TraitProvider } from './components/pages/shopgenerator/context/TraitContext';
+import NewTest from "./components/pages/newtest/NewTest.jsx";
 import './constants/colors.css';
 
 /**
@@ -43,6 +44,11 @@ function App() {
                                 <Route path="item-list" element={
                                     <ProtectedRoute>
                                         <ItemList />
+                                    </ProtectedRoute>
+                                } />
+                                <Route path="newtest" element={
+                                    <ProtectedRoute>
+                                        <NewTest />
                                     </ProtectedRoute>
                                 } />
                             </Route>
