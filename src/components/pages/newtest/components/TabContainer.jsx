@@ -72,6 +72,9 @@ function TabContainer({ tabs, onTabMove }) {
         }
 
         if (dropIndex !== newDropIndex) {
+            const tab = tabElements[newDropIndex];
+            const rect = tab?.getBoundingClientRect();
+            console.log(`Transition point: Mouse at ${mouseX} crossed tab ${newDropIndex} center at ${rect?.left + (rect?.width || 0) / 2}`);
             setDropIndex(newDropIndex);
         }
     };
