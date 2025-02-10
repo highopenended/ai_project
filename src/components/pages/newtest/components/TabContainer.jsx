@@ -98,7 +98,6 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             // Check if we're near the edges of the container
             const distanceFromLeft = mouseX - containerRect.left;
             const distanceFromRight = containerRect.right - mouseX;
-            const edgeThreshold = 40; // pixels from edge to trigger indicator
 
             // Get information about the current group's position
             const containerParent = e.currentTarget.parentElement;
