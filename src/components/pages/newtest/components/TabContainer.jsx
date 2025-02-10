@@ -2,13 +2,17 @@ import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './TabContainer.css';
 
-function TabContainer({ tabs, onTabMove }) {
+function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [draggedTab, setDraggedTab] = useState(null);
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [dropIndex, setDropIndex] = useState(null);
     const tabRefs = useRef({});
     const originalPositions = useRef([]);
+    const [showLeftIndicator, setShowLeftIndicator] = useState(false);
+    const [showRightIndicator, setShowRightIndicator] = useState(false);
+    const edgeThreshold = 40; // pixels from edge to trigger indicator
+    const edgeHoldTimeout = useRef(null);
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -58,35 +62,123 @@ function TabContainer({ tabs, onTabMove }) {
 
     const handleDragOver = (e) => {
         e.preventDefault();
-        const tabHeader = e.currentTarget.closest('.tab-header');
-        if (!tabHeader) return;
-
+        const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
+        const mouseY = e.clientY;
         
-        // Find the insertion point based on original positions
-        let newDropIndex = originalPositions.current.length;
+        // Check if we're near the edges
+        const distanceFromLeft = mouseX - containerRect.left;
+        const distanceFromRight = containerRect.right - mouseX;
         
-        // Special case: if we're before the first tab's center
-        if (mouseX < originalPositions.current[0]?.center) {
-            newDropIndex = 0;
-        } else {
-            // Find the gap we're currently in
-            for (let i = 1; i < originalPositions.current.length; i++) {
-                const prevCenter = originalPositions.current[i - 1]?.center;
-                const currentCenter = originalPositions.current[i]?.center;
+        // Only process if we're within the vertical bounds of the container
+        if (mouseY >= containerRect.top && mouseY <= containerRect.bottom) {
+            // Clear any existing timeout
+            if (edgeHoldTimeout.current) {
+                clearTimeout(edgeHoldTimeout.current);
+                edgeHoldTimeout.current = null;
+            }
+
+            if (distanceFromLeft < edgeThreshold) {
+                console.log(`Entered left decouple zone: ${distanceFromLeft}px from left edge`);
+                setShowRightIndicator(false);
+                // Set timeout for left edge
+                edgeHoldTimeout.current = setTimeout(() => {
+                    console.log('Left decouple triggered after holding!');
+                    setShowLeftIndicator(true);
+                }, 500);
+            } else if (distanceFromRight < edgeThreshold) {
+                console.log(`Entered right decouple zone: ${distanceFromRight}px from right edge`);
+                setShowLeftIndicator(false);
+                // Set timeout for right edge
+                edgeHoldTimeout.current = setTimeout(() => {
+                    console.log('Right decouple triggered after holding!');
+                    setShowRightIndicator(true);
+                }, 500);
+            } else {
+                setShowLeftIndicator(false);
+                setShowRightIndicator(false);
                 
-                if (mouseX >= prevCenter && mouseX < currentCenter) {
-                    newDropIndex = i;
-                    break;
+                // For tab sliding, we only care about horizontal position relative to tab centers
+                const headerRect = e.currentTarget.querySelector('.tab-header').getBoundingClientRect();
+                const relativeX = mouseX - headerRect.left;
+                
+                // Find the insertion point based on original positions
+                let newDropIndex = originalPositions.current.length;
+                
+                // Special case: if we're before the first tab's center
+                if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
+                    newDropIndex = 0;
+                } else {
+                    // Find the gap we're currently in
+                    for (let i = 1; i < originalPositions.current.length; i++) {
+                        const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
+                        const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+                        
+                        if (relativeX >= prevCenter && relativeX < currentCenter) {
+                            newDropIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                // Only update if we've actually crossed a transition point
+                if (dropIndex !== newDropIndex) {
+                    console.log(`Transition point: Mouse at ${relativeX} crossed between centers at ${originalPositions.current[Math.max(0, newDropIndex - 1)]?.center - headerRect.left} and ${originalPositions.current[newDropIndex]?.center - headerRect.left}`);
+                    setDropIndex(newDropIndex);
                 }
             }
         }
+    };
 
-        // Only update if we've actually crossed a transition point
-        if (dropIndex !== newDropIndex) {
-            console.log(`Transition point: Mouse at ${mouseX} crossed between centers at ${originalPositions.current[Math.max(0, newDropIndex - 1)]?.center} and ${originalPositions.current[newDropIndex]?.center}`);
-            setDropIndex(newDropIndex);
+    const handleDragLeave = (e) => {
+        // Only clear indicators if we're actually leaving the container
+        // (not just moving between child elements)
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+            setShowLeftIndicator(false);
+            setShowRightIndicator(false);
+            if (edgeHoldTimeout.current) {
+                clearTimeout(edgeHoldTimeout.current);
+                edgeHoldTimeout.current = null;
+            }
         }
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        console.log('Drop event triggered');
+        const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        console.log('Drop details:', { 
+            sourceIndex, 
+            showLeftIndicator, 
+            showRightIndicator, 
+            groupIndex,
+            tabToSplit: tabs[sourceIndex]
+        });
+        
+        // Clear indicators and timeouts
+        setShowLeftIndicator(false);
+        setShowRightIndicator(false);
+        if (edgeHoldTimeout.current) {
+            clearTimeout(edgeHoldTimeout.current);
+            edgeHoldTimeout.current = null;
+        }
+
+        // Handle splitting if we're at an edge
+        if (showLeftIndicator || showRightIndicator) {
+            console.log('Attempting to split tab into new group');
+            const tabToSplit = tabs[sourceIndex];
+            onTabSplit(tabToSplit, groupIndex, showRightIndicator);
+        } else if (sourceIndex !== dropIndex && dropIndex !== null) {
+            const newTabs = [...tabs];
+            const [draggedTab] = newTabs.splice(sourceIndex, 1);
+            newTabs.splice(dropIndex, 0, draggedTab);
+            console.log('Moving tab:', { from: sourceIndex, to: dropIndex, newTabs });
+            onTabMove(newTabs);
+        }
+
+        setDraggedTab(null);
+        setDraggedIndex(null);
+        setDropIndex(null);
     };
 
     const getTabStyle = (index) => {
@@ -122,34 +214,16 @@ function TabContainer({ tabs, onTabMove }) {
     };
 
     return (
-        <div className="tab-container">
-            <div 
-                className="tab-header"
-                onDragOver={(e) => {
-                    e.preventDefault();
-                    handleDragOver(e);
-                }}
-                onDragEnter={(e) => {
-                    e.preventDefault();
-                }}
-                onDrop={(e) => {
-                    e.preventDefault();
-                    console.log('Drop event triggered');
-                    const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                    console.log('Drop details:', { sourceIndex, dropIndex });
-                    
-                    if (sourceIndex !== dropIndex && dropIndex !== null) {
-                        const newTabs = [...tabs];
-                        const [draggedTab] = newTabs.splice(sourceIndex, 1);
-                        newTabs.splice(dropIndex, 0, draggedTab);
-                        console.log('Moving tab:', { from: sourceIndex, to: dropIndex, newTabs });
-                        onTabMove(newTabs);
-                    }
-                    setDraggedTab(null);
-                    setDraggedIndex(null);
-                    setDropIndex(null);
-                }}
-            >
+        <div 
+            className={`tab-container ${showLeftIndicator ? 'show-left-indicator' : ''} ${showRightIndicator ? 'show-right-indicator' : ''}`}
+            onDragOver={(e) => {
+                e.preventDefault();
+                handleDragOver(e);
+            }}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            <div className="tab-header">
                 {tabs.map((tab, index) => (
                     <div
                         ref={el => tabRefs.current[index] = el}
@@ -177,6 +251,8 @@ function TabContainer({ tabs, onTabMove }) {
 TabContainer.propTypes = {
     tabs: PropTypes.arrayOf(PropTypes.node).isRequired,
     onTabMove: PropTypes.func.isRequired,
+    onTabSplit: PropTypes.func.isRequired,
+    groupIndex: PropTypes.number.isRequired,
 };
 
 export default TabContainer;
