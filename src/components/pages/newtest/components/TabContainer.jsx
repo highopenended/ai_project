@@ -7,10 +7,11 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const [draggedTab, setDraggedTab] = useState(null);
     const [draggedIndex, setDraggedIndex] = useState(null);
     const [dropIndex, setDropIndex] = useState(null);
-    const tabRefs = useRef({});
-    const originalPositions = useRef([]);
     const [showLeftIndicator, setShowLeftIndicator] = useState(false);
     const [showRightIndicator, setShowRightIndicator] = useState(false);
+    const [isInDecoupleZone, setIsInDecoupleZone] = useState(false);
+    const tabRefs = useRef({});
+    const originalPositions = useRef([]);
     const edgeThreshold = 40; // pixels from edge to trigger indicator
     const edgeHoldTimeout = useRef(null);
 
@@ -72,31 +73,48 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         
         // Only process if we're within the vertical bounds of the container
         if (mouseY >= containerRect.top && mouseY <= containerRect.bottom) {
-            // Clear any existing timeout
-            if (edgeHoldTimeout.current) {
-                clearTimeout(edgeHoldTimeout.current);
-                edgeHoldTimeout.current = null;
-            }
-
             if (distanceFromLeft < edgeThreshold) {
-                console.log(`Entered left decouple zone: ${distanceFromLeft}px from left edge`);
-                setShowRightIndicator(false);
-                // Set timeout for left edge
-                edgeHoldTimeout.current = setTimeout(() => {
-                    console.log('Left decouple triggered after holding!');
-                    setShowLeftIndicator(true);
-                }, 500);
+                // Only trigger if we weren't already in a decouple zone
+                if (!isInDecoupleZone) {
+                    console.log(`Entered left decouple zone: ${distanceFromLeft}px from left edge`);
+                    setIsInDecoupleZone(true);
+                    setShowRightIndicator(false);
+                    // Set timeout for left edge
+                    if (edgeHoldTimeout.current) {
+                        clearTimeout(edgeHoldTimeout.current);
+                    }
+                    edgeHoldTimeout.current = setTimeout(() => {
+                        console.log('Left decouple triggered after holding!');
+                        setShowLeftIndicator(true);
+                    }, 500);
+                }
             } else if (distanceFromRight < edgeThreshold) {
-                console.log(`Entered right decouple zone: ${distanceFromRight}px from right edge`);
-                setShowLeftIndicator(false);
-                // Set timeout for right edge
-                edgeHoldTimeout.current = setTimeout(() => {
-                    console.log('Right decouple triggered after holding!');
-                    setShowRightIndicator(true);
-                }, 500);
+                // Only trigger if we weren't already in a decouple zone
+                if (!isInDecoupleZone) {
+                    console.log(`Entered right decouple zone: ${distanceFromRight}px from right edge`);
+                    setIsInDecoupleZone(true);
+                    setShowLeftIndicator(false);
+                    // Set timeout for right edge
+                    if (edgeHoldTimeout.current) {
+                        clearTimeout(edgeHoldTimeout.current);
+                    }
+                    edgeHoldTimeout.current = setTimeout(() => {
+                        console.log('Right decouple triggered after holding!');
+                        setShowRightIndicator(true);
+                    }, 500);
+                }
             } else {
-                setShowLeftIndicator(false);
-                setShowRightIndicator(false);
+                // If we were in a decouple zone and now we're not
+                if (isInDecoupleZone) {
+                    console.log('Left decouple zone');
+                    setIsInDecoupleZone(false);
+                    setShowLeftIndicator(false);
+                    setShowRightIndicator(false);
+                    if (edgeHoldTimeout.current) {
+                        clearTimeout(edgeHoldTimeout.current);
+                        edgeHoldTimeout.current = null;
+                    }
+                }
                 
                 // For tab sliding, we only care about horizontal position relative to tab centers
                 const headerRect = e.currentTarget.querySelector('.tab-header').getBoundingClientRect();
@@ -132,8 +150,20 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
 
     const handleDragLeave = (e) => {
         // Only clear indicators if we're actually leaving the container
-        // (not just moving between child elements)
-        if (!e.currentTarget.contains(e.relatedTarget)) {
+        // and not entering a child element
+        const containerRect = e.currentTarget.getBoundingClientRect();
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        
+        // Check if the mouse is actually outside the container
+        const isOutsideContainer = 
+            mouseX < containerRect.left ||
+            mouseX > containerRect.right ||
+            mouseY < containerRect.top ||
+            mouseY > containerRect.bottom;
+            
+        if (isOutsideContainer) {
+            console.log('Mouse left container, clearing indicators');
             setShowLeftIndicator(false);
             setShowRightIndicator(false);
             if (edgeHoldTimeout.current) {
@@ -147,14 +177,19 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         e.preventDefault();
         console.log('Drop event triggered');
         const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        
+        // Store the current indicator states before clearing them
+        const wasShowingLeftIndicator = showLeftIndicator;
+        const wasShowingRightIndicator = showRightIndicator;
+        
         console.log('Drop details:', { 
             sourceIndex, 
-            showLeftIndicator, 
-            showRightIndicator, 
+            showLeftIndicator: wasShowingLeftIndicator, 
+            showRightIndicator: wasShowingRightIndicator, 
             groupIndex,
             tabToSplit: tabs[sourceIndex]
         });
-        
+
         // Clear indicators and timeouts
         setShowLeftIndicator(false);
         setShowRightIndicator(false);
@@ -163,11 +198,11 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             edgeHoldTimeout.current = null;
         }
 
-        // Handle splitting if we're at an edge
-        if (showLeftIndicator || showRightIndicator) {
+        // Handle splitting if we were showing an indicator
+        if (wasShowingLeftIndicator || wasShowingRightIndicator) {
             console.log('Attempting to split tab into new group');
             const tabToSplit = tabs[sourceIndex];
-            onTabSplit(tabToSplit, groupIndex, showRightIndicator);
+            onTabSplit(tabToSplit, groupIndex, wasShowingRightIndicator);
         } else if (sourceIndex !== dropIndex && dropIndex !== null) {
             const newTabs = [...tabs];
             const [draggedTab] = newTabs.splice(sourceIndex, 1);
@@ -179,6 +214,7 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         setDraggedTab(null);
         setDraggedIndex(null);
         setDropIndex(null);
+        setIsInDecoupleZone(false);
     };
 
     const getTabStyle = (index) => {
@@ -211,6 +247,13 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         setDraggedTab(null);
         setDraggedIndex(null);
         setDropIndex(null);
+        setIsInDecoupleZone(false);
+        setShowLeftIndicator(false);
+        setShowRightIndicator(false);
+        if (edgeHoldTimeout.current) {
+            clearTimeout(edgeHoldTimeout.current);
+            edgeHoldTimeout.current = null;
+        }
     };
 
     return (
