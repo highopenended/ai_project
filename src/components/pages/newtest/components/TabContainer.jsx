@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+
+import Tab from './tab.jsx';
 import './TabContainer.css';
 
 function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
-    // Always ensure there's an active tab, defaulting to the first one
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [draggedTab, setDraggedTab] = useState(null);
     const [draggedTabIndex, setDraggedTabIndex] = useState(null);
@@ -13,7 +14,7 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const [showBetweenIndicator, setShowBetweenIndicator] = useState(false);
     const tabRefs = useRef({});
     const originalPositions = useRef([]);
-    const edgeThreshold = 40; // pixels from edge to trigger indicator
+    const edgeThreshold = 40;
     const edgeHoldTimeout = useRef(null);
 
     // Update active tab if the current one is no longer in the tabs array
@@ -28,10 +29,15 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     };
 
     const handleDragStart = (e, tab, index) => {
+        // Safety check for tab structure
+        if (!tab || !tab.type) {
+            console.error('Invalid tab structure in handleDragStart:', tab);
+            return;
+        }
 
         // Store original positions of all tabs
         const tabElements = Array.from(e.currentTarget.parentElement.children);
-
+        
         console.log('Drag start:', {
             tab: tab.type.name,
             index,
@@ -58,16 +64,16 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         
         setDraggedTab(tab);
         setDraggedTabIndex(index);
-
-        // Store the tab info and indices
-        const tabInfo = {
-            type: tab.type.name,
-            index: index
-        };
         
         e.dataTransfer.setData('text/plain', index.toString());
         e.dataTransfer.setData('groupIndex', groupIndex.toString());
-        e.dataTransfer.setData('tabInfo', JSON.stringify(tabInfo));
+        e.dataTransfer.setData('tabInfo', JSON.stringify({
+            type: tab.type.name || 'unknown',
+            index: index,
+            key: tab.key || `tab-${index}`
+        }));
+        // Store the tab reference in a global variable temporarily
+        window.__draggedTab = tab;
         e.dataTransfer.effectAllowed = 'move';
 
         // Create a drag image that maintains size
@@ -169,13 +175,10 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     };
 
     const handleDragLeave = (e) => {
-        // Only clear indicators if we're actually leaving the container
-        // and not entering a child element
         const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
         
-        // Check if the mouse is actually outside the container
         const isOutsideContainer = 
             mouseX < containerRect.left ||
             mouseX > containerRect.right ||
@@ -197,25 +200,22 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const handleDrop = (e) => {
         e.preventDefault();
         
-        // Gather all the drop information
         const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
         const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
         const tabInfo = JSON.parse(e.dataTransfer.getData('tabInfo'));
         
-        // Store indicator states before clearing them
         const wasShowingLeftIndicator = showLeftIndicator;
         const wasShowingRightIndicator = showRightIndicator;
         const wasShowingBetweenIndicator = showBetweenIndicator;
         
-        // Clear all indicators
         setShowLeftIndicator(false);
         setShowRightIndicator(false);
         setShowBetweenIndicator(false);
         
-        // Handle the drop with clear priority:
-        // 1. Between-group splitting
-        // 2. Edge splitting
-        // 3. Group-to-group movement
+        // Get the stored tab reference
+        const draggedTab = window.__draggedTab;
+        delete window.__draggedTab; // Clean up
+        
         if (wasShowingBetweenIndicator) {
             console.log('ACTION: Creating new group between existing groups');
             onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
@@ -226,8 +226,9 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         }
         else if (sourceGroupIndex !== groupIndex) {
             console.log('ACTION: Moving tab between groups');
-            // Pass both the tab info and the target position
-            onTabMove([tabInfo, dropIndex], sourceGroupIndex, groupIndex);
+            // If dropIndex is null (not over header), append to end of target group
+            const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
+            onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
         }
         else if (sourceIndex !== dropIndex && dropIndex !== null) {
             console.log('ACTION: Reordering within same group');
@@ -235,42 +236,14 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             const [movedTab] = newTabs.splice(sourceIndex, 1);
             newTabs.splice(dropIndex, 0, movedTab);
             onTabMove(newTabs, groupIndex);
-            // Update active tab if it was the one being moved
             if (activeTab === tabs[sourceIndex]) {
                 setActiveTab(movedTab);
             }
         }
 
-        // Reset drag state
         setDraggedTab(null);
         setDraggedTabIndex(null);
         setDropIndex(null);
-    };
-
-    const getTabStyle = (index) => {
-        if (draggedTabIndex === null || dropIndex === null) return {};
-        
-        if (index === draggedTabIndex) {
-            return { visibility: 'hidden' }; // Hide original position but maintain space
-        }
-        
-        const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
-        const tabWidth = draggedRect ? draggedRect.width : 0;
-        
-        // Only move tabs that are between the drag source and drop target
-        if (draggedTabIndex < dropIndex) {
-            // Moving right: only move tabs between source and target to the left
-            if (index > draggedTabIndex && index <= dropIndex) {
-                return { transform: `translateX(-${tabWidth}px)` };
-            }
-        } else if (draggedTabIndex > dropIndex) {
-            // Moving left: only move tabs between target and source to the right
-            if (index >= dropIndex && index < draggedTabIndex) {
-                return { transform: `translateX(${tabWidth}px)` };
-            }
-        }
-        
-        return {};
     };
 
     const handleDragEnd = () => {
@@ -284,32 +257,31 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             clearTimeout(edgeHoldTimeout.current);
             edgeHoldTimeout.current = null;
         }
+        // Clean up the global reference if drag is cancelled
+        delete window.__draggedTab;
     };
 
-    const getDropIndex = (clientX) => {
-        const headerRect = document.querySelector('.tab-header').getBoundingClientRect();
-        const relativeX = clientX - headerRect.left;
+    const getTabStyle = (index) => {
+        if (draggedTabIndex === null || dropIndex === null) return {};
         
-        // Find the insertion point based on original positions
-        let dropIndex = originalPositions.current.length;
+        if (index === draggedTabIndex) {
+            return { visibility: 'hidden' };
+        }
         
-        // Special case: if we're before the first tab's center
-        if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
-            dropIndex = 0;
-        } else {
-            // Find the gap we're currently in
-            for (let i = 1; i < originalPositions.current.length; i++) {
-                const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
-                const currentCenter = originalPositions.current[i]?.center - headerRect.left;
-                
-                if (relativeX >= prevCenter && relativeX < currentCenter) {
-                    dropIndex = i;
-                    break;
-                }
+        const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
+        const tabWidth = draggedRect ? draggedRect.width : 0;
+        
+        if (draggedTabIndex < dropIndex) {
+            if (index > draggedTabIndex && index <= dropIndex) {
+                return { transform: `translateX(-${tabWidth}px)` };
+            }
+        } else if (draggedTabIndex > dropIndex) {
+            if (index >= dropIndex && index < draggedTabIndex) {
+                return { transform: `translateX(${tabWidth}px)` };
             }
         }
         
-        return dropIndex;
+        return {};
     };
 
     return (
@@ -323,22 +295,31 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             onDrop={handleDrop}
         >
             <div className="tab-header">
-                {tabs.map((tab, index) => (
-                    <div
-                        ref={el => tabRefs.current[index] = el}
-                        key={`${tab.type.name}-${index}`}
-                        className={`tab ${tab === activeTab ? 'active' : ''} 
-                            ${draggedTab === tab ? 'dragging' : ''} 
-                            ${dropIndex === index ? 'drag-over' : ''}`}
-                        onClick={() => handleTabClick(tab)}
-                        draggable="true"
-                        onDragStart={(e) => handleDragStart(e, tab, index)}
-                        onDragEnd={handleDragEnd}
-                        style={getTabStyle(index)}
-                    >
-                        {tab.type.name}
-                    </div>
-                ))}
+                {tabs.map((tab, index) => {
+                    // Safety check for tab structure
+                    if (!tab || !tab.type) {
+                        console.error('Invalid tab structure:', tab);
+                        return null;
+                    }
+
+                    const tabKey = tab.key || `tab-${tab.type.name || 'unknown'}-${index}`;
+                    
+                    return (
+                        <Tab
+                            key={tabKey}
+                            tab={tab}
+                            index={index}
+                            isActive={tab === activeTab}
+                            isDragging={draggedTab === tab}
+                            isDropTarget={dropIndex === index}
+                            tabRef={el => tabRefs.current[index] = el}
+                            style={getTabStyle(index)}
+                            onTabClick={handleTabClick}
+                            onDragStart={handleDragStart}
+                            onDragEnd={handleDragEnd}
+                        />
+                    );
+                })}
             </div>
             <div className="tab-content">
                 {activeTab}

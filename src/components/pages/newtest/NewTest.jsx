@@ -22,15 +22,9 @@ function NewTest() {
             
             if (targetGroupIndex !== undefined) {
                 // Moving to another group
-                const [tabInfo, dropIndex] = newTabs;
+                const [sourceTab, dropIndex] = newTabs;
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
-                const sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
                 
-                if (!sourceTab) {
-                    console.error('Could not find source tab:', tabInfo);
-                    return prevGroups;
-                }
-
                 // Remove from source group first
                 sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
                 
@@ -50,16 +44,12 @@ function NewTest() {
                     key: `${sourceTab.type.name}-${Date.now()}`
                 });
                 
-                // Add to target group at the specified position or at the end if no position
+                // Add to target group at the specified position
                 if (!newGroups[targetGroupIndex]) {
                     newGroups[targetGroupIndex] = [newTab];
                 } else {
                     const targetGroup = [...newGroups[targetGroupIndex]];
-                    if (dropIndex !== null && dropIndex !== undefined) {
-                        targetGroup.splice(dropIndex, 0, newTab);
-                    } else {
-                        targetGroup.push(newTab);
-                    }
+                    targetGroup.splice(dropIndex, 0, newTab);
                     newGroups[targetGroupIndex] = targetGroup;
                 }
             } else {
