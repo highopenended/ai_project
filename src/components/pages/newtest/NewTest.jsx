@@ -3,7 +3,7 @@ import { useState } from 'react';
 import TabContainer from './components/TabContainer';
 import Tab1 from './tabs/Tab1';
 import Tab2 from './tabs/Tab2';
-import Tab3 from './tabs/tab3';
+import Tab3 from './tabs/Tab3';
 import Tab4 from './tabs/Tab4';
 import Tab5 from './tabs/Tab5';
 import './NewTest.css';
@@ -13,6 +13,16 @@ function NewTest() {
     const [tabGroups, setTabGroups] = useState([
         [<Tab1 key="Tab1-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]
     ]);
+    
+    // Add new state for drag and drop operations
+    const [draggedTab, setDraggedTab] = useState(null);
+    const [draggedTabIndex, setDraggedTabIndex] = useState(null);
+    const [sourceGroupIndex, setSourceGroupIndex] = useState(null);
+    const [dropIndicators, setDropIndicators] = useState({
+        leftGroup: null,
+        rightGroup: null,
+        betweenGroups: null
+    });
 
     const handleTabMove = (newTabs, sourceGroupIndex, targetGroupIndex) => {
         console.group('Tab Move Operation');
@@ -196,6 +206,28 @@ function NewTest() {
                     key={index} 
                     groupIndex={index}
                     tabs={tabs} 
+                    draggedTab={draggedTab}
+                    draggedTabIndex={draggedTabIndex}
+                    sourceGroupIndex={sourceGroupIndex}
+                    dropIndicators={dropIndicators}
+                    onDragStart={(tab, index) => {
+                        setDraggedTab(tab);
+                        setDraggedTabIndex(index);
+                        setSourceGroupIndex(index);
+                    }}
+                    onDragEnd={() => {
+                        setDraggedTab(null);
+                        setDraggedTabIndex(null);
+                        setSourceGroupIndex(null);
+                        setDropIndicators({
+                            leftGroup: null,
+                            rightGroup: null,
+                            betweenGroups: null
+                        });
+                    }}
+                    onDropIndicatorChange={(indicators) => {
+                        setDropIndicators(prev => ({...prev, ...indicators}));
+                    }}
                     onTabMove={(newTabs) => handleTabMove(newTabs, index)}
                     onTabSplit={handleTabSplit}
                 />

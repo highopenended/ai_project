@@ -4,14 +4,20 @@ import PropTypes from 'prop-types';
 import Tab from './tab.jsx';
 import './TabContainer.css';
 
-function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
+function TabContainer({ 
+    tabs, 
+    onTabMove, 
+    onTabSplit, 
+    groupIndex,
+    draggedTab,
+    draggedTabIndex,
+    dropIndicators,
+    onDragStart,
+    onDragEnd,
+    onDropIndicatorChange
+}) {
     const [activeTab, setActiveTab] = useState(tabs[0]);
-    const [draggedTab, setDraggedTab] = useState(null);
-    const [draggedTabIndex, setDraggedTabIndex] = useState(null);
     const [dropIndex, setDropIndex] = useState(null);
-    const [showLeftIndicator, setShowLeftIndicator] = useState(false);
-    const [showRightIndicator, setShowRightIndicator] = useState(false);
-    const [showBetweenIndicator, setShowBetweenIndicator] = useState(false);
     const tabRefs = useRef({});
     const originalPositions = useRef([]);
     const edgeThreshold = 40;
@@ -40,22 +46,7 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             return;
         }
 
-        console.group('Drag Start');
-        console.log('Tab being dragged:', {
-            type: tab.type.name,
-            key: tab.key,
-            index,
-            groupIndex,
-            props: tab.props
-        });
-
         const tabElements = Array.from(e.currentTarget.parentElement.children);
-        console.log('All tabs in group:', tabElements.map((el, i) => ({
-            index: i,
-            key: el.getAttribute('data-key'),
-            className: el.className
-        })));
-        
         originalPositions.current = tabElements.map(tab => {
             const rect = tab.getBoundingClientRect();
             return {
@@ -65,10 +56,8 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
                 center: rect.left + rect.width / 2
             };
         });
-        console.log('Original positions:', originalPositions.current);
         
-        setDraggedTab(tab);
-        setDraggedTabIndex(index);
+        onDragStart(tab, index);
         
         e.dataTransfer.setData('text/plain', index.toString());
         e.dataTransfer.setData('groupIndex', groupIndex.toString());
@@ -77,17 +66,6 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             index: index,
             key: tab.key
         }));
-
-        console.log('Data transfer set:', {
-            index: index.toString(),
-            groupIndex: groupIndex.toString(),
-            tabInfo: {
-                type: tab.type.name,
-                index: index,
-                key: tab.key
-            }
-        });
-        console.groupEnd();
     };
 
     const handleDragOver = (e) => {
@@ -100,37 +78,32 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         const headerRect = e.currentTarget.querySelector('.tab-header').getBoundingClientRect();
         const isOverHeader = mouseY >= headerRect.top && mouseY <= headerRect.bottom;
         
-        // Only process if we're within the vertical bounds of the container
         if (mouseY >= containerRect.top && mouseY <= containerRect.bottom) {
-            // Check if we're near the edges of the container
             const distanceFromLeft = mouseX - containerRect.left;
             const distanceFromRight = containerRect.right - mouseX;
 
-            // Get information about the current group's position
             const containerParent = e.currentTarget.parentElement;
             const allGroups = Array.from(containerParent.children);
             const currentGroupIndex = allGroups.indexOf(e.currentTarget);
             const isFirstGroup = currentGroupIndex === 0;
             const isLastGroup = currentGroupIndex === allGroups.length - 1;
 
-            // Clear all indicators first
-            setShowLeftIndicator(false);
-            setShowRightIndicator(false);
-            setShowBetweenIndicator(false);
+            // Update indicators through parent
+            const newIndicators = {
+                leftGroup: isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
+                rightGroup: isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null,
+                betweenGroups: (!isFirstGroup && distanceFromLeft < edgeThreshold) || (!isLastGroup && distanceFromRight < edgeThreshold) ? groupIndex : null
+            };
+            
+            onDropIndicatorChange(newIndicators);
 
-            // If we're over the header, only handle within-group movement
             if (isOverHeader) {
-                // Handle within-group movement
                 const relativeX = mouseX - headerRect.left;
-                
-                // Find the insertion point based on original positions
                 let newDropIndex = originalPositions.current.length;
                 
-                // Special case: if we're before the first tab's center
                 if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
                     newDropIndex = 0;
                 } else {
-                    // Find the gap we're currently in
                     for (let i = 1; i < originalPositions.current.length; i++) {
                         const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
                         const currentCenter = originalPositions.current[i]?.center - headerRect.left;
@@ -145,30 +118,8 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
                 if (dropIndex !== newDropIndex) {
                     setDropIndex(newDropIndex);
                 }
-            } 
-            // When not over header, handle group creation/splitting
-            else {
-                // Handle edge cases for leftmost and rightmost groups
-                if (isFirstGroup && distanceFromLeft < edgeThreshold) {
-                    setShowLeftIndicator(true);
-                    setDropIndex(null);
-                    return;
-                }
-                if (isLastGroup && distanceFromRight < edgeThreshold) {
-                    setShowRightIndicator(true);
-                    setDropIndex(null);
-                    return;
-                }
-
-                // Check for between-group position
-                if (!isFirstGroup && distanceFromLeft < edgeThreshold) {
-                    setShowBetweenIndicator(true);
-                    setDropIndex(null);
-                }
-                else if (!isLastGroup && distanceFromRight < edgeThreshold) {
-                    setShowBetweenIndicator(true);
-                    setDropIndex(null);
-                }
+            } else {
+                setDropIndex(null);
             }
         }
     };
@@ -185,10 +136,11 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             mouseY > containerRect.bottom;
             
         if (isOutsideContainer) {
-            console.log('Mouse left container, clearing indicators');
-            setShowLeftIndicator(false);
-            setShowRightIndicator(false);
-            setShowBetweenIndicator(false);
+            onDropIndicatorChange({
+                leftGroup: null,
+                rightGroup: null,
+                betweenGroups: null
+            });
             if (edgeHoldTimeout.current) {
                 clearTimeout(edgeHoldTimeout.current);
                 edgeHoldTimeout.current = null;
@@ -211,19 +163,21 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             currentGroupIndex: groupIndex,
             dropIndex,
             indicators: {
-                left: showLeftIndicator,
-                right: showRightIndicator,
-                between: showBetweenIndicator
+                left: dropIndicators.leftGroup === groupIndex,
+                right: dropIndicators.rightGroup === groupIndex,
+                between: dropIndicators.betweenGroups === groupIndex
             }
         });
         
-        const wasShowingLeftIndicator = showLeftIndicator;
-        const wasShowingRightIndicator = showRightIndicator;
-        const wasShowingBetweenIndicator = showBetweenIndicator;
+        const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
+        const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
+        const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
         
-        setShowLeftIndicator(false);
-        setShowRightIndicator(false);
-        setShowBetweenIndicator(false);
+        onDropIndicatorChange({
+            leftGroup: null,
+            rightGroup: null,
+            betweenGroups: null
+        });
         
         if (wasShowingBetweenIndicator) {
             console.log('Creating new group between existing groups');
@@ -260,19 +214,13 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             }
         }
 
-        setDraggedTab(null);
-        setDraggedTabIndex(null);
         setDropIndex(null);
         console.groupEnd();
     };
 
     const handleDragEnd = () => {
-        setDraggedTab(null);
-        setDraggedTabIndex(null);
         setDropIndex(null);
-        setShowLeftIndicator(false);
-        setShowRightIndicator(false);
-        setShowBetweenIndicator(false);
+        onDragEnd();
         if (edgeHoldTimeout.current) {
             clearTimeout(edgeHoldTimeout.current);
             edgeHoldTimeout.current = null;
@@ -306,11 +254,8 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
 
     return (
         <div 
-            className={`tab-container ${showLeftIndicator ? 'show-left-indicator' : ''} ${showRightIndicator ? 'show-right-indicator' : ''} ${showBetweenIndicator ? 'show-between-indicator' : ''}`}
-            onDragOver={(e) => {
-                e.preventDefault();
-                handleDragOver(e);
-            }}
+            className={`tab-container ${dropIndicators.leftGroup === groupIndex ? 'show-left-indicator' : ''} ${dropIndicators.rightGroup === groupIndex ? 'show-right-indicator' : ''} ${dropIndicators.betweenGroups === groupIndex ? 'show-between-indicator' : ''}`}
+            onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
@@ -353,6 +298,16 @@ TabContainer.propTypes = {
     onTabMove: PropTypes.func.isRequired,
     onTabSplit: PropTypes.func.isRequired,
     groupIndex: PropTypes.number.isRequired,
+    draggedTab: PropTypes.node,
+    draggedTabIndex: PropTypes.number,
+    dropIndicators: PropTypes.shape({
+        leftGroup: PropTypes.number,
+        rightGroup: PropTypes.number,
+        betweenGroups: PropTypes.number
+    }).isRequired,
+    onDragStart: PropTypes.func.isRequired,
+    onDragEnd: PropTypes.func.isRequired,
+    onDropIndicatorChange: PropTypes.func.isRequired
 };
 
 export default TabContainer;
