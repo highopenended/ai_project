@@ -15,100 +15,176 @@ function NewTest() {
     ]);
 
     const handleTabMove = (newTabs, sourceGroupIndex, targetGroupIndex) => {
-        console.log('handleTabMove:', { newTabs, sourceGroupIndex, targetGroupIndex });
+        console.group('Tab Move Operation');
+        console.log('Current tab groups:', tabGroups);
+        console.log('Move params:', {
+            sourceGroupIndex,
+            targetGroupIndex,
+            newTabs: Array.isArray(newTabs) ? {
+                length: newTabs.length,
+                items: newTabs.map(tab => ({
+                    type: tab?.type?.name,
+                    key: tab?.key,
+                    props: tab?.props
+                }))
+            } : 'Not an array'
+        });
         
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
             
             if (targetGroupIndex !== undefined) {
-                // Moving to another group
+                console.log('Moving between groups');
                 const [sourceTab, dropIndex] = newTabs;
+                console.log('Source tab:', {
+                    type: sourceTab?.type?.name,
+                    key: sourceTab?.key,
+                    props: sourceTab?.props
+                });
+                console.log('Drop index:', dropIndex);
+                
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
+                console.log('Source group before removal:', sourceGroup.map(tab => ({
+                    type: tab?.type?.name,
+                    key: tab?.key
+                })));
                 
-                // Remove from source group first
                 sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
+                console.log('Source group after removal:', sourceGroup.map(tab => ({
+                    type: tab?.type?.name,
+                    key: tab?.key
+                })));
                 
-                // If source group is now empty, remove it
                 if (sourceGroup.length === 0) {
+                    console.log('Source group empty, removing group');
                     newGroups.splice(sourceGroupIndex, 1);
-                    // Adjust target index if it's after the removed group
                     if (targetGroupIndex > sourceGroupIndex) {
                         targetGroupIndex--;
+                        console.log('Adjusted target group index:', targetGroupIndex);
                     }
                 } else {
                     newGroups[sourceGroupIndex] = sourceGroup;
                 }
 
-                // Create new instance of the tab with a new key
                 const newTab = React.cloneElement(sourceTab, {
                     key: `${sourceTab.type.name}-${Date.now()}`
                 });
+                console.log('Created new tab:', {
+                    type: newTab?.type?.name,
+                    key: newTab?.key
+                });
                 
-                // Add to target group at the specified position
                 if (!newGroups[targetGroupIndex]) {
+                    console.log('Creating new target group');
                     newGroups[targetGroupIndex] = [newTab];
                 } else {
                     const targetGroup = [...newGroups[targetGroupIndex]];
+                    console.log('Target group before insertion:', targetGroup.map(tab => ({
+                        type: tab?.type?.name,
+                        key: tab?.key
+                    })));
                     targetGroup.splice(dropIndex, 0, newTab);
+                    console.log('Target group after insertion:', targetGroup.map(tab => ({
+                        type: tab?.type?.name,
+                        key: tab?.key
+                    })));
                     newGroups[targetGroupIndex] = targetGroup;
                 }
             } else {
-                // Moving within the same group
+                console.log('Reordering within same group');
+                console.log('New order:', newTabs.map(tab => ({
+                    type: tab?.type?.name,
+                    key: tab?.key
+                })));
                 newGroups[sourceGroupIndex] = newTabs;
             }
             
+            console.log('Final groups structure:', newGroups.map(group => 
+                group.map(tab => ({
+                    type: tab?.type?.name,
+                    key: tab?.key
+                }))
+            ));
+            console.groupEnd();
             return newGroups;
         });
     };
 
     const handleTabSplit = (tabInfo, sourceGroupIndex, targetPosition) => {
-        console.log('handleTabSplit called with:', { tabInfo, sourceGroupIndex, targetPosition });
+        console.group('Tab Split Operation');
+        console.log('Split params:', {
+            tabInfo,
+            sourceGroupIndex,
+            targetPosition
+        });
+        console.log('Current tab groups:', tabGroups);
         
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
-            
-            // Find the source tab
             const sourceGroup = [...prevGroups[sourceGroupIndex]];
+            
+            console.log('Source group before split:', sourceGroup.map(tab => ({
+                type: tab?.type?.name,
+                key: tab?.key
+            })));
+            
             const sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
+            console.log('Found source tab:', sourceTab ? {
+                type: sourceTab?.type?.name,
+                key: sourceTab?.key
+            } : 'Not found');
             
             if (!sourceTab) {
                 console.error('Could not find tab to split:', tabInfo);
+                console.groupEnd();
                 return prevGroups;
             }
             
-            // Remove the tab from the source group
             sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
+            console.log('Source group after removal:', sourceGroup.map(tab => ({
+                type: tab?.type?.name,
+                key: tab?.key
+            })));
             
-            // Create a new group with just this tab
             const newTab = React.cloneElement(sourceTab, {
                 key: `${sourceTab.type.name}-${Date.now()}`
             });
-            const newGroup = [newTab]; // This tab will automatically become active in the new group
+            console.log('Created new tab:', {
+                type: newTab?.type?.name,
+                key: newTab?.key
+            });
             
-            // If the source group is now empty, remove it
+            const newGroup = [newTab];
+            
             if (sourceGroup.length === 0) {
+                console.log('Source group empty, removing');
                 newGroups.splice(sourceGroupIndex, 1);
-                
-                // Adjust target position if it's after the removed group
                 if (typeof targetPosition === 'number' && targetPosition > sourceGroupIndex) {
                     targetPosition--;
+                    console.log('Adjusted target position:', targetPosition);
                 }
             } else {
                 newGroups[sourceGroupIndex] = sourceGroup;
             }
 
-            // Insert the new group at the appropriate position
             if (typeof targetPosition === 'number') {
-                // Insert at specific position between groups
+                console.log('Inserting at specific position:', targetPosition);
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
-                // Insert at end
+                console.log('Appending to end');
                 newGroups.push(newGroup);
             } else {
-                // Insert at start
+                console.log('Prepending to start');
                 newGroups.unshift(newGroup);
             }
             
+            console.log('Final groups structure:', newGroups.map(group => 
+                group.map(tab => ({
+                    type: tab?.type?.name,
+                    key: tab?.key
+                }))
+            ));
+            console.groupEnd();
             return newGroups;
         });
     };

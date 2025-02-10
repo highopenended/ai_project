@@ -31,26 +31,30 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const handleDragStart = (e, tab, index) => {
         // Safety check for tab structure
         if (!tab || !tab.type) {
-            console.error('Invalid tab structure in handleDragStart:', tab);
+            console.error('Invalid tab structure in handleDragStart:', {
+                tab,
+                hasType: !!tab?.type,
+                typeName: tab?.type?.name,
+                index
+            });
             return;
         }
 
-        // Store original positions of all tabs
-        const tabElements = Array.from(e.currentTarget.parentElement.children);
-        
-        console.log('Drag start:', {
-            tab: tab.type.name,
+        console.group('Drag Start');
+        console.log('Tab being dragged:', {
+            type: tab.type.name,
+            key: tab.key,
             index,
             groupIndex,
-            totalGroups: tabElements.length
+            props: tab.props
         });
-        
-        // Get the original element's rect
-        const rect = e.currentTarget.getBoundingClientRect();
-        
-        // Calculate where within the element the user clicked
-        const offsetX = e.clientX - rect.left;
-        const offsetY = e.clientY - rect.top;
+
+        const tabElements = Array.from(e.currentTarget.parentElement.children);
+        console.log('All tabs in group:', tabElements.map((el, i) => ({
+            index: i,
+            key: el.getAttribute('data-key'),
+            className: el.className
+        })));
         
         originalPositions.current = tabElements.map(tab => {
             const rect = tab.getBoundingClientRect();
@@ -61,6 +65,7 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
                 center: rect.left + rect.width / 2
             };
         });
+        console.log('Original positions:', originalPositions.current);
         
         setDraggedTab(tab);
         setDraggedTabIndex(index);
@@ -68,27 +73,21 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         e.dataTransfer.setData('text/plain', index.toString());
         e.dataTransfer.setData('groupIndex', groupIndex.toString());
         e.dataTransfer.setData('tabInfo', JSON.stringify({
-            type: tab.type.name || 'unknown',
+            type: tab.type.name,
             index: index,
-            key: tab.key || `tab-${index}`
+            key: tab.key
         }));
-        // Store the tab reference in a global variable temporarily
-        window.__draggedTab = tab;
-        e.dataTransfer.effectAllowed = 'move';
 
-        // Create a drag image that maintains size
-        const dragImage = e.currentTarget.cloneNode(true);
-        dragImage.style.width = `${rect.width}px`;
-        dragImage.style.height = `${rect.height}px`;
-        dragImage.style.opacity = '0.5';
-        dragImage.style.position = 'fixed';
-        dragImage.style.top = '-1000px';
-        dragImage.style.backgroundColor = 'var(--background-tertiary)';
-        dragImage.style.padding = window.getComputedStyle(e.currentTarget).padding;
-        
-        document.body.appendChild(dragImage);
-        e.dataTransfer.setDragImage(dragImage, offsetX, offsetY);
-        setTimeout(() => document.body.removeChild(dragImage), 0);
+        console.log('Data transfer set:', {
+            index: index.toString(),
+            groupIndex: groupIndex.toString(),
+            tabInfo: {
+                type: tab.type.name,
+                index: index,
+                key: tab.key
+            }
+        });
+        console.groupEnd();
     };
 
     const handleDragOver = (e) => {
@@ -200,9 +199,23 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const handleDrop = (e) => {
         e.preventDefault();
         
+        console.group('Drop Operation');
         const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
         const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
         const tabInfo = JSON.parse(e.dataTransfer.getData('tabInfo'));
+        
+        console.log('Drop data:', {
+            sourceIndex,
+            sourceGroupIndex,
+            tabInfo,
+            currentGroupIndex: groupIndex,
+            dropIndex,
+            indicators: {
+                left: showLeftIndicator,
+                right: showRightIndicator,
+                between: showBetweenIndicator
+            }
+        });
         
         const wasShowingLeftIndicator = showLeftIndicator;
         const wasShowingRightIndicator = showRightIndicator;
@@ -212,26 +225,32 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         setShowRightIndicator(false);
         setShowBetweenIndicator(false);
         
-        // Get the stored tab reference
-        const draggedTab = window.__draggedTab;
-        delete window.__draggedTab; // Clean up
-        
         if (wasShowingBetweenIndicator) {
-            console.log('ACTION: Creating new group between existing groups');
+            console.log('Creating new group between existing groups');
             onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
         }
         else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-            console.log('ACTION: Creating new group at edge');
+            console.log('Creating new group at edge');
             onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
         }
         else if (sourceGroupIndex !== groupIndex) {
-            console.log('ACTION: Moving tab between groups');
-            // If dropIndex is null (not over header), append to end of target group
+            console.log('Moving tab between groups');
             const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
+            console.log('Target details:', {
+                sourceGroupIndex,
+                targetGroupIndex: groupIndex,
+                targetIndex,
+                totalTabs: tabs.length
+            });
             onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
         }
         else if (sourceIndex !== dropIndex && dropIndex !== null) {
-            console.log('ACTION: Reordering within same group');
+            console.log('Reordering within same group');
+            console.log('Reorder details:', {
+                sourceIndex,
+                dropIndex,
+                groupIndex
+            });
             const newTabs = [...tabs];
             const [movedTab] = newTabs.splice(sourceIndex, 1);
             newTabs.splice(dropIndex, 0, movedTab);
@@ -244,6 +263,7 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         setDraggedTab(null);
         setDraggedTabIndex(null);
         setDropIndex(null);
+        console.groupEnd();
     };
 
     const handleDragEnd = () => {
