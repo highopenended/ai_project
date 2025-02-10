@@ -8,6 +8,28 @@
     position: relative; /* For edge indicators */
 }
 
+/* Remove the margin transitions and keep only the visual indicators */
+.tab-container.show-left-indicator::before,
+.tab-container.show-right-indicator::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background-color: var(--accent-color);
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.tab-container.show-left-indicator::before {
+    left: 0;
+}
+
+.tab-container.show-right-indicator::after {
+    right: 0;
+}
+
+/* Keep existing styles */
 .tab-header {
     display: flex;
     background-color: var(--background-secondary);
@@ -61,25 +83,14 @@
     border-radius: 2px;
 }
 
-/* Add new styles for edge indicators */
-.tab-container.show-left-indicator::before,
-.tab-container.show-right-indicator::after {
+/* Between-group indicator */
+.tab-container.show-between-indicator::before {
     content: '';
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 4px;
-    border: 3px dashed var(--accent-color);
-    pointer-events: none; /* Allows drag events to pass through */
-    opacity: 0.8;
-}
-
-.tab-container.show-left-indicator::before {
-    left: 0;
-    border-right: none;
-}
-
-.tab-container.show-right-indicator::after {
-    right: 0;
-    border-left: none;
+    width: 8px;
+    background-color: var(--accent-color);
+    opacity: 0.5;
+    pointer-events: none;
 }

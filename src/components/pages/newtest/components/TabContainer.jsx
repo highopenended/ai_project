@@ -5,11 +5,11 @@ import './TabContainer.css';
 function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [draggedTab, setDraggedTab] = useState(null);
-    const [draggedIndex, setDraggedIndex] = useState(null);
+    const [draggedTabIndex, setDraggedTabIndex] = useState(null);
     const [dropIndex, setDropIndex] = useState(null);
     const [showLeftIndicator, setShowLeftIndicator] = useState(false);
     const [showRightIndicator, setShowRightIndicator] = useState(false);
-    const [isInDecoupleZone, setIsInDecoupleZone] = useState(false);
+    const [showBetweenIndicator, setShowBetweenIndicator] = useState(false);
     const tabRefs = useRef({});
     const originalPositions = useRef([]);
     const edgeThreshold = 40; // pixels from edge to trigger indicator
@@ -20,7 +20,12 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     };
 
     const handleDragStart = (e, tab, index) => {
-        console.log('Drag start:', { tab, index });
+        console.log('Drag start:', {
+            tab: tab.type.name,
+            index,
+            groupIndex,
+            totalGroups: e.currentTarget.parentElement.parentElement.children.length
+        });
         
         // Get the original element's rect
         const rect = e.currentTarget.getBoundingClientRect();
@@ -42,8 +47,17 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         });
         
         setDraggedTab(tab);
-        setDraggedIndex(index);
+        setDraggedTabIndex(index);
+
+        // Store the tab info and indices
+        const tabInfo = {
+            type: tab.type.name,
+            index: index
+        };
+        
         e.dataTransfer.setData('text/plain', index.toString());
+        e.dataTransfer.setData('groupIndex', groupIndex.toString());
+        e.dataTransfer.setData('tabInfo', JSON.stringify(tabInfo));
         e.dataTransfer.effectAllowed = 'move';
 
         // Create a drag image that maintains size
@@ -67,57 +81,32 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         const mouseX = e.clientX;
         const mouseY = e.clientY;
         
-        // Check if we're near the edges
-        const distanceFromLeft = mouseX - containerRect.left;
-        const distanceFromRight = containerRect.right - mouseX;
+        // Get header area bounds
+        const headerRect = e.currentTarget.querySelector('.tab-header').getBoundingClientRect();
+        const isOverHeader = mouseY >= headerRect.top && mouseY <= headerRect.bottom;
         
         // Only process if we're within the vertical bounds of the container
         if (mouseY >= containerRect.top && mouseY <= containerRect.bottom) {
-            if (distanceFromLeft < edgeThreshold) {
-                // Only trigger if we weren't already in a decouple zone
-                if (!isInDecoupleZone) {
-                    console.log(`Entered left decouple zone: ${distanceFromLeft}px from left edge`);
-                    setIsInDecoupleZone(true);
-                    setShowRightIndicator(false);
-                    // Set timeout for left edge
-                    if (edgeHoldTimeout.current) {
-                        clearTimeout(edgeHoldTimeout.current);
-                    }
-                    edgeHoldTimeout.current = setTimeout(() => {
-                        console.log('Left decouple triggered after holding!');
-                        setShowLeftIndicator(true);
-                    }, 500);
-                }
-            } else if (distanceFromRight < edgeThreshold) {
-                // Only trigger if we weren't already in a decouple zone
-                if (!isInDecoupleZone) {
-                    console.log(`Entered right decouple zone: ${distanceFromRight}px from right edge`);
-                    setIsInDecoupleZone(true);
-                    setShowLeftIndicator(false);
-                    // Set timeout for right edge
-                    if (edgeHoldTimeout.current) {
-                        clearTimeout(edgeHoldTimeout.current);
-                    }
-                    edgeHoldTimeout.current = setTimeout(() => {
-                        console.log('Right decouple triggered after holding!');
-                        setShowRightIndicator(true);
-                    }, 500);
-                }
-            } else {
-                // If we were in a decouple zone and now we're not
-                if (isInDecoupleZone) {
-                    console.log('Left decouple zone');
-                    setIsInDecoupleZone(false);
-                    setShowLeftIndicator(false);
-                    setShowRightIndicator(false);
-                    if (edgeHoldTimeout.current) {
-                        clearTimeout(edgeHoldTimeout.current);
-                        edgeHoldTimeout.current = null;
-                    }
-                }
-                
-                // For tab sliding, we only care about horizontal position relative to tab centers
-                const headerRect = e.currentTarget.querySelector('.tab-header').getBoundingClientRect();
+            // Check if we're near the edges of the container
+            const distanceFromLeft = mouseX - containerRect.left;
+            const distanceFromRight = containerRect.right - mouseX;
+            const edgeThreshold = 40; // pixels from edge to trigger indicator
+
+            // Get information about the current group's position
+            const containerParent = e.currentTarget.parentElement;
+            const allGroups = Array.from(containerParent.children);
+            const currentGroupIndex = allGroups.indexOf(e.currentTarget);
+            const isFirstGroup = currentGroupIndex === 0;
+            const isLastGroup = currentGroupIndex === allGroups.length - 1;
+
+            // Clear all indicators first
+            setShowLeftIndicator(false);
+            setShowRightIndicator(false);
+            setShowBetweenIndicator(false);
+
+            // If we're over the header, only handle within-group movement
+            if (isOverHeader) {
+                // Handle within-group movement
                 const relativeX = mouseX - headerRect.left;
                 
                 // Find the insertion point based on original positions
@@ -138,11 +127,38 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
                         }
                     }
                 }
-
-                // Only update if we've actually crossed a transition point
+                
                 if (dropIndex !== newDropIndex) {
-                    console.log(`Transition point: Mouse at ${relativeX} crossed between centers at ${originalPositions.current[Math.max(0, newDropIndex - 1)]?.center - headerRect.left} and ${originalPositions.current[newDropIndex]?.center - headerRect.left}`);
+                    console.log('Tab reorder position:', newDropIndex);
                     setDropIndex(newDropIndex);
+                }
+            } 
+            // When not over header, handle group creation/splitting
+            else {
+                // Handle edge cases for leftmost and rightmost groups
+                if (isFirstGroup && distanceFromLeft < edgeThreshold) {
+                    console.log('Edge position detected: Leftmost position');
+                    setShowLeftIndicator(true);
+                    setDropIndex(null);
+                    return;
+                }
+                if (isLastGroup && distanceFromRight < edgeThreshold) {
+                    console.log('Edge position detected: Rightmost position');
+                    setShowRightIndicator(true);
+                    setDropIndex(null);
+                    return;
+                }
+
+                // Check for between-group position
+                if (!isFirstGroup && distanceFromLeft < edgeThreshold) {
+                    console.log(`Between-group position detected: Left of group ${currentGroupIndex}`);
+                    setShowBetweenIndicator(true);
+                    setDropIndex(null);
+                }
+                else if (!isLastGroup && distanceFromRight < edgeThreshold) {
+                    console.log(`Between-group position detected: Right of group ${currentGroupIndex}`);
+                    setShowBetweenIndicator(true);
+                    setDropIndex(null);
                 }
             }
         }
@@ -166,6 +182,7 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             console.log('Mouse left container, clearing indicators');
             setShowLeftIndicator(false);
             setShowRightIndicator(false);
+            setShowBetweenIndicator(false);
             if (edgeHoldTimeout.current) {
                 clearTimeout(edgeHoldTimeout.current);
                 edgeHoldTimeout.current = null;
@@ -175,67 +192,77 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
 
     const handleDrop = (e) => {
         e.preventDefault();
-        console.log('Drop event triggered');
-        const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
         
-        // Store the current indicator states before clearing them
+        // Gather all the drop information
+        const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+        const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
+        const tabInfo = JSON.parse(e.dataTransfer.getData('tabInfo'));
+        
+        // Store indicator states before clearing them
         const wasShowingLeftIndicator = showLeftIndicator;
         const wasShowingRightIndicator = showRightIndicator;
+        const wasShowingBetweenIndicator = showBetweenIndicator;
         
-        console.log('Drop details:', { 
-            sourceIndex, 
-            showLeftIndicator: wasShowingLeftIndicator, 
-            showRightIndicator: wasShowingRightIndicator, 
-            groupIndex,
-            tabToSplit: tabs[sourceIndex]
-        });
-
-        // Clear indicators and timeouts
+        // Clear all indicators
         setShowLeftIndicator(false);
         setShowRightIndicator(false);
-        if (edgeHoldTimeout.current) {
-            clearTimeout(edgeHoldTimeout.current);
-            edgeHoldTimeout.current = null;
+        setShowBetweenIndicator(false);
+        
+        // Handle the drop with clear priority:
+        // 1. Between-group splitting
+        // 2. Edge splitting
+        // 3. Group-to-group movement
+        if (wasShowingBetweenIndicator) {
+            console.log('ACTION: Creating new group between existing groups');
+            onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
         }
-
-        // Handle splitting if we were showing an indicator
-        if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-            console.log('Attempting to split tab into new group');
-            const tabToSplit = tabs[sourceIndex];
-            onTabSplit(tabToSplit, groupIndex, wasShowingRightIndicator);
-        } else if (sourceIndex !== dropIndex && dropIndex !== null) {
+        else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
+            console.log('ACTION: Creating new group at edge');
+            onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
+        }
+        else if (sourceGroupIndex !== groupIndex) {
+            console.log('ACTION: Moving tab between groups');
+            onTabMove([tabInfo], sourceGroupIndex, groupIndex);
+            // Reset active tab to first tab in group when receiving a new tab
+            setActiveTab(tabs[0]);
+        }
+        else if (sourceIndex !== dropIndex && dropIndex !== null) {
+            console.log('ACTION: Reordering within same group');
             const newTabs = [...tabs];
-            const [draggedTab] = newTabs.splice(sourceIndex, 1);
-            newTabs.splice(dropIndex, 0, draggedTab);
-            console.log('Moving tab:', { from: sourceIndex, to: dropIndex, newTabs });
-            onTabMove(newTabs);
+            const [movedTab] = newTabs.splice(sourceIndex, 1);
+            newTabs.splice(dropIndex, 0, movedTab);
+            onTabMove(newTabs, groupIndex);
+            // Update active tab if it was the one being moved
+            if (activeTab === tabs[sourceIndex]) {
+                setActiveTab(movedTab);
+            }
         }
 
+        // Reset drag state
         setDraggedTab(null);
-        setDraggedIndex(null);
+        setDraggedTabIndex(null);
         setDropIndex(null);
-        setIsInDecoupleZone(false);
     };
 
     const getTabStyle = (index) => {
-        if (draggedIndex === null || dropIndex === null) return {};
+        if (draggedTabIndex === null || dropIndex === null) return {};
         
-        if (index === draggedIndex) {
+        if (index === draggedTabIndex) {
             return { visibility: 'hidden' }; // Hide original position but maintain space
         }
         
-        const draggedRect = tabRefs.current[draggedIndex]?.getBoundingClientRect();
+        const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
         const tabWidth = draggedRect ? draggedRect.width : 0;
         
         // Only move tabs that are between the drag source and drop target
-        if (draggedIndex < dropIndex) {
+        if (draggedTabIndex < dropIndex) {
             // Moving right: only move tabs between source and target to the left
-            if (index > draggedIndex && index <= dropIndex) {
+            if (index > draggedTabIndex && index <= dropIndex) {
                 return { transform: `translateX(-${tabWidth}px)` };
             }
-        } else if (draggedIndex > dropIndex) {
+        } else if (draggedTabIndex > dropIndex) {
             // Moving left: only move tabs between target and source to the right
-            if (index >= dropIndex && index < draggedIndex) {
+            if (index >= dropIndex && index < draggedTabIndex) {
                 return { transform: `translateX(${tabWidth}px)` };
             }
         }
@@ -245,20 +272,46 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
 
     const handleDragEnd = () => {
         setDraggedTab(null);
-        setDraggedIndex(null);
+        setDraggedTabIndex(null);
         setDropIndex(null);
-        setIsInDecoupleZone(false);
         setShowLeftIndicator(false);
         setShowRightIndicator(false);
+        setShowBetweenIndicator(false);
         if (edgeHoldTimeout.current) {
             clearTimeout(edgeHoldTimeout.current);
             edgeHoldTimeout.current = null;
         }
     };
 
+    const getDropIndex = (clientX) => {
+        const headerRect = document.querySelector('.tab-header').getBoundingClientRect();
+        const relativeX = clientX - headerRect.left;
+        
+        // Find the insertion point based on original positions
+        let dropIndex = originalPositions.current.length;
+        
+        // Special case: if we're before the first tab's center
+        if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
+            dropIndex = 0;
+        } else {
+            // Find the gap we're currently in
+            for (let i = 1; i < originalPositions.current.length; i++) {
+                const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
+                const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+                
+                if (relativeX >= prevCenter && relativeX < currentCenter) {
+                    dropIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        return dropIndex;
+    };
+
     return (
         <div 
-            className={`tab-container ${showLeftIndicator ? 'show-left-indicator' : ''} ${showRightIndicator ? 'show-right-indicator' : ''}`}
+            className={`tab-container ${showLeftIndicator ? 'show-left-indicator' : ''} ${showRightIndicator ? 'show-right-indicator' : ''} ${showBetweenIndicator ? 'show-between-indicator' : ''}`}
             onDragOver={(e) => {
                 e.preventDefault();
                 handleDragOver(e);
