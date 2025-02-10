@@ -22,7 +22,7 @@ function NewTest() {
             
             if (targetGroupIndex !== undefined) {
                 // Moving to another group
-                const tabInfo = newTabs[0];
+                const [tabInfo, dropIndex] = newTabs;
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
                 const sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
                 
@@ -31,22 +31,36 @@ function NewTest() {
                     return prevGroups;
                 }
 
+                // Remove from source group first
+                sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
+                
+                // If source group is now empty, remove it
+                if (sourceGroup.length === 0) {
+                    newGroups.splice(sourceGroupIndex, 1);
+                    // Adjust target index if it's after the removed group
+                    if (targetGroupIndex > sourceGroupIndex) {
+                        targetGroupIndex--;
+                    }
+                } else {
+                    newGroups[sourceGroupIndex] = sourceGroup;
+                }
+
                 // Create new instance of the tab with a new key
                 const newTab = React.cloneElement(sourceTab, {
                     key: `${sourceTab.type.name}-${Date.now()}`
                 });
                 
-                // Add to target group
-                newGroups[targetGroupIndex] = [...prevGroups[targetGroupIndex], newTab];
-                
-                // Remove from source group
-                sourceGroup.splice(sourceGroup.findIndex(tab => tab.type.name === tabInfo.type), 1);
-                
-                // If source group is now empty, remove it
-                if (sourceGroup.length === 0) {
-                    newGroups.splice(sourceGroupIndex, 1);
+                // Add to target group at the specified position or at the end if no position
+                if (!newGroups[targetGroupIndex]) {
+                    newGroups[targetGroupIndex] = [newTab];
                 } else {
-                    newGroups[sourceGroupIndex] = sourceGroup;
+                    const targetGroup = [...newGroups[targetGroupIndex]];
+                    if (dropIndex !== null && dropIndex !== undefined) {
+                        targetGroup.splice(dropIndex, 0, newTab);
+                    } else {
+                        targetGroup.push(newTab);
+                    }
+                    newGroups[targetGroupIndex] = targetGroup;
                 }
             } else {
                 // Moving within the same group
@@ -73,13 +87,13 @@ function NewTest() {
             }
             
             // Remove the tab from the source group
-            sourceGroup.splice(sourceGroup.findIndex(tab => tab.type.name === tabInfo.type), 1);
+            sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
             
             // Create a new group with just this tab
             const newTab = React.cloneElement(sourceTab, {
                 key: `${sourceTab.type.name}-${Date.now()}`
             });
-            const newGroup = [newTab];
+            const newGroup = [newTab]; // This tab will automatically become active in the new group
             
             // If the source group is now empty, remove it
             if (sourceGroup.length === 0) {
@@ -105,7 +119,6 @@ function NewTest() {
                 newGroups.unshift(newGroup);
             }
             
-            console.log('New groups after split:', newGroups);
             return newGroups;
         });
     };

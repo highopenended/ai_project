@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './TabContainer.css';
 
 function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
+    // Always ensure there's an active tab, defaulting to the first one
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [draggedTab, setDraggedTab] = useState(null);
     const [draggedTabIndex, setDraggedTabIndex] = useState(null);
@@ -14,6 +15,13 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     const originalPositions = useRef([]);
     const edgeThreshold = 40; // pixels from edge to trigger indicator
     const edgeHoldTimeout = useRef(null);
+
+    // Update active tab if the current one is no longer in the tabs array
+    useEffect(() => {
+        if (!tabs.includes(activeTab)) {
+            setActiveTab(tabs[0]);
+        }
+    }, [tabs, activeTab]);
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
@@ -129,7 +137,6 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
                 }
                 
                 if (dropIndex !== newDropIndex) {
-                    console.log('Tab reorder position:', newDropIndex);
                     setDropIndex(newDropIndex);
                 }
             } 
@@ -137,13 +144,11 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
             else {
                 // Handle edge cases for leftmost and rightmost groups
                 if (isFirstGroup && distanceFromLeft < edgeThreshold) {
-                    console.log('Edge position detected: Leftmost position');
                     setShowLeftIndicator(true);
                     setDropIndex(null);
                     return;
                 }
                 if (isLastGroup && distanceFromRight < edgeThreshold) {
-                    console.log('Edge position detected: Rightmost position');
                     setShowRightIndicator(true);
                     setDropIndex(null);
                     return;
@@ -151,12 +156,10 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
 
                 // Check for between-group position
                 if (!isFirstGroup && distanceFromLeft < edgeThreshold) {
-                    console.log(`Between-group position detected: Left of group ${currentGroupIndex}`);
                     setShowBetweenIndicator(true);
                     setDropIndex(null);
                 }
                 else if (!isLastGroup && distanceFromRight < edgeThreshold) {
-                    console.log(`Between-group position detected: Right of group ${currentGroupIndex}`);
                     setShowBetweenIndicator(true);
                     setDropIndex(null);
                 }
@@ -222,9 +225,8 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         }
         else if (sourceGroupIndex !== groupIndex) {
             console.log('ACTION: Moving tab between groups');
-            onTabMove([tabInfo], sourceGroupIndex, groupIndex);
-            // Reset active tab to first tab in group when receiving a new tab
-            setActiveTab(tabs[0]);
+            // Pass both the tab info and the target position
+            onTabMove([tabInfo, dropIndex], sourceGroupIndex, groupIndex);
         }
         else if (sourceIndex !== dropIndex && dropIndex !== null) {
             console.log('ACTION: Reordering within same group');
