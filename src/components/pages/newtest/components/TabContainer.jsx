@@ -28,11 +28,15 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
     };
 
     const handleDragStart = (e, tab, index) => {
+
+        // Store original positions of all tabs
+        const tabElements = Array.from(e.currentTarget.parentElement.children);
+
         console.log('Drag start:', {
             tab: tab.type.name,
             index,
             groupIndex,
-            totalGroups: e.currentTarget.parentElement.parentElement.children.length
+            totalGroups: tabElements.length
         });
         
         // Get the original element's rect
@@ -42,8 +46,6 @@ function TabContainer({ tabs, onTabMove, onTabSplit, groupIndex }) {
         const offsetX = e.clientX - rect.left;
         const offsetY = e.clientY - rect.top;
         
-        // Store original positions of all tabs
-        const tabElements = Array.from(e.currentTarget.parentElement.children);
         originalPositions.current = tabElements.map(tab => {
             const rect = tab.getBoundingClientRect();
             return {
