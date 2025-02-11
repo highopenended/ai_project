@@ -21,10 +21,10 @@ function LevelInput({
     }, [lowestLevel, highestLevel]);
 
     // Set initial values
-    useEffect(() => {
-        onLowestLevelChange(lowestLevel);
-        onHighestLevelChange(highestLevel);
-    }, [onLowestLevelChange, onHighestLevelChange, lowestLevel, highestLevel]);
+    // useEffect(() => {
+    //     onLowestLevelChange(lowestLevel);
+    //     onHighestLevelChange(highestLevel);
+    // }, [onLowestLevelChange, onHighestLevelChange, lowestLevel, highestLevel]);
 
     const handleLowestLevelChange = (e) => {
         const value = e.target.value;

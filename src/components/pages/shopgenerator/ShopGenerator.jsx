@@ -92,10 +92,15 @@ function ShopGenerator() {
                     <Tab_Parameters
                         key="Tab_Parameters-0"
                         handleGenerateClick={handleGenerateClick}
+                        currentGold={currentGold}
                         setCurrentGold={setCurrentGold}
+                        lowestLevel={lowestLevel}
                         setLowestLevel={setLowestLevel}
+                        highestLevel={highestLevel}
                         setHighestLevel={setHighestLevel}
+                        rarityDistribution={rarityDistribution}
                         setRarityDistribution={setRarityDistribution}
+                        itemBias={itemBias}
                         setItemBias={setItemBias}
                     />,
                     <Tab_InventoryTable key="Tab_InventoryTable-0" />,
