@@ -25,8 +25,9 @@ function TabHeader({
             onDragStart={(e) => onDragStart(e, tab, index)}
             onDragEnd={onDragEnd}
             style={style}
+            name={tab.name}
         >
-            {/* {TabHeader.type.name}    */}
+            {tab.type.displayName || 'Unnamed Tab'}
         </div>
     );
 }
