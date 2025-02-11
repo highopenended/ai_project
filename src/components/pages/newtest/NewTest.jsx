@@ -210,9 +210,9 @@ function NewTest() {
                     draggedTabIndex={draggedTabIndex}
                     sourceGroupIndex={sourceGroupIndex}
                     dropIndicators={dropIndicators}
-                    onDragStart={(tab, index) => {
+                    onDragStart={(tab, tabIndex) => {
                         setDraggedTab(tab);
-                        setDraggedTabIndex(index);
+                        setDraggedTabIndex(tabIndex);
                         setSourceGroupIndex(index);
                     }}
                     onDragEnd={() => {
@@ -228,7 +228,15 @@ function NewTest() {
                     onDropIndicatorChange={(indicators) => {
                         setDropIndicators(prev => ({...prev, ...indicators}));
                     }}
-                    onTabMove={(newTabs) => handleTabMove(newTabs, index)}
+                    onTabMove={(newTabs) => {
+                        // If newTabs is an array with two elements, it's a move between groups
+                        if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === 'number') {
+                            handleTabMove(newTabs, sourceGroupIndex, index);
+                        } else {
+                            // Otherwise it's a reorder within the same group
+                            handleTabMove(newTabs, index);
+                        }
+                    }}
                     onTabSplit={handleTabSplit}
                 />
             ))}
