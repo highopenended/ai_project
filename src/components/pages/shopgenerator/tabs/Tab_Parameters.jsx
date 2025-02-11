@@ -23,38 +23,21 @@ function Tab_Parameters({
     itemBias,
     setItemBias,
 }) {
-    const handleGoldChange = (gold) => {
-        setCurrentGold(gold);
-    };
 
-    const handleLowestLevelChange = (level) => {
-        setLowestLevel(level);
-    };
 
-    const handleHighestLevelChange = (level) => {
-        setHighestLevel(level);
-    };
-
-    const handleRarityChange = (rarity) => {
-        setRarityDistribution(rarity);
-    };
-
-    const handleBiasChange = (bias) => {
-        setItemBias(bias);
-    };
 
     return (
         <div>
             <GenerateButton onClick={handleGenerateClick} />
             <div className="parameter-sections">
-                <GoldInput onChange={handleGoldChange} />
+                <GoldInput setCurrentGold={setCurrentGold} currentGold={currentGold} />
                 <LevelInput
                     lowestLevel={lowestLevel}
                     highestLevel={highestLevel}
-                    onLowestLevelChange={handleLowestLevelChange}
-                    onHighestLevelChange={handleHighestLevelChange}
+                    onLowestLevelChange={setLowestLevel}
+                    onHighestLevelChange={setHighestLevel}
                 />
-                <RaritySliders onChange={handleRarityChange} />
+                <RaritySliders onChange={setRarityDistribution} />
                 {/* <BiasGrid onChange={handleBiasChange} value={handleBiasChange}/> */}
             </div>
         </div>

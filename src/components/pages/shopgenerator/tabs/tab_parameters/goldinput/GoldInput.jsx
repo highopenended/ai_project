@@ -3,96 +3,86 @@ import PropTypes from 'prop-types';
 import './GoldInput.css';
 import Section_OneLine from '../../../shared/Section_OneLine';
 
-function GoldInput({ onChange, value }) {
-    const formatNumber = (value) => {
-        if (!value) return '';
+function GoldInput({ setCurrentGold, currentGold }) {
+    const [displayValue, setDisplayValue] = useState('');
 
-        // Split into whole and decimal parts
-        const [whole, decimal] = value.split('.');
+    const formatNumber = (value) => {
+        if (!value && value !== 0) return '';
+
+        // Convert to string and split into whole and decimal parts
+        const parts = value.toString().split('.');
+        const whole = parts[0];
 
         // Remove existing commas and format with new ones
         const formattedWhole = whole.replace(/,/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
         // Limit decimal to 2 places if it exists
-        const formattedDecimal = decimal ? '.' + decimal.slice(0, 2) : '';
+        const formattedDecimal = parts.length > 1 ? '.' + parts[1].slice(0, 2) : '';
 
         return formattedWhole + formattedDecimal;
     };
 
-    // Initialize with formatted default value or provided value
-    const [goldAmount, setGoldAmount] = useState(() => {
-        if (value !== undefined) {
-            return formatNumber(value.toString());
-        }
-        return '5,000';
-    });
-
-    // Update when value prop changes
+    // Update display value when currentGold prop changes
     useEffect(() => {
-        if (value !== undefined) {
-            setGoldAmount(formatNumber(value.toString()));
-        }
-    }, [value]);
-
-    // Call onChange with initial value
-    useEffect(() => {
-        if (value !== undefined) {
-            onChange(value);
-        } else {
-            onChange(5000);
-        }
-    }, [onChange, value]);
+        setDisplayValue(formatNumber(currentGold ?? 5000));
+    }, [currentGold]);
 
     const handleChange = (e) => {
-        const value = e.target.value;
+        const inputVal = e.target.value;
         
-        // Only allow numbers, single decimal point, and commas
-        if (!/^[\d,]*\.?\d*$/.test(value)) {
+        // Allow empty input, numbers, decimals, and commas
+        if (!/^[\d,]*\.?\d*$/.test(inputVal)) {
             return;
         }
 
-        setGoldAmount(value);
+        // Count decimal points (including the one being typed)
+        const decimalCount = (inputVal.match(/\./g) || []).length;
+        if (decimalCount > 1) {
+            return;
+        }
+
+        setDisplayValue(inputVal);
         
         // Pass the numeric value to parent (without commas)
-        const numericValue = parseFloat(value.replace(/,/g, ''));
+        const numericValue = parseFloat(inputVal.replace(/,/g, ''));
         if (!isNaN(numericValue)) {
-            onChange(numericValue);
+            setCurrentGold(numericValue);
         }
     };
 
-    const handleBlur = (e) => {
-        const value = e.target.value;
-        if (!value) {
-            setGoldAmount('5,000'); // Reset to default if empty
-            onChange(5000);
+    const handleBlur = () => {
+        if (!displayValue) {
+            const defaultValue = 5000;
+            setDisplayValue(formatNumber(defaultValue));
+            setCurrentGold(defaultValue);
             return;
         }
 
-        const formattedValue = formatNumber(value);
-        setGoldAmount(formattedValue);
-
-        // Remove commas before parsing
-        const numericValue = parseFloat(formattedValue.replace(/,/g, ''));
+        const numericValue = parseFloat(displayValue.replace(/,/g, ''));
         if (!isNaN(numericValue)) {
-            onChange(numericValue);
+            setDisplayValue(formatNumber(numericValue));
+            setCurrentGold(numericValue);
         }
     };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.target.blur();
+        } else if (
+            !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', '.', ','].includes(e.key) &&
+            !/^\d$/.test(e.key)
+        ) {
+            e.preventDefault();
         }
     };
 
     return (
-        
         <Section_OneLine>
             <div>
                 <div className="input-with-suffix">
                     <input
                         type="text"
-                        id="goldAmount"
-                        value={goldAmount}
+                        value={displayValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
                         onKeyDown={handleKeyDown}
@@ -108,8 +98,8 @@ function GoldInput({ onChange, value }) {
 }
 
 GoldInput.propTypes = {
-    onChange: PropTypes.func.isRequired,
-    value: PropTypes.number,
+    setCurrentGold: PropTypes.func.isRequired,
+    currentGold: PropTypes.number,
 };
 
 export default GoldInput; 

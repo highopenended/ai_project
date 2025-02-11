@@ -6,7 +6,6 @@ import Section_OneLine from "../../../shared/Section_OneLine";
 function LevelInput({
     lowestLevel = 0, // Default to 0
     highestLevel = 10, // Default to 10
-
     onLowestLevelChange,
     onHighestLevelChange,
 }) {
@@ -48,6 +47,10 @@ function LevelInput({
 
     const handleLowestLevelBlur = () => {
         const adjustedValue = validateAndAdjustValue(lowestLevel);
+        if(adjustedValue>highestLevel){
+            onHighestLevelChange(adjustedValue);
+            setHighestDisplay(adjustedValue.toString());
+        }
         setLowestDisplay(adjustedValue.toString());
         if (adjustedValue !== lowestLevel) {
             onLowestLevelChange(adjustedValue);
