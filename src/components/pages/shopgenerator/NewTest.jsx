@@ -1,7 +1,7 @@
 // import React, { useState } from 'react';
 import { useState, useEffect } from 'react';
-import TabContainer from './components/TabContainer';
-import Tab_ShopDetails from './tabs/Tab_ShopDetails';       
+import TabContainer from './shared/TabContainer';
+import Tab_Parameters from './tabs/Tab_Parameters';       
 import Tab2 from './tabs/Tab2';
 import Tab3 from './tabs/Tab3';
 import Tab4 from './tabs/Tab4';
@@ -51,7 +51,7 @@ function NewTest() {
             const recreatedGroups = groups.map(group => 
                 group.map(tab => {
                     const TabComponent = {
-                        'Tab_ShopDetails': Tab_ShopDetails,
+                        'Tab_Parameters': Tab_Parameters,
                         'Tab2': Tab2,
                         'Tab3': Tab3,
                         'Tab4': Tab4,
@@ -66,7 +66,7 @@ function NewTest() {
         
         // Default state if nothing is saved
         return {
-            groups: [[<Tab_ShopDetails key="Tab_ShopDetails-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]],
+            groups: [[<Tab_Parameters key="Tab_Parameters-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]],
             widths: ['100%']
         };
     };

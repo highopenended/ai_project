@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./LevelInput.css";
-import Section_OneLine from "../../components/Section_OneLine";
+import Section_OneLine from "../../../shared/Section_OneLine";
 
 function LevelInput({
     lowestLevel = 0, // Default to 0

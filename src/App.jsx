@@ -6,9 +6,9 @@ import Home from "./components/pages/home/Home.jsx";
 import ShopGenerator from "./components/pages/shopgeneratorold/ShopGenerator.jsx";
 import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import CategoryProvider from "./components/pages/shopgeneratorold/context/CategoryContext";
-import { TraitProvider } from "./components/pages/shopgeneratorold/context/TraitContext";
-import NewTest from "./components/pages/newtest/NewTest.jsx";
+import CategoryProvider from "./context/CategoryContext.jsx";
+import { TraitProvider } from "./context/TraitContext.jsx";
+import NewTest from "./components/pages/shopgenerator/NewTest.jsx";
 import "./constants/colors.css";
 
 /**

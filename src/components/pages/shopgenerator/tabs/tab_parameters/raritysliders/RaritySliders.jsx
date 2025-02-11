@@ -4,8 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
 import { RARITY_COLORS } from '../../../../../constants/rarityColors';
-import Section from '../../components/Section';
-import ButtonGroup from '../../components/ButtonGroup';
+import Section from '../../../shopgenerator/shared/Section';
+import ButtonGroup from '../../../shopgenerator/shared/ButtonGroup';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
 

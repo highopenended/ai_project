@@ -1,7 +1,7 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
-import Section from '../../components/Section';
-import Scrollbar from '../../components/Scrollbar';
+import Section from '../../shared/Section';
+import Scrollbar from '../../shared/Scrollbar';
 import './SavedShops.css';
 
 const SavedShops = ({ savedShops, loadShop }) => {

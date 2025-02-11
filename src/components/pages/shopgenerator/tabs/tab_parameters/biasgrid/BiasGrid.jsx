@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./BiasGrid.css";
-import ButtonGroup from "../../components/ButtonGroup";
-import Section from "../../components/Section";
+import ButtonGroup from "../../../shared/ButtonGroup";
+import Section from "../../../shared/Section";
 
 function BiasGrid({ onChange, value }) {
     const gridRef = useRef(null);

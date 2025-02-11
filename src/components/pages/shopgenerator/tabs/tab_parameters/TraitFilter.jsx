@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { useTraitContext, TRAIT_STATES } from "../context/TraitContext";
-import traitList from "../../../../../public/trait-list.json";
-import TagContainer from "../components/TagContainer";
-import Section from "../components/Section";
-import ButtonGroup from "../components/ButtonGroup";
-import SearchBar from '../components/SearchBar';
+import { useTraitContext, TRAIT_STATES } from "../../../../../context/TraitContext";
+import traitList from "../../../../../../public/trait-list.json";
+import TagContainer from "../../shared/TagContainer";
+import Section from "../../shared/Section";
+import ButtonGroup from "../../shared/ButtonGroup";
+import SearchBar from '../../shared/SearchBar';
 
 function TraitFilter() {
     const { getTraitState, toggleTrait, clearTraitSelections } = useTraitContext();

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useCategoryContext, SELECTION_STATES } from "../context/CategoryContext";
-import TagContainer from "../components/TagContainer";
-import Section from "../components/Section";
-import ButtonGroup from "../components/ButtonGroup";
-import SearchBar from '../components/SearchBar';
+import { useCategoryContext, SELECTION_STATES } from "../../../../../context/CategoryContext";
+import TagContainer from "../../shared/TagContainer";
+import Section from "../../shared/Section";
+import ButtonGroup from "../../shared/ButtonGroup";
+import SearchBar from '../../shared/SearchBar';
 
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useCategoryContext();
