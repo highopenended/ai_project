@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import './ImportExport.css';
 import { useCallback } from 'react';
 import Section from '../../shared/Section';
-import { importShopData } from '../../../shopgeneratorold/utils/shopFileUtils';
+import { importShopData } from '../../utils/shopFileUtils';
 
 const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData }) => {
     const handleDrop = useCallback((event) => {

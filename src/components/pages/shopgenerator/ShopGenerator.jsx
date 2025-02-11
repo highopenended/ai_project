@@ -2,15 +2,15 @@
 import { useState, useEffect } from 'react';
 import TabContainer from './shared/TabContainer';
 import Tab_Parameters from './tabs/Tab_Parameters';       
-import Tab2 from './tabs/Tab2';
-import Tab3 from './tabs/Tab3';
-import Tab4 from './tabs/Tab4';
+import Tab_InventoryTable from './tabs/Tab_InventoryTable';
+import Tab_ChooseShop from './tabs/Tab_ChooseShop';
+import Tab_ShopDetails from './tabs/Tab_ShopDetails';
 import Tab5 from './tabs/Tab5';
-import './NewTest.css';
+import './ShopGenerator.css';
 import React from 'react';
 
 /**
- * NewTest Component
+ * ShopGenerator Component
  * Parent component that manages multiple tab groups with drag and drop functionality
  * 
  * State Management:
@@ -40,7 +40,7 @@ import React from 'react';
 
 const STORAGE_KEY = 'tabGroupsState';
 
-function NewTest() {
+function ShopGenerator() {
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
         // localStorage.clear(STORAGE_KEY)
@@ -52,9 +52,9 @@ function NewTest() {
                 group.map(tab => {
                     const TabComponent = {
                         'Tab_Parameters': Tab_Parameters,
-                        'Tab2': Tab2,
-                        'Tab3': Tab3,
-                        'Tab4': Tab4,
+                        'Tab_InventoryTable': Tab_InventoryTable,
+                        'Tab_ChooseShop': Tab_ChooseShop,
+                        'Tab_ShopDetails': Tab_ShopDetails,
                         'Tab5': Tab5
                     }[tab.type];
                     console.log(TabComponent)
@@ -66,7 +66,7 @@ function NewTest() {
         
         // Default state if nothing is saved
         return {
-            groups: [[<Tab_Parameters key="Tab_Parameters-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]],
+            groups: [[<Tab_Parameters key="Tab_Parameters-0" />, <Tab_InventoryTable key="Tab_InventoryTable-0" />, <Tab_ChooseShop key="Tab_ChooseShop-0" />, <Tab_ShopDetails key="Tab_ShopDetails-0" />, <Tab5 key="Tab5-0" />]],
             widths: ['100%']
         };
     };
@@ -340,4 +340,4 @@ function NewTest() {
     );
 }
 
-export default NewTest; 
+export default ShopGenerator; 

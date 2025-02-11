@@ -1,10 +1,8 @@
 // import React from 'react';
 import GenerateButton from './tab_parameters/generatebutton/GenerateButton';
 
-
 Tab_Parameters.displayName = 'Shop Details';
 Tab_Parameters.minWidth = 100;
-
 
 function Tab_Parameters() {   
     return (
@@ -13,6 +11,5 @@ function Tab_Parameters() {
         </div>
     );
 }
-
 
 export default Tab_Parameters;

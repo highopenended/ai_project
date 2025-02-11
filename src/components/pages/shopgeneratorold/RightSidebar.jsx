@@ -10,18 +10,18 @@
  */
 import { useRef, useState, useCallback, useEffect } from 'react';
 import './RightSidebar.css';
-import { useAuth } from "../../../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import PropTypes from 'prop-types';
-import SavedShops from '../../shopgenerator/tabs/tab_chooseshop/SavedShops';
-import NewShopButton from '../../shopgenerator/tabs/tab_chooseshop/NewShopButton';
+import SavedShops from '../shopgenerator/tabs/tab_chooseshop/SavedShops';
+import NewShopButton from '../shopgenerator/tabs/tab_chooseshop/NewShopButton';
 import ShopDetailsShort from './shopdetailstab/shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailstab/ShopDetailsLong';
-import ImportExport from '../../shopgenerator/tabs/tab_chooseshop/ImportExport';
+import ImportExport from '../shopgenerator/tabs/tab_chooseshop/ImportExport';
 import TabArea from './TabArea';
 import SaveShopButton from './shopdetailstab/SaveShopButton';
 import CloneShopButton from './shopdetailstab/CloneShopButton';
 import ShopDates from './shopdetailstab/ShopDates';
-import { exportShopData } from '../utils/shopFileUtils';
+import { exportShopData } from '../shopgenerator/utils/shopFileUtils';
 
 // Sidebar size constraints
 const SIDEBAR_CONSTRAINTS = {

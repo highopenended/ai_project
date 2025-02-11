@@ -48,11 +48,8 @@ function Layout() {
                             <Link to="/home" className="nav-link">
                                 Home
                             </Link>
-                            <Link to="/shop-generator" className="nav-link">
+                            <Link to="/shopgenerator" className="nav-link">
                                 Shop Generator
-                            </Link>
-                            <Link to="/newtest" className="nav-link">
-                                NewTest
                             </Link>
                             {/* <Link to="/item-list" className="nav-link">
                                 Item List

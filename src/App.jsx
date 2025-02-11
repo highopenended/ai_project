@@ -3,12 +3,11 @@ import { AuthProvider } from "./context/AuthContext.jsx";
 import Layout from "./components/Layout.jsx";
 import Login from "./components/pages/login/Login.jsx";
 import Home from "./components/pages/home/Home.jsx";
-import ShopGenerator from "./components/pages/shopgeneratorold/ShopGenerator.jsx";
 import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import CategoryProvider from "./context/CategoryContext.jsx";
 import { TraitProvider } from "./context/TraitContext.jsx";
-import NewTest from "./components/pages/shopgenerator/NewTest.jsx";
+import ShopGenerator from "./components/pages/shopgenerator/ShopGenerator.jsx";
 import "./constants/colors.css";
 
 /**
@@ -38,18 +37,6 @@ function App() {
                             }
                         />
                         <Route
-                            path="shop-generator"
-                            element={
-                                <ProtectedRoute>
-                                    <CategoryProvider>
-                                        <TraitProvider>
-                                            <ShopGenerator />
-                                        </TraitProvider>
-                                    </CategoryProvider>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
                             path="item-list"
                             element={
                                 <ProtectedRoute>
@@ -58,12 +45,12 @@ function App() {
                             }
                         />
                         <Route
-                            path="newtest"
+                            path="shopgenerator"
                             element={
                                 <ProtectedRoute>
                                     <CategoryProvider>
                                         <TraitProvider>
-                                            <NewTest />
+                                            <ShopGenerator />
                                         </TraitProvider>
                                     </CategoryProvider>
                                 </ProtectedRoute>

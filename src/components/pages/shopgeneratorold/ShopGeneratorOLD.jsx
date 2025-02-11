@@ -2,23 +2,23 @@
 import React, { useState, useEffect } from 'react';
 /* eslint-enable no-unused-vars */
 import './ShopGenerator.css';
-import LeftSidebar from './leftsidebar/LeftSidebar';
+import LeftSidebar from './LeftSidebar';
 import GoldInput from './leftsidebar/goldinput/GoldInput';
 import LevelInput from '../shopgenerator/tabs/tab_parameters/levelinput/LevelInput';
 import BiasGrid from '../shopgenerator/tabs/tab_parameters/biasgrid/BiasGrid';
 import RaritySliders from './leftsidebar/raritysliders/RaritySliders';
-import MiddleBar from './middlebar/MiddleBar';
-import RightSidebar from './rightsidebar/RightSidebar';
+import MiddleBar from './MiddleBar';
+import RightSidebar from './RightSidebar';
 import ItemTable from '../shopgenerator/tabs/tab_inventorytable/ItemTable';
 import itemData from '../../../../public/item-table.json';
 import { useCategoryContext, SELECTION_STATES } from '../../../context/CategoryContext';
 import { useTraitContext, TRAIT_STATES } from '../../../context/TraitContext';
-import { generateShopInventory } from './utils/generateShopInventory';
+import { generateShopInventory } from '../shopgenerator/utils/generateShopInventory';
 import CategoryFilter from '../shopgenerator/tabs/tab_parameters/CategoryFilter';
 import SubcategoryFilter from '../shopgenerator/tabs/tab_parameters/SubcategoryFilter';
 import TraitFilter from '../shopgenerator/tabs/tab_parameters/TraitFilter';
-import shopData from './utils/shopData';
-import { saveOrUpdateShopData, loadShopData } from './utils/firebaseShopUtils';
+import shopData from '../shopgenerator/utils/shopData';
+import { saveOrUpdateShopData, loadShopData } from '../shopgenerator/utils/firebaseShopUtils';
 import { useAuth } from '../../../context/AuthContext';
 
 /**
