@@ -1,36 +1,36 @@
 // import React, { useState } from 'react';
-import { useState, useEffect } from 'react';
-import TabContainer from './shared/TabContainer';
-import Tab_Parameters from './tabs/Tab_Parameters';       
-import Tab_InventoryTable from './tabs/Tab_InventoryTable';
-import Tab_ChooseShop from './tabs/Tab_ChooseShop';
-import Tab_ShopDetails from './tabs/Tab_ShopDetails';
-import Tab5 from './tabs/Tab5';
-import './ShopGenerator.css';
-import React from 'react';
+import { useState, useEffect } from "react";
+import TabContainer from "./shared/tab/TabContainer";
+import Tab_Parameters from "./tabs/Tab_Parameters";
+import Tab_InventoryTable from "./tabs/Tab_InventoryTable";
+import Tab_ChooseShop from "./tabs/Tab_ChooseShop";
+import Tab_ShopDetails from "./tabs/Tab_ShopDetails";
+import Tab5 from "./tabs/Tab5";
+import "./ShopGenerator.css";
+import React from "react";
 
 /**
  * ShopGenerator Component
  * Parent component that manages multiple tab groups with drag and drop functionality
- * 
+ *
  * State Management:
  * - tabGroups: 2D array where each inner array represents a group of tabs
  * - draggedTab: Currently dragged tab component
  * - draggedTabIndex: Index of dragged tab in its group
  * - sourceGroupIndex: Index of the group where drag started
  * - dropIndicators: Visual indicators for group splitting
- * 
+ *
  * Key Behaviors:
  * 1. Tab Movement:
  *    - Within same group: Reorders tabs
  *    - Between groups: Moves tab to new group
  *    - To edges: Creates new groups
- * 
+ *
  * 2. State Updates:
  *    - Uses setTimeout to ensure clean state transitions
  *    - Resets drag states before updating groups
  *    - Maintains group integrity during operations
- * 
+ *
  * Common Issues & Solutions:
  * 1. Double drag required: Check state reset timing
  * 2. Groups not updating: Verify setTimeout execution
@@ -38,36 +38,73 @@ import React from 'react';
  * 4. State sync issues: Verify parent-child prop flow
  */
 
-const STORAGE_KEY = 'tabGroupsState';
+const STORAGE_KEY = "tabGroupsState";
+
 
 function ShopGenerator() {
+    const [currentGold, setCurrentGold] = useState(0);
+    const [lowestLevel, setLowestLevel] = useState(0);
+    const [highestLevel, setHighestLevel] = useState(10);
+    const [rarityDistribution, setRarityDistribution] = useState({
+        Common: 95.00,
+        Uncommon: 4.50,
+        Rare: 0.49,
+        Unique: 0.01
+    });
+    const [itemBias, setItemBias] = useState({ x: 0.5, y: 0.5 });
+
+
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
-        // localStorage.clear(STORAGE_KEY)
+        localStorage.clear(STORAGE_KEY);
+
         const savedState = localStorage.getItem(STORAGE_KEY);
         if (savedState) {
             const { groups, widths } = JSON.parse(savedState);
             // Recreate tab components from saved data
-            const recreatedGroups = groups.map(group => 
-                group.map(tab => {
+            const recreatedGroups = groups.map((group) =>
+                group.map((tab) => {
                     const TabComponent = {
-                        'Tab_Parameters': Tab_Parameters,
-                        'Tab_InventoryTable': Tab_InventoryTable,
-                        'Tab_ChooseShop': Tab_ChooseShop,
-                        'Tab_ShopDetails': Tab_ShopDetails,
-                        'Tab5': Tab5
+                        Tab_Parameters: Tab_Parameters,
+                        Tab_InventoryTable: Tab_InventoryTable,
+                        Tab_ChooseShop: Tab_ChooseShop,
+                        Tab_ShopDetails: Tab_ShopDetails,
+                        // 'Tab5': Tab5
                     }[tab.type];
-                    console.log(TabComponent)
+                    console.log(TabComponent);
                     return <TabComponent key={tab.key} />;
                 })
             );
             return { groups: recreatedGroups, widths };
         }
         
+        function handleGenerateClick() {
+            console.log('Generate button clicked');
+        }
+
+
+
+
         // Default state if nothing is saved
         return {
-            groups: [[<Tab_Parameters key="Tab_Parameters-0" />, <Tab_InventoryTable key="Tab_InventoryTable-0" />, <Tab_ChooseShop key="Tab_ChooseShop-0" />, <Tab_ShopDetails key="Tab_ShopDetails-0" />, <Tab5 key="Tab5-0" />]],
-            widths: ['100%']
+            groups: [
+                [
+                    <Tab_Parameters
+                        key="Tab_Parameters-0"
+                        handleGenerateClick={handleGenerateClick}
+                        setCurrentGold={setCurrentGold}
+                        setLowestLevel={setLowestLevel}
+                        setHighestLevel={setHighestLevel}
+                        setRarityDistribution={setRarityDistribution}
+                        setItemBias={setItemBias}
+                    />,
+                    <Tab_InventoryTable key="Tab_InventoryTable-0" />,
+                    <Tab_ChooseShop key="Tab_ChooseShop-0" />,
+                    <Tab_ShopDetails key="Tab_ShopDetails-0" />,
+                    <Tab5 key="Tab5-0" />,
+                ],
+            ],
+            widths: ["100%"],
         };
     };
 
@@ -83,24 +120,27 @@ function ShopGenerator() {
         leftGroup: null,
         rightGroup: null,
         betweenGroups: null,
-        betweenGroupsRight: null
+        betweenGroupsRight: null,
     });
     const [isResizing, setIsResizing] = useState(false);
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
         const saveState = () => {
-            const groupsData = tabGroups.map(group =>
-                group.map(tab => ({
+            const groupsData = tabGroups.map((group) =>
+                group.map((tab) => ({
                     type: tab.type.name,
-                    key: tab.key
+                    key: tab.key,
                 }))
             );
-            
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                groups: groupsData,
-                widths: flexBasis
-            }));
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({
+                    groups: groupsData,
+                    widths: flexBasis,
+                })
+            );
         };
 
         saveState();
@@ -111,15 +151,20 @@ function ShopGenerator() {
         if (tabGroups.length !== flexBasis.length) {
             const defaultWidths = tabGroups.map(() => `${100 / tabGroups.length}%`);
             setFlexBasis(defaultWidths);
-            
+
             // Save the new widths
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                groups: tabGroups.map(group => group.map(tab => ({
-                    type: tab.type.name,
-                    key: tab.key
-                }))),
-                widths: defaultWidths
-            }));
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({
+                    groups: tabGroups.map((group) =>
+                        group.map((tab) => ({
+                            type: tab.type.name,
+                            key: tab.key,
+                        }))
+                    ),
+                    widths: defaultWidths,
+                })
+            );
         }
     }, [tabGroups.length]);
 
@@ -131,11 +176,11 @@ function ShopGenerator() {
             }
         };
 
-        window.addEventListener('mouseup', handleGlobalMouseUp);
-        
+        window.addEventListener("mouseup", handleGlobalMouseUp);
+
         // Cleanup
         return () => {
-            window.removeEventListener('mouseup', handleGlobalMouseUp);
+            window.removeEventListener("mouseup", handleGlobalMouseUp);
         };
     }, [isResizing]);
 
@@ -154,27 +199,26 @@ function ShopGenerator() {
             leftGroup: null,
             rightGroup: null,
             betweenGroups: null,
-            betweenGroupsRight: null
+            betweenGroupsRight: null,
         });
 
         // Then update the groups after a short delay to ensure state is clean
         setTimeout(() => {
-            setTabGroups(prevGroups => {
+            setTabGroups((prevGroups) => {
                 const newGroups = [...prevGroups];
-                
+
                 if (targetGroupIndex !== undefined) {
                     const [sourceTab, dropIndex] = newTabs;
                     const sourceGroup = [...prevGroups[sourceGroupIndex]];
-                    
+
                     // Find and remove the source tab
-                    const sourceTabIndex = sourceGroup.findIndex(tab => 
-                        tab.type.name === sourceTab.type.name && 
-                        (!tab.key || tab.key === sourceTab.key)
+                    const sourceTabIndex = sourceGroup.findIndex(
+                        (tab) => tab.type.name === sourceTab.type.name && (!tab.key || tab.key === sourceTab.key)
                     );
                     if (sourceTabIndex !== -1) {
                         sourceGroup.splice(sourceTabIndex, 1);
                     }
-                    
+
                     if (sourceGroup.length === 0) {
                         newGroups.splice(sourceGroupIndex, 1);
                         if (targetGroupIndex > sourceGroupIndex) {
@@ -187,21 +231,21 @@ function ShopGenerator() {
                     // When moving back to original group, don't create a new tab
                     const targetGroup = [...(newGroups[targetGroupIndex] || [])];
                     const isMovingBackToOriginal = sourceGroupIndex === targetGroupIndex;
-                    
+
                     if (isMovingBackToOriginal) {
                         targetGroup.splice(dropIndex, 0, sourceTab);
                     } else {
                         const newTab = React.cloneElement(sourceTab, {
-                            key: `${sourceTab.type.name}-${Date.now()}`
+                            key: `${sourceTab.type.name}-${Date.now()}`,
                         });
                         targetGroup.splice(dropIndex, 0, newTab);
                     }
-                    
+
                     newGroups[targetGroupIndex] = targetGroup;
                 } else {
                     newGroups[sourceGroupIndex] = newTabs;
                 }
-                
+
                 return newGroups;
             });
         }, 0);
@@ -214,27 +258,27 @@ function ShopGenerator() {
      * @param {boolean|number} targetPosition - Where to create the new group
      */
     const handleTabSplit = (tabInfo, sourceGroupIndex, targetPosition) => {
-        setTabGroups(prevGroups => {
+        setTabGroups((prevGroups) => {
             const newGroups = [...prevGroups];
             const sourceGroup = [...prevGroups[sourceGroupIndex]];
-            
-            const sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
-            
+
+            const sourceTab = sourceGroup.find((tab) => tab.type.name === tabInfo.type);
+
             if (!sourceTab) {
                 return prevGroups;
             }
-            
+
             sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
-            
+
             const newTab = React.cloneElement(sourceTab, {
-                key: `${sourceTab.type.name}-${Date.now()}`
+                key: `${sourceTab.type.name}-${Date.now()}`,
             });
-            
+
             const newGroup = [newTab];
-            
+
             if (sourceGroup.length === 0) {
                 newGroups.splice(sourceGroupIndex, 1);
-                if (typeof targetPosition === 'number' && targetPosition > sourceGroupIndex) {
+                if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
                     targetPosition--;
                 }
             } else {
@@ -242,14 +286,14 @@ function ShopGenerator() {
             }
 
             // Handle numeric target position (between groups)
-            if (typeof targetPosition === 'number') {
+            if (typeof targetPosition === "number") {
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
                 newGroups.push(newGroup);
             } else {
                 newGroups.unshift(newGroup);
             }
-            
+
             return newGroups;
         });
     };
@@ -258,46 +302,46 @@ function ShopGenerator() {
         if (groupIndex >= tabGroups.length - 1) return;
 
         setIsResizing(true);
-        const container = document.querySelector('.new-test');
+        const container = document.querySelector(".new-test");
         if (!container) return;
 
         const totalWidth = container.clientWidth;
         const minWidth = 200; // Minimum width in pixels
-        
-        setFlexBasis(prev => {
+
+        setFlexBasis((prev) => {
             const newBasis = [...prev];
-            
+
             // Calculate the new width percentage
             let currentPercent = (newWidth / totalWidth) * 100;
-            
+
             // Ensure minimum width
             if (currentPercent < (minWidth / totalWidth) * 100) {
                 currentPercent = (minWidth / totalWidth) * 100;
             }
-            
+
             // Calculate remaining width for next group
             const remainingPercent = parseFloat(newBasis[groupIndex]) + parseFloat(newBasis[groupIndex + 1]);
             const nextGroupPercent = remainingPercent - currentPercent;
-            
+
             // Ensure next group also maintains minimum width
             if (nextGroupPercent < (minWidth / totalWidth) * 100) {
                 return prev;
             }
-            
+
             newBasis[groupIndex] = `${currentPercent}%`;
             newBasis[groupIndex + 1] = `${nextGroupPercent}%`;
-            
+
             return newBasis;
         });
     };
 
     return (
-        <div className={`new-test ${isResizing ? 'resizing' : ''}`}>
+        <div className={`new-test ${isResizing ? "resizing" : ""}`}>
             {tabGroups.map((tabs, index) => (
-                <TabContainer 
-                    key={index} 
+                <TabContainer
+                    key={index}
                     groupIndex={index}
-                    tabs={tabs} 
+                    tabs={tabs}
                     draggedTab={draggedTab}
                     draggedTabIndex={draggedTabIndex}
                     sourceGroupIndex={sourceGroupIndex}
@@ -319,14 +363,14 @@ function ShopGenerator() {
                             leftGroup: null,
                             rightGroup: null,
                             betweenGroups: null,
-                            betweenGroupsRight: null
+                            betweenGroupsRight: null,
                         });
                     }}
                     onDropIndicatorChange={(indicators) => {
-                        setDropIndicators(prev => ({...prev, ...indicators}));
+                        setDropIndicators((prev) => ({ ...prev, ...indicators }));
                     }}
                     onTabMove={(newTabs) => {
-                        if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === 'number') {
+                        if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
                             handleTabMove(newTabs, sourceGroupIndex, index);
                         } else {
                             handleTabMove(newTabs, index);
@@ -340,4 +384,4 @@ function ShopGenerator() {
     );
 }
 
-export default ShopGenerator; 
+export default ShopGenerator;

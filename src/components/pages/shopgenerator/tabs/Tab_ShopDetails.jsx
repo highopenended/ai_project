@@ -1,10 +1,10 @@
 // import React from 'react';
 
-Tab_ShopDetails.displayName = 'Inventory Table';
+Tab_ShopDetails.displayName = 'Shop Details';
 Tab_ShopDetails.minWidth = 100;
 
 function Tab_ShopDetails() {
-    return <div>Tab 4 Content</div>;
+    return <div>Shop Details</div>;
 }
 
 export default Tab_ShopDetails;

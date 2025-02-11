@@ -1,73 +1,26 @@
-import { useState } from "react";
-import { useTraitContext, TRAIT_STATES } from "../../../../../context/TraitContext";
+import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
+import FilterButton from "./filterbutton/FilterButton";
+import Section from "../../../shared/Section";
 import traitList from "../../../../../../public/trait-list.json";
-import TagContainer from "../../shared/TagContainer";
-import Section from "../../shared/Section";
-import ButtonGroup from "../../shared/ButtonGroup";
-import SearchBar from '../../shared/SearchBar';
 
 function TraitFilter() {
-    const { getTraitState, toggleTrait, clearTraitSelections } = useTraitContext();
-
-    const [traitFilter, setTraitFilter] = useState("");
-    const [isCollapsed, setIsCollapsed] = useState(false);
-
-    // Filter traits based on search and remove duplicates
-    const filteredTraits = Array.from(
-        new Set(
-            traitList
-                .map((trait) => trait.Trait)
-                .filter((trait) => trait.toLowerCase().includes(traitFilter.toLowerCase()))
-        )
-    ).sort();
-
-    // Ensure getTraitState returns a string
-    const getTraitStateString = (trait) => {
-        const state = getTraitState(trait);
-        return state === TRAIT_STATES.INCLUDE ? "INCLUDE" : state === TRAIT_STATES.EXCLUDE ? "EXCLUDE" : "NONE";
-    };
-
-    // console.log('Filtered Traits:', filteredTraits);
-    // console.log('Trait States:', filteredTraits.map(trait => ({ trait, state: getTraitStateString(trait) })));
-
-    // Define getTagClassName function
-    const getTagClassName = (state) => {
-        const baseClass = "tag";
-        if (state === "INCLUDE") return `${baseClass} included`;
-        if (state === "EXCLUDE") return `${baseClass} excluded`;
-        return baseClass;
-    };
+    const { getTraitState, toggleTrait, clearTraitSelections } = useShopGenerator();
 
     return (
-        <Section
-            title="Traits"
-            buttonGroup={
-                <ButtonGroup
-                    handleReset={clearTraitSelections}
-                    isCollapsed={isCollapsed}
-                    setIsCollapsed={setIsCollapsed}
-                />
-            }
-        >
-            {!isCollapsed && (
-                <>
-                    <SearchBar
-                        placeholder="Search traits..."
-                        value={traitFilter}
-                        onChange={(e) => setTraitFilter(e.target.value)}
-                        className="search-input"
+        <Section title="Traits">
+            <div className="filter-grid">
+                {traitList.map(({ Trait }) => (
+                    <FilterButton
+                        key={Trait}
+                        label={Trait}
+                        state={getTraitState(Trait)}
+                        onClick={() => toggleTrait(Trait)}
                     />
-                    <TagContainer
-                        tags={filteredTraits.map((trait) => ({
-                            name: trait,
-                            state: getTraitStateString(trait),
-                            count: 0, // Assuming count is not used here
-                        }))}
-                        onTagClick={toggleTrait}
-                        getTagClassName={getTagClassName}
-                    />
-                </>
-            )}
+                ))}
+            </div>
+            <button onClick={clearTraitSelections} className="clear-button">
+                Clear Traits
+            </button>
         </Section>
     );
 }

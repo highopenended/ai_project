@@ -11,8 +11,8 @@ import MiddleBar from './MiddleBar';
 import RightSidebar from './RightSidebar';
 import ItemTable from '../shopgenerator/tabs/tab_inventorytable/ItemTable';
 import itemData from '../../../../public/item-table.json';
-import { useCategoryContext, SELECTION_STATES } from '../../../context/CategoryContext';
-import { useTraitContext, TRAIT_STATES } from '../../../context/TraitContext';
+import { useShopGenerator } from '../../../context/ShopGeneratorContext';
+import { SELECTION_STATES} from '../../../context/shopGeneratorConstants';
 import { generateShopInventory } from '../shopgenerator/utils/generateShopInventory';
 import CategoryFilter from '../shopgenerator/tabs/tab_parameters/CategoryFilter';
 import SubcategoryFilter from '../shopgenerator/tabs/tab_parameters/SubcategoryFilter';
@@ -52,13 +52,10 @@ function ShopGenerator() {
         categoryStates,
         subcategoryStates,
         setCategoryStates,
-        setSubcategoryStates
-    } = useCategoryContext();
-
-    const {
+        setSubcategoryStates,
         traitStates,
         setTraitStates
-    } = useTraitContext();
+    } = useShopGenerator();
 
     const { currentUser } = useAuth();
 
@@ -257,11 +254,11 @@ function ShopGenerator() {
             .map(([subcategory]) => subcategory);
 
         const includedTraits = Array.from(traitStates.entries())
-            .filter(([, state]) => state === TRAIT_STATES.INCLUDE)
+            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
             .map(([trait]) => trait);
         
         const excludedTraits = Array.from(traitStates.entries())
-            .filter(([, state]) => state === TRAIT_STATES.EXCLUDE)
+            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
             .map(([trait]) => trait);
 
         const result = generateShopInventory({
@@ -350,8 +347,8 @@ function ShopGenerator() {
                         excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE)
                     },
                     traits: {
-                        included: getFilteredArray(traitStates, TRAIT_STATES.INCLUDE),
-                        excluded: getFilteredArray(traitStates, TRAIT_STATES.EXCLUDE)
+                        included: getFilteredArray(traitStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE)
                     },
                     currentStock: items
                 },
@@ -434,10 +431,10 @@ function ShopGenerator() {
 
         const traitMap = new Map();
         shop.parameters.traits?.included?.forEach(trait => 
-            traitMap.set(trait, TRAIT_STATES.INCLUDE)
+            traitMap.set(trait, SELECTION_STATES.INCLUDE)
         );
         shop.parameters.traits?.excluded?.forEach(trait => 
-            traitMap.set(trait, TRAIT_STATES.EXCLUDE)
+            traitMap.set(trait, SELECTION_STATES.EXCLUDE)
         );
         setTraitStates(traitMap);
     };
@@ -474,10 +471,10 @@ function ShopGenerator() {
                 },
                 traits: {
                     included: Array.from((traitStates || new Map()).entries())
-                        .filter(([, state]) => state === TRAIT_STATES.INCLUDE)
+                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
                         .map(([trait]) => trait),
                     excluded: Array.from((traitStates || new Map()).entries())
-                        .filter(([, state]) => state === TRAIT_STATES.EXCLUDE)
+                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
                         .map(([trait]) => trait)
                 },
                 currentStock: items

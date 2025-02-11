@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import './GoldInput.css';
-import Section_OneLine from '../../../../shared/Section_OneLine';
+import Section_OneLine from '../../../shared/Section_OneLine';
 
 function GoldInput({ onChange, value }) {
     const formatNumber = (value) => {

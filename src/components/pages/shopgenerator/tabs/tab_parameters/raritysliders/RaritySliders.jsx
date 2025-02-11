@@ -3,9 +3,9 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 /* eslint-enable no-unused-vars */
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
-import { RARITY_COLORS } from '../../../../../constants/rarityColors';
-import Section from '../../../shopgenerator/shared/Section';
-import ButtonGroup from '../../../shopgenerator/shared/ButtonGroup';
+import { RARITY_COLORS } from '../../../../../../constants/rarityColors';
+import Section from '../../../shared/Section';
+import ButtonGroup from '../../../shared/ButtonGroup';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
 

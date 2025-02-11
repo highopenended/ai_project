@@ -1,22 +1,10 @@
 import { createContext, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import itemData from '../../public/item-table.json';
+import { SELECTION_STATES } from './shopGeneratorConstants';
 
-const CategoryContext = createContext();
+const ShopGeneratorContext = createContext();
 
-export const SELECTION_STATES = {
-    IGNORE: 0,
-    INCLUDE: 1,
-    EXCLUDE: -1
-};
-
-export function useCategoryContext() {
-    const context = useContext(CategoryContext);
-    if (!context) {
-        throw new Error('useCategoryContext must be used within a CategoryProvider');
-    }
-    return context;
-}
 
 function extractUniqueCategories(items) {
     const categoriesMap = new Map();
@@ -31,7 +19,6 @@ function extractUniqueCategories(items) {
         categoriesMap.get(category).add(subcategory);
     });
 
-    // Convert to the desired format
     const result = {};
     categoriesMap.forEach((subcategories, category) => {
         result[category] = {
@@ -43,15 +30,14 @@ function extractUniqueCategories(items) {
     return result;
 }
 
-export function CategoryProvider({ children }) {
-    const [categoryData, setCategoryData] = useState(() => {
-        // Try to load from localStorage first
+export function ShopGeneratorProvider({ children }) {
+    // Category state
+    const [categoryData] = useState(() => {
         const saved = localStorage.getItem('shop-categories');
         if (saved) {
             return JSON.parse(saved);
         }
         
-        // If not in localStorage, extract from itemData and save
         const extracted = extractUniqueCategories(itemData);
         localStorage.setItem('shop-categories', JSON.stringify(extracted));
         return extracted;
@@ -60,12 +46,17 @@ export function CategoryProvider({ children }) {
     const [categoryStates, setCategoryStates] = useState(new Map());
     const [subcategoryStates, setSubcategoryStates] = useState(new Map());
 
+    // Trait state
+    const [traitStates, setTraitStates] = useState(new Map());
+
+    // Shared toggle function for both categories and traits
     const toggleState = (currentState) => {
         if (currentState === SELECTION_STATES.IGNORE) return SELECTION_STATES.INCLUDE;
         if (currentState === SELECTION_STATES.INCLUDE) return SELECTION_STATES.EXCLUDE;
         return SELECTION_STATES.IGNORE;
     };
 
+    // Category functions
     const toggleCategory = (category) => {
         setCategoryStates(prev => {
             const newMap = new Map(prev);
@@ -112,7 +103,32 @@ export function CategoryProvider({ children }) {
         return subcategoryStates.get(subcategory) || SELECTION_STATES.IGNORE;
     };
 
+    // Trait functions
+    const toggleTrait = (trait) => {
+        setTraitStates(prev => {
+            const newMap = new Map(prev);
+            const currentState = prev.get(trait) || SELECTION_STATES.IGNORE;
+            const nextState = toggleState(currentState);
+            
+            if (nextState === SELECTION_STATES.IGNORE) {
+                newMap.delete(trait);
+            } else {
+                newMap.set(trait, nextState);
+            }
+            return newMap;
+        });
+    };
+
+    const clearTraitSelections = () => {
+        setTraitStates(new Map());
+    };
+
+    const getTraitState = (trait) => {
+        return traitStates.get(trait) || SELECTION_STATES.IGNORE;
+    };
+
     const value = {
+        // Category-related
         categoryData,
         categoryStates,
         subcategoryStates,
@@ -123,18 +139,33 @@ export function CategoryProvider({ children }) {
         clearCategorySelections,
         clearSubcategorySelections,
         setCategoryStates,
-        setSubcategoryStates
+        setSubcategoryStates,
+
+        // Trait-related
+        traitStates,
+        getTraitState,
+        toggleTrait,
+        clearTraitSelections,
+        setTraitStates
     };
 
     return (
-        <CategoryContext.Provider value={value}>
+        <ShopGeneratorContext.Provider value={value}>
             {children}
-        </CategoryContext.Provider>
+        </ShopGeneratorContext.Provider>
     );
 }
 
-CategoryProvider.propTypes = {
+ShopGeneratorProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };
 
-export default CategoryProvider; 
+export function useShopGenerator() {
+    const context = useContext(ShopGeneratorContext);
+    if (!context) {
+        throw new Error('useShopGenerator must be used within a ShopGeneratorProvider');
+    }
+    return context;
+}
+
+export default ShopGeneratorProvider; 

@@ -5,8 +5,7 @@ import Login from "./components/pages/login/Login.jsx";
 import Home from "./components/pages/home/Home.jsx";
 import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import CategoryProvider from "./context/CategoryContext.jsx";
-import { TraitProvider } from "./context/TraitContext.jsx";
+import ShopGeneratorProvider from "./context/ShopGeneratorContext.jsx";
 import ShopGenerator from "./components/pages/shopgenerator/ShopGenerator.jsx";
 import "./constants/colors.css";
 
@@ -48,11 +47,9 @@ function App() {
                             path="shopgenerator"
                             element={
                                 <ProtectedRoute>
-                                    <CategoryProvider>
-                                        <TraitProvider>
-                                            <ShopGenerator />
-                                        </TraitProvider>
-                                    </CategoryProvider>
+                                    <ShopGeneratorProvider>
+                                        <ShopGenerator />
+                                    </ShopGeneratorProvider>
                                 </ProtectedRoute>
                             }
                         />
