@@ -88,11 +88,11 @@ function TabContainer({
             const isFirstGroup = currentGroupIndex === 0;
             const isLastGroup = currentGroupIndex === allGroups.length - 1;
 
-            // Update indicators through parent
+            // Only show split indicators when NOT over the header
             const newIndicators = {
-                leftGroup: isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
-                rightGroup: isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null,
-                betweenGroups: (!isFirstGroup && distanceFromLeft < edgeThreshold) || (!isLastGroup && distanceFromRight < edgeThreshold) ? groupIndex : null
+                leftGroup: !isOverHeader && isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
+                rightGroup: !isOverHeader && isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null,
+                betweenGroups: !isOverHeader && (!isFirstGroup && distanceFromLeft < edgeThreshold || !isLastGroup && distanceFromRight < edgeThreshold) ? groupIndex : null
             };
             
             onDropIndicatorChange(newIndicators);
