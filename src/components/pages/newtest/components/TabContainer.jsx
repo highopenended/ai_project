@@ -14,7 +14,8 @@ function TabContainer({
     dropIndicators,
     onDragStart,
     onDragEnd,
-    onDropIndicatorChange
+    onDropIndicatorChange,
+    onTabClick
 }) {
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [dropIndex, setDropIndex] = useState(null);
@@ -32,6 +33,7 @@ function TabContainer({
 
     const handleTabClick = (tab) => {
         setActiveTab(tab);
+        onTabClick?.(tab, tabs.indexOf(tab));
     };
 
     const handleDragStart = (e, tab, index) => {
@@ -318,7 +320,8 @@ TabContainer.propTypes = {
     }).isRequired,
     onDragStart: PropTypes.func.isRequired,
     onDragEnd: PropTypes.func.isRequired,
-    onDropIndicatorChange: PropTypes.func.isRequired
+    onDropIndicatorChange: PropTypes.func.isRequired,
+    onTabClick: PropTypes.func
 };
 
 export default TabContainer;

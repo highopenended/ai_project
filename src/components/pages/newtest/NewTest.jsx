@@ -199,6 +199,27 @@ function NewTest() {
         });
     };
 
+    // Debug function to log current state
+    const logState = (action) => {
+        console.group(`State Debug - ${action}`);
+        console.log('Current State:', {
+            draggedTab: draggedTab ? {
+                type: draggedTab.type.name,
+                key: draggedTab.key
+            } : null,
+            draggedTabIndex,
+            sourceGroupIndex,
+            dropIndicators,
+            tabGroups: tabGroups.map(group => 
+                group.map(tab => ({
+                    type: tab.type.name,
+                    key: tab.key
+                }))
+            )
+        });
+        console.groupEnd();
+    };
+
     return (
         <div className="new-test">
             {tabGroups.map((tabs, index) => (
@@ -214,8 +235,10 @@ function NewTest() {
                         setDraggedTab(tab);
                         setDraggedTabIndex(tabIndex);
                         setSourceGroupIndex(index);
+                        logState('Drag Start');
                     }}
                     onDragEnd={() => {
+                        logState('Before Drag End');
                         setDraggedTab(null);
                         setDraggedTabIndex(null);
                         setSourceGroupIndex(null);
@@ -224,11 +247,13 @@ function NewTest() {
                             rightGroup: null,
                             betweenGroups: null
                         });
+                        logState('After Drag End');
                     }}
                     onDropIndicatorChange={(indicators) => {
                         setDropIndicators(prev => ({...prev, ...indicators}));
                     }}
                     onTabMove={(newTabs) => {
+                        logState('Before Tab Move');
                         // If newTabs is an array with two elements, it's a move between groups
                         if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === 'number') {
                             handleTabMove(newTabs, sourceGroupIndex, index);
@@ -236,6 +261,9 @@ function NewTest() {
                             // Otherwise it's a reorder within the same group
                             handleTabMove(newTabs, index);
                         }
+                    }}
+                    onTabClick={(tab, tabIndex) => {
+                        logState('Tab Click');
                     }}
                     onTabSplit={handleTabSplit}
                 />
