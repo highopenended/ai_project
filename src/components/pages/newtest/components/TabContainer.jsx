@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-import Tab from './tab.jsx';
+import Tab from './Tab.jsx';
 import './TabContainer.css';
 
 /**
@@ -87,7 +87,7 @@ function TabContainer({
     // Refs for DOM manipulation and position tracking
     const tabRefs = useRef({});  // Stores references to tab DOM elements
     const originalPositions = useRef([]); // Caches tab positions at drag start
-    const edgeThreshold = 40; // Distance from edge to trigger group split
+    const edgeThreshold = 80; // Distance from edge to trigger group split
     const edgeHoldTimeout = useRef(null);
 
     // Keep active tab valid when tabs array changes
