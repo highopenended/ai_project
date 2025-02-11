@@ -294,11 +294,13 @@ function TabContainer({
         // Only hide the dragged tab in its original group
         if (draggedTabIndex === null || dropIndex === null || draggedTab === null) return {};
         
+        // Get the original positions of tabs in this group
+        const currentGroupTabs = originalPositions.current;
+        if (!currentGroupTabs || currentGroupTabs.length === 0) return {};
+        
         // Only apply visibility:hidden in the source group where the drag started
-        if (draggedTab.key && tabs.find(tab => tab.key === draggedTab.key)) {
-            if (index === draggedTabIndex) {
-                return { visibility: 'hidden' };
-            }
+        if (draggedTab.key && tabs[index]?.key === draggedTab.key) {
+            return { visibility: 'hidden' };
         }
         
         const tabElement = tabRefs.current[index];
@@ -306,6 +308,11 @@ function TabContainer({
         
         const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
         const tabWidth = draggedRect ? draggedRect.width : 0;
+        
+        // Only move tabs if they're in the same group as the dragged tab
+        const isDraggedTabInThisGroup = tabs.some(tab => tab.key === draggedTab.key);
+        
+        if (!isDraggedTabInThisGroup) return {};
         
         if (draggedTabIndex < dropIndex) {
             if (index > draggedTabIndex && index <= dropIndex) {
