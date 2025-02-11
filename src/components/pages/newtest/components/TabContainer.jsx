@@ -172,7 +172,8 @@ function TabContainer({
             const newIndicators = {
                 leftGroup: !isOverHeader && isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
                 rightGroup: !isOverHeader && isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null,
-                betweenGroups: !isOverHeader && (!isFirstGroup && distanceFromLeft < edgeThreshold || !isLastGroup && distanceFromRight < edgeThreshold) ? groupIndex : null
+                betweenGroups: !isOverHeader && !isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
+                betweenGroupsRight: !isOverHeader && !isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null
             };
             
             // Use the debounced version for indicator changes
@@ -204,7 +205,8 @@ function TabContainer({
             // When creating a new group, default to index 0
             if (!isOverHeader && (newIndicators.leftGroup !== null || 
                 newIndicators.rightGroup !== null || 
-                newIndicators.betweenGroups !== null)) {
+                newIndicators.betweenGroups !== null ||
+                newIndicators.betweenGroupsRight !== null)) {
                 newDropIndex = 0;
             }
             
@@ -229,7 +231,8 @@ function TabContainer({
             onDropIndicatorChange({
                 leftGroup: null,
                 rightGroup: null,
-                betweenGroups: null
+                betweenGroups: null,
+                betweenGroupsRight: null
             });
             if (edgeHoldTimeout.current) {
                 clearTimeout(edgeHoldTimeout.current);
@@ -248,15 +251,20 @@ function TabContainer({
         const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
         const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
         const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
+        const wasShowingBetweenIndicatorRight = dropIndicators.betweenGroupsRight === groupIndex;
         
         onDropIndicatorChange({
             leftGroup: null,
             rightGroup: null,
-            betweenGroups: null
+            betweenGroups: null,
+            betweenGroupsRight: null
         });
         
         if (wasShowingBetweenIndicator) {
             onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
+        }
+        else if (wasShowingBetweenIndicatorRight) {
+            onTabSplit(tabInfo, sourceGroupIndex, groupIndex + 1);
         }
         else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
             onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
@@ -361,7 +369,11 @@ function TabContainer({
     return (
         <div 
             ref={containerRef}
-            className={`tab-container ${dropIndicators.leftGroup === groupIndex ? 'show-left-indicator' : ''} ${dropIndicators.rightGroup === groupIndex ? 'show-right-indicator' : ''} ${dropIndicators.betweenGroups === groupIndex ? 'show-between-indicator' : ''}`}
+            className={`tab-container 
+                ${dropIndicators.leftGroup === groupIndex ? 'show-left-indicator' : ''} 
+                ${dropIndicators.rightGroup === groupIndex ? 'show-right-indicator' : ''} 
+                ${dropIndicators.betweenGroups === groupIndex ? 'show-between-indicator' : ''}
+                ${dropIndicators.betweenGroupsRight === groupIndex ? 'show-between-indicator-right' : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -422,7 +434,8 @@ TabContainer.propTypes = {
     dropIndicators: PropTypes.shape({
         leftGroup: PropTypes.number,
         rightGroup: PropTypes.number,
-        betweenGroups: PropTypes.number
+        betweenGroups: PropTypes.number,
+        betweenGroupsRight: PropTypes.number
     }).isRequired,
     /** Callback when drag starts */
     onDragStart: PropTypes.func.isRequired,

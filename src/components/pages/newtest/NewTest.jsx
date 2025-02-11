@@ -50,7 +50,8 @@ function NewTest() {
     const [dropIndicators, setDropIndicators] = useState({
         leftGroup: null,
         rightGroup: null,
-        betweenGroups: null
+        betweenGroups: null,
+        betweenGroupsRight: null
     });
     const [isResizing, setIsResizing] = useState(false);
     const [flexBasis, setFlexBasis] = useState([]);
@@ -76,7 +77,8 @@ function NewTest() {
         setDropIndicators({
             leftGroup: null,
             rightGroup: null,
-            betweenGroups: null
+            betweenGroups: null,
+            betweenGroupsRight: null
         });
 
         // Then update the groups after a short delay to ensure state is clean
@@ -163,6 +165,7 @@ function NewTest() {
                 newGroups[sourceGroupIndex] = sourceGroup;
             }
 
+            // Handle numeric target position (between groups)
             if (typeof targetPosition === 'number') {
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
@@ -239,7 +242,8 @@ function NewTest() {
                         setDropIndicators({
                             leftGroup: null,
                             rightGroup: null,
-                            betweenGroups: null
+                            betweenGroups: null,
+                            betweenGroupsRight: null
                         });
                     }}
                     onDropIndicatorChange={(indicators) => {
