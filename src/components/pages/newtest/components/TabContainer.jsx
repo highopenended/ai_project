@@ -37,6 +37,16 @@ function TabContainer({
     };
 
     const handleDragStart = (e, tab, index) => {
+        console.group('Drag Lifecycle - Start');
+        console.log('DragStart Event:', {
+            tab: {
+                type: tab?.type?.name,
+                key: tab?.key
+            },
+            index,
+            groupIndex
+        });
+
         // Safety check for tab structure
         if (!tab || !tab.type) {
             console.error('Invalid tab structure in handleDragStart:', {
@@ -45,6 +55,7 @@ function TabContainer({
                 typeName: tab?.type?.name,
                 index
             });
+            console.groupEnd();
             return;
         }
 
@@ -68,10 +79,22 @@ function TabContainer({
             index: index,
             key: tab.key
         }));
+        console.groupEnd();
     };
 
     const handleDragOver = (e) => {
         e.preventDefault();
+        // Throttle logging to avoid console spam
+        if (Math.random() < 0.001) { // Only log ~10% of dragover events
+            console.log('DragOver Event:', {
+                mouseX: e.clientX,
+                mouseY: e.clientY,
+                groupIndex,
+                dropIndex,
+                originalLength: originalPositions.current.length,
+                currentLength: tabs.length
+            });
+        }
         const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -99,23 +122,28 @@ function TabContainer({
             
             onDropIndicatorChange(newIndicators);
 
-            // Calculate drop index regardless of whether we're over header or not
+            // Calculate drop index using originalPositions for smooth animations
             const relativeX = mouseX - headerRect.left;
-            let newDropIndex = originalPositions.current.length;
+            let newDropIndex = tabs.length; // Default to end of current group
             
-            if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
-                newDropIndex = 0;
-            } else {
-                for (let i = 1; i < originalPositions.current.length; i++) {
-                    const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
-                    const currentCenter = originalPositions.current[i]?.center - headerRect.left;
-                    
-                    if (relativeX >= prevCenter && relativeX < currentCenter) {
-                        newDropIndex = i;
-                        break;
+            if (originalPositions.current.length > 0) {
+                if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
+                    newDropIndex = 0;
+                } else {
+                    for (let i = 1; i < originalPositions.current.length; i++) {
+                        const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
+                        const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+                        
+                        if (relativeX >= prevCenter && relativeX < currentCenter) {
+                            newDropIndex = i;
+                            break;
+                        }
                     }
                 }
             }
+
+            // Ensure dropIndex doesn't exceed current group's length
+            newDropIndex = Math.min(newDropIndex, tabs.length);
 
             // When creating a new group, default to index 0
             if (!isOverHeader && (newIndicators.leftGroup !== null || 
@@ -131,6 +159,12 @@ function TabContainer({
     };
 
     const handleDragLeave = (e) => {
+        console.log('DragLeave Event:', {
+            mouseX: e.clientX,
+            mouseY: e.clientY,
+            groupIndex
+        });
+
         const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -142,6 +176,7 @@ function TabContainer({
             mouseY > containerRect.bottom;
             
         if (isOutsideContainer) {
+            console.log('Left container, resetting indicators');
             onDropIndicatorChange({
                 leftGroup: null,
                 rightGroup: null,
@@ -155,6 +190,14 @@ function TabContainer({
     };
 
     const handleDrop = (e) => {
+        console.group('Drag Lifecycle - Drop');
+        console.log('Drop Event:', {
+            mouseX: e.clientX,
+            mouseY: e.clientY,
+            groupIndex,
+            dropIndex
+        });
+
         e.preventDefault();
         
         console.group('Drop Operation');
@@ -222,9 +265,20 @@ function TabContainer({
 
         setDropIndex(null);
         console.groupEnd();
+        console.groupEnd();
     };
 
     const handleDragEnd = () => {
+        console.group('Drag Lifecycle - End');
+        console.log('DragEnd Event:', {
+            groupIndex,
+            dropIndex,
+            draggedTab: draggedTab ? {
+                type: draggedTab.type.name,
+                key: draggedTab.key
+            } : null
+        });
+
         setDropIndex(null);
         onDragEnd();
         if (edgeHoldTimeout.current) {
@@ -233,6 +287,7 @@ function TabContainer({
         }
         // Clean up the global reference if drag is cancelled
         delete window.__draggedTab;
+        console.groupEnd();
     };
 
     const getTabStyle = (index) => {
