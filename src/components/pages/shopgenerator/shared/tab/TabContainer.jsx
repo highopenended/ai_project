@@ -150,6 +150,19 @@ function TabContainer({
      */
     const handleDragOver = (e) => {
         e.preventDefault();
+
+        // Check if this is a tab being dragged
+        try {
+            const tabInfoStr = e.dataTransfer.getData('tabInfo');
+            if (!tabInfoStr) {
+                return;
+            }
+        } catch {
+            // During dragover, getData may throw an error in some browsers
+            // If we can't verify it's a tab, don't show any indicators
+            return;
+        }
+
         const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -244,43 +257,63 @@ function TabContainer({
     const handleDrop = (e) => {
         e.preventDefault();
         
-        const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
-        const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
-        const tabInfo = JSON.parse(e.dataTransfer.getData('tabInfo'));
-        
-        const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
-        const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
-        const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
-        const wasShowingBetweenIndicatorRight = dropIndicators.betweenGroupsRight === groupIndex;
-        
-        onDropIndicatorChange({
-            leftGroup: null,
-            rightGroup: null,
-            betweenGroups: null,
-            betweenGroupsRight: null
-        });
-        
-        if (wasShowingBetweenIndicator) {
-            onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
-        }
-        else if (wasShowingBetweenIndicatorRight) {
-            onTabSplit(tabInfo, sourceGroupIndex, groupIndex + 1);
-        }
-        else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-            onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
-        }
-        else if (sourceGroupIndex !== groupIndex) {
-            const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
-            onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
-        }
-        else if (sourceIndex !== dropIndex && dropIndex !== null) {
-            const newTabs = [...tabs];
-            const [movedTab] = newTabs.splice(sourceIndex, 1);
-            newTabs.splice(dropIndex, 0, movedTab);
-            onTabMove(newTabs, groupIndex);
-            if (activeTab === tabs[sourceIndex]) {
-                setActiveTab(movedTab);
+        // Check if this is a valid tab drop by verifying all required data is present
+        try {
+            const sourceIndex = e.dataTransfer.getData('text/plain');
+            const sourceGroupIndex = e.dataTransfer.getData('groupIndex');
+            const tabInfoStr = e.dataTransfer.getData('tabInfo');
+            
+            // If any of these are missing, this isn't a tab drop
+            if (!sourceIndex || !sourceGroupIndex || !tabInfoStr) {
+                return;
             }
+
+            const sourceIndexNum = parseInt(sourceIndex);
+            const sourceGroupIndexNum = parseInt(sourceGroupIndex);
+            const tabInfo = JSON.parse(tabInfoStr);
+            
+            // Additional validation of tab info
+            if (!tabInfo || !tabInfo.type) {
+                return;
+            }
+            
+            const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
+            const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
+            const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
+            const wasShowingBetweenIndicatorRight = dropIndicators.betweenGroupsRight === groupIndex;
+            
+            onDropIndicatorChange({
+                leftGroup: null,
+                rightGroup: null,
+                betweenGroups: null,
+                betweenGroupsRight: null
+            });
+            
+            if (wasShowingBetweenIndicator) {
+                onTabSplit(tabInfo, sourceGroupIndexNum, groupIndex);
+            }
+            else if (wasShowingBetweenIndicatorRight) {
+                onTabSplit(tabInfo, sourceGroupIndexNum, groupIndex + 1);
+            }
+            else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
+                onTabSplit(tabInfo, sourceGroupIndexNum, wasShowingRightIndicator);
+            }
+            else if (sourceGroupIndexNum !== groupIndex) {
+                const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
+                onTabMove([draggedTab, targetIndex], sourceGroupIndexNum, groupIndex);
+            }
+            else if (sourceIndexNum !== dropIndex && dropIndex !== null) {
+                const newTabs = [...tabs];
+                const [movedTab] = newTabs.splice(sourceIndexNum, 1);
+                newTabs.splice(dropIndex, 0, movedTab);
+                onTabMove(newTabs, groupIndex);
+                if (activeTab === tabs[sourceIndexNum]) {
+                    setActiveTab(movedTab);
+                }
+            }
+        } catch {
+            // Silently ignore drops that aren't tabs
+            console.debug('Non-tab item dropped');
         }
 
         setDropIndex(null);
