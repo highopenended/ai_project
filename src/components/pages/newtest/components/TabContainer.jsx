@@ -97,29 +97,33 @@ function TabContainer({
             
             onDropIndicatorChange(newIndicators);
 
-            if (isOverHeader) {
-                const relativeX = mouseX - headerRect.left;
-                let newDropIndex = originalPositions.current.length;
-                
-                if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
-                    newDropIndex = 0;
-                } else {
-                    for (let i = 1; i < originalPositions.current.length; i++) {
-                        const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
-                        const currentCenter = originalPositions.current[i]?.center - headerRect.left;
-                        
-                        if (relativeX >= prevCenter && relativeX < currentCenter) {
-                            newDropIndex = i;
-                            break;
-                        }
+            // Calculate drop index regardless of whether we're over header or not
+            const relativeX = mouseX - headerRect.left;
+            let newDropIndex = originalPositions.current.length;
+            
+            if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
+                newDropIndex = 0;
+            } else {
+                for (let i = 1; i < originalPositions.current.length; i++) {
+                    const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
+                    const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+                    
+                    if (relativeX >= prevCenter && relativeX < currentCenter) {
+                        newDropIndex = i;
+                        break;
                     }
                 }
-                
-                if (dropIndex !== newDropIndex) {
-                    setDropIndex(newDropIndex);
-                }
-            } else {
-                setDropIndex(null);
+            }
+
+            // When creating a new group, default to index 0
+            if (!isOverHeader && (newIndicators.leftGroup !== null || 
+                newIndicators.rightGroup !== null || 
+                newIndicators.betweenGroups !== null)) {
+                newDropIndex = 0;
+            }
+            
+            if (dropIndex !== newDropIndex) {
+                setDropIndex(newDropIndex);
             }
         }
     };
@@ -230,11 +234,18 @@ function TabContainer({
     };
 
     const getTabStyle = (index) => {
-        if (draggedTabIndex === null || dropIndex === null) return {};
+        // Only hide the dragged tab in its original group
+        if (draggedTabIndex === null || dropIndex === null || draggedTab === null) return {};
         
-        if (index === draggedTabIndex) {
-            return { visibility: 'hidden' };
+        // Only apply visibility:hidden in the source group where the drag started
+        if (draggedTab.key && tabs.find(tab => tab.key === draggedTab.key)) {
+            if (index === draggedTabIndex) {
+                return { visibility: 'hidden' };
+            }
         }
+        
+        const tabElement = tabRefs.current[index];
+        if (!tabElement) return {};
         
         const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
         const tabWidth = draggedRect ? draggedRect.width : 0;
