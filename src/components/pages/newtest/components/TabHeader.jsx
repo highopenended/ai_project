@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 // eslint-disable-next-line no-unused-vars
 import React from 'react';
 
-function Tab({ 
+function TabHeader({ 
     tab, 
     index, 
     isActive, 
@@ -26,12 +26,12 @@ function Tab({
             onDragEnd={onDragEnd}
             style={style}
         >
-            {tab.type.name}
+            {/* {TabHeader.type.name}    */}
         </div>
     );
 }
 
-Tab.propTypes = {
+TabHeader.propTypes = {
     tab: PropTypes.node.isRequired,
     index: PropTypes.number.isRequired,
     isActive: PropTypes.bool.isRequired,
@@ -44,4 +44,4 @@ Tab.propTypes = {
     onDragEnd: PropTypes.func.isRequired
 };
 
-export default Tab; 
+export default TabHeader; 

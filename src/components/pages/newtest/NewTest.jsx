@@ -1,7 +1,7 @@
 // import React, { useState } from 'react';
 import { useState, useEffect } from 'react';
 import TabContainer from './components/TabContainer';
-import Tab1 from './tabs/Tab1';
+import Tab_ShopDetails from './tabs/Tab_ShopDetails';       
 import Tab2 from './tabs/Tab2';
 import Tab3 from './tabs/Tab3';
 import Tab4 from './tabs/Tab4';
@@ -37,12 +37,44 @@ import React from 'react';
  * 3. Tab duplication: Check key generation
  * 4. State sync issues: Verify parent-child prop flow
  */
+
+const STORAGE_KEY = 'tabGroupsState';
+
 function NewTest() {
-    // State for managing tab groups and drag operations
-    const [tabGroups, setTabGroups] = useState([
-        [<Tab1 key="Tab1-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]
-    ]);
-    
+    // Load initial state from localStorage or use default
+    const loadInitialState = () => {
+        // localStorage.clear(STORAGE_KEY)
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (savedState) {
+            const { groups, widths } = JSON.parse(savedState);
+            // Recreate tab components from saved data
+            const recreatedGroups = groups.map(group => 
+                group.map(tab => {
+                    const TabComponent = {
+                        'Tab_ShopDetails': Tab_ShopDetails,
+                        'Tab2': Tab2,
+                        'Tab3': Tab3,
+                        'Tab4': Tab4,
+                        'Tab5': Tab5
+                    }[tab.type];
+                    console.log(TabComponent)
+                    return <TabComponent key={tab.key} />;
+                })
+            );
+            return { groups: recreatedGroups, widths };
+        }
+        
+        // Default state if nothing is saved
+        return {
+            groups: [[<Tab_ShopDetails key="Tab_ShopDetails-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]],
+            widths: ['100%']
+        };
+    };
+
+    const initialState = loadInitialState();
+    const [tabGroups, setTabGroups] = useState(initialState.groups);
+    const [flexBasis, setFlexBasis] = useState(initialState.widths);
+
     // State for drag and drop operations
     const [draggedTab, setDraggedTab] = useState(null);
     const [draggedTabIndex, setDraggedTabIndex] = useState(null);
@@ -54,14 +86,58 @@ function NewTest() {
         betweenGroupsRight: null
     });
     const [isResizing, setIsResizing] = useState(false);
-    const [flexBasis, setFlexBasis] = useState([]);
 
-    // Initialize flex basis when groups change
+    // Save state whenever tab groups or widths change
+    useEffect(() => {
+        const saveState = () => {
+            const groupsData = tabGroups.map(group =>
+                group.map(tab => ({
+                    type: tab.type.name,
+                    key: tab.key
+                }))
+            );
+            
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                groups: groupsData,
+                widths: flexBasis
+            }));
+        };
+
+        saveState();
+    }, [tabGroups, flexBasis]);
+
+    // Remove the automatic flex basis initialization since we're loading from storage
     useEffect(() => {
         if (tabGroups.length !== flexBasis.length) {
-            setFlexBasis(tabGroups.map(() => `${100 / tabGroups.length}%`));
+            const defaultWidths = tabGroups.map(() => `${100 / tabGroups.length}%`);
+            setFlexBasis(defaultWidths);
+            
+            // Save the new widths
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                groups: tabGroups.map(group => group.map(tab => ({
+                    type: tab.type.name,
+                    key: tab.key
+                }))),
+                widths: defaultWidths
+            }));
         }
     }, [tabGroups.length]);
+
+    // Add window-level mouse up handler
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            if (isResizing) {
+                setIsResizing(false);
+            }
+        };
+
+        window.addEventListener('mouseup', handleGlobalMouseUp);
+        
+        // Cleanup
+        return () => {
+            window.removeEventListener('mouseup', handleGlobalMouseUp);
+        };
+    }, [isResizing]);
 
     /**
      * Handles moving tabs within and between groups

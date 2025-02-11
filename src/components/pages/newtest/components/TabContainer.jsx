@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-import Tab from './Tab.jsx';
+import TabHeader from './TabHeader.jsx';
 import './TabContainer.css';
 
 /**
@@ -388,7 +388,7 @@ function TabContainer({
                     const tabKey = tab.key || `tab-${tab.type.name || 'unknown'}-${index}`;
                     
                     return (
-                        <Tab
+                        <TabHeader
                             key={tabKey}
                             tab={tab}
                             index={index}
