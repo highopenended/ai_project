@@ -74,11 +74,15 @@ function TabContainer({
     onDragStart,
     onDragEnd,
     onDropIndicatorChange,
-    onTabClick
+    onTabClick,
+    onResize,
+    isLastGroup,
+    style
 }) {
-    // Local state for this tab group
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [dropIndex, setDropIndex] = useState(null);
+    const [isResizing, setIsResizing] = useState(false);
+    const containerRef = useRef(null);
     
     // Refs for DOM manipulation and position tracking
     const tabRefs = useRef({});  // Stores references to tab DOM elements
@@ -332,12 +336,36 @@ function TabContainer({
         return {};
     };
 
+    const handleResizeStart = (e) => {
+        e.preventDefault();
+        setIsResizing(true);
+        const startX = e.clientX;
+        const startWidth = containerRef.current?.getBoundingClientRect().width || 0;
+
+        const handleMouseMove = (e) => {
+            if (!containerRef.current) return;
+            const delta = e.clientX - startX;
+            onResize(startWidth + delta, groupIndex);
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
     return (
         <div 
+            ref={containerRef}
             className={`tab-container ${dropIndicators.leftGroup === groupIndex ? 'show-left-indicator' : ''} ${dropIndicators.rightGroup === groupIndex ? 'show-right-indicator' : ''} ${dropIndicators.betweenGroups === groupIndex ? 'show-between-indicator' : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            style={style}
         >
             <div className="tab-header">
                 {tabs.map((tab, index) => {
@@ -367,6 +395,12 @@ function TabContainer({
             <div className="tab-content">
                 {activeTab}
             </div>
+            {!isLastGroup && (
+                <div 
+                    className={`resize-handle ${isResizing ? 'resizing' : ''}`}
+                    onMouseDown={handleResizeStart}
+                />
+            )}
         </div>
     );
 }
@@ -397,7 +431,11 @@ TabContainer.propTypes = {
     /** Callback to update drop indicators */
     onDropIndicatorChange: PropTypes.func.isRequired,
     /** Callback when a tab is clicked */
-    onTabClick: PropTypes.func
+    onTabClick: PropTypes.func,
+    onResize: PropTypes.func.isRequired,
+    isLastGroup: PropTypes.bool.isRequired,
+    /** Style object for the container */
+    style: PropTypes.object
 };
 
 export default TabContainer;

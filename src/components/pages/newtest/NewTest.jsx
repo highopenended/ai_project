@@ -1,5 +1,5 @@
 // import React, { useState } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TabContainer from './components/TabContainer';
 import Tab1 from './tabs/Tab1';
 import Tab2 from './tabs/Tab2';
@@ -52,6 +52,15 @@ function NewTest() {
         rightGroup: null,
         betweenGroups: null
     });
+    const [isResizing, setIsResizing] = useState(false);
+    const [flexBasis, setFlexBasis] = useState([]);
+
+    // Initialize flex basis when groups change
+    useEffect(() => {
+        if (tabGroups.length !== flexBasis.length) {
+            setFlexBasis(tabGroups.map(() => `${100 / tabGroups.length}%`));
+        }
+    }, [tabGroups.length]);
 
     /**
      * Handles moving tabs within and between groups
@@ -166,8 +175,45 @@ function NewTest() {
         });
     };
 
+    const handleResize = (newWidth, groupIndex) => {
+        if (groupIndex >= tabGroups.length - 1) return;
+
+        setIsResizing(true);
+        const container = document.querySelector('.new-test');
+        if (!container) return;
+
+        const totalWidth = container.clientWidth;
+        const minWidth = 200; // Minimum width in pixels
+        
+        setFlexBasis(prev => {
+            const newBasis = [...prev];
+            
+            // Calculate the new width percentage
+            let currentPercent = (newWidth / totalWidth) * 100;
+            
+            // Ensure minimum width
+            if (currentPercent < (minWidth / totalWidth) * 100) {
+                currentPercent = (minWidth / totalWidth) * 100;
+            }
+            
+            // Calculate remaining width for next group
+            const remainingPercent = parseFloat(newBasis[groupIndex]) + parseFloat(newBasis[groupIndex + 1]);
+            const nextGroupPercent = remainingPercent - currentPercent;
+            
+            // Ensure next group also maintains minimum width
+            if (nextGroupPercent < (minWidth / totalWidth) * 100) {
+                return prev;
+            }
+            
+            newBasis[groupIndex] = `${currentPercent}%`;
+            newBasis[groupIndex + 1] = `${nextGroupPercent}%`;
+            
+            return newBasis;
+        });
+    };
+
     return (
-        <div className="new-test">
+        <div className={`new-test ${isResizing ? 'resizing' : ''}`}>
             {tabGroups.map((tabs, index) => (
                 <TabContainer 
                     key={index} 
@@ -177,6 +223,9 @@ function NewTest() {
                     draggedTabIndex={draggedTabIndex}
                     sourceGroupIndex={sourceGroupIndex}
                     dropIndicators={dropIndicators}
+                    isLastGroup={index === tabGroups.length - 1}
+                    onResize={handleResize}
+                    style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
                     onDragStart={(tab, tabIndex) => {
                         setDraggedTab(tab);
                         setDraggedTabIndex(tabIndex);
@@ -186,6 +235,7 @@ function NewTest() {
                         setDraggedTab(null);
                         setDraggedTabIndex(null);
                         setSourceGroupIndex(null);
+                        setIsResizing(false);
                         setDropIndicators({
                             leftGroup: null,
                             rightGroup: null,
