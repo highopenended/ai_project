@@ -1,9 +1,68 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 
 import Tab from './tab.jsx';
 import './TabContainer.css';
 
+/**
+ * Custom hook to debounce function calls.
+ * Prevents rapid-fire function execution by waiting for a pause in calls.
+ * 
+ * @param {Function} callback - The function to debounce
+ * @param {number} delay - Delay in milliseconds before executing the function
+ * @returns {Function} A debounced version of the callback
+ */
+function useDebounce(callback, delay) {
+    const timeoutRef = useRef(null);
+
+    useEffect(() => {
+        // Cleanup on unmount
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
+
+    const debouncedCallback = useCallback((...args) => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        timeoutRef.current = setTimeout(() => {
+            callback(...args);
+        }, delay);
+    }, [callback, delay]);
+
+    return debouncedCallback;
+}
+
+/**
+ * TabContainer Component
+ * Manages a group of draggable tabs with support for:
+ * - Drag and drop reordering within the same group
+ * - Moving tabs between groups
+ * - Creating new groups by dragging to edges
+ * - Visual feedback during drag operations
+ * 
+ * State Management:
+ * - activeTab: Currently selected tab in this group
+ * - dropIndex: Current position where a dragged tab would be inserted
+ * - tabRefs: References to tab DOM elements for position calculations
+ * - originalPositions: Cached positions of tabs when drag starts
+ * 
+ * Key Behaviors:
+ * 1. Drag Start: Caches original positions and sets up drag data
+ * 2. Drag Over: Calculates drop positions and shows indicators
+ * 3. Drop: Handles tab movement/reordering
+ * 4. Drag End: Cleans up state and visual indicators
+ * 
+ * Common Issues & Solutions:
+ * 1. Tabs jumping during drag: Check originalPositions and getTabStyle
+ * 2. Incorrect drop positions: Verify dropIndex calculations
+ * 3. Visual glitches: Ensure proper cleanup in handleDragEnd
+ * 4. State inconsistencies: Check parent-child state sync
+ */
 function TabContainer({ 
     tabs, 
     onTabMove, 
@@ -17,45 +76,44 @@ function TabContainer({
     onDropIndicatorChange,
     onTabClick
 }) {
+    // Local state for this tab group
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [dropIndex, setDropIndex] = useState(null);
-    const tabRefs = useRef({});
-    const originalPositions = useRef([]);
-    const edgeThreshold = 40;
+    
+    // Refs for DOM manipulation and position tracking
+    const tabRefs = useRef({});  // Stores references to tab DOM elements
+    const originalPositions = useRef([]); // Caches tab positions at drag start
+    const edgeThreshold = 40; // Distance from edge to trigger group split
     const edgeHoldTimeout = useRef(null);
 
-    // Update active tab if the current one is no longer in the tabs array
+    // Keep active tab valid when tabs array changes
     useEffect(() => {
         if (!tabs.includes(activeTab)) {
             setActiveTab(tabs[0]);
         }
     }, [tabs, activeTab]);
 
+    // Debounce indicator changes to prevent rapid updates
+    const debouncedDropIndicatorChange = useDebounce((indicators) => {
+        onDropIndicatorChange(indicators);
+    }, 50);
+
+    /**
+     * Handles tab selection
+     * @param {Object} tab - The tab being clicked
+     */
     const handleTabClick = (tab) => {
         setActiveTab(tab);
         onTabClick?.(tab, tabs.indexOf(tab));
     };
 
+    /**
+     * Initializes drag operation
+     * Caches original positions and sets up drag data
+     */
     const handleDragStart = (e, tab, index) => {
-        console.group('Drag Lifecycle - Start');
-        console.log('DragStart Event:', {
-            tab: {
-                type: tab?.type?.name,
-                key: tab?.key
-            },
-            index,
-            groupIndex
-        });
-
         // Safety check for tab structure
         if (!tab || !tab.type) {
-            console.error('Invalid tab structure in handleDragStart:', {
-                tab,
-                hasType: !!tab?.type,
-                typeName: tab?.type?.name,
-                index
-            });
-            console.groupEnd();
             return;
         }
 
@@ -79,22 +137,15 @@ function TabContainer({
             index: index,
             key: tab.key
         }));
-        console.groupEnd();
     };
 
+    /**
+     * Handles drag over events
+     * Calculates drop positions and updates indicators
+     * Uses debouncing to prevent excessive updates
+     */
     const handleDragOver = (e) => {
         e.preventDefault();
-        // Throttle logging to avoid console spam
-        if (Math.random() < 0.001) { // Only log ~10% of dragover events
-            console.log('DragOver Event:', {
-                mouseX: e.clientX,
-                mouseY: e.clientY,
-                groupIndex,
-                dropIndex,
-                originalLength: originalPositions.current.length,
-                currentLength: tabs.length
-            });
-        }
         const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -120,11 +171,12 @@ function TabContainer({
                 betweenGroups: !isOverHeader && (!isFirstGroup && distanceFromLeft < edgeThreshold || !isLastGroup && distanceFromRight < edgeThreshold) ? groupIndex : null
             };
             
-            onDropIndicatorChange(newIndicators);
+            // Use the debounced version for indicator changes
+            debouncedDropIndicatorChange(newIndicators);
 
             // Calculate drop index using originalPositions for smooth animations
             const relativeX = mouseX - headerRect.left;
-            let newDropIndex = tabs.length; // Default to end of current group
+            let newDropIndex = tabs.length;
             
             if (originalPositions.current.length > 0) {
                 if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
@@ -159,12 +211,6 @@ function TabContainer({
     };
 
     const handleDragLeave = (e) => {
-        console.log('DragLeave Event:', {
-            mouseX: e.clientX,
-            mouseY: e.clientY,
-            groupIndex
-        });
-
         const containerRect = e.currentTarget.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -176,7 +222,6 @@ function TabContainer({
             mouseY > containerRect.bottom;
             
         if (isOutsideContainer) {
-            console.log('Left container, resetting indicators');
             onDropIndicatorChange({
                 leftGroup: null,
                 rightGroup: null,
@@ -190,33 +235,11 @@ function TabContainer({
     };
 
     const handleDrop = (e) => {
-        console.group('Drag Lifecycle - Drop');
-        console.log('Drop Event:', {
-            mouseX: e.clientX,
-            mouseY: e.clientY,
-            groupIndex,
-            dropIndex
-        });
-
         e.preventDefault();
         
-        console.group('Drop Operation');
         const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
         const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
         const tabInfo = JSON.parse(e.dataTransfer.getData('tabInfo'));
-        
-        console.log('Drop data:', {
-            sourceIndex,
-            sourceGroupIndex,
-            tabInfo,
-            currentGroupIndex: groupIndex,
-            dropIndex,
-            indicators: {
-                left: dropIndicators.leftGroup === groupIndex,
-                right: dropIndicators.rightGroup === groupIndex,
-                between: dropIndicators.betweenGroups === groupIndex
-            }
-        });
         
         const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
         const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
@@ -229,31 +252,16 @@ function TabContainer({
         });
         
         if (wasShowingBetweenIndicator) {
-            console.log('Creating new group between existing groups');
             onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
         }
         else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-            console.log('Creating new group at edge');
             onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
         }
         else if (sourceGroupIndex !== groupIndex) {
-            console.log('Moving tab between groups');
             const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
-            console.log('Target details:', {
-                sourceGroupIndex,
-                targetGroupIndex: groupIndex,
-                targetIndex,
-                totalTabs: tabs.length
-            });
             onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
         }
         else if (sourceIndex !== dropIndex && dropIndex !== null) {
-            console.log('Reordering within same group');
-            console.log('Reorder details:', {
-                sourceIndex,
-                dropIndex,
-                groupIndex
-            });
             const newTabs = [...tabs];
             const [movedTab] = newTabs.splice(sourceIndex, 1);
             newTabs.splice(dropIndex, 0, movedTab);
@@ -264,32 +272,29 @@ function TabContainer({
         }
 
         setDropIndex(null);
-        console.groupEnd();
-        console.groupEnd();
     };
 
+    /**
+     * Cleans up after drag operation ends
+     * Resets all drag-related state
+     */
     const handleDragEnd = () => {
-        console.group('Drag Lifecycle - End');
-        console.log('DragEnd Event:', {
-            groupIndex,
-            dropIndex,
-            draggedTab: draggedTab ? {
-                type: draggedTab.type.name,
-                key: draggedTab.key
-            } : null
-        });
-
         setDropIndex(null);
         onDragEnd();
         if (edgeHoldTimeout.current) {
             clearTimeout(edgeHoldTimeout.current);
             edgeHoldTimeout.current = null;
         }
-        // Clean up the global reference if drag is cancelled
         delete window.__draggedTab;
-        console.groupEnd();
     };
 
+    /**
+     * Calculates styles for tabs during drag operations
+     * Handles visibility and position transforms
+     * 
+     * @param {number} index - Index of the tab to style
+     * @returns {Object} Style object for the tab
+     */
     const getTabStyle = (index) => {
         // Only hide the dragged tab in its original group
         if (draggedTabIndex === null || dropIndex === null || draggedTab === null) return {};
@@ -336,9 +341,7 @@ function TabContainer({
         >
             <div className="tab-header">
                 {tabs.map((tab, index) => {
-                    // Safety check for tab structure
                     if (!tab || !tab.type) {
-                        console.error('Invalid tab structure:', tab);
                         return null;
                     }
 
@@ -369,20 +372,31 @@ function TabContainer({
 }
 
 TabContainer.propTypes = {
+    /** Array of tab components to render */
     tabs: PropTypes.arrayOf(PropTypes.node).isRequired,
+    /** Callback when tabs are reordered or moved between groups */
     onTabMove: PropTypes.func.isRequired,
+    /** Callback when a new group should be created */
     onTabSplit: PropTypes.func.isRequired,
+    /** Index of this tab group */
     groupIndex: PropTypes.number.isRequired,
+    /** Currently dragged tab */
     draggedTab: PropTypes.node,
+    /** Index of currently dragged tab */
     draggedTabIndex: PropTypes.number,
+    /** Visual indicators for group splitting */
     dropIndicators: PropTypes.shape({
         leftGroup: PropTypes.number,
         rightGroup: PropTypes.number,
         betweenGroups: PropTypes.number
     }).isRequired,
+    /** Callback when drag starts */
     onDragStart: PropTypes.func.isRequired,
+    /** Callback when drag ends */
     onDragEnd: PropTypes.func.isRequired,
+    /** Callback to update drop indicators */
     onDropIndicatorChange: PropTypes.func.isRequired,
+    /** Callback when a tab is clicked */
     onTabClick: PropTypes.func
 };
 

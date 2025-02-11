@@ -9,12 +9,41 @@ import Tab5 from './tabs/Tab5';
 import './NewTest.css';
 import React from 'react';
 
+/**
+ * NewTest Component
+ * Parent component that manages multiple tab groups with drag and drop functionality
+ * 
+ * State Management:
+ * - tabGroups: 2D array where each inner array represents a group of tabs
+ * - draggedTab: Currently dragged tab component
+ * - draggedTabIndex: Index of dragged tab in its group
+ * - sourceGroupIndex: Index of the group where drag started
+ * - dropIndicators: Visual indicators for group splitting
+ * 
+ * Key Behaviors:
+ * 1. Tab Movement:
+ *    - Within same group: Reorders tabs
+ *    - Between groups: Moves tab to new group
+ *    - To edges: Creates new groups
+ * 
+ * 2. State Updates:
+ *    - Uses setTimeout to ensure clean state transitions
+ *    - Resets drag states before updating groups
+ *    - Maintains group integrity during operations
+ * 
+ * Common Issues & Solutions:
+ * 1. Double drag required: Check state reset timing
+ * 2. Groups not updating: Verify setTimeout execution
+ * 3. Tab duplication: Check key generation
+ * 4. State sync issues: Verify parent-child prop flow
+ */
 function NewTest() {
+    // State for managing tab groups and drag operations
     const [tabGroups, setTabGroups] = useState([
         [<Tab1 key="Tab1-0" />, <Tab2 key="Tab2-0" />, <Tab3 key="Tab3-0" />, <Tab4 key="Tab4-0" />, <Tab5 key="Tab5-0" />]
     ]);
     
-    // Add new state for drag and drop operations
+    // State for drag and drop operations
     const [draggedTab, setDraggedTab] = useState(null);
     const [draggedTabIndex, setDraggedTabIndex] = useState(null);
     const [sourceGroupIndex, setSourceGroupIndex] = useState(null);
@@ -24,22 +53,13 @@ function NewTest() {
         betweenGroups: null
     });
 
+    /**
+     * Handles moving tabs within and between groups
+     * @param {Array|Array[]} newTabs - Either the reordered tabs or [sourceTab, dropIndex]
+     * @param {number} sourceGroupIndex - Index of the source group
+     * @param {number} [targetGroupIndex] - Index of the target group (if moving between groups)
+     */
     const handleTabMove = (newTabs, sourceGroupIndex, targetGroupIndex) => {
-        console.group('Tab Move Operation');
-        console.log('Current tab groups:', tabGroups);
-        console.log('Move params:', {
-            sourceGroupIndex,
-            targetGroupIndex,
-            newTabs: Array.isArray(newTabs) ? {
-                length: newTabs.length,
-                items: newTabs.map(tab => ({
-                    type: tab?.type?.name,
-                    key: tab?.key,
-                    props: tab?.props
-                }))
-            } : 'Not an array'
-        });
-
         // First reset all drag states to ensure clean state for next operation
         setDraggedTab(null);
         setDraggedTabIndex(null);
@@ -56,20 +76,8 @@ function NewTest() {
                 const newGroups = [...prevGroups];
                 
                 if (targetGroupIndex !== undefined) {
-                    console.log('Moving between groups');
                     const [sourceTab, dropIndex] = newTabs;
-                    console.log('Source tab:', {
-                        type: sourceTab?.type?.name,
-                        key: sourceTab?.key,
-                        props: sourceTab?.props
-                    });
-                    console.log('Drop index:', dropIndex);
-                    
                     const sourceGroup = [...prevGroups[sourceGroupIndex]];
-                    console.log('Source group before removal:', sourceGroup.map(tab => ({
-                        type: tab?.type?.name,
-                        key: tab?.key
-                    })));
                     
                     // Find and remove the source tab
                     const sourceTabIndex = sourceGroup.findIndex(tab => 
@@ -80,17 +88,10 @@ function NewTest() {
                         sourceGroup.splice(sourceTabIndex, 1);
                     }
                     
-                    console.log('Source group after removal:', sourceGroup.map(tab => ({
-                        type: tab?.type?.name,
-                        key: tab?.key
-                    })));
-                    
                     if (sourceGroup.length === 0) {
-                        console.log('Source group empty, removing group');
                         newGroups.splice(sourceGroupIndex, 1);
                         if (targetGroupIndex > sourceGroupIndex) {
                             targetGroupIndex--;
-                            console.log('Adjusted target group index:', targetGroupIndex);
                         }
                     } else {
                         newGroups[sourceGroupIndex] = sourceGroup;
@@ -101,143 +102,68 @@ function NewTest() {
                     const isMovingBackToOriginal = sourceGroupIndex === targetGroupIndex;
                     
                     if (isMovingBackToOriginal) {
-                        console.log('Moving back to original group');
                         targetGroup.splice(dropIndex, 0, sourceTab);
                     } else {
                         const newTab = React.cloneElement(sourceTab, {
                             key: `${sourceTab.type.name}-${Date.now()}`
                         });
-                        console.log('Created new tab:', {
-                            type: newTab?.type?.name,
-                            key: newTab?.key
-                        });
                         targetGroup.splice(dropIndex, 0, newTab);
                     }
                     
-                    console.log('Target group after insertion:', targetGroup.map(tab => ({
-                        type: tab?.type?.name,
-                        key: tab?.key
-                    })));
                     newGroups[targetGroupIndex] = targetGroup;
                 } else {
-                    console.log('Reordering within same group');
-                    console.log('New order:', newTabs.map(tab => ({
-                        type: tab?.type?.name,
-                        key: tab?.key
-                    })));
                     newGroups[sourceGroupIndex] = newTabs;
                 }
                 
-                console.log('Final groups structure:', newGroups.map(group => 
-                    group.map(tab => ({
-                        type: tab?.type?.name,
-                        key: tab?.key
-                    }))
-                ));
-                console.groupEnd();
                 return newGroups;
             });
         }, 0);
     };
 
+    /**
+     * Handles creating new groups by splitting existing ones
+     * @param {Object} tabInfo - Information about the tab being split
+     * @param {number} sourceGroupIndex - Index of the source group
+     * @param {boolean|number} targetPosition - Where to create the new group
+     */
     const handleTabSplit = (tabInfo, sourceGroupIndex, targetPosition) => {
-        console.group('Tab Split Operation');
-        console.log('Split params:', {
-            tabInfo,
-            sourceGroupIndex,
-            targetPosition
-        });
-        console.log('Current tab groups:', tabGroups);
-        
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
             const sourceGroup = [...prevGroups[sourceGroupIndex]];
             
-            console.log('Source group before split:', sourceGroup.map(tab => ({
-                type: tab?.type?.name,
-                key: tab?.key
-            })));
-            
             const sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
-            console.log('Found source tab:', sourceTab ? {
-                type: sourceTab?.type?.name,
-                key: sourceTab?.key
-            } : 'Not found');
             
             if (!sourceTab) {
-                console.error('Could not find tab to split:', tabInfo);
-                console.groupEnd();
                 return prevGroups;
             }
             
             sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
-            console.log('Source group after removal:', sourceGroup.map(tab => ({
-                type: tab?.type?.name,
-                key: tab?.key
-            })));
             
             const newTab = React.cloneElement(sourceTab, {
                 key: `${sourceTab.type.name}-${Date.now()}`
-            });
-            console.log('Created new tab:', {
-                type: newTab?.type?.name,
-                key: newTab?.key
             });
             
             const newGroup = [newTab];
             
             if (sourceGroup.length === 0) {
-                console.log('Source group empty, removing');
                 newGroups.splice(sourceGroupIndex, 1);
                 if (typeof targetPosition === 'number' && targetPosition > sourceGroupIndex) {
                     targetPosition--;
-                    console.log('Adjusted target position:', targetPosition);
                 }
             } else {
                 newGroups[sourceGroupIndex] = sourceGroup;
             }
 
             if (typeof targetPosition === 'number') {
-                console.log('Inserting at specific position:', targetPosition);
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
-                console.log('Appending to end');
                 newGroups.push(newGroup);
             } else {
-                console.log('Prepending to start');
                 newGroups.unshift(newGroup);
             }
             
-            console.log('Final groups structure:', newGroups.map(group => 
-                group.map(tab => ({
-                    type: tab?.type?.name,
-                    key: tab?.key
-                }))
-            ));
-            console.groupEnd();
             return newGroups;
         });
-    };
-
-    // Debug function to log current state
-    const logState = (action) => {
-        console.group(`State Debug - ${action}`);
-        console.log('Current State:', {
-            draggedTab: draggedTab ? {
-                type: draggedTab.type.name,
-                key: draggedTab.key
-            } : null,
-            draggedTabIndex,
-            sourceGroupIndex,
-            dropIndicators,
-            tabGroups: tabGroups.map(group => 
-                group.map(tab => ({
-                    type: tab.type.name,
-                    key: tab.key
-                }))
-            )
-        });
-        console.groupEnd();
     };
 
     return (
@@ -255,10 +181,8 @@ function NewTest() {
                         setDraggedTab(tab);
                         setDraggedTabIndex(tabIndex);
                         setSourceGroupIndex(index);
-                        logState('Drag Start');
                     }}
                     onDragEnd={() => {
-                        logState('Before Drag End');
                         setDraggedTab(null);
                         setDraggedTabIndex(null);
                         setSourceGroupIndex(null);
@@ -267,24 +191,18 @@ function NewTest() {
                             rightGroup: null,
                             betweenGroups: null
                         });
-                        logState('After Drag End');
                     }}
                     onDropIndicatorChange={(indicators) => {
                         setDropIndicators(prev => ({...prev, ...indicators}));
                     }}
                     onTabMove={(newTabs) => {
-                        logState('Before Tab Move');
-                        // If newTabs is an array with two elements, it's a move between groups
                         if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === 'number') {
                             handleTabMove(newTabs, sourceGroupIndex, index);
                         } else {
-                            // Otherwise it's a reorder within the same group
                             handleTabMove(newTabs, index);
                         }
                     }}
-                    onTabClick={(tab, tabIndex) => {
-                        logState('Tab Click');
-                    }}
+                    onTabClick={() => {}}
                     onTabSplit={handleTabSplit}
                 />
             ))}
