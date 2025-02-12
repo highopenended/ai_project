@@ -31,15 +31,15 @@ const useDebounce = (callback, delay) => {
     }, [callback, delay]);
 };
 
-function RaritySliders({ onChange, value }) {
-    const [distribution, setDistribution] = useState(value || DEFAULT_DISTRIBUTION);
+function RaritySliders({ setRarityDistribution, rarityDistribution }) {
+    const [distribution, setDistribution] = useState(rarityDistribution || DEFAULT_DISTRIBUTION);
 
     // Update distribution when value prop changes
     useEffect(() => {
-        if (value) {
-            setDistribution(value);
+        if (rarityDistribution) {
+            setDistribution(rarityDistribution);
         }
-    }, [value]);
+    }, [rarityDistribution]);
 
     const [editingRarity, setEditingRarity] = useState(null);
     const [editValue, setEditValue] = useState('');
@@ -49,7 +49,7 @@ function RaritySliders({ onChange, value }) {
     const isDraggingRef = useRef(false);
 
     // Debounced onChange to reduce updates during dragging
-    const debouncedOnChange = useDebounce(onChange, 100);
+    const debouncedOnChange = useDebounce(setRarityDistribution, 100);
 
     // Set CSS variables for rarity colors
     useEffect(() => {
@@ -114,9 +114,9 @@ function RaritySliders({ onChange, value }) {
         if (isDraggingRef.current) {
             debouncedOnChange(newDistribution);
         } else {
-            onChange(newDistribution);
+            setRarityDistribution(newDistribution);
         }
-    }, [lockedRarities, adjustDistribution, onChange, debouncedOnChange]);
+    }, [lockedRarities, adjustDistribution, setRarityDistribution, debouncedOnChange]);
 
     const handleSliderMouseDown = useCallback(() => {
         isDraggingRef.current = true;
@@ -124,8 +124,8 @@ function RaritySliders({ onChange, value }) {
 
     const handleSliderMouseUp = useCallback(() => {
         isDraggingRef.current = false;
-        onChange(distribution);
-    }, [distribution, onChange]);
+        setRarityDistribution(distribution);
+    }, [distribution, setRarityDistribution]);
 
     const handleInputChange = useCallback((value) => {
         setEditValue(value);
@@ -139,12 +139,12 @@ function RaritySliders({ onChange, value }) {
             if (Math.abs(newValue - distribution[editingRarity]) >= 0.01) {
                 const newDistribution = adjustDistribution(newValue, editingRarity);
                 setDistribution(newDistribution);
-                onChange(newDistribution);
+                setRarityDistribution(newDistribution);
             }
         }
         setEditingRarity(null);
         setPreEditValue(null);
-    }, [editingRarity, editValue, lockedRarities, distribution, adjustDistribution, onChange]);
+    }, [editingRarity, editValue, lockedRarities, distribution, adjustDistribution, setRarityDistribution]);
 
     const handleInputFocus = useCallback((rarity) => {
         if (lockedRarities.has(rarity)) return;
@@ -170,8 +170,8 @@ function RaritySliders({ onChange, value }) {
         setEditingRarity(null);
         setEditValue('');
         setPreEditValue(null);
-        onChange(DEFAULT_DISTRIBUTION);
-    }, [onChange]);
+        setRarityDistribution(DEFAULT_DISTRIBUTION);
+    }, [setRarityDistribution]);
 
     const formatPercentage = useCallback((value) => {
         // Convert to number and fix to 2 decimal places
@@ -296,8 +296,8 @@ function RaritySliders({ onChange, value }) {
 }
 
 RaritySliders.propTypes = {
-    onChange: PropTypes.func.isRequired,
-    value: PropTypes.object,
+    setRarityDistribution: PropTypes.func.isRequired,
+    rarityDistribution: PropTypes.object,    
 };
 
 export default RaritySliders;
