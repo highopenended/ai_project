@@ -16,10 +16,10 @@ function TraitFilter() {
             <div className="filter-grid">
                 {!isCollapsed && (
                     <div className="filter-grid-content">
-                        {traitList.map(({ Trait }) => (
+                        {traitList.map(({ Trait }, index) => (
                             <Tag
                                 name={Trait}
-                                key={Trait}
+                                key={Trait + index}
                                 state={getTraitState(Trait)}
                                 onClick={() => toggleTrait(Trait)}
                             />
@@ -27,9 +27,6 @@ function TraitFilter() {
                     </div>
                 )}
             </div>
-            <button onClick={clearTraitSelections} className="clear-button">
-                Clear Traits
-            </button>
         </Section>
     );
 }

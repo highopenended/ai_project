@@ -10,10 +10,12 @@ function SubcategoryFilter() {
         useShopGenerator();
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    // Get all subcategories from included categories
+    // Get all subcategories - either from selected categories or all categories if none selected
     const subcategories = new Set();
-    Object.entries(categoryData).forEach(([category, data]) => {
-        if (categoryStates.get(category) === SELECTION_STATES.INCLUDE) {
+    const hasSelectedCategories = Array.from(categoryStates.values()).some(state => state === SELECTION_STATES.INCLUDE);
+    
+    Object.entries(categoryData.categories).forEach(([category, data]) => {
+        if (!hasSelectedCategories || categoryStates.get(category) === SELECTION_STATES.INCLUDE) {
             data.subcategories.forEach((subcategory) => subcategories.add(subcategory));
         }
     });
@@ -32,10 +34,10 @@ function SubcategoryFilter() {
             <div className="filter-grid">
                 {!isCollapsed && (
                     <div className="filter-grid-content">
-                        {Array.from(subcategories).map((subcategory) => (
+                        {Array.from(subcategories).map((subcategory, index) => (
                             <Tag
-                                name={`${subcategory} (${categoryData[subcategory].count})`}
-                                key={subcategory}
+                                name={`${subcategory} (${categoryData.subcategoryCounts[subcategory]})`}
+                                key={subcategory + index}
                                 state={getSubcategoryState(subcategory)}
                                 onClick={() => toggleSubcategory(subcategory)}
                             />
@@ -43,9 +45,6 @@ function SubcategoryFilter() {
                     </div>
                 )}
             </div>
-            <button onClick={clearSubcategorySelections} className="clear-button">
-                Clear Subcategories
-            </button>
         </Section>
     );
 }

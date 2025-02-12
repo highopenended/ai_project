@@ -17,10 +17,10 @@ function CategoryFilter() {
             <div className="filter-grid">   
                 {!isCollapsed && (
                     <div className="filter-grid-content">
-                        {Object.entries(categoryData).map(([category, data]) => (
+                        {Object.entries(categoryData.categories).map(([category, data], index) => (
                             <Tag
                                 name={`${category} (${data.count})`}
-                                key={category}
+                                key={category + index}
                                 state={getCategoryState(category)}
                                 onClick={() => toggleCategory(category)}
                             />
