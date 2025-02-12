@@ -1,6 +1,6 @@
 import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
-import FilterButton from "./filterbutton/FilterButton";
-import Section from "../../../shared/Section";
+import Tag from "../../shared/Tag";
+import Section from "../../shared/Section";
 
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useShopGenerator();
@@ -9,9 +9,9 @@ function CategoryFilter() {
         <Section title="Categories">
             <div className="filter-grid">
                 {Object.entries(categoryData).map(([category, data]) => (
-                    <FilterButton
+                    <Tag
+                        name={`${category} (${data.count})`}
                         key={category}
-                        label={`${category} (${data.count})`}
                         state={getCategoryState(category)}
                         onClick={() => toggleCategory(category)}
                     />

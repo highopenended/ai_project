@@ -17,18 +17,29 @@
 }
 
 .tag:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(163, 177, 255, 0.15);
+    border-color: rgba(163, 177, 255, 0.3);
 }
 
 /* Tag states for included/excluded items */
-.tag.included {
-    background: #2c5282;
-    border-color: #2b6cb0;
+.tag.include {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4CAF50;
+    color: #4CAF50;
 }
 
-.tag.excluded {
-    background: #822c2c;
-    border-color: #b02b2b;
+.tag.exclude {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #F44336;
+    color: #F44336;
+}
+
+.tag.include:hover {
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.tag.exclude:hover {
+    background: rgba(244, 67, 54, 0.3);
 }
 
 .tag .count {

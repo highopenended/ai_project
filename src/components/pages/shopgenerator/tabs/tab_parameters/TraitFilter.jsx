@@ -1,6 +1,6 @@
 import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
-import FilterButton from "./filterbutton/FilterButton";
-import Section from "../../../shared/Section";
+import Tag from "../../../shared/Tag";
+import Section from "../../shared/Section";
 import traitList from "../../../../../../public/trait-list.json";
 
 function TraitFilter() {
@@ -10,7 +10,7 @@ function TraitFilter() {
         <Section title="Traits">
             <div className="filter-grid">
                 {traitList.map(({ Trait }) => (
-                    <FilterButton
+                    <Tag
                         key={Trait}
                         label={Trait}
                         state={getTraitState(Trait)}

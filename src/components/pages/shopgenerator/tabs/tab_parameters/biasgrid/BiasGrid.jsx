@@ -4,18 +4,18 @@ import "./BiasGrid.css";
 import ButtonGroup from "../../../shared/ButtonGroup";
 import Section from "../../../shared/Section";
 
-function BiasGrid({ onChange, value }) {
+function BiasGrid({ setItemBias, itemBias }) {
     const gridRef = useRef(null);
-    const [position, setPosition] = useState(value || { x: 0.5, y: 0.5 }); // Use value if provided, otherwise center
+    const [position, setPosition] = useState(itemBias || { x: 0.5, y: 0.5 }); // Use value if provided, otherwise center
     const [isDragging, setIsDragging] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     // Update position when value prop changes
     useEffect(() => {
-        if (value) {
-            setPosition(value);
+        if (itemBias) {
+            setPosition(itemBias);
         }
-    }, [value]);
+    }, [itemBias]);
 
     const updatePosition = (clientX, clientY) => {
         if (!gridRef.current) return;
@@ -25,7 +25,7 @@ function BiasGrid({ onChange, value }) {
         const y = Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height)); // Invert Y so 0 is bottom
 
         setPosition({ x, y });
-        onChange({ x, y });
+        setItemBias({ x, y });
     };
 
     const handleMouseDown = (e) => {
@@ -46,7 +46,7 @@ function BiasGrid({ onChange, value }) {
 
     const handleReset = () => {
         setPosition({ x: 0.5, y: 0.5 });
-        onChange({ x: 0.5, y: 0.5 });
+        setItemBias({ x: 0.5, y: 0.5 });
     };
 
     useEffect(() => {
@@ -111,8 +111,8 @@ function BiasGrid({ onChange, value }) {
 }
 
 BiasGrid.propTypes = {
-    onChange: PropTypes.func.isRequired,
-    value: PropTypes.object,
+    setItemBias: PropTypes.func.isRequired,
+    itemBias: PropTypes.object.isRequired,
 };
 
 export default BiasGrid;

@@ -1,23 +1,28 @@
 import PropTypes from 'prop-types';
+import { SELECTION_STATES } from '../../../../context/shopGeneratorConstants';
 import './Tag.css';
 
 const Tag = ({ name, state, onClick }) => {
     const getTagClassName = (state) => {
-
         const baseClass = 'tag';
-        if (state === 'INCLUDE') return `${baseClass} included`;
-        if (state === 'EXCLUDE') return `${baseClass} excluded`;
-        return baseClass;
+        switch (state) {
+            case SELECTION_STATES.INCLUDE:
+                return `${baseClass} include`;
+            case SELECTION_STATES.EXCLUDE:
+                return `${baseClass} exclude`;
+            default:
+                return baseClass;
+        }
     };
 
     return (
-        <button className={getTagClassName(state)} onClick={onClick}> {name}</button>
+        <button className={getTagClassName(state)} onClick={onClick}>{name}</button>
     );
 };
 
 Tag.propTypes = {
     name: PropTypes.string.isRequired,
-    state: PropTypes.string.isRequired,
+    state: PropTypes.number.isRequired,
     onClick: PropTypes.func.isRequired,
 };
 

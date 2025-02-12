@@ -1,7 +1,7 @@
 import { useShopGenerator } from '../../../../../context/ShopGeneratorContext';
 import { SELECTION_STATES } from '../../../../../context/shopGeneratorConstants';
-import FilterButton from "./filterbutton/FilterButton";
-import Section from "../../../shared/Section";
+import Tag from "../../../shared/Tag";
+import Section from "../../shared/Section";
 
 function SubcategoryFilter() {
     const {
@@ -24,7 +24,7 @@ function SubcategoryFilter() {
         <Section title="Subcategories">
             <div className="filter-grid">
                 {Array.from(subcategories).map(subcategory => (
-                    <FilterButton
+                    <Tag
                         key={subcategory}
                         label={subcategory}
                         state={getSubcategoryState(subcategory)}
