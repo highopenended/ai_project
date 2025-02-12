@@ -90,6 +90,15 @@ function TabContainer({
     const edgeThreshold = 80; // Distance from edge to trigger group split
     const edgeHoldTimeout = useRef(null);
 
+    // Get the maximum minWidth from all tabs in this group
+    const groupMinWidth = Math.max(...tabs.map(tab => tab.type.minWidth || 200));
+
+    // Merge the calculated minWidth with the provided style
+    const containerStyle = {
+        ...style,
+        minWidth: `${groupMinWidth}px`
+    };
+
     // Keep active tab valid when tabs array changes
     useEffect(() => {
         if (!tabs.includes(activeTab)) {
@@ -405,7 +414,7 @@ function TabContainer({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            style={style}
+            style={containerStyle}
         >
             <div className="tab-header">
                 {tabs.map((tab, index) => {
