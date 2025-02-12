@@ -5,8 +5,8 @@ import LevelInput from "./tab_parameters/levelinput/LevelInput";
 import BiasGrid from "./tab_parameters/biasgrid/BiasGrid";
 import RaritySliders from "./tab_parameters/raritysliders/RaritySliders";
 import CategoryFilter from "./tab_parameters/CategoryFilter";
-// import SubcategoryFilter from "./tab_parameters/SubcategoryFilter";
-// import TraitFilter from "./tab_parameters/TraitFilter";
+import SubcategoryFilter from "./tab_parameters/SubcategoryFilter";
+import TraitFilter from "./tab_parameters/TraitFilter";
 import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
@@ -40,8 +40,8 @@ function Tab_Parameters({
                 <RaritySliders setRarityDistribution={setRarityDistribution} rarityDistribution={rarityDistribution} />
                 <BiasGrid setItemBias={setItemBias} itemBias={itemBias} />
                 <CategoryFilter />
-                {/* <SubcategoryFilter />
-                <TraitFilter /> */}
+                <SubcategoryFilter />
+                <TraitFilter />
             </div>
         </div>
     );

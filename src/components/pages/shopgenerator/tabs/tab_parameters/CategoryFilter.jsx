@@ -2,6 +2,7 @@ import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
 import Tag from "../../shared/Tag";
 import Section from "../../shared/Section";
 
+
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useShopGenerator();
 

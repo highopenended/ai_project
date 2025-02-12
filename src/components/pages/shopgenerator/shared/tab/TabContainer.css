@@ -26,17 +26,20 @@
     opacity: 0.5;
 }
 
-/* Remove the margin transitions and keep only the visual indicators */
+/* Drag and drop indicators */
 .tab-container.show-left-indicator::before,
-.tab-container.show-right-indicator::after {
+.tab-container.show-right-indicator::after,
+.tab-container.show-between-indicator::before,
+.tab-container.show-between-indicator-right::before {
     content: '';
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 8px;
+    width: 4px;
     background-color: var(--accent-color);
-    opacity: 0.5;
+    opacity: 0.7;
     pointer-events: none;
+    z-index: 1000;
 }
 
 .tab-container.show-left-indicator::before {
@@ -47,11 +50,21 @@
     right: 0;
 }
 
-/* Keep existing styles */
+.tab-container.show-between-indicator::before {
+    left: 0;
+}
+
+.tab-container.show-between-indicator-right::before {
+    right: 0;
+}
+
+/* Tab header styles */
 .tab-header {
     display: flex;
     background-color: var(--background-secondary);
     padding: 4px 4px 0 4px;
+    overflow-x: auto;
+    min-height: 40px;
 }
 
 .tab {
@@ -62,32 +75,26 @@
     margin-right: 4px;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
-    cursor: pointer;
+    cursor: grab;
     user-select: none;
     position: relative;
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    background-color: var(--background-hover);
 }
 
 .tab.active {
     background-color: var(--accent-color);
-}
-
-.tab-content {
-    flex-grow: 1;
-    padding: 20px;
-    background-color: var(--background-tertiary);
-    border-top: 1px solid var(--light-border-color);
-}
-
-.new-test {
-    display: flex;
-    width: 100%;
-    height: 100vh;
+    border-bottom-color: transparent;
 }
 
 .tab.dragging {
     opacity: 0.5;
     cursor: grabbing;
+    background-color: var(--background-hover);
 }
 
 .tab.drag-over::after {
@@ -101,23 +108,16 @@
     border-radius: 2px;
 }
 
-/* Between-group indicator */
-.tab-container.show-between-indicator::before,
-.tab-container.show-between-indicator-right::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 8px;
-    background-color: var(--accent-color);
-    opacity: 0.5;
-    pointer-events: none;
+.tab-content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: var(--background-tertiary);
+    border-top: 1px solid var(--light-border-color);
+    overflow: auto;
 }
 
-.tab-container.show-between-indicator::before {
-    left: 0;
-}
-
-.tab-container.show-between-indicator-right::before {
-    right: 0;
+.new-test {
+    display: flex;
+    width: 100%;
+    height: 100vh;
 }

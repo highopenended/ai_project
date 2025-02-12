@@ -134,6 +134,8 @@ function TabContainer({
         
         onDragStart(tab, index);
         
+        // Set a flag to indicate we're dragging a tab
+        e.dataTransfer.setData('application/x-tab', 'true');
         e.dataTransfer.setData('text/plain', index.toString());
         e.dataTransfer.setData('groupIndex', groupIndex.toString());
         e.dataTransfer.setData('tabInfo', JSON.stringify({
@@ -150,16 +152,9 @@ function TabContainer({
      */
     const handleDragOver = (e) => {
         e.preventDefault();
-
-        // Check if this is a tab being dragged
-        try {
-            const tabInfoStr = e.dataTransfer.getData('tabInfo');
-            if (!tabInfoStr) {
-                return;
-            }
-        } catch {
-            // During dragover, getData may throw an error in some browsers
-            // If we can't verify it's a tab, don't show any indicators
+        
+        // Instead of trying to read the data, we'll accept the drop if it has our custom format
+        if (!e.dataTransfer.types.includes('application/x-tab')) {
             return;
         }
 

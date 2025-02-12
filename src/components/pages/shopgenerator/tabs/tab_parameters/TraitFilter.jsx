@@ -1,5 +1,5 @@
 import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
-import Tag from "../../../shared/Tag";
+import Tag from "../../shared/Tag";
 import Section from "../../shared/Section";
 import traitList from "../../../../../../public/trait-list.json";
 
@@ -11,8 +11,8 @@ function TraitFilter() {
             <div className="filter-grid">
                 {traitList.map(({ Trait }) => (
                     <Tag
+                        name={Trait}
                         key={Trait}
-                        label={Trait}
                         state={getTraitState(Trait)}
                         onClick={() => toggleTrait(Trait)}
                     />

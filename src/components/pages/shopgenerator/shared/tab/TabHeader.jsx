@@ -21,10 +21,19 @@ function TabHeader({
                 ${isDragging ? 'dragging' : ''} 
                 ${isDropTarget ? 'drag-over' : ''}`}
             onClick={() => onTabClick(tab)}
-            draggable="true"
-            onDragStart={(e) => onDragStart(e, tab, index)}
-            onDragEnd={onDragEnd}
-            style={style}
+            draggable={true}
+            onDragStart={(e) => {
+                e.stopPropagation();
+                onDragStart(e, tab, index);
+            }}
+            onDragEnd={(e) => {
+                e.stopPropagation();
+                onDragEnd();
+            }}
+            style={{
+                ...style,
+                cursor: 'grab'
+            }}
             name={tab.name}
         >
             {tab.type.displayName || 'Unnamed Tab'}
