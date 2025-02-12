@@ -1,109 +1,146 @@
-import { useState, useEffect } from "react";
+import {React, useState, useEffect } from "react";
+
 import PropTypes from "prop-types";
 import "./LevelInput.css";
 import Section_OneLine from "../../../shared/Section_OneLine";
 
-function LevelInput({
-    lowestLevel = 0, // Default to 0
-    highestLevel = 10, // Default to 10
-    onLowestLevelChange,
-    onHighestLevelChange,
-}) {
-    // Track the display value separately from the actual number value
-    const [lowestDisplay, setLowestDisplay] = useState(lowestLevel.toString());
-    const [highestDisplay, setHighestDisplay] = useState(highestLevel.toString());
+function LevelInput({ lowestLevel, highestLevel, setLowestLevel, setHighestLevel }) {
+    const [localLowest, setLocalLowest] = useState(lowestLevel.toString());
+    const [localHighest, setLocalHighest] = useState(highestLevel.toString());
 
-    // Update displays when props change
-    useEffect(() => {
-        setLowestDisplay(lowestLevel.toString());
-        setHighestDisplay(highestLevel.toString());
-    }, [lowestLevel, highestLevel]);
-
-    // Set initial values
-    // useEffect(() => {
-    //     onLowestLevelChange(lowestLevel);
-    //     onHighestLevelChange(highestLevel);
-    // }, [onLowestLevelChange, onHighestLevelChange, lowestLevel, highestLevel]);
-
+    // Handle lowest level input changes
     const handleLowestLevelChange = (e) => {
-        const value = e.target.value;
-        setLowestDisplay(value);
-        const newValue = value === "" ? 0 : parseInt(value) || 0;
-        onLowestLevelChange(newValue);
+        const rawValue = e.target.value;
+        console.log('Raw input value:', rawValue);
+        
+        // Only allow digits
+        if (!/^\d*$/.test(rawValue)) {
+            return;
+        }
+
+        // Update local state with raw input (but remove leading zeros)
+        const cleanValue = rawValue.replace(/^0+/, '') || '0';
+        setLocalLowest(cleanValue);
+        
+        // If empty, don't update parent state
+        if (rawValue === '') {
+            return;
+        }
+
+        const numValue = parseInt(cleanValue, 10);
+        console.log('Parsed value:', numValue);
+        
+        // Clamp between 0-99
+        const clampedValue = Math.min(Math.max(numValue, 0), 99);
+        
+        // Only update local state if the value is different after clamping
+        if (clampedValue !== numValue) {
+            setLocalLowest(clampedValue.toString());
+        }
+        
+        setLowestLevel(clampedValue);
     };
 
+    // Handle highest level input changes
     const handleHighestLevelChange = (e) => {
-        const value = e.target.value;
-        setHighestDisplay(value);
-        const newValue = value === "" ? 0 : parseInt(value) || 0;
-        onHighestLevelChange(newValue);
+        const rawValue = e.target.value;
+        console.log('Raw input value:', rawValue);
+        
+        // Only allow digits
+        if (!/^\d*$/.test(rawValue)) {
+            return;
+        }
+
+        // Update local state with raw input (but remove leading zeros)
+        const cleanValue = rawValue.replace(/^0+/, '') || '0';
+        setLocalHighest(cleanValue);
+        
+        // If empty, don't update parent state
+        if (rawValue === '') {
+            return;
+        }
+
+        const numValue = parseInt(cleanValue, 10);
+        console.log('Parsed value:', numValue);
+        
+        // Clamp between 0-99
+        const clampedValue = Math.min(Math.max(numValue, 0), 99);
+        
+        // Only update local state if the value is different after clamping
+        if (clampedValue !== numValue) {
+            setLocalHighest(clampedValue.toString());
+        }
+        
+        setHighestLevel(clampedValue);
     };
 
-    const validateAndAdjustValue = (value) => {
-        if (value < 0) return 0;
-        if (value > 99) return 99;
-        return value;
-    };
+    // Handle blur events to sync values
+    const handleLowestBlur = () => {
+        const currentLowest = parseInt(localLowest, 10);
+        const currentHighest = parseInt(localHighest, 10);
 
-    const handleLowestLevelBlur = () => {
-        const adjustedValue = validateAndAdjustValue(lowestLevel);
-        if(adjustedValue>highestLevel){
-            onHighestLevelChange(adjustedValue);
-            setHighestDisplay(adjustedValue.toString());
-        }
-        setLowestDisplay(adjustedValue.toString());
-        if (adjustedValue !== lowestLevel) {
-            onLowestLevelChange(adjustedValue);
-        }
-        if (adjustedValue > highestLevel) {
-            onHighestLevelChange(adjustedValue);
-            setHighestDisplay(adjustedValue.toString());
+        // If lowest is higher than highest, increase highest to match
+        if (currentLowest > currentHighest) {
+            console.log('Syncing both to:', currentLowest);
+            setHighestLevel(currentLowest);
+            setLocalHighest(currentLowest.toString());
         }
     };
 
-    const handleHighestLevelBlur = () => {
-        const adjustedValue = validateAndAdjustValue(highestLevel);
-        setHighestDisplay(adjustedValue.toString());
-        if (adjustedValue !== highestLevel) {
-            onHighestLevelChange(adjustedValue);
-        }
-        if (adjustedValue < lowestLevel) {
-            onHighestLevelChange(lowestLevel);
-            setHighestDisplay(lowestLevel.toString());
+    const handleHighestBlur = () => {
+        const currentLowest = parseInt(localLowest, 10);
+        const currentHighest = parseInt(localHighest, 10);
+
+        // If highest is lower than lowest, decrease lowest to match
+        if (currentHighest < currentLowest) {
+            console.log('Syncing both to:', currentHighest);
+            setLowestLevel(currentHighest);
+            setLocalLowest(currentHighest.toString());
         }
     };
 
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
+    // Handle key press events
+    const handleLowestKeyPress = (e) => {
+        if (e.key === 'Enter') {
             e.target.blur();
         }
     };
 
+    const handleHighestKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            e.target.blur();
+        }
+    };
+
+    // Update local state when props change
+    useEffect(() => {
+        setLocalLowest(lowestLevel.toString());
+        setLocalHighest(highestLevel.toString());
+    }, [lowestLevel, highestLevel]);
+
     return (
         <Section_OneLine title="Level Range">
             <div className="level-input-group">
-                <input
-                    type="number"
-                    id="lowest-level"
-                    value={lowestDisplay}
+                <input 
+                    type="text"
+                    value={localLowest}
                     onChange={handleLowestLevelChange}
-                    onBlur={handleLowestLevelBlur}
-                    onKeyDown={handleKeyDown}
-                    min="0"
-                    max="99"
-                    required
-                />
+                    onBlur={handleLowestBlur}
+                    onKeyPress={handleLowestKeyPress}
+                    min={0}
+                    max={99}
+                    autoComplete="off"
+                /> 
                 <span className="level-input-separator">to</span>
-                <input
-                    type="number"
-                    id="highest-level"
-                    value={highestDisplay}
+                <input 
+                    type="text"
+                    value={localHighest}
                     onChange={handleHighestLevelChange}
-                    onBlur={handleHighestLevelBlur}
-                    onKeyDown={handleKeyDown}
-                    min="0"
-                    max="99"
-                    required
+                    onBlur={handleHighestBlur}
+                    onKeyPress={handleHighestKeyPress}
+                    min={0}
+                    max={99}
+                    autoComplete="off"
                 />
             </div>
         </Section_OneLine>
@@ -113,8 +150,8 @@ function LevelInput({
 LevelInput.propTypes = {
     lowestLevel: PropTypes.number.isRequired,
     highestLevel: PropTypes.number.isRequired,
-    onLowestLevelChange: PropTypes.func.isRequired,
-    onHighestLevelChange: PropTypes.func.isRequired,
+    setLowestLevel: PropTypes.func.isRequired,
+    setHighestLevel: PropTypes.func.isRequired,
 };
 
 export default LevelInput;

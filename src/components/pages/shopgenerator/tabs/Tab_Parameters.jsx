@@ -2,8 +2,6 @@
 import GenerateButton from "./tab_parameters/generatebutton/GenerateButton";
 import GoldInput from "./tab_parameters/goldinput/GoldInput";
 import LevelInput from "./tab_parameters/levelinput/LevelInput";
-import BiasGrid from "./tab_parameters/biasgrid/BiasGrid";
-import RaritySliders from "./tab_parameters/raritysliders/RaritySliders";
 import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
@@ -18,14 +16,7 @@ function Tab_Parameters({
     setLowestLevel,
     highestLevel,
     setHighestLevel,
-    rarityDistribution,
-    setRarityDistribution,
-    itemBias,
-    setItemBias,
 }) {
-
-
-
     return (
         <div>
             <GenerateButton onClick={handleGenerateClick} />
@@ -34,11 +25,9 @@ function Tab_Parameters({
                 <LevelInput
                     lowestLevel={lowestLevel}
                     highestLevel={highestLevel}
-                    onLowestLevelChange={setLowestLevel}
-                    onHighestLevelChange={setHighestLevel}
+                    setLowestLevel={setLowestLevel}
+                    setHighestLevel={setHighestLevel}
                 />
-                <RaritySliders onChange={setRarityDistribution} />
-                {/* <BiasGrid onChange={handleBiasChange} value={handleBiasChange}/> */}
             </div>
         </div>
     );
@@ -49,8 +38,9 @@ Tab_Parameters.propTypes = {
     setCurrentGold: PropTypes.func.isRequired,
     setLowestLevel: PropTypes.func.isRequired,
     setHighestLevel: PropTypes.func.isRequired,
-    setRarityDistribution: PropTypes.func.isRequired,
-    setItemBias: PropTypes.func.isRequired,
+    currentGold: PropTypes.number.isRequired,
+    lowestLevel: PropTypes.number.isRequired,
+    highestLevel: PropTypes.number.isRequired,
 };
 
 export default Tab_Parameters;

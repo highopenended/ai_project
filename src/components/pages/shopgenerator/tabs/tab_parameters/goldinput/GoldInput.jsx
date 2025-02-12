@@ -74,20 +74,18 @@ function GoldInput({ setCurrentGold, currentGold }) {
 
     return (
         <Section_OneLine>
-            <div>
-                <div className="input-with-suffix">
-                    <input
-                        type="text"
-                        value={displayValue}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Enter gold amount"
-                        required
-                        autoComplete="off"
-                    />
-                    <span className="suffix">gp</span>
-                </div>
+            <div className="input-with-suffix">
+                <input
+                    type="text"
+                    value={displayValue}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Enter gold amount"
+                    required
+                    autoComplete="off"
+                />
+                <span className="suffix">gp</span>
             </div>
         </Section_OneLine>
     );
