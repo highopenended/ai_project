@@ -23,7 +23,7 @@ function Tab_InventoryTable({ items, sortConfig, onSort, currentShopName, handle
 
 Tab_InventoryTable.propTypes = {
     items: PropTypes.array.isRequired,
-    sortConfig: PropTypes.object.isRequired,
+    sortConfig: PropTypes.array.isRequired,
     onSort: PropTypes.func.isRequired,
     currentShopName: PropTypes.string.isRequired,
     handleGenerateClick: PropTypes.func.isRequired,
