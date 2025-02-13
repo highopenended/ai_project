@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import './ItemTable.css';
 import { RARITY_COLORS } from '../../../../../../constants/rarityColors';
 
-function ItemTable({ items, sortConfig, onSort, currentShop }) {
+function ItemTable({ items, sortConfig, onSort, currentShopName }) {
     // Helper function to get sort indicator and order
     const getSortInfo = (columnName) => {
         const sortItem = sortConfig.find(item => item.column === columnName);
@@ -33,7 +33,7 @@ function ItemTable({ items, sortConfig, onSort, currentShop }) {
         return (
             <div className="item-table-wrapper empty-state">
                 <div className="item-table-container">
-                    <h2 className="shop-title">{currentShop}</h2>
+                    <h2 className="shop-title">{currentShopName}</h2>
                     <table className="item-table">
                         <thead>
                             <tr>
@@ -136,7 +136,7 @@ function ItemTable({ items, sortConfig, onSort, currentShop }) {
     return (
         <div className="item-table-wrapper">
             <div className="item-table-container">
-                <h2 className="shop-title">{currentShop}</h2>
+                <h2 className="shop-title">{currentShopName}</h2>
                 <table className="item-table">
                     <thead>
                         <tr>
@@ -239,7 +239,7 @@ ItemTable.propTypes = {
         })
     ).isRequired,
     onSort: PropTypes.func.isRequired,
-    currentShop: PropTypes.string.isRequired,
+    currentShopName: PropTypes.string.isRequired,
 };
 
 export default ItemTable; 

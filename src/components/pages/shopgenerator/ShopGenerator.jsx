@@ -1,19 +1,21 @@
 // import React, { useState } from 'react';
+
+import React from "react";
 import { useState, useEffect } from "react";
+import { useAuth } from "../../../context/AuthContext";
+import "./ShopGenerator.css";
 import TabContainer from "./shared/tab/TabContainer";
 import Tab_Parameters from "./tabs/tab_parameters/Tab_Parameters";
 import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
 import Tab_ChooseShop from "./tabs/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/Tab_ShopDetails";
-import "./ShopGenerator.css";
-import React from "react";
+import Tab_AiAssistant from "./tabs/Tab_AiAssistant";
 import itemData from "../../../../public/item-table.json";
+import shopData from "./utils/shopData";
 import { useShopGenerator } from "../../../context/ShopGeneratorContext";
 import { SELECTION_STATES } from "../../../context/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
-import shopData from "./utils/shopData";
 import { saveOrUpdateShopData, loadShopData } from "./utils/firebaseShopUtils";
-import { useAuth } from "../../../context/AuthContext";
 
 /**
  * ShopGenerator Component
@@ -302,7 +304,7 @@ function ShopGenerator() {
                                             key={tab.key}
                                             type={{ name: "Tab_InventoryTable" }}
                                             items={items}
-                                            currentShop={currentShop.shortData.shopName}
+                                            currentShopName={currentShop.shortData.shopName || "Unnamed Shop"}
                                             handleGenerateClick={handleGenerateClick}
                                         />
                                     );
@@ -310,6 +312,8 @@ function ShopGenerator() {
                                     return <Tab_ChooseShop key={tab.key} type={{ name: "Tab_ChooseShop" }} />;
                                 case "Tab_ShopDetails":
                                     return <Tab_ShopDetails key={tab.key} type={{ name: "Tab_ShopDetails" }} />;
+                                case "Tab_AiAssistant":
+                                    return <Tab_AiAssistant key={tab.key} type={{ name: "Tab_AiAssistant" }} />;
                                 default:
                                     console.warn(`Unknown tab type: ${tab.type}`);
                                     return null;
@@ -343,10 +347,11 @@ function ShopGenerator() {
                         key="Tab_InventoryTable-0"
                         type={{ name: "Tab_InventoryTable" }}
                         items={items}
-                        currentShop={currentShop.shortData.shopName}
+                        currentShopName={currentShop.shortData.shopName || "Unnamed Shop"}
                     />,
                     <Tab_ChooseShop key="Tab_ChooseShop-0" type={{ name: "Tab_ChooseShop" }} />,
                     <Tab_ShopDetails key="Tab_ShopDetails-0" type={{ name: "Tab_ShopDetails" }} />,
+                    <Tab_AiAssistant key="Tab_AiAssistant-0" type={{ name: "Tab_AiAssistant" }} />,
                 ],
             ],
             widths: ["100%"],
@@ -871,6 +876,7 @@ function ShopGenerator() {
                     shopKeeperName: currentShop.shortData.shopKeeperName || "",
                     type: currentShop.shortData.type || "",
                     location: currentShop.shortData.location || "",
+                    description: currentShop.shortData.description || "",
                 },
                 longData: {
                     shopDetails: currentShop.longData.shopDetails || "",
@@ -917,6 +923,10 @@ function ShopGenerator() {
         }
     };
 
+    const handleAiAssistantChange = (newState) => {
+        console.log("Ai Assistant state updated:", newState);
+    };
+
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {authLoading ? (
@@ -961,6 +971,11 @@ function ShopGenerator() {
                                         savedShops,
                                         onLoadShop: handleLoadShop,
                                         onNewShop: handleNewShop,
+                                    });
+                                case "Tab_AiAssistant":
+                                    return React.cloneElement(tab, {
+                                        currentShop,
+                                        onAiAssistantChange: handleAiAssistantChange,
                                     });
                                 default:
                                     return tab;

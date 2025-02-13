@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 Tab_InventoryTable.displayName = "Inventory Table";
 Tab_InventoryTable.minWidth = 400;
 
-function Tab_InventoryTable({ items, sortConfig, onSort, currentShop, handleGenerateClick }) {
+function Tab_InventoryTable({ items, sortConfig, onSort, currentShopName, handleGenerateClick }) {
     return (
         <div>
             <GenerateButton onClick={handleGenerateClick} />
@@ -15,7 +15,7 @@ function Tab_InventoryTable({ items, sortConfig, onSort, currentShop, handleGene
                 items={items}
                 sortConfig={sortConfig}
                 onSort={onSort}
-                currentShop={currentShop || "Unnamed Shop"}
+                currentShopName={currentShopName}
             />
         </div>
     );
@@ -25,7 +25,7 @@ Tab_InventoryTable.propTypes = {
     items: PropTypes.array.isRequired,
     sortConfig: PropTypes.object.isRequired,
     onSort: PropTypes.func.isRequired,
-    currentShop: PropTypes.string,
+    currentShopName: PropTypes.string.isRequired,
     handleGenerateClick: PropTypes.func.isRequired,
 };
 export default Tab_InventoryTable;
