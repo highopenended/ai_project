@@ -1,11 +1,8 @@
 // import React from 'react';
-import ItemTable from './tab_inventorytable/itemtable/ItemTable';
 import './Tab_InventoryTable.css';
+import ItemTable from '../tab_inventorytable/itemtable/ItemTable';
+import GenerateButton from '../tab_inventorytable/generatebutton/GenerateButton';
 import PropTypes from 'prop-types';
-import GenerateButton from './tab_inventorytable/generatebutton/GenerateButton';
-
-
-
 
 Tab_InventoryTable.displayName = "Inventory Table";
 Tab_InventoryTable.minWidth = 400;

@@ -1,8 +1,8 @@
 // import React, { useState } from 'react';
 import { useState, useEffect } from "react";
 import TabContainer from "./shared/tab/TabContainer";
-import Tab_Parameters from "./tabs/Tab_Parameters";
-import Tab_InventoryTable from "./tabs/Tab_InventoryTable";
+import Tab_Parameters from "./tabs/tab_parameters/Tab_Parameters";
+import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
 import Tab_ChooseShop from "./tabs/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/Tab_ShopDetails";
 import "./ShopGenerator.css";

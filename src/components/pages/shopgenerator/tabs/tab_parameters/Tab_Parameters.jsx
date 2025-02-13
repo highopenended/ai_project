@@ -1,11 +1,11 @@
 // import React from 'react';
-import GoldInput from "./tab_parameters/goldinput/GoldInput";
-import LevelInput from "./tab_parameters/levelinput/LevelInput";
-import BiasGrid from "./tab_parameters/biasgrid/BiasGrid";
-import RaritySliders from "./tab_parameters/raritysliders/RaritySliders";
-import CategoryFilter from "./tab_parameters/categoryfilter/CategoryFilter";
-import SubcategoryFilter from "./tab_parameters/subcategoryfilter/SubcategoryFilter";
-import TraitFilter from "./tab_parameters/traitfilter/TraitFilter";
+import GoldInput from "./goldinput/GoldInput";
+import LevelInput from "./levelinput/LevelInput";
+import BiasGrid from "./biasgrid/BiasGrid";
+import RaritySliders from "./raritysliders/RaritySliders";
+import CategoryFilter from "./categoryfilter/CategoryFilter";
+import SubcategoryFilter from "./subcategoryfilter/SubcategoryFilter";
+import TraitFilter from "./traitfilter/TraitFilter";
 import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
