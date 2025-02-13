@@ -51,13 +51,11 @@ function ShopGenerator() {
     // Core state management
     const [items, setItems] = useState([]); // Current shop inventory
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
-    const [loading, setLoading] = useState(true);
     const [currentGold, setCurrentGold] = useState(0);
     const [lowestLevel, setLowestLevel] = useState(0);
     const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState({ x: 0.5, y: 0.5 }); // Default to center
-    const [hasInitialSort, setHasInitialSort] = useState(false);
     const [rarityDistribution, setRarityDistribution] = useState({
         Common: 95.00,
         Uncommon: 4.50,
@@ -70,6 +68,10 @@ function ShopGenerator() {
     // savedShops maintains the list of all shops for the current user
     const [currentShop, setCurrentShop] = useState(shopData);
     const [savedShops, setSavedShops] = useState([]);
+
+    // Get auth context
+    const { currentUser, isLoading: authLoading } = useAuth();
+
     // Get filter states from context
     const {
         categoryStates,
@@ -99,6 +101,13 @@ function ShopGenerator() {
             console.error('Error loading items:', error);
         }
     }, []);
+
+    // Load shops when auth is ready and user is logged in
+    useEffect(() => {
+        if (!authLoading && currentUser) {
+            loadShops();
+        }
+    }, [authLoading, currentUser]);
 
     // Function to get filtered arrays from Maps
     const getFilteredArray = (stateMap, includeState, defaultMap = new Map()) => {
@@ -264,11 +273,6 @@ function ShopGenerator() {
         );
         setTraitStates(traitMap);
     };
-
-    // Load shops on component mount
-    useEffect(() => {
-        loadShops();
-    }, [currentUser]);
 
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
@@ -818,14 +822,17 @@ function ShopGenerator() {
         }));
     }, [currentGold, lowestLevel, highestLevel, itemBias, rarityDistribution, categoryStates, subcategoryStates, traitStates, items]);
 
-    const { currentUser } = useAuth();
-
     /**
      * Handles saving the current shop state to Firebase
      * This is the single point of persistence for shop data
      * Called by the RightSidebar's SaveShopButton
      */
     const handleSaveShop = async () => {
+        if (!currentUser) {
+            alert('Please log in to save shops');
+            return;
+        }
+
         try {
             const userId = currentUser.uid;
             // Construct a complete snapshot of current shop state
@@ -884,88 +891,92 @@ function ShopGenerator() {
 
     return (
         <div className={`new-test ${isResizing ? "resizing" : ""}`}>
-            {tabGroups.map((tabs, index) => (
-                <TabContainer
-                    key={index}
-                    groupIndex={index}
-                    tabs={tabs.map(tab => {
-                        // Add props based on tab type
-                        switch (tab.type.name) {
-                            case 'Tab_Parameters':
-                                return React.cloneElement(tab, {
-                                    handleGenerateClick,
-                                    currentGold,
-                                    setCurrentGold: handleGoldChange,
-                                    lowestLevel,
-                                    setLowestLevel: handleLowestLevelChange,
-                                    highestLevel,
-                                    setHighestLevel: handleHighestLevelChange,
-                                    rarityDistribution,
-                                    setRarityDistribution: handleRarityDistributionChange,
-                                    itemBias,
-                                    setItemBias: handleBiasChange
-                                });
-                            case 'Tab_InventoryTable':
-                                return React.cloneElement(tab, {
-                                    items,
-                                    sortConfig,
-                                    onSort: handleSort,
-                                    currentShop: currentShop.shortData.shopName
-                                });
-                            case 'Tab_ShopDetails':
-                                return React.cloneElement(tab, {
-                                    currentShop,
-                                    onShopDetailsChange: handleShopDetailsChange,
-                                    onSave: handleSaveShop
-                                });
-                            case 'Tab_ChooseShop':
-                                return React.cloneElement(tab, {
-                                    savedShops,
-                                    onLoadShop: handleLoadShop,
-                                    onNewShop: handleNewShop
-                                });
-                            default:
-                                return tab;
-                        }
-                    })}
-                    draggedTab={draggedTab}
-                    draggedTabIndex={draggedTabIndex}
-                    sourceGroupIndex={sourceGroupIndex}
-                    dropIndicators={dropIndicators}
-                    isLastGroup={index === tabGroups.length - 1}
-                    onResize={handleResize}
-                    style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
-                    onDragStart={(tab, tabIndex) => {
-                        setDraggedTab(tab);
-                        setDraggedTabIndex(tabIndex);
-                        setSourceGroupIndex(index);
-                    }}
-                    onDragEnd={() => {
-                        setDraggedTab(null);
-                        setDraggedTabIndex(null);
-                        setSourceGroupIndex(null);
-                        setIsResizing(false);
-                        setDropIndicators({
-                            leftGroup: null,
-                            rightGroup: null,
-                            betweenGroups: null,
-                            betweenGroupsRight: null,
-                        });
-                    }}
-                    onDropIndicatorChange={(indicators) => {
-                        setDropIndicators((prev) => ({ ...prev, ...indicators }));
-                    }}
-                    onTabMove={(newTabs) => {
-                        if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
-                            handleTabMove(newTabs, sourceGroupIndex, index);
-                        } else {
-                            handleTabMove(newTabs, index);
-                        }
-                    }}
-                    onTabClick={() => {}}
-                    onTabSplit={handleTabSplit}
-                />
-            ))}
+            {authLoading ? (
+                <div>Loading...</div>
+            ) : (
+                tabGroups.map((tabs, index) => (
+                    <TabContainer
+                        key={index}
+                        groupIndex={index}
+                        tabs={tabs.map(tab => {
+                            // Add props based on tab type
+                            switch (tab.type.name) {
+                                case 'Tab_Parameters':
+                                    return React.cloneElement(tab, {
+                                        handleGenerateClick,
+                                        currentGold,
+                                        setCurrentGold: handleGoldChange,
+                                        lowestLevel,
+                                        setLowestLevel: handleLowestLevelChange,
+                                        highestLevel,
+                                        setHighestLevel: handleHighestLevelChange,
+                                        rarityDistribution,
+                                        setRarityDistribution: handleRarityDistributionChange,
+                                        itemBias,
+                                        setItemBias: handleBiasChange
+                                    });
+                                case 'Tab_InventoryTable':
+                                    return React.cloneElement(tab, {
+                                        items,
+                                        sortConfig,
+                                        onSort: handleSort,
+                                        currentShop: currentShop?.shortData?.shopName || 'Unnamed Shop'
+                                    });
+                                case 'Tab_ShopDetails':
+                                    return React.cloneElement(tab, {
+                                        currentShop,
+                                        onShopDetailsChange: handleShopDetailsChange,
+                                        onSave: handleSaveShop
+                                    });
+                                case 'Tab_ChooseShop':
+                                    return React.cloneElement(tab, {
+                                        savedShops,
+                                        onLoadShop: handleLoadShop,
+                                        onNewShop: handleNewShop
+                                    });
+                                default:
+                                    return tab;
+                            }
+                        })}
+                        draggedTab={draggedTab}
+                        draggedTabIndex={draggedTabIndex}
+                        sourceGroupIndex={sourceGroupIndex}
+                        dropIndicators={dropIndicators}
+                        isLastGroup={index === tabGroups.length - 1}
+                        onResize={handleResize}
+                        style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
+                        onDragStart={(tab, tabIndex) => {
+                            setDraggedTab(tab);
+                            setDraggedTabIndex(tabIndex);
+                            setSourceGroupIndex(index);
+                        }}
+                        onDragEnd={() => {
+                            setDraggedTab(null);
+                            setDraggedTabIndex(null);
+                            setSourceGroupIndex(null);
+                            setIsResizing(false);
+                            setDropIndicators({
+                                leftGroup: null,
+                                rightGroup: null,
+                                betweenGroups: null,
+                                betweenGroupsRight: null,
+                            });
+                        }}
+                        onDropIndicatorChange={(indicators) => {
+                            setDropIndicators((prev) => ({ ...prev, ...indicators }));
+                        }}
+                        onTabMove={(newTabs) => {
+                            if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
+                                handleTabMove(newTabs, sourceGroupIndex, index);
+                            } else {
+                                handleTabMove(newTabs, index);
+                            }
+                        }}
+                        onTabClick={() => {}}
+                        onTabSplit={handleTabSplit}
+                    />
+                ))
+            )}
         </div>
     );
 }

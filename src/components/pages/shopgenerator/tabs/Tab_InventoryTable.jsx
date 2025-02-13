@@ -6,17 +6,15 @@ import './Tab_InventoryTable.css';
 Tab_InventoryTable.displayName = "Inventory Table";
 Tab_InventoryTable.minWidth = 400;
 
-function Tab_InventoryTable() {
-    const { items, sortConfig, handleSort, currentShop } = useShopGenerator();
-
+function Tab_InventoryTable({ items, sortConfig, onSort, currentShop }) {
     return (
         <div>
             Inventory Table
             <ItemTable
                 items={items}
                 sortConfig={sortConfig}
-                onSort={handleSort}
-                currentShop={currentShop.shortData.shopName || "Unnamed Shop"}
+                onSort={onSort}
+                currentShop={currentShop || "Unnamed Shop"}
             />
         </div>
     );
