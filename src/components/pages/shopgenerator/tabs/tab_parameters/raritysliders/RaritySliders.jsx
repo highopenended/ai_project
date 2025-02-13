@@ -221,7 +221,7 @@ function RaritySliders({ setRarityDistribution, rarityDistribution }) {
             }
         >
             {!isCollapsed && (
-                <div>
+                <div className="section-content">
                     {RARITIES.map(rarity => (
                         <div 
                             key={rarity} 

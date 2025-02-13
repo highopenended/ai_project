@@ -48,10 +48,14 @@ import { useAuth } from '../../../context/AuthContext';
 const STORAGE_KEY = "tabGroupsState";
 
 function ShopGenerator() {
+
+    // Get auth context
+    const { currentUser, isLoading: authLoading } = useAuth();
+
     // Core state management
     const [items, setItems] = useState([]); // Current shop inventory
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
-    const [currentGold, setCurrentGold] = useState(0);
+    const [currentGold, setCurrentGold] = useState(1000);
     const [lowestLevel, setLowestLevel] = useState(0);
     const [highestLevel, setHighestLevel] = useState(10);
     const [sortConfig, setSortConfig] = useState([]);
@@ -69,8 +73,6 @@ function ShopGenerator() {
     const [currentShop, setCurrentShop] = useState(shopData);
     const [savedShops, setSavedShops] = useState([]);
 
-    // Get auth context
-    const { currentUser, isLoading: authLoading } = useAuth();
 
     // Get filter states from context
     const {
