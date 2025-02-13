@@ -13,6 +13,7 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     max-height: calc(100vh - 3rem - 4rem - 2rem - 60px); /* Adjusted to account for totals height */
     overflow-y: auto;
+    font-size: .7rem;
 }
 
 .item-table {
@@ -20,7 +21,6 @@
     border-collapse: collapse;
     table-layout: fixed;
 }
-
 
 /* Header styling */
 .item-table thead {
@@ -34,10 +34,11 @@
 .item-table th,
 .item-table td {
     /* padding: 12px 16px; */
-    text-align: left;
+    text-align: center;
     color: rgba(255, 255, 255, 0.9);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
 
 /* Column widths */
 .col-count { 

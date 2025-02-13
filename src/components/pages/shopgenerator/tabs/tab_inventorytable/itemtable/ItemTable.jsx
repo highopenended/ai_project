@@ -37,7 +37,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                     <table className="item-table">
                         <thead>
                             <tr>
-                                {renderColumnHeader('count', 'Count')}
+                                {renderColumnHeader('count', '#')}
                                 {renderColumnHeader('name', 'Item Name')}
                                 {renderColumnHeader('rarity', 'Rarity')}
                                 {renderColumnHeader('level', 'Level')}
