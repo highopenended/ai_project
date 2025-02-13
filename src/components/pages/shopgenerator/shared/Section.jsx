@@ -14,6 +14,7 @@ const Section = ({ title, buttonGroup, children }) => {
 
             {/* Full size section with title and button group */}
             {title && buttonGroup && children}
+            
         </div>
     );
 };
