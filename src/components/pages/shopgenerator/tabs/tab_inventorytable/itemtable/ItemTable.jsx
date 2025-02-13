@@ -31,7 +31,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
 
     if (!items || items.length === 0) {
         return (
-            <div className="item-table-wrapper empty-state">
+            <div className="item-table-wrapper">
                 <div className="item-table-container">
                     <h2 className="shop-title">{currentShopName}</h2>
                     <table className="item-table">
