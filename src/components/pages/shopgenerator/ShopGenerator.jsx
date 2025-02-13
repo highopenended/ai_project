@@ -556,7 +556,7 @@ function ShopGenerator() {
         if (groupIndex >= tabGroups.length - 1) return;
 
         setIsResizing(true);
-        const container = document.querySelector(".new-test");
+        const container = document.querySelector(".shop-generator");
         if (!container) return;
 
         const totalWidth = container.clientWidth;
@@ -905,7 +905,7 @@ function ShopGenerator() {
     };
 
     return (
-        <div className={`new-test ${isResizing ? "resizing" : ""}`}>
+        <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {authLoading ? (
                 <div>Loading...</div>
             ) : (
