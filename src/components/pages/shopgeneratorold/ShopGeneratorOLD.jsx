@@ -375,74 +375,7 @@ function ShopGenerator() {
         }
     };
 
-    /**
-     * Loads all shops for the current user from Firebase
-     * Called on component mount and after successful saves
-     */
-    const loadShops = async () => {
-        try {
-            const userId = currentUser.uid;
-            const shops = await loadShopData(userId);
-            setSavedShops(shops);
-        } catch (error) {
-            console.error('Error loading shops:', error);
-        }
-    };
-
-    /**
-     * Handles loading a specific shop's data
-     * This is the central point for restoring all shop state
-     * Called when a user selects a shop from the saved shops list
-     */
-    const handleLoadShop = (shop) => {
-        console.log('Loading shop:', shop);
-        // Update all state variables from the loaded shop
-        setCurrentShop(shop);
-        setCurrentGold(shop.parameters.goldAmount || 0);
-        setLowestLevel(shop.parameters.levelLow || 0);
-        setHighestLevel(shop.parameters.levelHigh || 10);
-        setItemBias(shop.parameters.shopBias || { x: 0.5, y: 0.5 });
-        setRarityDistribution(shop.parameters.rarityDistribution || {
-            Common: 95.00,
-            Uncommon: 4.50,
-            Rare: 0.49,
-            Unique: 0.01
-        });
-        setItems(shop.parameters.currentStock || []);
-
-        // Restore filter states from saved data
-        const categoryMap = new Map();
-        shop.parameters.categories?.included?.forEach(category => 
-            categoryMap.set(category, SELECTION_STATES.INCLUDE)
-        );
-        shop.parameters.categories?.excluded?.forEach(category => 
-            categoryMap.set(category, SELECTION_STATES.EXCLUDE)
-        );
-        setCategoryStates(categoryMap);
-
-        const subcategoryMap = new Map();
-        shop.parameters.subcategories?.included?.forEach(subcategory => 
-            subcategoryMap.set(subcategory, SELECTION_STATES.INCLUDE)
-        );
-        shop.parameters.subcategories?.excluded?.forEach(subcategory => 
-            subcategoryMap.set(subcategory, SELECTION_STATES.EXCLUDE)
-        );
-        setSubcategoryStates(subcategoryMap);
-
-        const traitMap = new Map();
-        shop.parameters.traits?.included?.forEach(trait => 
-            traitMap.set(trait, SELECTION_STATES.INCLUDE)
-        );
-        shop.parameters.traits?.excluded?.forEach(trait => 
-            traitMap.set(trait, SELECTION_STATES.EXCLUDE)
-        );
-        setTraitStates(traitMap);
-    };
-
-    useEffect(() => {
-        loadShops();
-    }, []);
-
+    
     useEffect(() => {
         setCurrentShop(prevShop => ({
             ...prevShop,
