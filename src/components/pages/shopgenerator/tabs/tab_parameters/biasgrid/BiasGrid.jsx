@@ -96,7 +96,7 @@ function BiasGrid({ setItemBias, itemBias }) {
                 <ButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             }
         >
-            <div className="bias-grid">
+            {/* <div className="bias-grid"> */}
                 {!isCollapsed && (
                     <div className="bias-grid-content">
                         <div className="grid-label top">Expensive</div>
@@ -133,7 +133,7 @@ function BiasGrid({ setItemBias, itemBias }) {
                         </div>
                     </div>
                 )}
-            </div>
+            {/* </div> */}
         </Section>
     );
 }

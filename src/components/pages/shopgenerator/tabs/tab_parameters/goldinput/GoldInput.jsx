@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./GoldInput.css";
-import Section_OneLine from "../../../shared/Section_OneLine";
+import Section from "../../../shared/Section";
 
 function GoldInput({ setCurrentGold, currentGold }) {
     const [displayValue, setDisplayValue] = useState("");
@@ -73,7 +73,7 @@ function GoldInput({ setCurrentGold, currentGold }) {
     };
 
     return (
-        <Section_OneLine>
+        <Section>
             <div className="input-with-suffix">
                 <input
                     type="text"
@@ -87,7 +87,7 @@ function GoldInput({ setCurrentGold, currentGold }) {
                 />
                 <span className="suffix">gp</span>
             </div>
-        </Section_OneLine>
+        </Section>
     );
 }
 

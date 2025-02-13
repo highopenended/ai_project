@@ -1,7 +1,7 @@
 .section{
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    /* gap: 0.25rem; */
     border: 1px solid var(--dark-border-color);
     border-radius: 6px;
     /* border: 1px solid yellow; */
@@ -13,15 +13,21 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    /* padding-left: 0.5rem; */
+}
+
+.section-content {
+    padding-left: 0.5rem;
 }
 
 .section-header .buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.25rem;    
 }
 
 .section-header h3 {
     margin: 0;
     font-size: 1rem;
     font-weight: 600;
+    padding-left: 0.5rem;
 }

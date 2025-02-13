@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import PropTypes from "prop-types";
 import "./LevelInput.css";
-import Section_OneLine from "../../../shared/Section_OneLine";
+import Section from "../../../shared/Section";
 
 function LevelInput({ lowestLevel, highestLevel, setLowestLevel, setHighestLevel }) {
     const [localLowest, setLocalLowest] = useState(lowestLevel.toString());
@@ -119,7 +119,7 @@ function LevelInput({ lowestLevel, highestLevel, setLowestLevel, setHighestLevel
     }, [lowestLevel, highestLevel]);
 
     return (
-        <Section_OneLine title="Level Range">
+        <Section title="Level Range">
             <div className="level-input-group">
                 <input 
                     type="text"
@@ -143,7 +143,7 @@ function LevelInput({ lowestLevel, highestLevel, setLowestLevel, setHighestLevel
                     autoComplete="off"
                 />
             </div>
-        </Section_OneLine>
+        </Section>
     );
 }
 
