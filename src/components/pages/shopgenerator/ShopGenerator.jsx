@@ -784,42 +784,55 @@ function ShopGenerator() {
 
     // Shop state synchronization
     useEffect(() => {
-        setCurrentShop(prevShop => ({
-            ...prevShop,
-            parameters: {
-                ...prevShop.parameters,
-                goldAmount: currentGold,
-                levelLow: lowestLevel,
-                levelHigh: highestLevel,
-                shopBias: itemBias,
-                rarityDistribution,
-                categories: {
-                    included: Array.from((categoryStates || new Map()).entries())
-                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                        .map(([category]) => category),
-                    excluded: Array.from((categoryStates || new Map()).entries())
-                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                        .map(([category]) => category)
-                },
-                subcategories: {
-                    included: Array.from((subcategoryStates || new Map()).entries())
-                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                        .map(([subcategory]) => subcategory),
-                    excluded: Array.from((subcategoryStates || new Map()).entries())
-                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                        .map(([subcategory]) => subcategory)
-                },
-                traits: {
-                    included: Array.from((traitStates || new Map()).entries())
-                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                        .map(([trait]) => trait),
-                    excluded: Array.from((traitStates || new Map()).entries())
-                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                        .map(([trait]) => trait)
-                },
-                currentStock: items
-            }
-        }));
+        const updateTimeout = setTimeout(() => {
+            setCurrentShop(prevShop => {
+                const newParameters = {
+                    ...prevShop.parameters,
+                    goldAmount: currentGold,
+                    levelLow: lowestLevel,
+                    levelHigh: highestLevel,
+                    shopBias: itemBias,
+                    rarityDistribution,
+                    categories: {
+                        included: Array.from((categoryStates || new Map()).entries())
+                            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                            .map(([category]) => category),
+                        excluded: Array.from((categoryStates || new Map()).entries())
+                            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                            .map(([category]) => category)
+                    },
+                    subcategories: {
+                        included: Array.from((subcategoryStates || new Map()).entries())
+                            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                            .map(([subcategory]) => subcategory),
+                        excluded: Array.from((subcategoryStates || new Map()).entries())
+                            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                            .map(([subcategory]) => subcategory)
+                    },
+                    traits: {
+                        included: Array.from((traitStates || new Map()).entries())
+                            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                            .map(([trait]) => trait),
+                        excluded: Array.from((traitStates || new Map()).entries())
+                            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                            .map(([trait]) => trait)
+                    },
+                    currentStock: items
+                };
+
+                // Only update if there are actual changes
+                if (JSON.stringify(prevShop.parameters) === JSON.stringify(newParameters)) {
+                    return prevShop;
+                }
+
+                return {
+                    ...prevShop,
+                    parameters: newParameters
+                };
+            });
+        }, 100); // Debounce updates
+
+        return () => clearTimeout(updateTimeout);
     }, [currentGold, lowestLevel, highestLevel, itemBias, rarityDistribution, categoryStates, subcategoryStates, traitStates, items]);
 
     /**

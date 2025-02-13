@@ -10,7 +10,7 @@ import TraitFilter from "./tab_parameters/TraitFilter";
 import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
-Tab_Parameters.displayName = "Shop Details";
+Tab_Parameters.displayName = "Parameters";
 Tab_Parameters.minWidth = 200;
 
 function Tab_Parameters({

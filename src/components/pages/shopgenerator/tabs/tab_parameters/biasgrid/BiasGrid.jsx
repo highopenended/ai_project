@@ -6,47 +6,72 @@ import Section from "../../../shared/Section";
 
 function BiasGrid({ setItemBias, itemBias }) {
     const gridRef = useRef(null);
-    const [position, setPosition] = useState(itemBias || { x: 0.5, y: 0.5 }); // Use value if provided, otherwise center
+    const positionRef = useRef(itemBias || { x: 0.5, y: 0.5 });
+    const [position, setPosition] = useState(itemBias || { x: 0.5, y: 0.5 });
     const [isDragging, setIsDragging] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const frameRef = useRef();
 
     // Update position when value prop changes
     useEffect(() => {
-        if (itemBias) {
+        if (!isDragging && itemBias) {
+            positionRef.current = itemBias;
             setPosition(itemBias);
         }
-    }, [itemBias]);
+    }, [itemBias, isDragging]);
 
-    const updatePosition = (clientX, clientY) => {
-        if (!gridRef.current) return;
+    const calculateNewPosition = (clientX, clientY) => {
+        if (!gridRef.current) return null;
 
         const rect = gridRef.current.getBoundingClientRect();
         const x = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        const y = Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height)); // Invert Y so 0 is bottom
+        const y = Math.max(0, Math.min(1, 1 - (clientY - rect.top) / rect.height));
 
-        setPosition({ x, y });
-        setItemBias({ x, y });
+        return { x, y };
+    };
+
+    const updateVisualPosition = (newPos) => {
+        if (frameRef.current) {
+            cancelAnimationFrame(frameRef.current);
+        }
+
+        frameRef.current = requestAnimationFrame(() => {
+            setPosition(newPos);
+        });
     };
 
     const handleMouseDown = (e) => {
-        e.preventDefault(); // Prevent text selection
+        e.preventDefault();
         setIsDragging(true);
-        updatePosition(e.clientX, e.clientY);
+        const newPos = calculateNewPosition(e.clientX, e.clientY);
+        if (newPos) {
+            positionRef.current = newPos;
+            updateVisualPosition(newPos);
+        }
     };
 
     const handleMouseMove = (e) => {
         if (!isDragging) return;
         e.preventDefault();
-        updatePosition(e.clientX, e.clientY);
+
+        const newPos = calculateNewPosition(e.clientX, e.clientY);
+        if (newPos) {
+            positionRef.current = newPos;
+            updateVisualPosition(newPos);
+        }
     };
 
     const handleMouseUp = () => {
         setIsDragging(false);
+        // Only update parent state when dragging ends
+        setItemBias(positionRef.current);
     };
 
     const handleReset = () => {
-        setPosition({ x: 0.5, y: 0.5 });
-        setItemBias({ x: 0.5, y: 0.5 });
+        const newPos = { x: 0.5, y: 0.5 };
+        positionRef.current = newPos;
+        setPosition(newPos);
+        setItemBias(newPos);
     };
 
     useEffect(() => {
@@ -56,6 +81,9 @@ function BiasGrid({ setItemBias, itemBias }) {
         }
 
         return () => {
+            if (frameRef.current) {
+                cancelAnimationFrame(frameRef.current);
+            }
             window.removeEventListener("mousemove", handleMouseMove);
             window.removeEventListener("mouseup", handleMouseUp);
         };
