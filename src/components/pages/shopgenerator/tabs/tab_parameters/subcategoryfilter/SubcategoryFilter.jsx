@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
-import { SELECTION_STATES } from "../../../../../context/shopGeneratorConstants";
-import Tag from "../../shared/Tag";
-import Section from "../../shared/Section";
-import ButtonGroup from "../../shared/ButtonGroup";
+import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext";
+import { SELECTION_STATES } from "../../../../../../context/shopGeneratorConstants";
+import Tag from "../../../shared/Tag";
+import Section from "../../../shared/Section";
+import ButtonGroup from "../../../shared/ButtonGroup";
 
 function SubcategoryFilter() {
     const { categoryData, categoryStates, getSubcategoryState, toggleSubcategory, clearSubcategorySelections } =

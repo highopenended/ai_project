@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import './ItemTable.css';
-import { RARITY_COLORS } from '../../../../../constants/rarityColors';
+import { RARITY_COLORS } from '../../../../../../constants/rarityColors';
 
 function ItemTable({ items, sortConfig, onSort, currentShop }) {
     // Helper function to get sort indicator and order

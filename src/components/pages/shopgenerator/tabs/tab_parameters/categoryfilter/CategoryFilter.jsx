@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useShopGenerator } from "../../../../../context/ShopGeneratorContext";
-import Tag from "../../shared/Tag";
-import Section from "../../shared/Section";
-import ButtonGroup from "../../shared/ButtonGroup";
+import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext";
+import Tag from "../../../shared/Tag";
+import Section from "../../../shared/Section";
+import ButtonGroup from "../../../shared/ButtonGroup";
 
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useShopGenerator();

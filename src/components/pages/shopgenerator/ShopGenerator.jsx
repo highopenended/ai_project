@@ -7,14 +7,13 @@ import Tab_ChooseShop from "./tabs/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/Tab_ShopDetails";
 import "./ShopGenerator.css";
 import React from "react";
-import itemData from '../../../../public/item-table.json';
-import { useShopGenerator } from '../../../context/ShopGeneratorContext';
-import { SELECTION_STATES } from '../../../context/shopGeneratorConstants';
-import { generateShopInventory } from './utils/generateShopInventory';
-import shopData from './utils/shopData';
-import { saveOrUpdateShopData, loadShopData } from './utils/firebaseShopUtils';
-import { useAuth } from '../../../context/AuthContext';
-
+import itemData from "../../../../public/item-table.json";
+import { useShopGenerator } from "../../../context/ShopGeneratorContext";
+import { SELECTION_STATES } from "../../../context/shopGeneratorConstants";
+import { generateShopInventory } from "./utils/generateShopInventory";
+import shopData from "./utils/shopData";
+import { saveOrUpdateShopData, loadShopData } from "./utils/firebaseShopUtils";
+import { useAuth } from "../../../context/AuthContext";
 
 /**
  * ShopGenerator Component
@@ -48,7 +47,6 @@ import { useAuth } from '../../../context/AuthContext';
 const STORAGE_KEY = "tabGroupsState";
 
 function ShopGenerator() {
-
     // Get auth context
     const { currentUser, isLoading: authLoading } = useAuth();
 
@@ -61,10 +59,10 @@ function ShopGenerator() {
     const [sortConfig, setSortConfig] = useState([]);
     const [itemBias, setItemBias] = useState({ x: 0.5, y: 0.5 }); // Default to center
     const [rarityDistribution, setRarityDistribution] = useState({
-        Common: 95.00,
-        Uncommon: 4.50,
+        Common: 95.0,
+        Uncommon: 4.5,
         Rare: 0.49,
-        Unique: 0.01
+        Unique: 0.01,
     });
 
     // Shop state management
@@ -73,34 +71,27 @@ function ShopGenerator() {
     const [currentShop, setCurrentShop] = useState(shopData);
     const [savedShops, setSavedShops] = useState([]);
 
-
     // Get filter states from context
-    const {
-        categoryStates,
-        subcategoryStates,
-        traitStates,
-        setCategoryStates,
-        setSubcategoryStates,
-        setTraitStates
-    } = useShopGenerator();
+    const { categoryStates, subcategoryStates, traitStates, setCategoryStates, setSubcategoryStates, setTraitStates } =
+        useShopGenerator();
 
     // Initial data loading
     useEffect(() => {
         try {
             // Format and process the imported data
-            console.log('Loading items from itemData...');
-            console.log('Raw itemData length:', itemData.length);
-            
-            const formattedData = itemData.map(item => ({
+            console.log("Loading items from itemData...");
+            console.log("Raw itemData length:", itemData.length);
+
+            const formattedData = itemData.map((item) => ({
                 ...item,
-                bulk: item.bulk?.trim() === '' ? '-' : item.bulk,
-                level: item.level ? item.level : '0'
+                bulk: item.bulk?.trim() === "" ? "-" : item.bulk,
+                level: item.level ? item.level : "0",
             }));
-            
-            console.log('Formatted data length:', formattedData.length);
+
+            console.log("Formatted data length:", formattedData.length);
             setAllItems(formattedData);
         } catch (error) {
-            console.error('Error loading items:', error);
+            console.error("Error loading items:", error);
         }
     }, []);
 
@@ -121,70 +112,70 @@ function ShopGenerator() {
 
     // Shop generation
     const handleGenerateClick = () => {
-        console.log('handleGenerateClick called');
-        
+        console.log("handleGenerateClick called");
+
         // Validate required data
         if (!allItems || allItems.length === 0) {
-            console.error('No items loaded in allItems!');
+            console.error("No items loaded in allItems!");
             return;
         }
 
         if (!categoryStates || !subcategoryStates || !traitStates) {
-            console.error('Filter states not initialized!', {
+            console.error("Filter states not initialized!", {
                 categoryStates: !!categoryStates,
                 subcategoryStates: !!subcategoryStates,
-                traitStates: !!traitStates
+                traitStates: !!traitStates,
             });
             return;
         }
 
-        console.log('Current state:', {
+        console.log("Current state:", {
             currentGold,
             lowestLevel,
             highestLevel,
             itemBias,
             rarityDistribution,
-            allItemsLength: allItems.length
+            allItemsLength: allItems.length,
         });
 
         // Convert Maps to arrays of included/excluded items
         const includedCategories = Array.from(categoryStates.entries())
             .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
             .map(([item]) => item);
-            
+
         const excludedCategories = Array.from(categoryStates.entries())
             .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
             .map(([item]) => item);
-            
+
         const includedSubcategories = Array.from(subcategoryStates.entries())
             .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
             .map(([item]) => item);
-            
+
         const excludedSubcategories = Array.from(subcategoryStates.entries())
             .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
             .map(([item]) => item);
-            
+
         const includedTraits = Array.from(traitStates.entries())
             .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
             .map(([item]) => item);
-            
+
         const excludedTraits = Array.from(traitStates.entries())
             .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
             .map(([item]) => item);
 
-        console.log('Filter states:', {
+        console.log("Filter states:", {
             categoryStates: Array.from(categoryStates.entries()),
             subcategoryStates: Array.from(subcategoryStates.entries()),
-            traitStates: Array.from(traitStates.entries())
+            traitStates: Array.from(traitStates.entries()),
         });
 
-        console.log('Processed filters:', {
+        console.log("Processed filters:", {
             includedCategories,
             excludedCategories,
             includedSubcategories,
             excludedSubcategories,
             includedTraits,
-            excludedTraits
+            excludedTraits,
         });
 
         const result = generateShopInventory({
@@ -199,16 +190,16 @@ function ShopGenerator() {
             excludedSubcategories,
             includedTraits,
             excludedTraits,
-            allItems
+            allItems,
         });
 
-        console.log('Generation result:', result);
-        
+        console.log("Generation result:", result);
+
         if (result && Array.isArray(result.items)) {
             setItems(result.items);
-            console.log('Items state updated with', result.items.length, 'items');
+            console.log("Items state updated with", result.items.length, "items");
         } else {
-            console.error('Invalid result from generateShopInventory:', result);
+            console.error("Invalid result from generateShopInventory:", result);
         }
     };
 
@@ -222,7 +213,7 @@ function ShopGenerator() {
             const shops = await loadShopData(userId);
             setSavedShops(shops);
         } catch (error) {
-            console.error('Error loading shops:', error);
+            console.error("Error loading shops:", error);
         }
     };
 
@@ -232,47 +223,45 @@ function ShopGenerator() {
      * Called when a user selects a shop from the saved shops list
      */
     const handleLoadShop = (shop) => {
-        console.log('Loading shop:', shop);
+        console.log("Loading shop:", shop);
         // Update all state variables from the loaded shop
         setCurrentShop(shop);
         setCurrentGold(shop.parameters.goldAmount || 0);
         setLowestLevel(shop.parameters.levelLow || 0);
         setHighestLevel(shop.parameters.levelHigh || 10);
         setItemBias(shop.parameters.shopBias || { x: 0.5, y: 0.5 });
-        setRarityDistribution(shop.parameters.rarityDistribution || {
-            Common: 95.00,
-            Uncommon: 4.50,
-            Rare: 0.49,
-            Unique: 0.01
-        });
+        setRarityDistribution(
+            shop.parameters.rarityDistribution || {
+                Common: 95.0,
+                Uncommon: 4.5,
+                Rare: 0.49,
+                Unique: 0.01,
+            }
+        );
         setItems(shop.parameters.currentStock || []);
 
         // Restore filter states from saved data
         const categoryMap = new Map();
-        shop.parameters.categories?.included?.forEach(category => 
+        shop.parameters.categories?.included?.forEach((category) =>
             categoryMap.set(category, SELECTION_STATES.INCLUDE)
         );
-        shop.parameters.categories?.excluded?.forEach(category => 
+        shop.parameters.categories?.excluded?.forEach((category) =>
             categoryMap.set(category, SELECTION_STATES.EXCLUDE)
         );
         setCategoryStates(categoryMap);
 
         const subcategoryMap = new Map();
-        shop.parameters.subcategories?.included?.forEach(subcategory => 
+        shop.parameters.subcategories?.included?.forEach((subcategory) =>
             subcategoryMap.set(subcategory, SELECTION_STATES.INCLUDE)
         );
-        shop.parameters.subcategories?.excluded?.forEach(subcategory => 
+        shop.parameters.subcategories?.excluded?.forEach((subcategory) =>
             subcategoryMap.set(subcategory, SELECTION_STATES.EXCLUDE)
         );
         setSubcategoryStates(subcategoryMap);
 
         const traitMap = new Map();
-        shop.parameters.traits?.included?.forEach(trait => 
-            traitMap.set(trait, SELECTION_STATES.INCLUDE)
-        );
-        shop.parameters.traits?.excluded?.forEach(trait => 
-            traitMap.set(trait, SELECTION_STATES.EXCLUDE)
-        );
+        shop.parameters.traits?.included?.forEach((trait) => traitMap.set(trait, SELECTION_STATES.INCLUDE));
+        shop.parameters.traits?.excluded?.forEach((trait) => traitMap.set(trait, SELECTION_STATES.EXCLUDE));
         setTraitStates(traitMap);
     };
 
@@ -284,46 +273,49 @@ function ShopGenerator() {
         if (savedState) {
             const { groups, widths } = JSON.parse(savedState);
             // Recreate tab components from saved data
-            const recreatedGroups = groups.map((group) =>
-                group.map((tab) => {
-                    // Create component with appropriate props based on type
-                    switch (tab.type) {
-                        case 'Tab_Parameters':
-                            return (
-                                <Tab_Parameters
-                                    key={tab.key}
-                                    type={{ name: 'Tab_Parameters' }}
-                                    handleGenerateClick={handleGenerateClick}
-                                    currentGold={currentGold}
-                                    setCurrentGold={setCurrentGold}
-                                    lowestLevel={lowestLevel}
-                                    setLowestLevel={setLowestLevel}
-                                    highestLevel={highestLevel}
-                                    setHighestLevel={setHighestLevel}
-                                    rarityDistribution={rarityDistribution}
-                                    setRarityDistribution={setRarityDistribution}
-                                    itemBias={itemBias}
-                                    setItemBias={setItemBias}
-                                />
-                            );
-                        case 'Tab_InventoryTable':
-                            return (
-                                <Tab_InventoryTable 
-                                    key={tab.key}
-                                    type={{ name: 'Tab_InventoryTable' }}
-                                    items={items}
-                                    currentShop={currentShop.shortData.shopName}
-                                />
-                            );
-                        case 'Tab_ChooseShop':
-                            return <Tab_ChooseShop key={tab.key} type={{ name: 'Tab_ChooseShop' }} />;
-                        case 'Tab_ShopDetails':
-                            return <Tab_ShopDetails key={tab.key} type={{ name: 'Tab_ShopDetails' }} />;
-                        default:
-                            console.warn(`Unknown tab type: ${tab.type}`);
-                            return null;
-                    }
-                }).filter(Boolean) // Remove any null components
+            const recreatedGroups = groups.map(
+                (group) =>
+                    group
+                        .map((tab) => {
+                            // Create component with appropriate props based on type
+                            switch (tab.type) {
+                                case "Tab_Parameters":
+                                    return (
+                                        <Tab_Parameters
+                                            key={tab.key}
+                                            type={{ name: "Tab_Parameters" }}
+                                            currentGold={currentGold}
+                                            setCurrentGold={setCurrentGold}
+                                            lowestLevel={lowestLevel}
+                                            setLowestLevel={setLowestLevel}
+                                            highestLevel={highestLevel}
+                                            setHighestLevel={setHighestLevel}
+                                            rarityDistribution={rarityDistribution}
+                                            setRarityDistribution={setRarityDistribution}
+                                            itemBias={itemBias}
+                                            setItemBias={setItemBias}
+                                        />
+                                    );
+                                case "Tab_InventoryTable":
+                                    return (
+                                        <Tab_InventoryTable
+                                            key={tab.key}
+                                            type={{ name: "Tab_InventoryTable" }}
+                                            items={items}
+                                            currentShop={currentShop.shortData.shopName}
+                                            handleGenerateClick={handleGenerateClick}
+                                        />
+                                    );
+                                case "Tab_ChooseShop":
+                                    return <Tab_ChooseShop key={tab.key} type={{ name: "Tab_ChooseShop" }} />;
+                                case "Tab_ShopDetails":
+                                    return <Tab_ShopDetails key={tab.key} type={{ name: "Tab_ShopDetails" }} />;
+                                default:
+                                    console.warn(`Unknown tab type: ${tab.type}`);
+                                    return null;
+                            }
+                        })
+                        .filter(Boolean) // Remove any null components
             );
             return { groups: recreatedGroups, widths };
         }
@@ -334,7 +326,7 @@ function ShopGenerator() {
                 [
                     <Tab_Parameters
                         key="Tab_Parameters-0"
-                        type={{ name: 'Tab_Parameters' }}
+                        type={{ name: "Tab_Parameters" }}
                         handleGenerateClick={handleGenerateClick}
                         currentGold={currentGold}
                         setCurrentGold={setCurrentGold}
@@ -347,14 +339,14 @@ function ShopGenerator() {
                         itemBias={itemBias}
                         setItemBias={setItemBias}
                     />,
-                    <Tab_InventoryTable 
+                    <Tab_InventoryTable
                         key="Tab_InventoryTable-0"
-                        type={{ name: 'Tab_InventoryTable' }}
+                        type={{ name: "Tab_InventoryTable" }}
                         items={items}
                         currentShop={currentShop.shortData.shopName}
                     />,
-                    <Tab_ChooseShop key="Tab_ChooseShop-0" type={{ name: 'Tab_ChooseShop' }} />,
-                    <Tab_ShopDetails key="Tab_ShopDetails-0" type={{ name: 'Tab_ShopDetails' }} />,
+                    <Tab_ChooseShop key="Tab_ChooseShop-0" type={{ name: "Tab_ChooseShop" }} />,
+                    <Tab_ShopDetails key="Tab_ShopDetails-0" type={{ name: "Tab_ShopDetails" }} />,
                 ],
             ],
             widths: ["100%"],
@@ -421,7 +413,6 @@ function ShopGenerator() {
         }
     }, [tabGroups.length]);
 
-    
     // Add window-level mouse up handler
     useEffect(() => {
         const handleGlobalMouseUp = () => {
@@ -591,18 +582,18 @@ function ShopGenerator() {
 
     // Rarity order map for sorting (from least rare to most rare)
     const RARITY_ORDER = {
-        'Common': 1,
-        'Uncommon': 2,
-        'Rare': 3,
-        'Unique': 4
+        Common: 1,
+        Uncommon: 2,
+        Rare: 3,
+        Unique: 4,
     };
 
     // Price conversion helper
     const convertPriceToGold = (priceString) => {
         if (!priceString) return 0;
-        
+
         // Remove commas from the price string before parsing
-        const cleanPriceString = priceString.replace(/,/g, '');
+        const cleanPriceString = priceString.replace(/,/g, "");
         const match = cleanPriceString.match(/(\d+(?:\.\d+)?)\s*(gp|sp|cp)/);
         if (!match) return 0;
 
@@ -610,50 +601,62 @@ function ShopGenerator() {
         const numValue = parseFloat(value);
 
         switch (unit) {
-            case 'gp': return numValue;
-            case 'sp': return numValue / 10;
-            case 'cp': return numValue / 100;
-            default: return 0;
+            case "gp":
+                return numValue;
+            case "sp":
+                return numValue / 10;
+            case "cp":
+                return numValue / 100;
+            default:
+                return 0;
         }
     };
 
     // Sorting functionality
     const getNextSortDirection = (currentDirection, columnName) => {
         // Special handling for text-based columns
-        if (columnName === 'name' || columnName === 'item_category' || columnName === 'item_subcategory') {
+        if (columnName === "name" || columnName === "item_category" || columnName === "item_subcategory") {
             switch (currentDirection) {
-                case undefined: return 'asc';  // First click: alphabetical
-                case 'asc': return 'desc';     // Second click: reverse alphabetical
-                case 'desc': return undefined; // Third click: back to default
-                default: return undefined;
+                case undefined:
+                    return "asc"; // First click: alphabetical
+                case "asc":
+                    return "desc"; // Second click: reverse alphabetical
+                case "desc":
+                    return undefined; // Third click: back to default
+                default:
+                    return undefined;
             }
         }
-        
+
         // Default behavior for price and total
         switch (currentDirection) {
-            case undefined: return 'desc';
-            case 'desc': return 'asc';
-            case 'asc': return undefined;
-            default: return undefined;
+            case undefined:
+                return "desc";
+            case "desc":
+                return "asc";
+            case "asc":
+                return undefined;
+            default:
+                return undefined;
         }
     };
 
     const handleSort = (columnName) => {
-        setSortConfig(prevConfig => {
+        setSortConfig((prevConfig) => {
             // Remove the column if it exists in the current config
-            const newConfig = prevConfig.filter(sort => sort.column !== columnName);
-            
+            const newConfig = prevConfig.filter((sort) => sort.column !== columnName);
+
             // Get the current direction for this column
-            const currentDirection = prevConfig.find(sort => sort.column === columnName)?.direction;
-            
+            const currentDirection = prevConfig.find((sort) => sort.column === columnName)?.direction;
+
             // Get the next direction in the cycle
             const nextDirection = getNextSortDirection(currentDirection, columnName);
-            
+
             // If there's a next direction, add it to the end of the queue
             if (nextDirection) {
                 newConfig.push({ column: columnName, direction: nextDirection });
             }
-            
+
             return newConfig;
         });
     };
@@ -664,31 +667,31 @@ function ShopGenerator() {
         return [...itemsToSort].sort((a, b) => {
             for (const { column, direction } of sortConfig) {
                 let comparison = 0;
-                
+
                 switch (column) {
-                    case 'count':
+                    case "count":
                         comparison = a.count - b.count;
                         break;
-                    case 'name':
+                    case "name":
                         comparison = a.name.localeCompare(b.name);
                         break;
-                    case 'level':
+                    case "level":
                         comparison = parseInt(a.level) - parseInt(b.level);
                         break;
-                    case 'price':
+                    case "price":
                         comparison = convertPriceToGold(a.price) - convertPriceToGold(b.price);
                         break;
-                    case 'total':
+                    case "total":
                         comparison = a.total - b.total;
                         break;
-                    case 'rarity':
+                    case "rarity":
                         comparison = RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
                         break;
-                    case 'item_category':
-                        comparison = (a.item_category || '').localeCompare(b.item_category || '');
+                    case "item_category":
+                        comparison = (a.item_category || "").localeCompare(b.item_category || "");
                         break;
-                    case 'item_subcategory':
-                        comparison = (a.item_subcategory || '').localeCompare(b.item_subcategory || '');
+                    case "item_subcategory":
+                        comparison = (a.item_subcategory || "").localeCompare(b.item_subcategory || "");
                         break;
                     default:
                         comparison = 0;
@@ -696,11 +699,11 @@ function ShopGenerator() {
 
                 if (comparison !== 0) {
                     // For text-based columns, flip the comparison direction to match natural alphabetical order
-                    if (column === 'name' || column === 'item_category' || column === 'item_subcategory') {
-                        return direction === 'asc' ? comparison : -comparison;
+                    if (column === "name" || column === "item_category" || column === "item_subcategory") {
+                        return direction === "asc" ? comparison : -comparison;
                     }
                     // For all other columns, maintain the existing direction logic
-                    return direction === 'asc' ? comparison : -comparison;
+                    return direction === "asc" ? comparison : -comparison;
                 }
             }
             return 0;
@@ -737,8 +740,8 @@ function ShopGenerator() {
 
     const handleShopDetailsChange = (e) => {
         const { name, value } = e.target;
-        console.log('Handling shop details change:', { name, value }); // Debug log
-        setCurrentShop(prevShop => {
+        console.log("Handling shop details change:", { name, value }); // Debug log
+        setCurrentShop((prevShop) => {
             // Create a copy of the previous shop
             const newShop = { ...prevShop };
 
@@ -746,18 +749,18 @@ function ShopGenerator() {
             if (Object.keys(prevShop.shortData).includes(name)) {
                 newShop.shortData = {
                     ...prevShop.shortData,
-                    [name]: value
+                    [name]: value,
                 };
             }
             // Check if this is a longData field
             else if (Object.keys(prevShop.longData).includes(name)) {
                 newShop.longData = {
                     ...prevShop.longData,
-                    [name]: value
+                    [name]: value,
                 };
             }
 
-            console.log('Updated shop:', newShop); // Debug log
+            console.log("Updated shop:", newShop); // Debug log
             return newShop;
         });
     };
@@ -771,10 +774,10 @@ function ShopGenerator() {
         setHighestLevel(10);
         setItemBias({ x: 0.5, y: 0.5 });
         setRarityDistribution({
-            Common: 95.00,
-            Uncommon: 4.50,
+            Common: 95.0,
+            Uncommon: 4.5,
             Rare: 0.49,
-            Unique: 0.01
+            Unique: 0.01,
         });
         setItems([]);
 
@@ -787,7 +790,7 @@ function ShopGenerator() {
     // Shop state synchronization
     useEffect(() => {
         const updateTimeout = setTimeout(() => {
-            setCurrentShop(prevShop => {
+            setCurrentShop((prevShop) => {
                 const newParameters = {
                     ...prevShop.parameters,
                     goldAmount: currentGold,
@@ -801,7 +804,7 @@ function ShopGenerator() {
                             .map(([category]) => category),
                         excluded: Array.from((categoryStates || new Map()).entries())
                             .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                            .map(([category]) => category)
+                            .map(([category]) => category),
                     },
                     subcategories: {
                         included: Array.from((subcategoryStates || new Map()).entries())
@@ -809,7 +812,7 @@ function ShopGenerator() {
                             .map(([subcategory]) => subcategory),
                         excluded: Array.from((subcategoryStates || new Map()).entries())
                             .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                            .map(([subcategory]) => subcategory)
+                            .map(([subcategory]) => subcategory),
                     },
                     traits: {
                         included: Array.from((traitStates || new Map()).entries())
@@ -817,9 +820,9 @@ function ShopGenerator() {
                             .map(([trait]) => trait),
                         excluded: Array.from((traitStates || new Map()).entries())
                             .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                            .map(([trait]) => trait)
+                            .map(([trait]) => trait),
                     },
-                    currentStock: items
+                    currentStock: items,
                 };
 
                 // Only update if there are actual changes
@@ -829,13 +832,23 @@ function ShopGenerator() {
 
                 return {
                     ...prevShop,
-                    parameters: newParameters
+                    parameters: newParameters,
                 };
             });
         }, 100); // Debounce updates
 
         return () => clearTimeout(updateTimeout);
-    }, [currentGold, lowestLevel, highestLevel, itemBias, rarityDistribution, categoryStates, subcategoryStates, traitStates, items]);
+    }, [
+        currentGold,
+        lowestLevel,
+        highestLevel,
+        itemBias,
+        rarityDistribution,
+        categoryStates,
+        subcategoryStates,
+        traitStates,
+        items,
+    ]);
 
     /**
      * Handles saving the current shop state to Firebase
@@ -844,7 +857,7 @@ function ShopGenerator() {
      */
     const handleSaveShop = async () => {
         if (!currentUser) {
-            alert('Please log in to save shops');
+            alert("Please log in to save shops");
             return;
         }
 
@@ -854,14 +867,14 @@ function ShopGenerator() {
             const shopDataWithId = {
                 ...currentShop,
                 shortData: {
-                    shopName: currentShop.shortData.shopName || '',
-                    shopKeeperName: currentShop.shortData.shopKeeperName || '',
-                    type: currentShop.shortData.type || '',
-                    location: currentShop.shortData.location || ''
+                    shopName: currentShop.shortData.shopName || "",
+                    shopKeeperName: currentShop.shortData.shopKeeperName || "",
+                    type: currentShop.shortData.type || "",
+                    location: currentShop.shortData.location || "",
                 },
                 longData: {
-                    shopDetails: currentShop.longData.shopDetails || '',
-                    shopKeeperDetails: currentShop.longData.shopKeeperDetails || ''
+                    shopDetails: currentShop.longData.shopDetails || "",
+                    shopKeeperDetails: currentShop.longData.shopKeeperDetails || "",
                 },
                 parameters: {
                     ...currentShop.parameters,
@@ -872,35 +885,35 @@ function ShopGenerator() {
                     rarityDistribution,
                     categories: {
                         included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE)
+                        excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE),
                     },
                     subcategories: {
                         included: getFilteredArray(subcategoryStates, SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE)
+                        excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE),
                     },
                     traits: {
                         included: getFilteredArray(traitStates, SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE)
+                        excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE),
                     },
-                    currentStock: items
+                    currentStock: items,
                 },
                 dateLastEdited: new Date(),
-                dateCreated: currentShop.dateCreated || new Date()
+                dateCreated: currentShop.dateCreated || new Date(),
             };
 
             const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
-            
+
             // Update the current shop with the new ID
-            setCurrentShop(prevDetails => ({
+            setCurrentShop((prevDetails) => ({
                 ...prevDetails,
-                id: shopId
+                id: shopId,
             }));
-            
-            console.log('Shop saved with ID:', shopId);
-            alert('Shop saved successfully!');
+
+            console.log("Shop saved with ID:", shopId);
+            alert("Shop saved successfully!");
         } catch (error) {
-            console.error('Error saving shop:', error);
-            alert('Error saving shop. Please try again.');
+            console.error("Error saving shop:", error);
+            alert("Error saving shop. Please try again.");
         }
     };
 
@@ -913,12 +926,11 @@ function ShopGenerator() {
                     <TabContainer
                         key={index}
                         groupIndex={index}
-                        tabs={tabs.map(tab => {
+                        tabs={tabs.map((tab) => {
                             // Add props based on tab type
                             switch (tab.type.name) {
-                                case 'Tab_Parameters':
+                                case "Tab_Parameters":
                                     return React.cloneElement(tab, {
-                                        handleGenerateClick,
                                         currentGold,
                                         setCurrentGold: handleGoldChange,
                                         lowestLevel,
@@ -928,26 +940,27 @@ function ShopGenerator() {
                                         rarityDistribution,
                                         setRarityDistribution: handleRarityDistributionChange,
                                         itemBias,
-                                        setItemBias: handleBiasChange
+                                        setItemBias: handleBiasChange,
                                     });
-                                case 'Tab_InventoryTable':
+                                case "Tab_InventoryTable":
                                     return React.cloneElement(tab, {
                                         items,
                                         sortConfig,
                                         onSort: handleSort,
-                                        currentShop: currentShop?.shortData?.shopName || 'Unnamed Shop'
+                                        currentShop: currentShop?.shortData?.shopName || "Unnamed Shop",
+                                        handleGenerateClick,
                                     });
-                                case 'Tab_ShopDetails':
+                                case "Tab_ShopDetails":
                                     return React.cloneElement(tab, {
                                         currentShop,
                                         onShopDetailsChange: handleShopDetailsChange,
-                                        onSave: handleSaveShop
+                                        onSave: handleSaveShop,
                                     });
-                                case 'Tab_ChooseShop':
+                                case "Tab_ChooseShop":
                                     return React.cloneElement(tab, {
                                         savedShops,
                                         onLoadShop: handleLoadShop,
-                                        onNewShop: handleNewShop
+                                        onNewShop: handleNewShop,
                                     });
                                 default:
                                     return tab;
