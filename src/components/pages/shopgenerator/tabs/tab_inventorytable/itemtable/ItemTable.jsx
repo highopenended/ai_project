@@ -29,7 +29,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
             </th>
         );
     };
-
+   
     // Helper function to format gold amount into gp, sp, cp
     const formatGold = (amount) => {
         // Convert to copper pieces first (multiply by 100 to handle 2 decimal places)
@@ -193,7 +193,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
     };
 
     return (
-        <div className="item-table-wrapper">
+        <div>
             <h2 className="shop-title">{currentShopName}</h2>
             <table className="item-table">
                 {renderHeaders()}

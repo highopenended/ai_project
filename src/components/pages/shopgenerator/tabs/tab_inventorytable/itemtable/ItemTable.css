@@ -1,12 +1,4 @@
-.item-table-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-}
-
 .item-table {
-    width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
@@ -14,40 +6,35 @@
 .item-table tbody {
     display: block;
     overflow-y: scroll;
-    height: calc(100vh - 18rem); 
+    height: calc(100vh - 18rem);
 }
 
-.item-table thead, 
 .item-table tbody tr {
     display: table;
     width: 100%;
     table-layout: fixed;
 }
 
-/* Header styling */
 .item-table thead {
     position: sticky;
     top: 0;
     z-index: 1;
     background-color: rgba(22, 27, 34, 0.8);
     backdrop-filter: blur(8px);
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .item-table th,
 .item-table td {
     padding: 0.1rem 0rem;
-    text-align: center;
+    text-align: left;
     color: rgba(255, 255, 255, 0.9);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.item-table td:nth-child(2) {
-    text-align: left;
-}
-
-/* Column widths */
 .col-count {
-    width: 80px;
     font-variant-numeric: tabular-nums;
 }
 
@@ -58,41 +45,16 @@
     font-weight: 300;
 }
 
-.col-level {
-    width: 80px;
-}
-.col-price {
-    width: 100px;
-}
-.col-total {
-    width: 100px;
-}
-.col-rarity {
-    width: 100px;
-}
-.col-category {
-    width: 120px;
-}
-.col-subcategory {
-    width: 120px;
-}
-.col-name {
-    width: auto;
-}
-
 /* Rarity colors */
 .rarity-common {
     color: #ffffff;
 }
-
 .rarity-uncommon {
     color: #1eff00;
 }
-
 .rarity-rare {
     color: #0070dd;
 }
-
 .rarity-unique {
     color: #a335ee;
 }
@@ -258,7 +220,3 @@
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
 }
-.table-totals {
-    /* opacity: 0.7; */
-}
-

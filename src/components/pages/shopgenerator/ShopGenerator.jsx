@@ -1021,7 +1021,6 @@ function ShopGenerator() {
                         }}
                         onTabClick={() => {}}
                         onTabSplit={handleTabSplit}
-                        additionalClassNames ="no-scrollbar"   
                     />
                 ))
             )}
