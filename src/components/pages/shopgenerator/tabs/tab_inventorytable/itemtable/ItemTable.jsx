@@ -209,6 +209,16 @@ function ItemTable({ items, sortConfig, onSort }) {
     );
 }
 
+
+// function ItemTableTotals() {
+//     return (
+//         <div className="table-totals">
+//             {renderTotals()}
+//         </div>
+//     );
+// }
+
+
 ItemTable.propTypes = {
     items: PropTypes.arrayOf(
         PropTypes.shape({
