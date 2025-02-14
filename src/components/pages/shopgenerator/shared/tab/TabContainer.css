@@ -110,7 +110,7 @@
 
 .tab-content {
     flex-grow: 1;
-    padding: .5rem;
+    /* padding: .2rem; */
     background-color: var(--background-tertiary);
     border-top: 1px solid var(--light-border-color);
     overflow: auto;

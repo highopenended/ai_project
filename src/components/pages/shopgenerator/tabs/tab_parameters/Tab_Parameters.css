@@ -1,6 +1,6 @@
 
 /* Scrollbar Styling */
-.parameter-sections {
+.main-wrapper-parameter {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
@@ -10,18 +10,18 @@
     scrollbar-width: 2rem; 
 }
 
-.parameter-sections::-webkit-scrollbar {
+.main-wrapper-parameter::-webkit-scrollbar {
     width: 16px;
     background: transparent;
 }
 
-.parameter-sections::-webkit-scrollbar-track {
+.main-wrapper-parameter::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     margin: 4px;
 }
 
-.parameter-sections::-webkit-scrollbar-thumb {
+.main-wrapper-parameter::-webkit-scrollbar-thumb {
     background-color: rgba(163, 177, 255, 0.2);
     border-radius: 8px;
     border: 2px solid rgba(0, 0, 0, 0.2);
@@ -29,16 +29,16 @@
     min-height: 40px;
 }
 
-.parameter-sections::-webkit-scrollbar-thumb:hover {
+.main-wrapper-parameter::-webkit-scrollbar-thumb:hover {
     background-color: rgba(163, 177, 255, 0.4);
 }
 
-.parameter-sections::-webkit-scrollbar-thumb:active {
+.main-wrapper-parameter::-webkit-scrollbar-thumb:active {
     background-color: rgba(163, 177, 255, 0.5);
 }
 
 /* Firefox scrollbar styling */
-.parameter-sections {
+.main-wrapper-parameter {
     scrollbar-width: auto;
     scrollbar-color: rgba(163, 177, 255, 0.2) rgba(0, 0, 0, 0.2);
 }

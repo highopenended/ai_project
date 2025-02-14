@@ -3,7 +3,7 @@ import "./ItemTable.css";
 import { RARITY_COLORS } from "../../../../../../constants/rarityColors";
 import React from "react";
 
-function ItemTable({ items, sortConfig, onSort, currentShopName }) {
+function ItemTable({ items, sortConfig, onSort }) {
     // Helper function to get sort indicator and order
     const getSortInfo = (columnName) => {
         const sortItem = sortConfig.find((item) => item.column === columnName);
@@ -198,7 +198,6 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
 
     return (
         <div>
-            <h2 className="shop-title">{currentShopName}</h2>
             <div className="table-wrapper">
                 <table className="item-table ">
                     {renderHeaders()}

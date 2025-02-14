@@ -267,6 +267,7 @@ function ShopGenerator() {
         setTraitStates(traitMap);
     };
 
+    
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
         // localStorage.clear(STORAGE_KEY);
@@ -556,7 +557,7 @@ function ShopGenerator() {
         if (!container) return;
 
         const totalWidth = container.clientWidth;
-        const minWidth = 200; // Minimum width in pixels
+        const minWidth = 200; // This is the minimum width of the parameters tab in pixels
 
         setFlexBasis((prev) => {
             const newBasis = [...prev];

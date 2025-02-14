@@ -1,11 +1,11 @@
 .section{
     display: flex;
     flex-direction: column;
-    /* gap: 0.25rem; */
     border: 1px solid var(--dark-border-color);
     border-radius: 6px;
     /* border: 1px solid yellow; */
     background-color: var(--dark-background-color);
+    margin: 0 .2rem;
 }
 
 /* Section header styles for different components */

@@ -10,10 +10,10 @@ import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
 Tab_Parameters.displayName = "Parameters";
-Tab_Parameters.minWidth = 250;
+Tab_Parameters.minWidth = 220;
 
 function Tab_Parameters({
-    currentGold,    
+    currentGold,
     setCurrentGold,
     lowestLevel,
     setLowestLevel,
@@ -25,21 +25,19 @@ function Tab_Parameters({
     setItemBias,
 }) {
     return (
-        <div>
-            <div className="parameter-sections">
-                <GoldInput setCurrentGold={setCurrentGold} currentGold={currentGold} />
-                <LevelInput
-                    lowestLevel={lowestLevel}
-                    highestLevel={highestLevel}
-                    setLowestLevel={setLowestLevel}
-                    setHighestLevel={setHighestLevel}
-                />
-                <RaritySliders setRarityDistribution={setRarityDistribution} rarityDistribution={rarityDistribution} />
-                <BiasGrid setItemBias={setItemBias} itemBias={itemBias} />
-                <CategoryFilter />
-                <SubcategoryFilter />
-                <TraitFilter />
-            </div>
+        <div className="main-wrapper-parameter">
+            <GoldInput setCurrentGold={setCurrentGold} currentGold={currentGold} />
+            <LevelInput
+                lowestLevel={lowestLevel}
+                highestLevel={highestLevel}
+                setLowestLevel={setLowestLevel}
+                setHighestLevel={setHighestLevel}
+            />
+            <RaritySliders setRarityDistribution={setRarityDistribution} rarityDistribution={rarityDistribution} />
+            <BiasGrid setItemBias={setItemBias} itemBias={itemBias} />
+            <CategoryFilter />
+            <SubcategoryFilter />
+            <TraitFilter />
         </div>
     );
 }
