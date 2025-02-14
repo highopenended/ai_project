@@ -2,23 +2,35 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    position: relative;
-    /* margin: .2rem; */
+    width: 100%;
 }
 
 .item-table-container {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px 8px 0 0;
     background-color: rgba(13, 17, 23, 0.7);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    max-height: calc(100vh - 3rem - 4rem - 2rem - 60px); /* Adjusted to account for totals height */
-    overflow-y: auto;
-    font-size: 0.75rem;
 }
 
 .item-table {
     width: 100%;
+    height: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.item-table tbody {
+    display: block;
+    overflow-y: scroll;
+    height: calc(100vh - 17.5rem); /* Increased subtraction to make room for totals */
+}
+
+.item-table thead, 
+.item-table tbody tr {
+    display: table;
+    width: 100%;
     table-layout: fixed;
 }
 
@@ -142,11 +154,13 @@
 
 /* Totals section */
 .table-totals {
+    position: sticky;
+    bottom: 0;
     background-color: rgba(22, 27, 34, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-top: none;
     border-radius: 0 0 8px 8px;
-    padding: 14px 20px;
+    padding: 0.75rem 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
 }
@@ -244,19 +258,17 @@
     font-style: italic;
     background-color: rgba(0, 0, 0, 0.2);
 }
-
 .item-table-container {
     background-color: rgba(13, 17, 23, 0.4);
 }
 .shop-title {
-    text-align: left;
+    margin: 0;
+    padding: 0.5rem 0;
     font-size: 1.5rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
-    padding-left: 1rem;
-    padding-bottom: 0.2rem;
-    padding-top: 0.5rem;
 }
 .table-totals {
     /* opacity: 0.7; */
 }
+

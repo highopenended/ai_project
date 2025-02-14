@@ -1,23 +1,13 @@
 .shop-generator {
     display: flex;
     width: 100%;
-    height: 100vh;
+    height: calc(100vh - 3rem); /* Account for navbar */
     gap: 1px;
     background-color: var(--light-border-color);
     overflow: hidden;
     position: relative;
+    box-sizing: border-box;
 }
-
-/* Prevent text selection during resize */
-/* .shop-generator.resizing * {
-    user-select: none;
-    cursor: col-resize;
-} */
-
-/* Ensure tab groups fill the container */
-/* .shop-generator > .tab-container {
-    flex: 0 0 auto;
-} */
 
 .filter-grid {
     padding-left: 0.3rem;
