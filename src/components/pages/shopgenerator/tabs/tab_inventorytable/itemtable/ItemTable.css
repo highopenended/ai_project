@@ -1,42 +1,91 @@
+.table-wrapper {
+  height: calc(100vh - 16rem); /* Adjust based on page layout */
+}
+
+/* Borders and Column Layout */
 .item-table {
     border-collapse: collapse;
     table-layout: fixed;
-}
-
-.item-table tbody {
-    display: block;
-    overflow-y: scroll;
-    height: calc(100vh - 18rem);
-}
-
-.item-table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-}
-
+    font-size: 0.8rem;
+    min-width: 100%;
+  }
+  
+/* Sticky Header */
 .item-table thead {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background-color: rgba(22, 27, 34, 0.8);
-    backdrop-filter: blur(8px);
-    display: table;
-    width: 100%;
-    table-layout: fixed;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: rgba(30, 35, 40, 0.95);
+}
+
+/* Fixed Height Scrollable Body */
+.table-body {
+  height: calc(100vh - 15rem); /* Adjust height to fit totals */
+  overflow-y: auto;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .item-table th,
 .item-table td {
-    padding: 0.1rem 0rem;
-    text-align: left;
-    color: rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.3rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-align: left;
 }
 
-.col-count {
-    font-variant-numeric: tabular-nums;
+/* Alternating Rows for Visibility */
+.item-table tbody tr:nth-child(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
 }
+
+.item-table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Hover Effect for Rows */
+.item-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Scrollbar Styling */
+.table-body::-webkit-scrollbar {
+  width: 10px;
+}
+.table-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+.table-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+}
+.table-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+
+
+/* Sticky Totals Bar */
+.table-totals {
+    height: 3rem;
+    background-color: rgba(22, 27, 34, 0.95);
+    color: white;
+    font-weight: bold;
+    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+  }
+
+
+
+
+
+
 
 .count-prefix {
     font-size: 0.85em;
