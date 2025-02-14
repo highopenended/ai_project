@@ -167,7 +167,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                             {Object.entries(rarityCounts).map(([rarity, count], index) => (
                                 <React.Fragment key={`${rarity}-${index}`}>
                                     {index > 0 && <div className="rarity-separator" />}
-                                    <span className={`rarity-count rarity-${rarity.toLowerCase()}`}>
+                                    <span className={`rarity-count rarity-${rarity.toLowerCase()}`} style={{ color: RARITY_COLORS[rarity] }}>
                                         {count} {rarity}
                                     </span>
                                 </React.Fragment>

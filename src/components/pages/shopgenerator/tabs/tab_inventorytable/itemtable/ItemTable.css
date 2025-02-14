@@ -201,19 +201,7 @@
     background-color: rgba(0, 0, 0, 0.2);
 }
 
-/* Rarity colors */
-.rarity-common {
-    color: var(--rarity-common);
-}
-.rarity-uncommon {
-    color: var(--rarity-uncommon);
-}
-.rarity-rare {
-    color: var(--rarity-rare);
-}
-.rarity-unique {
-    color: var(--rarity-unique);
-}
+
 
 /* Sorting */
 .sortable-header {
