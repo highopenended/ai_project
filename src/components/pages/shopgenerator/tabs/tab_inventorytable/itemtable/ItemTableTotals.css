@@ -1,8 +1,8 @@
 .table-totals {
-    margin-top: 1rem;
+    /* margin-top: 1rem; */
     padding: 1rem;
     background-color: var(--color-background-secondary);
-    border-radius: 0.5rem;
+    border-radius:  0 0 0.5rem 0.5rem;
 }
 
 .totals-content {
