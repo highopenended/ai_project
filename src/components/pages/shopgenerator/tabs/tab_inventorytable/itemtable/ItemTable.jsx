@@ -48,45 +48,17 @@ function ItemTable({ items, sortConfig, onSort }) {
         return parts.length > 0 ? parts.join(", ") : "0 gp";
     };
 
-    // Helper function to format decimal gold pieces
-    const formatDecimalGold = (amount) => {
-        if (amount === 0) return "0.00 gp";
-        const [whole, decimal] = amount.toFixed(2).split(".");
-        const wholeWithCommas = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        return (
-            <>
-                {wholeWithCommas}
-                <span className="decimal-part">.{decimal}</span> gp
-            </>
-        );
-    };
-
-    // Calculate totals
-    const totalCount = items.reduce((sum, item) => sum + item.count, 0);
-    const uniqueCount = items.length;
-    const totalPrice = items.reduce((sum, item) => sum + item.total, 0);
-
-    // Calculate averages
-    const avgLevel =
-        totalCount > 0 ? items.reduce((sum, item) => sum + parseInt(item.level) * item.count, 0) / totalCount : 0;
-    const avgPrice = totalCount > 0 ? totalPrice / totalCount : 0;
-
-    // Calculate rarity counts
-    const rarityCounts = items.reduce((counts, item) => {
-        counts[item.rarity] = (counts[item.rarity] || 0) + item.count;
-        return counts;
-    }, {});
-
+  
     const columnHeaders = [
-        { column: "count", displayName: "#"},
-        { column: "name", displayName: "Item Name"},
-        { column: "rarity", displayName: "Rarity"},
-        { column: "level", displayName: "Level"},
-        { column: "item_category", displayName: "Category"},
-        { column: "item_subcategory", displayName: "Subcategory"},
-        { column: "traits", displayName: "Traits"},
-        { column: "price", displayName: "Price"},
-        { column: "total", displayName: "Total"},
+        { column: "count", displayName: "#" },
+        { column: "name", displayName: "Item Name" },
+        { column: "rarity", displayName: "Rarity" },
+        { column: "level", displayName: "Level" },
+        { column: "item_category", displayName: "Category" },
+        { column: "item_subcategory", displayName: "Subcategory" },
+        { column: "traits", displayName: "Traits" },
+        { column: "price", displayName: "Price" },
+        { column: "total", displayName: "Total" },
     ];
 
     // Helper function to render headers
@@ -149,53 +121,6 @@ function ItemTable({ items, sortConfig, onSort }) {
         );
     };
 
-    // Helper function to render totals
-    const renderTotals = () => {
-        return (
-            <div className="table-totals">
-                <div className="totals-content">
-                    <div className="total-item counts-group">
-                        <div className="total-row">
-                            <span className="total-label">Items:</span>
-                            <span className="total-value">
-                                <span className="count-prefix">×</span>
-                                {totalCount}
-                            </span>
-                            <span className="total-label unique-count">({uniqueCount} unique)</span>
-                        </div>
-                        <div className="rarity-count-list">
-                            {Object.entries(rarityCounts).map(([rarity, count], index) => (
-                                <React.Fragment key={`${rarity}-${index}`}>
-                                    {index > 0 && <div className="rarity-separator" />}
-                                    <span className={`rarity-count rarity-${rarity.toLowerCase()}`} style={{ color: RARITY_COLORS[rarity] }}>
-                                        {count} {rarity}
-                                    </span>
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="totals-divider" />
-                    <div className="total-item">
-                        <span className="total-label">Avg Level:</span>
-                        <span className="total-value">{avgLevel.toFixed(1)}</span>
-                    </div>
-                    
-                    <div className="totals-divider" />
-                    <div className="total-item">
-                        <span className="total-label">Avg Price:</span>
-                        <span className="total-value">{formatDecimalGold(avgPrice)}</span>
-                    </div>
-                    
-                    <div className="totals-divider" />
-                    <div className="total-item">
-                        <span className="total-label">Total Value:</span>
-                        <span className="total-value">{formatDecimalGold(totalPrice)}</span>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <div>
             <div className="table-wrapper">
@@ -204,20 +129,9 @@ function ItemTable({ items, sortConfig, onSort }) {
                     {renderBody()}
                 </table>
             </div>
-            {renderTotals()}
         </div>
     );
 }
-
-
-// function ItemTableTotals() {
-//     return (
-//         <div className="table-totals">
-//             {renderTotals()}
-//         </div>
-//     );
-// }
-
 
 ItemTable.propTypes = {
     items: PropTypes.arrayOf(
@@ -241,7 +155,6 @@ ItemTable.propTypes = {
         })
     ).isRequired,
     onSort: PropTypes.func.isRequired,
-    currentShopName: PropTypes.string.isRequired,
 };
 
 export default ItemTable;
