@@ -5,7 +5,7 @@ import Tag from './Tag';
 
 const TagContainer = ({ tags, onTagClick }) => {
     return (
-        <div className="tag-container">
+        <div>
             {tags.map(tag => (
                 <Tag 
                     key={tag.name}

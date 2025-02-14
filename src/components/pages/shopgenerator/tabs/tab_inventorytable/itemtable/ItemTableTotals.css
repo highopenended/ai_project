@@ -2,7 +2,7 @@
     display: flex;
     padding: .5rem;
     background-color: var(--color-background-secondary);
-    border-radius: 0.5rem;
+    border-radius: 0 0 0.5rem 0.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     font-size: 1rem;
@@ -48,7 +48,7 @@
 }
 
 .unique-count {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
     text-transform: none;
     letter-spacing: 0;
     opacity: 0.7;
@@ -80,11 +80,11 @@
 }
 
 .decimal-part {
-    font-size: 0.55em;
+    font-size: 0.6em;
     opacity: 0.7;
     font-weight: 500;
     position: relative;
-    top: -0.45em;
+    top: -0.45em;    
 }
 
 .totals-divider {

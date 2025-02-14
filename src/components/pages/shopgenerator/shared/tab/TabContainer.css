@@ -64,15 +64,17 @@
     background-color: var(--background-secondary);
     padding: 4px 4px 0 4px;
     overflow-x: auto;
-    min-height: 40px;
+    /* min-height: 40px; */
+    min-height:fit-content;
+    font-size: .8rem;
 }
 
 .tab {
-    padding: 8px 20px;
+    padding: .25rem .5rem;
     background-color: var(--background-tertiary);
     border: 1px solid var(--light-border-color);
     border-bottom: none;
-    margin-right: 4px;
+    /* margin-right: 4px; */
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
     cursor: grab;

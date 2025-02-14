@@ -12,7 +12,7 @@
 
 .table-wrapper {
     background-color: #1f2937;
-    border-radius: 0.5rem;
+    border-radius: 0.5rem 0.5rem 0 0;
     overflow-x: auto;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -57,47 +57,3 @@
 .error-message {
     color: #ef4444;
 }
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin: 1rem 0;
-    padding: 0.5rem;
-}
-
-.pagination button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background-color: #fff;
-    cursor: pointer;
-}
-
-.pagination button:disabled {
-    background-color: #f0f0f0;
-    cursor: not-allowed;
-}
-
-.pagination button:hover:not(:disabled) {
-    background-color: #f0f0f0;
-}
-
-.pagination span {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .content-container {
-        padding: 1rem;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.875rem;
-    }
-} 

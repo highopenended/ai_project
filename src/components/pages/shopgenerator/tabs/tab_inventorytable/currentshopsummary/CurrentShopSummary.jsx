@@ -4,7 +4,7 @@ import './CurrentShopSummary.css';
 function CurrentShopSummary({ currentShopName }) { 
     return (
         <div className="current-shop-summary">
-            <h2 className="shop-title">{currentShopName}</h2>
+            <h2>{currentShopName}</h2>
         </div>
     );
 }

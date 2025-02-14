@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import { RARITY_COLORS } from "../../../../../../constants/rarityColors";
 import "./ItemTableTotals.css";
 
+const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Unique'];
+
 function ItemTableTotals({ totalCount, uniqueCount, rarityCounts, avgLevel, avgPrice, totalPrice }) {
     // Helper function to format decimal gold pieces
     const formatDecimalGold = (amount) => {
@@ -31,17 +33,20 @@ function ItemTableTotals({ totalCount, uniqueCount, rarityCounts, avgLevel, avgP
                     </span>
                 </div>
                 <div className="rarity-count-list">
-                    {Object.entries(rarityCounts).map(([rarity, count], index) => (
-                        <React.Fragment key={`${rarity}-${index}`}>
-                            {index > 0 && <div className="rarity-separator" />}
-                            <span
-                                className={`rarity-count rarity-${rarity.toLowerCase()}`}
-                                style={{ color: RARITY_COLORS[rarity] }}
-                            >
-                                {count} {rarity}
-                            </span>
-                        </React.Fragment>
-                    ))}
+                    {RARITY_ORDER.map((rarity, index) => {
+                        if (!rarityCounts[rarity]) return null;
+                        return (
+                            <React.Fragment key={`${rarity}-${index}`}>
+                                {index > 0 && rarityCounts[RARITY_ORDER[index - 1]] && <div className="rarity-separator" />}
+                                <span
+                                    className={`rarity-count rarity-${rarity.toLowerCase()}`}
+                                    style={{ color: RARITY_COLORS[rarity] }}
+                                >
+                                    {rarityCounts[rarity]} {rarity}
+                                </span>
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             </div>
 

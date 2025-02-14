@@ -1,0 +1,13 @@
+
+.current-shop-summary {
+    padding: 0.0rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+.current-shop-summary h2 {
+    padding: 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
