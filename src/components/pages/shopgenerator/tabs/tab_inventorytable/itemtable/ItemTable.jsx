@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import "./ItemTable.css";
 import { RARITY_COLORS } from "../../../../../../constants/rarityColors";
+import React from "react";
 
 function ItemTable({ items, sortConfig, onSort, currentShopName }) {
     // Helper function to get sort indicator and order
@@ -49,6 +50,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
 
     // Helper function to format decimal gold pieces
     const formatDecimalGold = (amount) => {
+        if (amount === 0) return "0.00 gp";
         const [whole, decimal] = amount.toFixed(2).split(".");
         const wholeWithCommas = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         return (
@@ -150,23 +152,33 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                         <div className="total-row">
                             <span className="total-label">Items:</span>
                             <span className="total-value">
-                                <span className="count-prefix">×</span>0
+                                <span className="count-prefix">×</span>{totalCount}
                             </span>
-                            <span className="total-label unique-count">(0 unique)</span>
+                            <span className="total-label unique-count">({uniqueCount} unique)</span>
+                        </div>
+                        <div className="rarity-count-list">
+                            {Object.entries(rarityCounts).map(([rarity, count], index) => (
+                                <React.Fragment key={rarity}>
+                                    {index > 0 && <div className="rarity-separator" />}
+                                    <span className={`rarity-count rarity-${rarity.toLowerCase()}`}>
+                                        {count} {rarity}
+                                    </span>
+                                </React.Fragment>
+                            ))}
                         </div>
                     </div>
                     <div className="totals-divider" />
                     <div className="total-item">
                         <span className="total-label">Avg Level:</span>
-                        <span className="total-value">0.0</span>
+                        <span className="total-value">{avgLevel.toFixed(1)}</span>
                     </div>
                     <div className="total-item">
                         <span className="total-label">Avg Price:</span>
-                        <span className="total-value">0.00 gp</span>
+                        <span className="total-value">{formatDecimalGold(avgPrice)}</span>
                     </div>
                     <div className="total-item">
                         <span className="total-label">Total Value:</span>
-                        <span className="total-value">0.00 gp</span>
+                        <span className="total-value">{formatDecimalGold(totalPrice)}</span>
                     </div>
                 </div>
             </div>
