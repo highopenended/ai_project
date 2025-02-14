@@ -93,7 +93,13 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
     const renderHeaders = () => {
         return (
             <thead>
-                <tr>{columnHeaders.map((header) => renderColumnHeader(header.column, header.displayName))}</tr>
+                <tr>
+                    {columnHeaders.map((header) => (
+                        <React.Fragment key={header.column}>
+                            {renderColumnHeader(header.column, header.displayName)}
+                        </React.Fragment>
+                    ))}
+                </tr>
             </thead>
         );
     };
@@ -118,7 +124,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                             <td className="col-subcategory">{item.item_subcategory}</td>
                             <td className="col-traits">
                                 {item.traits?.map((trait, i) => (
-                                    <span key={trait} className="trait-tag">
+                                    <span key={`${trait}-${i}`} className="trait-tag">
                                         {trait}
                                         {i < item.traits.length - 1 ? ", " : ""}
                                     </span>
@@ -130,17 +136,17 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                     ))}
                 </tbody>
             );
-        } else {
-            return (
-                <tbody>
-                    <tr>
-                        <td colSpan={columnHeaders.length} className="empty-message">
-                            Click &ldquo;Generate Shop&rdquo; to populate the table with items
-                        </td>
-                    </tr>
-                </tbody>
-            );
         }
+
+        return (
+            <tbody>
+                <tr>
+                    <td colSpan={columnHeaders.length} className="empty-message">
+                        Click &ldquo;Generate Shop&rdquo; to populate the table with items
+                    </td>
+                </tr>
+            </tbody>
+        );
     };
 
     // Helper function to render totals
@@ -152,13 +158,14 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                         <div className="total-row">
                             <span className="total-label">Items:</span>
                             <span className="total-value">
-                                <span className="count-prefix">×</span>{totalCount}
+                                <span className="count-prefix">×</span>
+                                {totalCount}
                             </span>
                             <span className="total-label unique-count">({uniqueCount} unique)</span>
                         </div>
                         <div className="rarity-count-list">
                             {Object.entries(rarityCounts).map(([rarity, count], index) => (
-                                <React.Fragment key={rarity}>
+                                <React.Fragment key={`${rarity}-${index}`}>
                                     {index > 0 && <div className="rarity-separator" />}
                                     <span className={`rarity-count rarity-${rarity.toLowerCase()}`}>
                                         {count} {rarity}
@@ -185,17 +192,13 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
         );
     };
 
-    // Helper function to render body
-
     return (
         <div className="item-table-wrapper">
             <h2 className="shop-title">{currentShopName}</h2>
-            <div className="item-table-container">
-                <table className="item-table">
-                    {renderHeaders()}
-                    {renderBody()}
-                </table>
-            </div>
+            <table className="item-table">
+                {renderHeaders()}
+                {renderBody()}
+            </table>
             {renderTotals()}
         </div>
     );
@@ -213,6 +216,7 @@ ItemTable.propTypes = {
             item_category: PropTypes.string.isRequired,
             item_subcategory: PropTypes.string,
             traits: PropTypes.arrayOf(PropTypes.string),
+            rarity: PropTypes.string.isRequired,
         })
     ).isRequired,
     sortConfig: PropTypes.arrayOf(

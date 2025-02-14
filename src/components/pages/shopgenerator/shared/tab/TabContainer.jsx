@@ -82,6 +82,7 @@ function TabContainer({
     const [activeTab, setActiveTab] = useState(tabs[0]);
     const [dropIndex, setDropIndex] = useState(null);
     const [isResizing, setIsResizing] = useState(false);
+    const activeTabName = activeTab.props.type.name;
     const containerRef = useRef(null);
     
     // Refs for DOM manipulation and position tracking
@@ -403,6 +404,22 @@ function TabContainer({
         document.addEventListener('mouseup', handleMouseUp);
     };
 
+
+    // Add additional class names based on the active tab (ex. no-scrollbar for inventory table)
+    let additionalClassNames = "";
+    switch (activeTabName) {
+      case "Tab_Parameters":
+        break;
+      case "Tab_InventoryTable":
+        additionalClassNames = "no-scrollbar";
+        break;
+      case "Tab_ShopDetails":
+        break;
+      default:
+        additionalClassNames = "";
+        break;
+    }
+    
     return (
         <div 
             ref={containerRef}
@@ -441,7 +458,7 @@ function TabContainer({
                     );
                 })}
             </div>
-            <div className="tab-content">
+            <div className={`tab-content ${additionalClassNames}`}>
                 {activeTab}
             </div>
             {!isLastGroup && (
@@ -485,7 +502,7 @@ TabContainer.propTypes = {
     onResize: PropTypes.func.isRequired,
     isLastGroup: PropTypes.bool.isRequired,
     /** Style object for the container */
-    style: PropTypes.object
+    style: PropTypes.object,
 };
 
 export default TabContainer;

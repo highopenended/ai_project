@@ -5,18 +5,8 @@
     width: 100%;
 }
 
-.item-table-container {
-    position: relative;
-    flex: 1;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px 8px 0 0;
-    background-color: rgba(13, 17, 23, 0.7);
-}
-
 .item-table {
     width: 100%;
-    height: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
@@ -24,7 +14,7 @@
 .item-table tbody {
     display: block;
     overflow-y: scroll;
-    height: calc(100vh - 17.5rem); /* Increased subtraction to make room for totals */
+    height: calc(100vh - 18rem); 
 }
 
 .item-table thead, 

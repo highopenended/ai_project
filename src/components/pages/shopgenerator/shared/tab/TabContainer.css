@@ -115,3 +115,19 @@
     border-top: 1px solid var(--light-border-color);
     overflow: auto;
 }
+.no-scrollbar{
+    overflow: hidden;
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar::-webkit-scrollbar-track {
+    display: none;
+}
+.no-scrollbar::-webkit-scrollbar-thumb {
+    display: none;
+}
+
+

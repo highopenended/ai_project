@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 
 Tab_InventoryTable.displayName = "Inventory Table";
 Tab_InventoryTable.minWidth = 400;
+Tab_InventoryTable.additionalClassNames = "no-scrollbar";
 
 function Tab_InventoryTable({ items, sortConfig, onSort, currentShopName, handleGenerateClick }) {
     return (

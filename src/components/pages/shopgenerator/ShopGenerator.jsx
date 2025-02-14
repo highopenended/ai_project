@@ -927,12 +927,14 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
+
+
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {authLoading ? (
                 <div>Loading...</div>
             ) : (
-                tabGroups.map((tabs, index) => (
+                tabGroups.map((tabs, index) => (             
                     <TabContainer
                         key={index}
                         groupIndex={index}
@@ -987,7 +989,9 @@ function ShopGenerator() {
                         dropIndicators={dropIndicators}
                         isLastGroup={index === tabGroups.length - 1}
                         onResize={handleResize}
-                        style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
+                        style={
+                            { width: flexBasis[index] || `${100 / tabGroups.length}%`}
+                        }
                         onDragStart={(tab, tabIndex) => {
                             setDraggedTab(tab);
                             setDraggedTabIndex(tabIndex);
@@ -1017,6 +1021,7 @@ function ShopGenerator() {
                         }}
                         onTabClick={() => {}}
                         onTabSplit={handleTabSplit}
+                        additionalClassNames ="no-scrollbar"   
                     />
                 ))
             )}
