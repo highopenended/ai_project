@@ -29,7 +29,7 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
             </th>
         );
     };
-   
+
     // Helper function to format gold amount into gp, sp, cp
     const formatGold = (amount) => {
         // Convert to copper pieces first (multiply by 100 to handle 2 decimal places)
@@ -78,15 +78,15 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
     }, {});
 
     const columnHeaders = [
-        { column: "count", displayName: "#" , className: "col-count"},
-        { column: "name", displayName: "Item Name" , className: "col-name"},
-        { column: "rarity", displayName: "Rarity" , className: "col-rarity"},
-        { column: "level", displayName: "Level" , className: "col-level"},
-        { column: "item_category", displayName: "Category" , className: "col-category"},
-        { column: "item_subcategory", displayName: "Subcategory" , className: "col-subcategory"},
-        { column: "traits", displayName: "Traits" , className: "col-traits"},
-        { column: "price", displayName: "Price" , className: "col-price"},
-        { column: "total", displayName: "Total" , className: "col-total"},
+        { column: "count", displayName: "#"},
+        { column: "name", displayName: "Item Name"},
+        { column: "rarity", displayName: "Rarity"},
+        { column: "level", displayName: "Level"},
+        { column: "item_category", displayName: "Category"},
+        { column: "item_subcategory", displayName: "Subcategory"},
+        { column: "traits", displayName: "Traits"},
+        { column: "price", displayName: "Price"},
+        { column: "total", displayName: "Total"},
     ];
 
     // Helper function to render headers
@@ -193,13 +193,13 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
     };
 
     return (
-        <div >
+        <div>
             <h2 className="shop-title">{currentShopName}</h2>
             <div className="table-wrapper">
-            <table className="item-table ">
-                {renderHeaders()}
-                {renderBody()}
-            </table>
+                <table className="item-table ">
+                    {renderHeaders()}
+                    {renderBody()}
+                </table>
             </div>
             {renderTotals()}
         </div>
