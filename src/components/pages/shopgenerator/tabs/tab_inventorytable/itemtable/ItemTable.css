@@ -2,8 +2,14 @@
 
 /* Wraps the table for scrollable body */
 .table-wrapper {
-    /* height: calc(100vh - 17rem); */
-    height: 40rem;
+    height: calc(100vh - 14rem);
+    /* height: 40rem; */
+    display: flex;
+    flex-direction: column;
+    background-color: #1f2937;
+    border-radius: 0.5rem 0.5rem 0 0;
+    overflow-x: auto;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 /* Borders and Column Layout */

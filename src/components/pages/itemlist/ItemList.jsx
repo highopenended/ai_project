@@ -50,7 +50,7 @@ function ItemList() {
         <div className="content-area">
             <div className="content-container">
                 <h1 className="page-title">Items List</h1>
-                <div className="pagination">
+                <div>
                     <button 
                         onClick={() => paginate(currentPage - 1)} 
                         disabled={currentPage === 1}
@@ -87,7 +87,7 @@ function ItemList() {
                         </tbody>
                     </table>
                 </div>
-                <div className="pagination">
+                <div>
                     <button 
                         onClick={() => paginate(currentPage - 1)} 
                         disabled={currentPage === 1}
