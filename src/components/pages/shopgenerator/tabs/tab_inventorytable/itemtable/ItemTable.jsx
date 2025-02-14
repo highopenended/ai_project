@@ -179,10 +179,14 @@ function ItemTable({ items, sortConfig, onSort, currentShopName }) {
                         <span className="total-label">Avg Level:</span>
                         <span className="total-value">{avgLevel.toFixed(1)}</span>
                     </div>
+                    
+                    <div className="totals-divider" />
                     <div className="total-item">
                         <span className="total-label">Avg Price:</span>
                         <span className="total-value">{formatDecimalGold(avgPrice)}</span>
                     </div>
+                    
+                    <div className="totals-divider" />
                     <div className="total-item">
                         <span className="total-label">Total Value:</span>
                         <span className="total-value">{formatDecimalGold(totalPrice)}</span>

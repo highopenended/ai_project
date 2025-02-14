@@ -10,7 +10,7 @@ import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
 Tab_Parameters.displayName = "Parameters";
-Tab_Parameters.minWidth = 200;
+Tab_Parameters.minWidth = 250;
 
 function Tab_Parameters({
     currentGold,    

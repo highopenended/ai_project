@@ -1,4 +1,3 @@
-
 .shop-title {
     padding: 0.5rem 0;
     font-size: 1.5rem;
@@ -6,12 +5,9 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
-
-
-
 /* Wraps the table for scrollable body */
 .table-wrapper {
-  height: calc(100vh - 16rem); /* Adjust based on page layout */
+    height: calc(100vh - 16rem); /* Adjust based on page layout */
 }
 
 /* Borders and Column Layout */
@@ -20,14 +16,15 @@
     table-layout: fixed;
     font-size: 0.75rem;
     min-width: 100%;
-  }
-  
+}
+
 /* Sticky Header */
 .item-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background-color: rgba(30, 35, 40, 0.95);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: rgba(30, 35, 40, 1);
+    box-shadow: 0 -8px 4px rgba(0, 0, 0, 1); /* Adds top shadow to obscure the table showing above headers */
 }
 
 .item-table th {
@@ -36,44 +33,45 @@
 }
 
 .item-table td {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0.3rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.3rem;
 }
 
-.col-count {}
-.col-name {}
-.col-rarity {}
+.col-count {
+}
+.col-name {
+}
+.col-rarity {
+}
 .col-level {
     text-align: center;
 }
-.col-category {}
-.col-subcategory {}
+.col-category {
+}
+.col-subcategory {
+}
 .col-traits {
     max-width: 10rem; /* Adjust as needed */
-    overflow: hidden;
     font-size: 80%;
-    white-space: auto;
-    text-overflow: ellipsis;
 }
 .col-price {
-  max-width: 5rem; /* Adjust as needed */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+    max-width: 5rem; /* Adjust as needed */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-
 
 /* Alternating Rows for Visibility */
 .item-table tbody tr:nth-child(odd) {
-  background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
 }
 .item-table tbody tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Hover Effect for Rows */
 .item-table tbody tr:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .count-prefix {
@@ -82,7 +80,6 @@
     margin-right: 1px;
     font-weight: 300;
 }
-
 
 /* Sticky Totals Bar */
 .table-totals {
@@ -99,7 +96,7 @@
     position: sticky;
     bottom: 0;
     z-index: 2;
-  }
+}
 
 /* Totals section */
 .table-totals {
@@ -130,7 +127,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0rem;
 }
 
 .total-row {
@@ -141,26 +138,30 @@
 
 .rarity-count-list {
     display: flex;
-    gap: 12px;
+    gap: .2rem;
     align-items: center;
-    padding-left: 4px;
+    padding-left:.3rem;
+    white-space: nowrap;
 }
 
 .rarity-count {
     display: flex;
     align-items: center;
-    font-size: 0.92em;
+    font-size: 0.8em;
     letter-spacing: 0.2px;
 }
 
+/* The little dot between rarity counts */
 .rarity-separator {
-    margin-left: 12px;
-    width: 3px;
-    height: 3px;
+    display: flex;
+    width: .3rem;
+    height: .3rem;
+    margin: 0 .2rem;
     background-color: rgba(255, 255, 255, 0.2);
-    /* border-radius: 50%; */
+    border-radius: 50%;
 }
 
+/* The divider between totals */
 .totals-divider {
     width: 1px;
     align-self: stretch;
@@ -178,13 +179,12 @@
 
 .total-label.unique-count {
     text-transform: none;
-    margin-left: 12px;
-    font-size: 0.85em;
+    font-size: 0.75em;
     letter-spacing: 0;
     opacity: 0.7;
 }
 
-
+/* The superscript decimal formatting */
 .decimal-part {
     font-size: 0.55em;
     opacity: 0.7;
@@ -193,15 +193,14 @@
     top: -0.45em;
 }
 
+/* The message if no table is generated yet */
 .empty-message {
     text-align: center;
-    padding: 2rem ;
+    padding: 2rem;
     color: rgba(255, 255, 255, 0.5);
     font-style: italic;
     background-color: rgba(0, 0, 0, 0.2);
 }
-
-
 
 /* Sorting */
 .sortable-header {
@@ -227,15 +226,14 @@
 /* Scrollbar Styling */
 .table-body::-webkit-scrollbar {
     width: 10px;
-  }
-  .table-body::-webkit-scrollbar-track {
+}
+.table-body::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.1);
-  }
-  .table-body::-webkit-scrollbar-thumb {
+}
+.table-body::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.3);
     border-radius: 5px;
-  }
-  .table-body::-webkit-scrollbar-thumb:hover {
+}
+.table-body::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
-  }
-  
+}
