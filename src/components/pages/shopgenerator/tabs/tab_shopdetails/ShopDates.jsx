@@ -2,14 +2,14 @@ import PropTypes from 'prop-types';
 import './ShopDates.css';
 
 const ShopDates = ({ 
-    dateCreated = null, 
-    dateLastEdited = null 
+    dateCreated = new Date(), 
+    dateLastEdited = new Date() 
 }) => {
     const formatDate = (date) => {
         if (!date) return 'N/A';
-        const d = new Date(date);
-        // Check if date is valid before formatting
+        const d = date instanceof Date ? date : new Date(date);
         if (isNaN(d.getTime())) return 'N/A';
+        
         return d.toLocaleString('en-US', {
             year: 'numeric',
             month: 'short',
@@ -34,16 +34,8 @@ const ShopDates = ({
 };
 
 ShopDates.propTypes = {
-    dateCreated: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.instanceOf(Date),
-        PropTypes.object  // For Firebase Timestamp objects
-    ]),
-    dateLastEdited: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.instanceOf(Date),
-        PropTypes.object  // For Firebase Timestamp objects
-    ])
+    dateCreated: PropTypes.instanceOf(Date),
+    dateLastEdited: PropTypes.instanceOf(Date)
 };
 
 export default ShopDates; 

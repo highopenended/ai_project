@@ -6,7 +6,15 @@ import './SavedShops.css';
 const SavedShops = ({ savedShops, loadShop }) => {
     const formatDate = (date) => {
         if (!date) return '';
-        const d = new Date(date);
+        
+        // Handle Firebase Timestamp objects
+        if (date && typeof date === 'object' && date.toDate) {
+            date = date.toDate();
+        }
+        
+        const d = date instanceof Date ? date : new Date(date);
+        if (isNaN(d.getTime())) return 'Invalid Date';
+        
         return d.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',

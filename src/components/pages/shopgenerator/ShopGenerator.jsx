@@ -295,8 +295,15 @@ const handleSaveShop = async () => {
      */
     const handleLoadShop = (shop) => {
         console.log("Loading shop:", shop);
+        // Convert Firebase Timestamps to JavaScript Dates
+        const processedShop = {
+            ...shop,
+            dateCreated: shop.dateCreated?.toDate?.() || shop.dateCreated || new Date(),
+            dateLastEdited: shop.dateLastEdited?.toDate?.() || shop.dateLastEdited || new Date()
+        };
+        
         // Update all state variables from the loaded shop
-        setCurrentShop(shop);
+        setCurrentShop(processedShop);
         setCurrentGold(shop.parameters.goldAmount || 0);
         setLowestLevel(shop.parameters.levelLow || 0);
         setHighestLevel(shop.parameters.levelHigh || 10);
