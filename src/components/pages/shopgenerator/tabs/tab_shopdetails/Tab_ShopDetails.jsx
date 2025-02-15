@@ -6,14 +6,25 @@ import ShopDetailsShort from './shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailslong/ShopDetailsLong';
 import './Tab_ShopDetails.css';
 
-Tab_ShopDetails.displayName = 'Shop Details';
-Tab_ShopDetails.minWidth = 350;
-
 function Tab_ShopDetails({ 
-    currentShop, 
-    onShopDetailsChange, 
-    onSaveShop, 
-    onCloneShop 
+    currentShop = {
+        id: '',
+        shortData: {
+            shopName: '',
+            shopKeeperName: '',
+            type: '',
+            location: ''
+        },
+        longData: {
+            shopDetails: '',
+            shopKeeperDetails: ''
+        },
+        dateCreated: new Date(),
+        dateLastEdited: new Date()
+    }, 
+    onShopDetailsChange = () => {}, 
+    onSaveShop = () => {}, 
+    onCloneShop = () => {} 
 }) {
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
@@ -74,5 +85,8 @@ Tab_ShopDetails.propTypes = {
     onSaveShop: PropTypes.func.isRequired,
     onCloneShop: PropTypes.func.isRequired
 };
+
+Tab_ShopDetails.displayName = 'Shop Details';
+Tab_ShopDetails.minWidth = 350;
 
 export default Tab_ShopDetails;

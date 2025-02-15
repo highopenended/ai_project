@@ -2,7 +2,11 @@ import PropTypes from 'prop-types';
 import LongDetailsContainer from './LongDetailsContainer';
 import LongDetailRow from './LongDetailRow';
 
-const ShopDetailsLong = ({ shopDetails, onInputChange, placeholders }) => {
+const ShopDetailsLong = ({ 
+    shopDetails, 
+    onInputChange, 
+    placeholders = {} 
+}) => {
     return (
         <LongDetailsContainer>
             {Object.keys(shopDetails.longData).map((key) => (
@@ -25,10 +29,6 @@ ShopDetailsLong.propTypes = {
     }).isRequired,
     onInputChange: PropTypes.func.isRequired,
     placeholders: PropTypes.object
-};
-
-ShopDetailsLong.defaultProps = {
-    placeholders: {}
 };
 
 export default ShopDetailsLong; 

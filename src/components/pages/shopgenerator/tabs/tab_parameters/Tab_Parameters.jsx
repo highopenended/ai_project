@@ -9,9 +9,6 @@ import TraitFilter from "./traitfilter/TraitFilter";
 import "./Tab_Parameters.css";
 import PropTypes from "prop-types";
 
-Tab_Parameters.displayName = "Parameters";
-Tab_Parameters.minWidth = 220;
-
 function Tab_Parameters({
     currentGold,
     setCurrentGold,
@@ -54,5 +51,8 @@ Tab_Parameters.propTypes = {
     itemBias: PropTypes.object.isRequired,
     setItemBias: PropTypes.func.isRequired,
 };
+
+Tab_Parameters.displayName = "Parameters";
+Tab_Parameters.minWidth = 220;
 
 export default Tab_Parameters;

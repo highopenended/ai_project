@@ -1,29 +1,38 @@
 // Define the shopData object
 const shopData = {
   shortData: {
-    shopName: '',
-    shopKeeperName: '',
-    type: '',
-    location: ''
+    shopName: 'Unnamed Shop',
+    shopKeeperName: 'Unknown',
+    type: 'General Store',
+    location: 'Unknown Location'
   },
   longData: {
-    shopDetails: '',
-    shopKeeperDetails: ''
+    shopDetails: 'No details available',
+    shopKeeperDetails: 'No details available'
   },
   parameters: {
-    goldAmount: 0,
+    goldAmount: 1000,
     levelLow: 0,
-    levelHigh: 0,
-    shopBias: { x: 0, y: 0 },
+    levelHigh: 10,
+    shopBias: { x: 0.5, y: 0.5 },
     rarityDistribution: {
-      common: 0,
-      uncommon: 0,
-      rare: 0,
-      unique: 0
+      Common: 95.0,
+      Uncommon: 4.5,
+      Rare: 0.49,
+      Unique: 0.01
     },
-    categories: {},
-    subcategories: {},
-    traits: {},
+    categories: {
+      included: [],
+      excluded: []
+    },
+    subcategories: {
+      included: [],
+      excluded: []
+    },
+    traits: {
+      included: [],
+      excluded: []
+    },
     currentStock: []
   },
   id: '',

@@ -6,10 +6,6 @@ import ItemTableTotals from '../tab_inventorytable/itemtable/ItemTableTotals';
 import CurrentShopSummary from '../tab_inventorytable/currentshopsummary/currentshopsummary';
 import PropTypes from 'prop-types';
 
-Tab_InventoryTable.displayName = "Inventory Table";
-Tab_InventoryTable.minWidth = 400;
-Tab_InventoryTable.additionalClassNames = "no-scrollbar";
-
 function Tab_InventoryTable({ items, sortConfig, onSort, currentShopName, handleGenerateClick }) {
     // Calculate totals
     const totalCount = items.reduce((sum, item) => sum + item.count, 0);
@@ -56,4 +52,9 @@ Tab_InventoryTable.propTypes = {
     currentShopName: PropTypes.string.isRequired,
     handleGenerateClick: PropTypes.func.isRequired,
 };
+
+Tab_InventoryTable.displayName = "Inventory Table";
+Tab_InventoryTable.minWidth = 400;
+Tab_InventoryTable.additionalClassNames = "no-scrollbar";
+
 export default Tab_InventoryTable;

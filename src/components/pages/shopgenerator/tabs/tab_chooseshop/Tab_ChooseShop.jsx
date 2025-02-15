@@ -4,13 +4,6 @@ import NewShopButton from './NewShopButton';
 import SavedShops from './SavedShops';
 import ImportExport from './ImportExport';
 
-
-
-
-Tab_ChooseShop.displayName = "Choose Shop";
-Tab_ChooseShop.minWidth = 220;
-
-
 /**
  * Tab_ChooseShop Component
  * 
@@ -42,5 +35,8 @@ Tab_ChooseShop.propTypes = {
     onLoadShop: PropTypes.func.isRequired,
     onNewShop: PropTypes.func.isRequired,
 };
+
+Tab_ChooseShop.displayName = "Choose Shop";
+Tab_ChooseShop.minWidth = 220;
 
 export default Tab_ChooseShop;

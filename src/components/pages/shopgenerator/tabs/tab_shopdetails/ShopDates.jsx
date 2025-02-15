@@ -1,7 +1,10 @@
 import PropTypes from 'prop-types';
 import './ShopDates.css';
 
-const ShopDates = ({ dateCreated, dateLastEdited }) => {
+const ShopDates = ({ 
+    dateCreated = null, 
+    dateLastEdited = null 
+}) => {
     const formatDate = (date) => {
         if (!date) return 'N/A';
         const d = new Date(date);
@@ -41,11 +44,6 @@ ShopDates.propTypes = {
         PropTypes.instanceOf(Date),
         PropTypes.object  // For Firebase Timestamp objects
     ])
-};
-
-ShopDates.defaultProps = {
-    dateCreated: null,
-    dateLastEdited: null
 };
 
 export default ShopDates; 
