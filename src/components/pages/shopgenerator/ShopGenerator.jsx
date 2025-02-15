@@ -267,7 +267,48 @@ function ShopGenerator() {
         setTraitStates(traitMap);
     };
 
-    
+    const handleSort = (columnName) => {
+        setSortConfig((prevConfig) => {
+            // Remove the column if it exists in the current config
+            const newConfig = prevConfig.filter((sort) => sort.column !== columnName);
+
+            // Get the current direction for this column
+            const currentDirection = prevConfig.find((sort) => sort.column === columnName)?.direction;
+
+            // Get the next direction in the cycle
+            const nextDirection = getNextSortDirection(currentDirection, columnName);
+
+            // If there's a next direction, add it to the end of the queue
+            if (nextDirection) {
+                newConfig.push({ column: columnName, direction: nextDirection });
+            }
+
+            return newConfig;
+        });
+    };
+
+    // Shop management functions
+    const handleNewShop = () => {
+        // Reset all state to initial values
+        setCurrentShop(shopData);
+        setCurrentGold(0);
+        setLowestLevel(0);
+        setHighestLevel(10);
+        setItemBias({ x: 0.5, y: 0.5 });
+        setRarityDistribution({
+            Common: 95.0,
+            Uncommon: 4.5,
+            Rare: 0.49,
+            Unique: 0.01,
+        });
+        setItems([]);
+
+        // Clear all filters
+        setCategoryStates(new Map());
+        setSubcategoryStates(new Map());
+        setTraitStates(new Map());
+    };
+
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
         // localStorage.clear(STORAGE_KEY);
@@ -307,10 +348,20 @@ function ShopGenerator() {
                                             items={items}
                                             currentShopName={currentShop.shortData.shopName || "Unnamed Shop"}
                                             handleGenerateClick={handleGenerateClick}
+                                            sortConfig={sortConfig}
+                                            onSort={handleSort}
                                         />
                                     );
                                 case "Tab_ChooseShop":
-                                    return <Tab_ChooseShop key={tab.key} type={{ name: "Tab_ChooseShop" }} />;
+                                    return (
+                                        <Tab_ChooseShop
+                                            key={tab.key}
+                                            type={{ name: "Tab_ChooseShop" }}
+                                            savedShops={savedShops}
+                                            onLoadShop={handleLoadShop}
+                                            onNewShop={handleNewShop}
+                                        />
+                                    );
                                 case "Tab_ShopDetails":
                                     return <Tab_ShopDetails key={tab.key} type={{ name: "Tab_ShopDetails" }} />;
                                 case "Tab_AiAssistant":
@@ -350,7 +401,13 @@ function ShopGenerator() {
                         items={items}
                         currentShopName={currentShop.shortData.shopName || "Unnamed Shop"}
                     />,
-                    <Tab_ChooseShop key="Tab_ChooseShop-0" type={{ name: "Tab_ChooseShop" }} />,
+                    <Tab_ChooseShop
+                        key="Tab_ChooseShop-0"
+                        type={{ name: "Tab_ChooseShop" }}
+                        savedShops={savedShops}
+                        onLoadShop={handleLoadShop}
+                        onNewShop={handleNewShop}
+                    />,
                     <Tab_ShopDetails key="Tab_ShopDetails-0" type={{ name: "Tab_ShopDetails" }} />,
                     <Tab_AiAssistant key="Tab_AiAssistant-0" type={{ name: "Tab_AiAssistant" }} />,
                 ],
@@ -647,26 +704,6 @@ function ShopGenerator() {
         }
     };
 
-    const handleSort = (columnName) => {
-        setSortConfig((prevConfig) => {
-            // Remove the column if it exists in the current config
-            const newConfig = prevConfig.filter((sort) => sort.column !== columnName);
-
-            // Get the current direction for this column
-            const currentDirection = prevConfig.find((sort) => sort.column === columnName)?.direction;
-
-            // Get the next direction in the cycle
-            const nextDirection = getNextSortDirection(currentDirection, columnName);
-
-            // If there's a next direction, add it to the end of the queue
-            if (nextDirection) {
-                newConfig.push({ column: columnName, direction: nextDirection });
-            }
-
-            return newConfig;
-        });
-    };
-
     const sortItems = (itemsToSort) => {
         if (!sortConfig.length) return itemsToSort;
 
@@ -718,10 +755,8 @@ function ShopGenerator() {
 
     // Handle sorting when sortConfig changes
     useEffect(() => {
-        if (items.length > 0) {
-            setItems(sortItems(items));
-        }
-    }, [sortConfig]); // eslint-disable-line react-hooks/exhaustive-deps
+        setItems(sortItems(items));
+    }, [sortConfig]);
 
     // State handlers
     const handleGoldChange = (gold) => {
@@ -769,28 +804,6 @@ function ShopGenerator() {
             console.log("Updated shop:", newShop); // Debug log
             return newShop;
         });
-    };
-
-    // Shop management functions
-    const handleNewShop = () => {
-        // Reset all state to initial values
-        setCurrentShop(shopData);
-        setCurrentGold(0);
-        setLowestLevel(0);
-        setHighestLevel(10);
-        setItemBias({ x: 0.5, y: 0.5 });
-        setRarityDistribution({
-            Common: 95.0,
-            Uncommon: 4.5,
-            Rare: 0.49,
-            Unique: 0.01,
-        });
-        setItems([]);
-
-        // Clear all filters
-        setCategoryStates(new Map());
-        setSubcategoryStates(new Map());
-        setTraitStates(new Map());
     };
 
     // Shop state synchronization
@@ -928,14 +941,12 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
-
-
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {authLoading ? (
                 <div>Loading...</div>
             ) : (
-                tabGroups.map((tabs, index) => (             
+                tabGroups.map((tabs, index) => (
                     <TabContainer
                         key={index}
                         groupIndex={index}
@@ -990,9 +1001,7 @@ function ShopGenerator() {
                         dropIndicators={dropIndicators}
                         isLastGroup={index === tabGroups.length - 1}
                         onResize={handleResize}
-                        style={
-                            { width: flexBasis[index] || `${100 / tabGroups.length}%`}
-                        }
+                        style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
                         onDragStart={(tab, tabIndex) => {
                             setDraggedTab(tab);
                             setDraggedTabIndex(tabIndex);

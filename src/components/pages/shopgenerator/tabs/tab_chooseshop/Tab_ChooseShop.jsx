@@ -4,6 +4,13 @@ import NewShopButton from './NewShopButton';
 import SavedShops from './SavedShops';
 import ImportExport from './ImportExport';
 
+
+
+
+Tab_ChooseShop.displayName = "Choose Shop";
+Tab_ChooseShop.minWidth = 220;
+
+
 /**
  * Tab_ChooseShop Component
  * 
@@ -12,7 +19,7 @@ import ImportExport from './ImportExport';
  * - Loading saved shops
  * - Importing/Exporting shop data
  */
-const Tab_ChooseShop = ({ savedShops, onLoadShop, onNewShop }) => {
+function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop }) {
     return (
         <div className="tab-choose-shop">
             <NewShopButton handleNewShop={onNewShop} />
