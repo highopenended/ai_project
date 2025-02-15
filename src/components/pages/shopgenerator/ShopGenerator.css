@@ -9,9 +9,6 @@
     box-sizing: border-box;
 }
 
-.filter-grid {
-    padding-left: 0.3rem;
-}
 
 .filter-grid-content {
     max-height: 10rem;
@@ -19,6 +16,11 @@
     /* For Firefox */
     scrollbar-width: thin;
     scrollbar-color: #666 #333;
+    padding: 0.3rem;
+    margin-top: 0.2rem;    
+    border: 1px solid var(--dark-border-color);
+    background-color: var(--background-secondary);
+    border-radius: 0.5rem 0.5rem 0 0.5rem;
 }
 
 /* For Webkit browsers (Chrome, Safari, etc.) */

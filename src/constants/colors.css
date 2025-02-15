@@ -5,8 +5,9 @@
     --dark-background-color: rgba(0, 0, 0, 0.2); /* Dark background */
     --light-background-color: rgba(255, 255, 255, .9); /* Light background */
     --background-secondary: #131c29; /* Example color */
-    --background-tertiary: #131c29; /* Example color */
+    --background-tertiary: #19273d; /* Example color */
     --accent-color: #2a324d; /* Example color */
+    --button-background-dark: #181c29;
     --button-background: #2a324d;
     --button-hover-background: #49588d;
     --button-active-background: #49588d;

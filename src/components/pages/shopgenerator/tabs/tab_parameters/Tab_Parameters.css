@@ -5,6 +5,7 @@
     flex-direction: column;
     gap: 0.2rem;
     width: 100%;
+    padding-left: .2rem;
     padding-right: .3rem;
 }
 
