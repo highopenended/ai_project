@@ -1,30 +1,55 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
-import Section from '../../shared/Section';
 import Scrollbar from '../../shared/Scrollbar';
 import './SavedShops.css';
 
 const SavedShops = ({ savedShops, loadShop }) => {
-    console.log('SavedShops data:', savedShops); // Debug log
+    const formatDate = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
+
     return (
-        <Section title="Saved Shops">           
-            <Scrollbar style={{ maxHeight: '200px', minHeight: '100px', overflowY: 'auto' }}>
+        <div className="saved-shops-container">
+            <div className="saved-shops-title">Saved Shops</div>
+            <Scrollbar style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 <ul className="shop-list">
                     {savedShops.map((shop) => (
-                        <li key={shop.id} onClick={() => loadShop(shop)} className="shop-item">
-                            {shop.shortData.shopName || 'Unnamed Shop'}
+                        <li 
+                            key={shop.id} 
+                            onClick={() => loadShop(shop)} 
+                            className="shop-item"
+                            title={`Last edited: ${formatDate(shop.dateLastEdited)}`}
+                        >
+                            <span className="shop-item-name">
+                                {shop.shortData.shopName || 'Unnamed Shop'}
+                            </span>
+                            <span className="shop-item-date">
+                                {formatDate(shop.dateLastEdited)}
+                            </span>
                         </li>
                     ))}
+                    {savedShops.length === 0 && (
+                        <li className="shop-item" style={{ justifyContent: 'center', cursor: 'default' }}>
+                            <span className="shop-item-name" style={{ opacity: 0.7 }}>
+                                No saved shops
+                            </span>
+                        </li>
+                    )}
                 </ul>
             </Scrollbar>
-        </Section>
+        </div>
     );
 };
 
 SavedShops.propTypes = {
     savedShops: PropTypes.array.isRequired,
     loadShop: PropTypes.func.isRequired,
-    handleNewShop: PropTypes.func.isRequired,
 };
 
 export default SavedShops; 

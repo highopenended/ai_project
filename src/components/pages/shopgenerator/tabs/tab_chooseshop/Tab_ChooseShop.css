@@ -1,0 +1,28 @@
+.tab-choose-shop {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    height: 100%;
+    overflow-y: auto;
+    background-color: var(--background-secondary);
+}
+
+/* For Webkit browsers (Chrome, Safari, etc.) */
+.tab-choose-shop::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tab-choose-shop::-webkit-scrollbar-track {
+    background: var(--background-tertiary);
+    border-radius: 4px;
+}
+
+.tab-choose-shop::-webkit-scrollbar-thumb {
+    background: var(--button-background);
+    border-radius: 4px;
+}
+
+.tab-choose-shop::-webkit-scrollbar-thumb:hover {
+    background: var(--button-hover-background);
+}
