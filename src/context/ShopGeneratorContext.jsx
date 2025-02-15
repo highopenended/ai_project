@@ -5,7 +5,6 @@ import { SELECTION_STATES } from './shopGeneratorConstants';
 
 const ShopGeneratorContext = createContext();
 
-
 function extractUniqueCategories(items) {
     const categoriesMap = new Map();
     const subcategoryCounts = new Map();
@@ -155,7 +154,7 @@ export function ShopGeneratorProvider({ children }) {
         getTraitState,
         toggleTrait,
         clearTraitSelections,
-        setTraitStates
+        setTraitStates,
     };
 
     return (
