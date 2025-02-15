@@ -75,7 +75,7 @@ input, textarea {
 
 /* Common scrollbar styles */
 *::-webkit-scrollbar {
-  width: 8px;
+  width:.7rem;
 }
 
 *::-webkit-scrollbar-track {

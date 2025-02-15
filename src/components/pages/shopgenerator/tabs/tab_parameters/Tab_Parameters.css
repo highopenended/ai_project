@@ -5,42 +5,7 @@
     flex-direction: column;
     gap: 0.2rem;
     width: 100%;
-    flex: 1 1 auto;
-    overflow-y: auto;
-    scrollbar-width: 2rem; 
-}
-
-.main-wrapper-parameter::-webkit-scrollbar {
-    width: 16px;
-    background: transparent;
-}
-
-.main-wrapper-parameter::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 8px;
-    margin: 4px;
-}
-
-.main-wrapper-parameter::-webkit-scrollbar-thumb {
-    background-color: rgba(163, 177, 255, 0.2);
-    border-radius: 8px;
-    border: 2px solid rgba(0, 0, 0, 0.2);
-    background-clip: padding-box;
-    min-height: 40px;
-}
-
-.main-wrapper-parameter::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(163, 177, 255, 0.4);
-}
-
-.main-wrapper-parameter::-webkit-scrollbar-thumb:active {
-    background-color: rgba(163, 177, 255, 0.5);
-}
-
-/* Firefox scrollbar styling */
-.main-wrapper-parameter {
-    scrollbar-width: auto;
-    scrollbar-color: rgba(163, 177, 255, 0.2) rgba(0, 0, 0, 0.2);
+    padding-right: .3rem;
 }
 
 /* Parameter Section Styling */
@@ -95,4 +60,3 @@
     box-shadow: 0 0 0 2px rgba(163, 177, 255, 0.1);
     background-color: rgba(0, 0, 0, 0.4);
 }
-
