@@ -77,6 +77,12 @@ function ShopGenerator() {
     const { categoryStates, subcategoryStates, traitStates, setCategoryStates, setSubcategoryStates, setTraitStates } =
         useShopGenerator();
 
+    useEffect(() => {
+        console.log("Current shop state:", currentShop);
+    }, [currentShop]);
+
+
+
     // Initial data loading
     useEffect(() => {
         try {
@@ -217,6 +223,7 @@ const handleSaveShop = async () => {
     }
 
     try {
+        console.log("Current shop state:", currentShop);
         const userId = currentUser.uid;
         // Construct a complete snapshot of current shop state
         const shopDataWithId = {
@@ -256,7 +263,7 @@ const handleSaveShop = async () => {
             dateLastEdited: new Date(),
             dateCreated: currentShop.dateCreated || new Date(),
         };
-
+        console.log("Shop data with ID:", shopDataWithId);
         const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
 
         // Update the current shop with the new ID
@@ -386,7 +393,6 @@ const handleSaveShop = async () => {
     };
 
     const handleCloneShop = () => {
-        const { id, ...shopWithoutId } = currentShop;
         const clonedShop = {
             ...shopWithoutId,
             shortData: {

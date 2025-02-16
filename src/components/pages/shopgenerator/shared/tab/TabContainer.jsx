@@ -79,10 +79,13 @@ function TabContainer({
     isLastGroup,
     style
 }) {
-    const [activeTab, setActiveTab] = useState(tabs[0]);
+    // Track active tab by type name instead of component reference
+    const [activeTabType, setActiveTabType] = useState(tabs[0]?.type?.name);
     const [dropIndex, setDropIndex] = useState(null);
     const [isResizing, setIsResizing] = useState(false);
-    const activeTabName = activeTab.props.type.name;
+    
+    const activeTab = tabs.find(tab => tab.type.name === activeTabType) || tabs[0];
+    const activeTabName = activeTab?.type?.name;
     const containerRef = useRef(null);
     
     // Refs for DOM manipulation and position tracking
@@ -102,10 +105,10 @@ function TabContainer({
 
     // Keep active tab valid when tabs array changes
     useEffect(() => {
-        if (!tabs.includes(activeTab)) {
-            setActiveTab(tabs[0]);
+        if (!tabs.some(tab => tab.type.name === activeTabType)) {
+            setActiveTabType(tabs[0]?.type?.name);
         }
-    }, [tabs, activeTab]);
+    }, [tabs, activeTabType]);
 
     // Debounce indicator changes to prevent rapid updates
     const debouncedDropIndicatorChange = useDebounce((indicators) => {
@@ -117,7 +120,7 @@ function TabContainer({
      * @param {Object} tab - The tab being clicked
      */
     const handleTabClick = (tab) => {
-        setActiveTab(tab);
+        setActiveTabType(tab.type.name);
         onTabClick?.(tab, tabs.indexOf(tab));
     };
 
@@ -313,7 +316,7 @@ function TabContainer({
                 newTabs.splice(dropIndex, 0, movedTab);
                 onTabMove(newTabs, groupIndex);
                 if (activeTab === tabs[sourceIndexNum]) {
-                    setActiveTab(movedTab);
+                    setActiveTabType(movedTab.type.name);
                 }
             }
         } catch {
