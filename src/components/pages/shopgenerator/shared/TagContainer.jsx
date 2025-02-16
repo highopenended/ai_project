@@ -3,28 +3,29 @@ import PropTypes from 'prop-types';
 import './TagContainer.css';
 import Tag from './Tag';
 
-const TagContainer = ({ tags, onTagClick }) => {
+function TagContainer({ tags, onTagClick, getTagState }) {
     return (
-        <div>
-            {tags.map(tag => (
-                <Tag 
-                    key={tag.name}
-                    name={tag.name}
-                    state={tag.state}
-                    onClick={() => onTagClick(tag.name)}
-                />
-            ))}
+        <div className="filter-grid">
+            <div className="filter-grid-content">
+                {tags.map((tag, index) => (
+                    <Tag
+                        key={tag.name + index}
+                        name={tag.name}
+                        state={getTagState(tag.name)}
+                        onClick={() => onTagClick(tag.name)}
+                    />
+                ))}
+            </div>
         </div>
     );
-};
+}
 
 TagContainer.propTypes = {
     tags: PropTypes.arrayOf(PropTypes.shape({
         name: PropTypes.string.isRequired,
-        state: PropTypes.string.isRequired,
-        count: PropTypes.number.isRequired,
     })).isRequired,
     onTagClick: PropTypes.func.isRequired,
+    getTagState: PropTypes.func.isRequired,
 };
 
 export default TagContainer; 

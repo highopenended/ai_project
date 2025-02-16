@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext";
 import { SELECTION_STATES } from "../../../../../../context/shopGeneratorConstants";
-import Tag from "../../../shared/Tag";
 import Section from "../../../shared/Section";
 import ButtonGroup from "../../../shared/ButtonGroup";
 import SearchBar from "../../../shared/SearchBar";
+import TagContainer from "../../../shared/TagContainer";
 
 function SubcategoryFilter() {
     const { categoryData, categoryStates, getSubcategoryState, toggleSubcategory, clearSubcategorySelections } =
@@ -22,9 +22,14 @@ function SubcategoryFilter() {
         }
     });
 
-    const filteredSubcategories = Array.from(subcategories).filter(subcategory =>
-        subcategory.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredSubcategories = Array.from(subcategories)
+        .filter(subcategory =>
+            subcategory.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => a.localeCompare(b))
+        .map(subcategory => ({
+            name: subcategory
+        }));
 
     return (
         <Section
@@ -45,20 +50,13 @@ function SubcategoryFilter() {
                     className="search-input"
                 />
             )}
-            <div className="filter-grid">
-                {!isCollapsed && (
-                    <div className="filter-grid-content">
-                        {filteredSubcategories.map((subcategory, index) => (
-                            <Tag
-                                name={`${subcategory} (${categoryData.subcategoryCounts[subcategory]})`}
-                                key={subcategory + index}
-                                state={getSubcategoryState(subcategory)}
-                                onClick={() => toggleSubcategory(subcategory)}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
+            {!isCollapsed && (
+                <TagContainer
+                    tags={filteredSubcategories}
+                    onTagClick={toggleSubcategory}
+                    getTagState={getSubcategoryState}
+                />
+            )}
         </Section>
     );
 }

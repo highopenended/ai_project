@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext";
-import Tag from "../../../shared/Tag";
 import Section from "../../../shared/Section";
 import traitList from "../../../../../../../public/trait-list.json";
 import ButtonGroup from "../../../shared/ButtonGroup";
 import SearchBar from "../../../shared/SearchBar";
+import TagContainer from "../../../shared/TagContainer";
 
 function TraitFilter() {
     const { getTraitState, toggleTrait, clearTraitSelections } = useShopGenerator();
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
-    const filteredTraits = traitList.filter(({ Trait }) =>
-        Trait.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredTraits = traitList
+        .filter(({ Trait }) =>
+            Trait.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => a.Trait.localeCompare(b.Trait))
+        .map(({ Trait }) => ({
+            name: Trait
+        }));
 
     return (
         <Section title="Traits"
@@ -29,20 +34,13 @@ function TraitFilter() {
                     className="search-input"
                 />
             )}
-            <div className="filter-grid">
-                {!isCollapsed && (
-                    <div className="filter-grid-content">
-                        {filteredTraits.map(({ Trait }, index) => (
-                            <Tag
-                                name={Trait}
-                                key={Trait + index}
-                                state={getTraitState(Trait)}
-                                onClick={() => toggleTrait(Trait)}
-                            />
-                        ))}
-                    </div>
-                )}
-            </div>
+            {!isCollapsed && (
+                <TagContainer
+                    tags={filteredTraits}
+                    onTagClick={toggleTrait}
+                    getTagState={getTraitState}
+                />
+            )}
         </Section>
     );
 }
