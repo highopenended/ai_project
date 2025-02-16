@@ -47,6 +47,9 @@ import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/fire
 
 const STORAGE_KEY = "tabGroupsState";
 
+// Add RARITY_ORDER constant at the top with other constants
+const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Unique'];
+
 function ShopGenerator() {
     // Get auth context
     const { currentUser, isLoading: authLoading } = useAuth();
@@ -971,6 +974,20 @@ function ShopGenerator() {
 
     // Sorting functionality
     const getNextSortDirection = (currentDirection, columnName) => {
+        // Special handling for rarity column
+        if (columnName === "rarity") {
+            switch (currentDirection) {
+                case undefined:
+                    return "asc"; // First click: Common -> Uncommon -> Rare -> Unique
+                case "asc":
+                    return "desc"; // Second click: Unique -> Rare -> Uncommon -> Common
+                case "desc":
+                    return undefined; // Third click: back to default
+                default:
+                    return undefined;
+            }
+        }
+
         // Special handling for text-based columns
         if (columnName === "name" || columnName === "item_category" || columnName === "item_subcategory") {
             switch (currentDirection) {
@@ -998,7 +1015,6 @@ function ShopGenerator() {
         }
     };
 
-
     // Handle sorting when sortConfig changes
     useEffect(() => {
         if (!sortConfig.length) {
@@ -1010,6 +1026,7 @@ function ShopGenerator() {
             for (const { column, direction } of sortConfig) {
                 let comparison = 0;
                 let aPrice, bPrice;
+                let aIndex, bIndex;
 
                 switch (column) {
                     case "count":
@@ -1030,18 +1047,23 @@ function ShopGenerator() {
                         comparison = a.total - b.total;
                         break;
                     case "item_category":
-                        comparison = (a.item_category || "").localeCompare(b.item_category || "");
+                        comparison = (a.item_category || "").localeCompare(b.item_subcategory || "");
                         break;
                     case "item_subcategory":
                         comparison = (a.item_subcategory || "").localeCompare(b.item_subcategory || "");
+                        break;
+                    case "rarity":
+                        aIndex = RARITY_ORDER.indexOf(a.rarity);
+                        bIndex = RARITY_ORDER.indexOf(b.rarity);
+                        comparison = aIndex - bIndex;
                         break;
                     default:
                         comparison = 0;
                 }
 
                 if (comparison !== 0) {
-                    // For text-based columns, flip the comparison direction to match natural alphabetical order
-                    if (column === "name" || column === "item_category" || column === "item_subcategory") {
+                    // For text-based columns and rarity, flip the comparison direction to match natural order
+                    if (column === "name" || column === "item_category" || column === "item_subcategory" || column === "rarity") {
                         return direction === "asc" ? comparison : -comparison;
                     }
                     // For all other columns, maintain the existing direction logic
