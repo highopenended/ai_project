@@ -43,4 +43,4 @@ const handleTitleGeneration = (req, res) => {
     corsMiddleware(req, res, () => generateTitle(req, res));
 };
 
-module.exports = handleTitleGeneration; 
+module.exports = handleTitleGeneration;

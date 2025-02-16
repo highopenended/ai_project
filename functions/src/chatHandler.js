@@ -31,4 +31,4 @@ const chatEndpoint = (req, res) => {
     corsMiddleware(req, res, () => handleChat(req, res));
 };
 
-module.exports = chatEndpoint; 
+module.exports = chatEndpoint;

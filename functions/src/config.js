@@ -1,8 +1,6 @@
 const functions = require("firebase-functions/v1");
 const OpenAI = require("openai");
-const cors = require("cors");
-
-const corsMiddleware = cors({ 
+const cors = require("cors")({ 
     origin: true,
     methods: ['POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
@@ -14,7 +12,7 @@ const openai = new OpenAI({
 });
 
 module.exports = {
-    corsMiddleware,
+    functions,
     openai,
-    functions
+    corsMiddleware: cors
 }; 
