@@ -113,6 +113,13 @@ function ShopGenerator() {
         }
     }, []);
 
+    // Initialize new shop if no shop is currently being worked on
+    useEffect(() => {
+        if (!shopId && !authLoading) {
+            handleNewShop();
+        }
+    }, [shopId, authLoading]);
+
     // Load shops when auth is ready and user is logged in
     useEffect(() => {
         if (!authLoading && currentUser) {
