@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext";
-import { SELECTION_STATES } from "../../../../../../context/shopGeneratorConstants";
+import { useShopGenerator } from "../../../../utils/shopGeneratorContext";
+import { SELECTION_STATES } from "../../../../utils/shopGeneratorConstants";
 import Section from "../../../shared/Section";
 import ButtonGroup from "../../../shared/ButtonGroup";
 import SearchBar from "../../../shared/SearchBar";

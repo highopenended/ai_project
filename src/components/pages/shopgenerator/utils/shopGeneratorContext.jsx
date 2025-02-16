@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
-import itemData from '../../public/item-table.json';
+import itemData from '../../../../../public/item-table.json';
 import { SELECTION_STATES } from './shopGeneratorConstants';
 
 const ShopGeneratorContext = createContext();

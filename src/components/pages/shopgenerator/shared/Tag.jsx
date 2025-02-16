@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { SELECTION_STATES } from '../../../../context/shopGeneratorConstants';
+import { SELECTION_STATES } from '../utils/shopGeneratorConstants';
 import './Tag.css';
 
 const Tag = ({ name, state, onClick }) => {

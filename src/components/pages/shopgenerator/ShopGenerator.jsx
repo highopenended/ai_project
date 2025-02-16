@@ -11,8 +11,8 @@ import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
 import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import itemData from "../../../../public/item-table.json";
-import { useShopGenerator } from "../../../context/ShopGeneratorContext";
-import { SELECTION_STATES } from "../../../context/shopGeneratorConstants";
+import { useShopGenerator } from "./utils/shopGeneratorContext";
+import { SELECTION_STATES } from "./utils/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
 import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/firebaseShopUtils";
 import { RARITY_ORDER } from "../../../constants/rarityOrder";
@@ -89,9 +89,6 @@ function ShopGenerator() {
     const { categoryStates, subcategoryStates, traitStates, setCategoryStates, setSubcategoryStates, setTraitStates } =
         useShopGenerator();
 
-    // useEffect(() => {
-    //     console.log("Current shop state:", { shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId });
-    // }, [shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId]);
 
     // Initial data loading
     useEffect(() => {
@@ -113,12 +110,17 @@ function ShopGenerator() {
         }
     }, []);
 
-    // Initialize new shop if no shop is currently being worked on
+    // Initialize shop - either from saved state or create new
     useEffect(() => {
-        if (!shopId && !authLoading) {
-            handleNewShop();
+        if (!authLoading) {
+            const savedShop = localStorage.getItem('currentShop');
+            if (savedShop) {
+                handleLoadShop(JSON.parse(savedShop));
+            } else if (!shopId) {
+                handleNewShop();
+            }
         }
-    }, [shopId, authLoading]);
+    }, [authLoading]);
 
     // Load shops when auth is ready and user is logged in
     useEffect(() => {
@@ -127,6 +129,56 @@ function ShopGenerator() {
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authLoading, currentUser]);
+
+    // Save shop state when it changes
+    useEffect(() => {
+        if (shopId) {
+            const shopState = {
+                id: shopId,
+                shortData: {
+                    shopName,
+                    shopKeeperName,
+                    type: shopType,
+                    location: shopLocation
+                },
+                longData: {
+                    shopDetails,
+                    shopKeeperDetails
+                },
+                parameters: {
+                    goldAmount: currentGold,
+                    levelLow: lowestLevel,
+                    levelHigh: highestLevel,
+                    shopBias: itemBias,
+                    rarityDistribution,
+                    categories: {
+                        included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE),
+                    },
+                    subcategories: {
+                        included: getFilteredArray(subcategoryStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE),
+                    },
+                    traits: {
+                        included: getFilteredArray(traitStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE),
+                    }
+                },
+                currentStock: items,
+                dateCreated,
+                dateLastEdited,
+                filterStates: {
+                    categoryStates: Array.from(categoryStates.entries()),
+                    subcategoryStates: Array.from(subcategoryStates.entries()),
+                    traitStates: Array.from(traitStates.entries())
+                }
+            };
+            localStorage.setItem('currentShop', JSON.stringify(shopState));
+        }
+    }, [shopId, shopName, shopKeeperName, shopType, shopLocation, shopDetails, 
+        shopKeeperDetails, currentGold, lowestLevel, highestLevel, itemBias, 
+        rarityDistribution, items, dateCreated, dateLastEdited,
+        categoryStates, subcategoryStates, traitStates]);
 
     // Function to get filtered arrays from Maps
     const getFilteredArray = (stateMap, includeState, defaultMap = new Map()) => {
@@ -275,12 +327,12 @@ function ShopGenerator() {
         setDateCreated(loadedDateCreated);
         setDateLastEdited(loadedDateLastEdited);
         
-        setCurrentGold(shop.parameters.goldAmount || 0);
-        setLowestLevel(shop.parameters.levelLow || 0);
-        setHighestLevel(shop.parameters.levelHigh || 10);
-        setItemBias(shop.parameters.shopBias || { x: 0.5, y: 0.5 });
+        setCurrentGold(shop.parameters?.goldAmount || 1000);
+        setLowestLevel(shop.parameters?.levelLow || 0);
+        setHighestLevel(shop.parameters?.levelHigh || 10);
+        setItemBias(shop.parameters?.shopBias || { x: 0.5, y: 0.5 });
         setRarityDistribution(
-            shop.parameters.rarityDistribution || {
+            shop.parameters?.rarityDistribution || {
                 Common: 95.0,
                 Uncommon: 4.5,
                 Rare: 0.49,
@@ -289,29 +341,36 @@ function ShopGenerator() {
         );
         setItems(shop.currentStock || []);
 
-        // Restore filter states from saved data
-        const categoryMap = new Map();
-        shop.parameters.categories?.included?.forEach((category) =>
-            categoryMap.set(category, SELECTION_STATES.INCLUDE)
-        );
-        shop.parameters.categories?.excluded?.forEach((category) =>
-            categoryMap.set(category, SELECTION_STATES.EXCLUDE)
-        );
-        setCategoryStates(categoryMap);
+        // Restore filter states if they exist in the saved shop
+        if (shop.filterStates) {
+            setCategoryStates(new Map(shop.filterStates.categoryStates));
+            setSubcategoryStates(new Map(shop.filterStates.subcategoryStates));
+            setTraitStates(new Map(shop.filterStates.traitStates));
+        } else {
+            // If loading an older shop without filter states, try to restore from parameters
+            const categoryMap = new Map();
+            shop.parameters?.categories?.included?.forEach((category) =>
+                categoryMap.set(category, SELECTION_STATES.INCLUDE)
+            );
+            shop.parameters?.categories?.excluded?.forEach((category) =>
+                categoryMap.set(category, SELECTION_STATES.EXCLUDE)
+            );
+            setCategoryStates(categoryMap);
 
-        const subcategoryMap = new Map();
-        shop.parameters.subcategories?.included?.forEach((subcategory) =>
-            subcategoryMap.set(subcategory, SELECTION_STATES.INCLUDE)
-        );
-        shop.parameters.subcategories?.excluded?.forEach((subcategory) =>
-            subcategoryMap.set(subcategory, SELECTION_STATES.EXCLUDE)
-        );
-        setSubcategoryStates(subcategoryMap);
+            const subcategoryMap = new Map();
+            shop.parameters?.subcategories?.included?.forEach((subcategory) =>
+                subcategoryMap.set(subcategory, SELECTION_STATES.INCLUDE)
+            );
+            shop.parameters?.subcategories?.excluded?.forEach((subcategory) =>
+                subcategoryMap.set(subcategory, SELECTION_STATES.EXCLUDE)
+            );
+            setSubcategoryStates(subcategoryMap);
 
-        const traitMap = new Map();
-        shop.parameters.traits?.included?.forEach((trait) => traitMap.set(trait, SELECTION_STATES.INCLUDE));
-        shop.parameters.traits?.excluded?.forEach((trait) => traitMap.set(trait, SELECTION_STATES.EXCLUDE));
-        setTraitStates(traitMap);
+            const traitMap = new Map();
+            shop.parameters?.traits?.included?.forEach((trait) => traitMap.set(trait, SELECTION_STATES.INCLUDE));
+            shop.parameters?.traits?.excluded?.forEach((trait) => traitMap.set(trait, SELECTION_STATES.EXCLUDE));
+            setTraitStates(traitMap);
+        }
     };
 
     const handleNewShop = () => {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext";
+import { useShopGenerator } from "../../../../utils/shopGeneratorContext";
 import Section from "../../../shared/Section";
 import traitList from "../../../../../../../public/trait-list.json";
 import ButtonGroup from "../../../shared/ButtonGroup";
