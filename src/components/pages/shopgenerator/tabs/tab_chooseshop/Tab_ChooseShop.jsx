@@ -12,7 +12,7 @@ import ImportExport from './ImportExport';
  * - Loading saved shops
  * - Importing/Exporting shop data
  */
-function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop }) {
+function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId }) {
     return (
         <div className="tab-choose-shop">
             <NewShopButton handleNewShop={onNewShop} />
@@ -20,6 +20,7 @@ function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop }) {
                 savedShops={savedShops} 
                 loadShop={onLoadShop} 
                 handleNewShop={onNewShop}
+                currentShopId={currentShopId}
             />
             <ImportExport 
                 handleImportShop={() => {}} 
@@ -28,12 +29,13 @@ function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop }) {
             />
         </div>
     );
-};
+}
 
 Tab_ChooseShop.propTypes = {
     savedShops: PropTypes.array.isRequired,
     onLoadShop: PropTypes.func.isRequired,
     onNewShop: PropTypes.func.isRequired,
+    currentShopId: PropTypes.string
 };
 
 Tab_ChooseShop.displayName = "Choose Shop";

@@ -4,7 +4,6 @@
     background-color: var(--background-tertiary);
     border: 1px solid var(--dark-border-color);
     border-radius: 0.375rem;
-    margin: 0.4rem;
 }
 
 .saved-shops-title {
@@ -52,10 +51,56 @@
 .shop-item-name {
     font-weight: 500;
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 .shop-item-date {
     font-size: 0.8rem;
     color: var(--text-secondary);
     opacity: 0.7;
+}
+
+.shop-item-current {
+    background-color: var(--button-background) !important;
+    border-color: var(--light-border-color) !important;
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        0 0 0 1px var(--light-border-color) !important;
+}
+
+.shop-item-current:hover {
+    background-color: var(--button-hover-background) !important;
+    transform: none !important;
+}
+
+.shop-item-current .shop-item-name {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.shop-item-current .shop-item-date {
+    opacity: 1;
+}
+
+.shop-item-unsaved {
+    border-style: dashed !important;
+    cursor: default !important;
+}
+
+.shop-item-unsaved:hover {
+    transform: none !important;
+}
+
+.unsaved-indicator {
+    color: #ffa726;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 } 

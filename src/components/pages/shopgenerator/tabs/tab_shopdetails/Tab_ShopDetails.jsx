@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import SaveShopButton from './saveshopbutton/SaveShopButton';
 import CloneShopButton from './cloneshopbutton/CloneShopButton';
+import DeleteShopButton from './deleteshopbutton/DeleteShopButton';
 import ShopDates from './shopdates/ShopDates';
 import ShopDetailsShort from './shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailslong/ShopDetailsLong';
@@ -13,9 +14,9 @@ import './Tab_ShopDetails.css';
  * - Basic shop information (name, keeper, type, location)
  * - Extended shop details
  * - Shop dates (created, last edited)
- * - Save and clone functionality
+ * - Save, clone, and delete functionality
  */
-function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onCloneShop }) {
+function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onCloneShop, onDeleteShop, savedShops }) {
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
         if (!currentShop) return false;
@@ -25,6 +26,9 @@ function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onClone
         return checkDataFilled(currentShop.shortData) && checkDataFilled(currentShop.longData);
     };
 
+    // Check if the current shop exists in savedShops
+    const isExistingShop = currentShop?.id && savedShops?.some(shop => shop.id === currentShop.id);
+
     return (
         <div className="tab-shop-details">
             <div className="shop-details-actions">
@@ -32,12 +36,14 @@ function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onClone
                     onSave={onSaveShop}
                     areAllDetailsFilled={areAllDetailsFilled}
                 />
-                <CloneShopButton
-                    onClone={onCloneShop}
-                    shopId={currentShop?.id}
-                />
+                {isExistingShop && (
+                    <CloneShopButton
+                        onClone={onCloneShop}
+                        shopId={currentShop?.id}
+                    />
+                )}
             </div>
-            <div className="shop-details-content scrollable">
+            <div className="tab-shop-details scrollable">
                 <ShopDetailsShort 
                     shopDetails={currentShop} 
                     onInputChange={onShopDetailsChange}
@@ -50,6 +56,13 @@ function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onClone
                     dateCreated={currentShop?.dateCreated}
                     dateLastEdited={currentShop?.dateLastEdited}
                 />
+                {isExistingShop && (
+                    <DeleteShopButton
+                        onDelete={onDeleteShop}
+                        shopId={currentShop?.id}
+                        currentShop={currentShop}
+                    />
+                )}
             </div>
         </div>
     );
@@ -73,7 +86,9 @@ Tab_ShopDetails.propTypes = {
     }).isRequired,
     onShopDetailsChange: PropTypes.func.isRequired,
     onSaveShop: PropTypes.func.isRequired,
-    onCloneShop: PropTypes.func.isRequired
+    onCloneShop: PropTypes.func.isRequired,
+    onDeleteShop: PropTypes.func.isRequired,
+    savedShops: PropTypes.array.isRequired
 };
 
 Tab_ShopDetails.displayName = 'Shop Details';

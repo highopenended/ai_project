@@ -14,7 +14,7 @@ import itemData from "../../../../public/item-table.json";
 import { useShopGenerator } from "../../../context/ShopGeneratorContext";
 import { SELECTION_STATES } from "../../../context/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
-import { saveOrUpdateShopData, loadShopData } from "./utils/firebaseShopUtils";
+import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/firebaseShopUtils";
 
 /**
  * ShopGenerator Component
@@ -409,6 +409,29 @@ function ShopGenerator() {
         }
     };
 
+    const handleDeleteShop = async () => {
+        if (!currentUser || !shopId) {
+            alert("Cannot delete shop. Please ensure you are logged in and have a valid shop selected.");
+            return;
+        }
+
+        try {
+            const userId = currentUser.uid;
+            await deleteShopData(userId, shopId);
+            
+            // Reset all state
+            handleNewShop();
+            
+            // Reload the shops list
+            await loadShops();
+            
+            alert("Shop deleted successfully!");
+        } catch (error) {
+            console.error("Error deleting shop:", error);
+            alert("Error deleting shop. Please try again.");
+        }
+    };
+
     /**
      * Loads all shops for the current user from Firebase
      * Called on component mount and after successful saves
@@ -571,6 +594,7 @@ function ShopGenerator() {
                                             savedShops={savedShops}
                                             onLoadShop={handleLoadShop}
                                             onNewShop={handleNewShop}
+                                            currentShopId={shopId}
                                         />
                                     );
                                 case "Tab_ShopDetails":
@@ -596,6 +620,8 @@ function ShopGenerator() {
                                             onShopDetailsChange={handleShopDetailsChange}
                                             onSaveShop={handleSaveShop}
                                             onCloneShop={handleCloneShop}
+                                            onDeleteShop={handleDeleteShop}
+                                            savedShops={savedShops}
                                         />
                                     );
                                 case "Tab_AiAssistant":
@@ -664,6 +690,7 @@ function ShopGenerator() {
                         savedShops={savedShops}
                         onLoadShop={handleLoadShop}
                         onNewShop={handleNewShop}
+                        currentShopId={shopId}
                     />,
                     <Tab_ShopDetails 
                         key="Tab_ShopDetails-0" 
@@ -686,6 +713,8 @@ function ShopGenerator() {
                         onShopDetailsChange={handleShopDetailsChange}
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
+                        onDeleteShop={handleDeleteShop}
+                        savedShops={savedShops}
                     />,
                     <Tab_AiAssistant 
                         key="Tab_AiAssistant-0" 
@@ -1077,13 +1106,16 @@ function ShopGenerator() {
                                         },
                                         onShopDetailsChange: handleShopDetailsChange,
                                         onSaveShop: handleSaveShop,
-                                        onCloneShop: handleCloneShop
+                                        onCloneShop: handleCloneShop,
+                                        onDeleteShop: handleDeleteShop,
+                                        savedShops: savedShops
                                     });
                                 case "Tab_ChooseShop":
                                     return React.cloneElement(tab, {
                                         savedShops,
                                         onLoadShop: handleLoadShop,
                                         onNewShop: handleNewShop,
+                                        currentShopId: shopId
                                     });
                                 case "Tab_AiAssistant":
                                     return React.cloneElement(tab, {

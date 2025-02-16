@@ -6,6 +6,7 @@ import './CloneShopButton.css';
  * CloneShopButton Component
  * 
  * A button component that creates a clone of the current shop with a new ID.
+ * The button is disabled when there's no saved shop being edited.
  * 
  * @component
  * @param {Object} props
@@ -33,7 +34,9 @@ const CloneShopButton = ({ onClone, shopId }) => {
             <button 
                 className="clone-shop-button"
                 onClick={handleCloneClick}
+                disabled={!shopId}
                 aria-label="Clone shop"
+                title={!shopId ? "Save the shop first to enable cloning" : "Create a copy of this shop"}
             >
                 <span className="clone-icon">⧉</span>
                 <span className="clone-text">Clone Shop</span>

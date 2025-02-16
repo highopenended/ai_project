@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-    width: calc(100% - 0.8rem);
     padding: 0.4rem;
     background-color: var(--background-tertiary);
     border: 1px solid var(--dark-border-color);

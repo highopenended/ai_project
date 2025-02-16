@@ -1,5 +1,5 @@
 import { db } from '../../../../firebaseConfig';
-import { collection, addDoc, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 // Function to save or update shop data in Firebase
 export async function saveOrUpdateShopData(userId, shopData) {
@@ -31,6 +31,18 @@ export async function loadShopData(userId) {
     return shops;
   } catch (error) {
     console.error('Error loading shop data:', error);
+    throw error;
+  }
+}
+
+// Function to delete a shop from Firebase
+export async function deleteShopData(userId, shopId) {
+  try {
+    const shopDoc = doc(db, `users/${userId}/shops`, shopId);
+    await deleteDoc(shopDoc);
+    console.log('Shop deleted with ID:', shopId);
+  } catch (error) {
+    console.error('Error deleting shop:', error);
     throw error;
   }
 } 
