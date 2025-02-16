@@ -118,6 +118,7 @@ function ShopGenerator() {
         if (!authLoading && currentUser) {
             loadShops();
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authLoading, currentUser]);
 
     // Function to get filtered arrays from Maps
@@ -801,6 +802,7 @@ function ShopGenerator() {
                 })
             );
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tabGroups.length]);
 
     // Add window-level mouse up handler
@@ -1071,6 +1073,7 @@ function ShopGenerator() {
         });
 
         setItems(sortedItems);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sortConfig]);
 
     return (
