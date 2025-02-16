@@ -6,26 +6,16 @@ import ShopDetailsShort from './shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailslong/ShopDetailsLong';
 import './Tab_ShopDetails.css';
 
-function Tab_ShopDetails({ 
-    currentShop = {
-        id: '',
-        shortData: {
-            shopName: '',
-            shopKeeperName: '',
-            type: '',
-            location: ''
-        },
-        longData: {
-            shopDetails: '',
-            shopKeeperDetails: ''
-        },
-        dateCreated: new Date(),
-        dateLastEdited: new Date()
-    }, 
-    onShopDetailsChange = () => {}, 
-    onSaveShop = () => {}, 
-    onCloneShop = () => {} 
-}) {
+/**
+ * Tab_ShopDetails Component
+ * 
+ * Manages the shop details interface, including:
+ * - Basic shop information (name, keeper, type, location)
+ * - Extended shop details
+ * - Shop dates (created, last edited)
+ * - Save and clone functionality
+ */
+function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onCloneShop }) {
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
         if (!currentShop) return false;
