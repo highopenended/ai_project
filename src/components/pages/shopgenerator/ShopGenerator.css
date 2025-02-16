@@ -16,11 +16,11 @@
     /* For Firefox */
     scrollbar-width: thin;
     scrollbar-color: #666 #333;
-    padding: 0.3rem;
-    margin-top: 0.2rem;    
+    padding: 0.1rem;
     border: 1px solid var(--dark-border-color);
     background-color: var(--background-secondary);
-    border-radius: 0.5rem 0.5rem 0 0.5rem;
+    border-radius: 0.5rem 0.5rem 0 0.25rem;
+    overscroll-behavior: contain;
 }
 
 /* For Webkit browsers (Chrome, Safari, etc.) */
