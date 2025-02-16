@@ -279,7 +279,7 @@ function ShopGenerator() {
                 Unique: 0.01,
             }
         );
-        setItems(shop.parameters.currentStock || []);
+        setItems(shop.currentStock || []);
 
         // Restore filter states from saved data
         const categoryMap = new Map();
@@ -386,9 +386,9 @@ function ShopGenerator() {
                     traits: {
                         included: getFilteredArray(traitStates, SELECTION_STATES.INCLUDE),
                         excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE),
-                    },
-                    currentStock: items,
+                    }
                 },
+                currentStock: items,
                 dateCreated,
                 dateLastEdited: new Date()
             };

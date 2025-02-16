@@ -3,10 +3,17 @@ import { useShopGenerator } from "../../../../../../context/ShopGeneratorContext
 import Tag from "../../../shared/Tag";
 import Section from "../../../shared/Section";
 import ButtonGroup from "../../../shared/ButtonGroup";
+import SearchBar from "../../../shared/SearchBar";
 
 function CategoryFilter() {
     const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useShopGenerator();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const filteredCategories = Object.entries(categoryData.categories).filter(([category]) =>
+        category.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <Section
             title="Categories"
@@ -14,10 +21,18 @@ function CategoryFilter() {
                 <ButtonGroup handleReset={clearCategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             }
         >
-            <div className="filter-grid">   
+            {!isCollapsed && (
+                <SearchBar
+                    placeholder="Search categories..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                />
+            )}
+            <div className="filter-grid">
                 {!isCollapsed && (
                     <div className="filter-grid-content">
-                        {Object.entries(categoryData.categories).map(([category, data], index) => (
+                        {filteredCategories.map(([category, data], index) => (
                             <Tag
                                 name={`${category} (${data.count})`}
                                 key={category + index}

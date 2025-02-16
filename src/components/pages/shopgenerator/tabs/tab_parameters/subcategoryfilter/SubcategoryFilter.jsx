@@ -4,11 +4,13 @@ import { SELECTION_STATES } from "../../../../../../context/shopGeneratorConstan
 import Tag from "../../../shared/Tag";
 import Section from "../../../shared/Section";
 import ButtonGroup from "../../../shared/ButtonGroup";
+import SearchBar from "../../../shared/SearchBar";
 
 function SubcategoryFilter() {
     const { categoryData, categoryStates, getSubcategoryState, toggleSubcategory, clearSubcategorySelections } =
         useShopGenerator();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     // Get all subcategories - either from selected categories or all categories if none selected
     const subcategories = new Set();
@@ -19,6 +21,10 @@ function SubcategoryFilter() {
             data.subcategories.forEach((subcategory) => subcategories.add(subcategory));
         }
     });
+
+    const filteredSubcategories = Array.from(subcategories).filter(subcategory =>
+        subcategory.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <Section
@@ -31,10 +37,18 @@ function SubcategoryFilter() {
                 />
             }
         >
+            {!isCollapsed && (
+                <SearchBar
+                    placeholder="Search subcategories..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="search-input"
+                />
+            )}
             <div className="filter-grid">
                 {!isCollapsed && (
                     <div className="filter-grid-content">
-                        {Array.from(subcategories).map((subcategory, index) => (
+                        {filteredSubcategories.map((subcategory, index) => (
                             <Tag
                                 name={`${subcategory} (${categoryData.subcategoryCounts[subcategory]})`}
                                 key={subcategory + index}
