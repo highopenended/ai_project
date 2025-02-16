@@ -11,7 +11,6 @@ import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
 import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import itemData from "../../../../public/item-table.json";
-import shopData from "./utils/shopData";
 import { useShopGenerator } from "../../../context/ShopGeneratorContext";
 import { SELECTION_STATES } from "../../../context/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
@@ -53,8 +52,8 @@ function ShopGenerator() {
     const { currentUser, isLoading: authLoading } = useAuth();
 
     // Core state management
-    const [items, setItems] = useState([]); // Current shop inventory
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
+    const [items, setItems] = useState([]); // Current shop inventory
     const [currentGold, setCurrentGold] = useState(1000);
     const [lowestLevel, setLowestLevel] = useState(0);
     const [highestLevel, setHighestLevel] = useState(10);
@@ -67,10 +66,18 @@ function ShopGenerator() {
         Unique: 0.01,
     });
 
+    // Shop details state
+    const [shopName, setShopName] = useState('Unnamed Shop');
+    const [shopKeeperName, setShopKeeperName] = useState('Unknown');
+    const [shopType, setShopType] = useState('General Store');
+    const [shopLocation, setShopLocation] = useState('Unknown Location');
+    const [shopDetails, setShopDetails] = useState('No details available');
+    const [shopKeeperDetails, setShopKeeperDetails] = useState('No details available');
+    const [dateCreated, setDateCreated] = useState(new Date());
+    const [dateLastEdited, setDateLastEdited] = useState(new Date());
+    const [shopId, setShopId] = useState('');
+
     // Shop state management
-    // currentShop contains all metadata and parameters for the current shop
-    // savedShops maintains the list of all shops for the current user
-    const [currentShop, setCurrentShop] = useState(shopData);
     const [savedShops, setSavedShops] = useState([]);
 
     // Get filter states from context
@@ -78,10 +85,8 @@ function ShopGenerator() {
         useShopGenerator();
 
     useEffect(() => {
-        console.log("Current shop state:", currentShop);
-    }, [currentShop]);
-
-
+        console.log("Current shop state:", { shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId });
+    }, [shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId]);
 
     // Initial data loading
     useEffect(() => {
@@ -211,106 +216,53 @@ function ShopGenerator() {
         }
     };
 
-/**
-     * Handles saving the current shop state to Firebase
-     * This is the single point of persistence for shop data
-     * Called by the RightSidebar's SaveShopButton
-     */
-const handleSaveShop = async () => {
-    if (!currentUser) {
-        alert("Please log in to save shops");
-        return;
-    }
+    const handleShopDetailsChange = (e) => {
+        const { name, value } = e.target;
+        console.log("Handling shop details change:", { name, value });
 
-    try {
-        console.log("Current shop state:", currentShop);
-        const userId = currentUser.uid;
-        // Construct a complete snapshot of current shop state
-        const shopDataWithId = {
-            ...currentShop,
-            shortData: {
-                shopName: currentShop.shortData.shopName || "",
-                shopKeeperName: currentShop.shortData.shopKeeperName || "",
-                type: currentShop.shortData.type || "",
-                location: currentShop.shortData.location || "",
-                description: currentShop.shortData.description || "",
-            },
-            longData: {
-                shopDetails: currentShop.longData.shopDetails || "",
-                shopKeeperDetails: currentShop.longData.shopKeeperDetails || "",
-            },
-            parameters: {
-                ...currentShop.parameters,
-                goldAmount: currentGold,
-                levelLow: lowestLevel,
-                levelHigh: highestLevel,
-                shopBias: itemBias,
-                rarityDistribution,
-                categories: {
-                    included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
-                    excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE),
-                },
-                subcategories: {
-                    included: getFilteredArray(subcategoryStates, SELECTION_STATES.INCLUDE),
-                    excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE),
-                },
-                traits: {
-                    included: getFilteredArray(traitStates, SELECTION_STATES.INCLUDE),
-                    excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE),
-                },
-                currentStock: items,
-            },
-            dateLastEdited: new Date(),
-            dateCreated: currentShop.dateCreated || new Date(),
-        };
-        console.log("Shop data with ID:", shopDataWithId);
-        const shopId = await saveOrUpdateShopData(userId, shopDataWithId);
-
-        // Update the current shop with the new ID
-        setCurrentShop((prevDetails) => ({
-            ...prevDetails,
-            id: shopId,
-        }));
-
-        console.log("Shop saved with ID:", shopId);
-        alert("Shop saved successfully!");
-    } catch (error) {
-        console.error("Error saving shop:", error);
-        alert("Error saving shop. Please try again.");
-    }
-};
-
-    
-    /**
-     * Loads all shops for the current user from Firebase
-     * Called on component mount and after successful saves
-     */
-    const loadShops = async () => {
-        try {
-            const userId = currentUser.uid;
-            const shops = await loadShopData(userId);
-            setSavedShops(shops);
-        } catch (error) {
-            console.error("Error loading shops:", error);
+        // Update the appropriate state based on the field name
+        switch (name) {
+            case 'shopName':
+                setShopName(value);
+                break;
+            case 'shopKeeperName':
+                setShopKeeperName(value);
+                break;
+            case 'type':
+                setShopType(value);
+                break;
+            case 'location':
+                setShopLocation(value);
+                break;
+            case 'shopDetails':
+                setShopDetails(value);
+                break;
+            case 'shopKeeperDetails':
+                setShopKeeperDetails(value);
+                break;
+            default:
+                console.warn('Unknown field name:', name);
         }
+        setDateLastEdited(new Date());
     };
 
-    /**
-     * Handles loading a specific shop's data
-     * This is the central point for restoring all shop state
-     * Called when a user selects a shop from the saved shops list
-     */
     const handleLoadShop = (shop) => {
         console.log("Loading shop:", shop);
         // Convert Firebase Timestamps to JavaScript Dates
-        const processedShop = {
-            ...shop,
-            dateCreated: shop.dateCreated?.toDate?.() || shop.dateCreated || new Date(),
-            dateLastEdited: shop.dateLastEdited?.toDate?.() || shop.dateLastEdited || new Date()
-        };
+        const loadedDateCreated = shop.dateCreated?.toDate?.() || shop.dateCreated || new Date();
+        const loadedDateLastEdited = shop.dateLastEdited?.toDate?.() || shop.dateLastEdited || new Date();
         
         // Update all state variables from the loaded shop
-        setCurrentShop(processedShop);
+        setShopId(shop.id || '');
+        setShopName(shop.shortData.shopName || 'Unnamed Shop');
+        setShopKeeperName(shop.shortData.shopKeeperName || 'Unknown');
+        setShopType(shop.shortData.type || 'General Store');
+        setShopLocation(shop.shortData.location || 'Unknown Location');
+        setShopDetails(shop.longData.shopDetails || 'No details available');
+        setShopKeeperDetails(shop.longData.shopKeeperDetails || 'No details available');
+        setDateCreated(loadedDateCreated);
+        setDateLastEdited(loadedDateLastEdited);
+        
         setCurrentGold(shop.parameters.goldAmount || 0);
         setLowestLevel(shop.parameters.levelLow || 0);
         setHighestLevel(shop.parameters.levelHigh || 10);
@@ -350,6 +302,193 @@ const handleSaveShop = async () => {
         setTraitStates(traitMap);
     };
 
+    const handleNewShop = () => {
+        // Reset all state to initial values
+        setShopId('');
+        setShopName('Unnamed Shop');
+        setShopKeeperName('Unknown');
+        setShopType('General Store');
+        setShopLocation('Unknown Location');
+        setShopDetails('No details available');
+        setShopKeeperDetails('No details available');
+        setDateCreated(new Date());
+        setDateLastEdited(new Date());
+        
+        setCurrentGold(1000);
+        setLowestLevel(0);
+        setHighestLevel(10);
+        setItemBias({ x: 0.5, y: 0.5 });
+        setRarityDistribution({
+            Common: 95.0,
+            Uncommon: 4.5,
+            Rare: 0.49,
+            Unique: 0.01,
+        });
+        setItems([]);
+
+        // Clear all filters
+        setCategoryStates(new Map());
+        setSubcategoryStates(new Map());
+        setTraitStates(new Map());
+    };
+
+    const handleCloneShop = () => {
+        setShopId('');
+        setShopName(`${shopName} (Clone)`);
+        setDateCreated(new Date());
+        setDateLastEdited(new Date());
+    };
+
+    const handleSaveShop = async () => {
+        if (!currentUser) {
+            alert("Please log in to save shops");
+            return;
+        }
+
+        try {
+            const shopState = {
+                id: shopId,
+                shortData: {
+                    shopName,
+                    shopKeeperName,
+                    type: shopType,
+                    location: shopLocation,
+                    description: ''
+                },
+                longData: {
+                    shopDetails,
+                    shopKeeperDetails
+                },
+                parameters: {
+                    goldAmount: currentGold,
+                    levelLow: lowestLevel,
+                    levelHigh: highestLevel,
+                    shopBias: itemBias,
+                    rarityDistribution,
+                    categories: {
+                        included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE),
+                    },
+                    subcategories: {
+                        included: getFilteredArray(subcategoryStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(subcategoryStates, SELECTION_STATES.EXCLUDE),
+                    },
+                    traits: {
+                        included: getFilteredArray(traitStates, SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray(traitStates, SELECTION_STATES.EXCLUDE),
+                    },
+                    currentStock: items,
+                },
+                dateCreated,
+                dateLastEdited: new Date()
+            };
+            
+            console.log("Saving shop state:", shopState);
+            const userId = currentUser.uid;
+            const savedShopId = await saveOrUpdateShopData(userId, shopState);
+            setShopId(savedShopId);
+            setDateLastEdited(new Date());
+
+            console.log("Shop saved with ID:", savedShopId);
+            alert("Shop saved successfully!");
+        } catch (error) {
+            console.error("Error saving shop:", error);
+            alert("Error saving shop. Please try again.");
+        }
+    };
+
+    /**
+     * Loads all shops for the current user from Firebase
+     * Called on component mount and after successful saves
+     */
+    const loadShops = async () => {
+        try {
+            const userId = currentUser.uid;
+            const shops = await loadShopData(userId);
+            setSavedShops(shops);
+        } catch (error) {
+            console.error("Error loading shops:", error);
+        }
+    };
+
+    // Shop management functions
+    const handleGoldChange = (gold) => {
+        setCurrentGold(gold);
+    };
+
+    const handleLowestLevelChange = (level) => {
+        setLowestLevel(level);
+    };
+
+    const handleHighestLevelChange = (level) => {
+        setHighestLevel(level);
+    };
+
+    const handleBiasChange = (bias) => {
+        setItemBias(bias);
+    };
+
+    const handleRarityDistributionChange = (newDistribution) => {
+        setRarityDistribution(newDistribution);
+    };
+
+    // Shop state synchronization
+    useEffect(() => {
+        const updateTimeout = setTimeout(() => {
+            const newParameters = {
+                goldAmount: currentGold,
+                levelLow: lowestLevel,
+                levelHigh: highestLevel,
+                shopBias: itemBias,
+                rarityDistribution,
+                categories: {
+                    included: Array.from((categoryStates || new Map()).entries())
+                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                        .map(([category]) => category),
+                    excluded: Array.from((categoryStates || new Map()).entries())
+                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                        .map(([category]) => category),
+                },
+                subcategories: {
+                    included: Array.from((subcategoryStates || new Map()).entries())
+                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                        .map(([subcategory]) => subcategory),
+                    excluded: Array.from((subcategoryStates || new Map()).entries())
+                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                        .map(([subcategory]) => subcategory),
+                },
+                traits: {
+                    included: Array.from((traitStates || new Map()).entries())
+                        .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
+                        .map(([trait]) => trait),
+                    excluded: Array.from((traitStates || new Map()).entries())
+                        .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
+                        .map(([trait]) => trait),
+                },
+                currentStock: items,
+            };
+
+            console.log("Updated parameters:", newParameters);
+        }, 100); // Debounce updates
+
+        return () => clearTimeout(updateTimeout);
+    }, [
+        currentGold,
+        lowestLevel,
+        highestLevel,
+        itemBias,
+        rarityDistribution,
+        categoryStates,
+        subcategoryStates,
+        traitStates,
+        items,
+    ]);
+
+    const handleAiAssistantChange = (newState) => {
+        console.log("Ai Assistant state updated:", newState);
+    };
+
+    
     const handleSort = (columnName) => {
         setSortConfig((prevConfig) => {
             // Remove the column if it exists in the current config
@@ -370,72 +509,9 @@ const handleSaveShop = async () => {
         });
     };
 
-    // Shop management functions
-    const handleNewShop = () => {
-        // Reset all state to initial values
-        setCurrentShop(shopData);
-        setCurrentGold(1000);
-        setLowestLevel(0);
-        setHighestLevel(10);
-        setItemBias({ x: 0.5, y: 0.5 });
-        setRarityDistribution({
-            Common: 95.0,
-            Uncommon: 4.5,
-            Rare: 0.49,
-            Unique: 0.01,
-        });
-        setItems([]);
-
-        // Clear all filters
-        setCategoryStates(new Map());
-        setSubcategoryStates(new Map());
-        setTraitStates(new Map());
-    };
-
-    const handleCloneShop = () => {
-        const clonedShop = {
-            ...shopWithoutId,
-            shortData: {
-                ...currentShop.shortData,
-                shopName: `${currentShop.shortData.shopName} (Clone)`
-            },
-            dateCreated: new Date(),
-            dateLastEdited: new Date()
-        };
-        setCurrentShop(clonedShop);
-    };
-
-    const handleShopDetailsChange = (e) => {
-        const { name, value } = e.target;
-        console.log("Handling shop details change:", { name, value }); // Debug log
-        setCurrentShop((prevShop) => {
-            // Create a copy of the previous shop
-            const newShop = { ...prevShop };
-
-            // Check if this is a shortData field
-            if (Object.keys(prevShop.shortData).includes(name)) {
-                newShop.shortData = {
-                    ...prevShop.shortData,
-                    [name]: value,
-                };
-            }
-            // Check if this is a longData field
-            else if (Object.keys(prevShop.longData).includes(name)) {
-                newShop.longData = {
-                    ...prevShop.longData,
-                    [name]: value,
-                };
-            }
-
-            console.log("Updated shop:", newShop); // Debug log
-            return newShop;
-        });
-    };
-
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
         // localStorage.clear(STORAGE_KEY);
-
         const savedState = localStorage.getItem(STORAGE_KEY);
         if (savedState) {
             const { groups, widths } = JSON.parse(savedState);
@@ -452,15 +528,15 @@ const handleSaveShop = async () => {
                                             key={tab.key}
                                             type={{ name: "Tab_Parameters" }}
                                             currentGold={currentGold}
-                                            setCurrentGold={setCurrentGold}
+                                            setCurrentGold={handleGoldChange}
                                             lowestLevel={lowestLevel}
-                                            setLowestLevel={setLowestLevel}
+                                            setLowestLevel={handleLowestLevelChange}
                                             highestLevel={highestLevel}
-                                            setHighestLevel={setHighestLevel}
+                                            setHighestLevel={handleHighestLevelChange}
                                             rarityDistribution={rarityDistribution}
-                                            setRarityDistribution={setRarityDistribution}
+                                            setRarityDistribution={handleRarityDistributionChange}
                                             itemBias={itemBias}
-                                            setItemBias={setItemBias}
+                                            setItemBias={handleBiasChange}
                                         />
                                     );
                                 case "Tab_InventoryTable":
@@ -469,7 +545,7 @@ const handleSaveShop = async () => {
                                             key={tab.key}
                                             type={{ name: "Tab_InventoryTable" }}
                                             items={items}
-                                            currentShopName={currentShop.shortData.shopName || "Unnamed Shop"}
+                                            currentShopName={shopName}
                                             handleGenerateClick={handleGenerateClick}
                                             sortConfig={sortConfig}
                                             onSort={handleSort}
@@ -490,14 +566,49 @@ const handleSaveShop = async () => {
                                         <Tab_ShopDetails 
                                             key={tab.key} 
                                             type={{ name: "Tab_ShopDetails" }}
-                                            currentShop={currentShop}
+                                            currentShop={{
+                                                id: shopId,
+                                                shortData: {
+                                                    shopName,
+                                                    shopKeeperName,
+                                                    type: shopType,
+                                                    location: shopLocation
+                                                },
+                                                longData: {
+                                                    shopDetails,
+                                                    shopKeeperDetails
+                                                },
+                                                dateCreated,
+                                                dateLastEdited
+                                            }}
                                             onShopDetailsChange={handleShopDetailsChange}
                                             onSaveShop={handleSaveShop}
                                             onCloneShop={handleCloneShop}
                                         />
                                     );
                                 case "Tab_AiAssistant":
-                                    return <Tab_AiAssistant key={tab.key} type={{ name: "Tab_AiAssistant" }} />;
+                                    return (
+                                        <Tab_AiAssistant 
+                                            key={tab.key} 
+                                            type={{ name: "Tab_AiAssistant" }}
+                                            currentShop={{
+                                                id: shopId,
+                                                shortData: {
+                                                    shopName,
+                                                    shopKeeperName,
+                                                    type: shopType,
+                                                    location: shopLocation
+                                                },
+                                                longData: {
+                                                    shopDetails,
+                                                    shopKeeperDetails
+                                                },
+                                                dateCreated,
+                                                dateLastEdited
+                                            }}
+                                            onAiAssistantChange={handleAiAssistantChange}
+                                        />
+                                    );
                                 default:
                                     console.warn(`Unknown tab type: ${tab.type}`);
                                     return null;
@@ -515,23 +626,22 @@ const handleSaveShop = async () => {
                     <Tab_Parameters
                         key="Tab_Parameters-0"
                         type={{ name: "Tab_Parameters" }}
-                        handleGenerateClick={handleGenerateClick}
                         currentGold={currentGold}
-                        setCurrentGold={setCurrentGold}
+                        setCurrentGold={handleGoldChange}
                         lowestLevel={lowestLevel}
-                        setLowestLevel={setLowestLevel}
+                        setLowestLevel={handleLowestLevelChange}
                         highestLevel={highestLevel}
-                        setHighestLevel={setHighestLevel}
+                        setHighestLevel={handleHighestLevelChange}
                         rarityDistribution={rarityDistribution}
-                        setRarityDistribution={setRarityDistribution}
+                        setRarityDistribution={handleRarityDistributionChange}
                         itemBias={itemBias}
-                        setItemBias={setItemBias}
+                        setItemBias={handleBiasChange}
                     />,
                     <Tab_InventoryTable
                         key="Tab_InventoryTable-0"
                         type={{ name: "Tab_InventoryTable" }}
                         items={items}
-                        currentShopName={currentShop.shortData.shopName || "Unnamed Shop"}
+                        currentShopName={shopName}
                         handleGenerateClick={handleGenerateClick}
                         sortConfig={sortConfig}
                         onSort={handleSort}
@@ -546,12 +656,45 @@ const handleSaveShop = async () => {
                     <Tab_ShopDetails 
                         key="Tab_ShopDetails-0" 
                         type={{ name: "Tab_ShopDetails" }}
-                        currentShop={currentShop}
+                        currentShop={{
+                            id: shopId,
+                            shortData: {
+                                shopName,
+                                shopKeeperName,
+                                type: shopType,
+                                location: shopLocation
+                            },
+                            longData: {
+                                shopDetails,
+                                shopKeeperDetails
+                            },
+                            dateCreated,
+                            dateLastEdited
+                        }}
                         onShopDetailsChange={handleShopDetailsChange}
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
                     />,
-                    <Tab_AiAssistant key="Tab_AiAssistant-0" type={{ name: "Tab_AiAssistant" }} />,
+                    <Tab_AiAssistant 
+                        key="Tab_AiAssistant-0" 
+                        type={{ name: "Tab_AiAssistant" }}
+                        currentShop={{
+                            id: shopId,
+                            shortData: {
+                                shopName,
+                                shopKeeperName,
+                                type: shopType,
+                                location: shopLocation
+                            },
+                            longData: {
+                                shopDetails,
+                                shopKeeperDetails
+                            },
+                            dateCreated,
+                            dateLastEdited
+                        }}
+                        onAiAssistantChange={handleAiAssistantChange}
+                    />,
                 ],
             ],
             widths: ["100%"],
@@ -785,38 +928,6 @@ const handleSaveShop = async () => {
         });
     };
 
-    // Rarity order map for sorting (from least rare to most rare)
-    const RARITY_ORDER = {
-        Common: 1,
-        Uncommon: 2,
-        Rare: 3,
-        Unique: 4,
-    };
-
-    // Price conversion helper
-    const convertPriceToGold = (priceString) => {
-        if (!priceString) return 0;
-
-        // Remove commas from the price string before parsing
-        const cleanPriceString = priceString.replace(/,/g, "");
-        const match = cleanPriceString.match(/(\d+(?:\.\d+)?)\s*(gp|sp|cp)/);
-        if (!match) return 0;
-
-        const [, value, unit] = match;
-        const numValue = parseFloat(value);
-
-        switch (unit) {
-            case "gp":
-                return numValue;
-            case "sp":
-                return numValue / 10;
-            case "cp":
-                return numValue / 100;
-            default:
-                return 0;
-        }
-    };
-
     // Sorting functionality
     const getNextSortDirection = (currentDirection, columnName) => {
         // Special handling for text-based columns
@@ -846,12 +957,18 @@ const handleSaveShop = async () => {
         }
     };
 
-    const sortItems = (itemsToSort) => {
-        if (!sortConfig.length) return itemsToSort;
 
-        return [...itemsToSort].sort((a, b) => {
+    // Handle sorting when sortConfig changes
+    useEffect(() => {
+        if (!sortConfig.length) {
+            setItems(items);
+            return;
+        }
+
+        const sortedItems = [...items].sort((a, b) => {
             for (const { column, direction } of sortConfig) {
                 let comparison = 0;
+                let aPrice, bPrice;
 
                 switch (column) {
                     case "count":
@@ -864,13 +981,12 @@ const handleSaveShop = async () => {
                         comparison = parseInt(a.level) - parseInt(b.level);
                         break;
                     case "price":
-                        comparison = convertPriceToGold(a.price) - convertPriceToGold(b.price);
+                        aPrice = parseFloat(a.price.replace(/[^0-9.-]+/g, ""));
+                        bPrice = parseFloat(b.price.replace(/[^0-9.-]+/g, ""));
+                        comparison = aPrice - bPrice;
                         break;
                     case "total":
                         comparison = a.total - b.total;
-                        break;
-                    case "rarity":
-                        comparison = RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
                         break;
                     case "item_category":
                         comparison = (a.item_category || "").localeCompare(b.item_category || "");
@@ -893,102 +1009,9 @@ const handleSaveShop = async () => {
             }
             return 0;
         });
-    };
 
-    // Handle sorting when sortConfig changes
-    useEffect(() => {
-        setItems(sortItems(items));
-    }, [sortConfig]);
-
-    // State handlers
-    const handleGoldChange = (gold) => {
-        setCurrentGold(gold);
-    };
-
-    const handleLowestLevelChange = (level) => {
-        setLowestLevel(level);
-    };
-
-    const handleHighestLevelChange = (level) => {
-        setHighestLevel(level);
-    };
-
-    const handleBiasChange = (bias) => {
-        setItemBias(bias);
-    };
-
-    const handleRarityDistributionChange = (newDistribution) => {
-        setRarityDistribution(newDistribution);
-    };
-
-    // Shop state synchronization
-    useEffect(() => {
-        const updateTimeout = setTimeout(() => {
-            setCurrentShop((prevShop) => {
-                const newParameters = {
-                    ...prevShop.parameters,
-                    goldAmount: currentGold,
-                    levelLow: lowestLevel,
-                    levelHigh: highestLevel,
-                    shopBias: itemBias,
-                    rarityDistribution,
-                    categories: {
-                        included: Array.from((categoryStates || new Map()).entries())
-                            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                            .map(([category]) => category),
-                        excluded: Array.from((categoryStates || new Map()).entries())
-                            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                            .map(([category]) => category),
-                    },
-                    subcategories: {
-                        included: Array.from((subcategoryStates || new Map()).entries())
-                            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                            .map(([subcategory]) => subcategory),
-                        excluded: Array.from((subcategoryStates || new Map()).entries())
-                            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                            .map(([subcategory]) => subcategory),
-                    },
-                    traits: {
-                        included: Array.from((traitStates || new Map()).entries())
-                            .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                            .map(([trait]) => trait),
-                        excluded: Array.from((traitStates || new Map()).entries())
-                            .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                            .map(([trait]) => trait),
-                    },
-                    currentStock: items,
-                };
-
-                // Only update if there are actual changes
-                if (JSON.stringify(prevShop.parameters) === JSON.stringify(newParameters)) {
-                    return prevShop;
-                }
-
-                return {
-                    ...prevShop,
-                    parameters: newParameters,
-                };
-            });
-        }, 100); // Debounce updates
-
-        return () => clearTimeout(updateTimeout);
-    }, [
-        currentGold,
-        lowestLevel,
-        highestLevel,
-        itemBias,
-        rarityDistribution,
-        categoryStates,
-        subcategoryStates,
-        traitStates,
-        items,
-    ]);
-
-    
-
-    const handleAiAssistantChange = (newState) => {
-        console.log("Ai Assistant state updated:", newState);
-    };
+        setItems(sortedItems);
+    }, [sortConfig, items]);
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
@@ -1020,14 +1043,29 @@ const handleSaveShop = async () => {
                                         items,
                                         sortConfig,
                                         onSort: handleSort,
-                                        currentShop: currentShop?.shortData?.shopName || "Unnamed Shop",
+                                        currentShopName: shopName,
                                         handleGenerateClick,
                                     });
                                 case "Tab_ShopDetails":
                                     return React.cloneElement(tab, {
-                                        currentShop,
+                                        currentShop: {
+                                            id: shopId,
+                                            shortData: {
+                                                shopName,
+                                                shopKeeperName,
+                                                type: shopType,
+                                                location: shopLocation
+                                            },
+                                            longData: {
+                                                shopDetails,
+                                                shopKeeperDetails
+                                            },
+                                            dateCreated,
+                                            dateLastEdited
+                                        },
                                         onShopDetailsChange: handleShopDetailsChange,
-                                        onSave: handleSaveShop,
+                                        onSaveShop: handleSaveShop,
+                                        onCloneShop: handleCloneShop
                                     });
                                 case "Tab_ChooseShop":
                                     return React.cloneElement(tab, {
@@ -1037,7 +1075,21 @@ const handleSaveShop = async () => {
                                     });
                                 case "Tab_AiAssistant":
                                     return React.cloneElement(tab, {
-                                        currentShop,
+                                        currentShop: {
+                                            id: shopId,
+                                            shortData: {
+                                                shopName,
+                                                shopKeeperName,
+                                                type: shopType,
+                                                location: shopLocation
+                                            },
+                                            longData: {
+                                                shopDetails,
+                                                shopKeeperDetails
+                                            },
+                                            dateCreated,
+                                            dateLastEdited
+                                        },
                                         onAiAssistantChange: handleAiAssistantChange,
                                     });
                                 default:
