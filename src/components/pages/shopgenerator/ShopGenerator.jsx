@@ -15,6 +15,7 @@ import { useShopGenerator } from "../../../context/ShopGeneratorContext";
 import { SELECTION_STATES } from "../../../context/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
 import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/firebaseShopUtils";
+import { RARITY_ORDER } from "../../../constants/rarityOrder";
 
 /**
  * ShopGenerator Component
@@ -46,9 +47,6 @@ import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/fire
  */
 
 const STORAGE_KEY = "tabGroupsState";
-
-// Add RARITY_ORDER constant at the top with other constants
-const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Unique'];
 
 function ShopGenerator() {
     // Get auth context
@@ -1018,7 +1016,6 @@ function ShopGenerator() {
     // Handle sorting when sortConfig changes
     useEffect(() => {
         if (!sortConfig.length) {
-            setItems(items);
             return;
         }
 
@@ -1074,7 +1071,7 @@ function ShopGenerator() {
         });
 
         setItems(sortedItems);
-    }, [sortConfig, items]);
+    }, [sortConfig]);
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>

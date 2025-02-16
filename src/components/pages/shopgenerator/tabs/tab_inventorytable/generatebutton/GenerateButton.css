@@ -6,7 +6,9 @@
 
 .generate-shop-button {
     width: 100%;
-    padding: 0.25rem;
+    min-height: 2rem;
+    margin-bottom: 0.25rem;
+    height: auto;    
     background: linear-gradient(
         to bottom,
         rgba(64, 156, 255, 0.3),

@@ -1,0 +1,1 @@
+export const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Unique']; 

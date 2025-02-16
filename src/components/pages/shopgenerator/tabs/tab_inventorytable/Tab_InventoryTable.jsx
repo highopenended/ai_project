@@ -2,7 +2,7 @@
 import './Tab_InventoryTable.css';
 import GenerateButton from '../tab_inventorytable/generatebutton/GenerateButton';
 import ItemTable from '../tab_inventorytable/itemtable/ItemTable';
-import ItemTableTotals from '../tab_inventorytable/itemtable/ItemTableTotals';
+import ItemTableTotals from './itemtabletotals/ItemTableTotals';
 import CurrentShopSummary from '../tab_inventorytable/currentshopsummary/currentshopsummary';
 import PropTypes from 'prop-types';
 
