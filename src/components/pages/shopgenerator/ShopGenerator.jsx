@@ -51,9 +51,10 @@ function ShopGenerator() {
     // Get auth context
     const { currentUser, isLoading: authLoading } = useAuth();
 
-    // Core state management
-    const [allItems, setAllItems] = useState([]); // Master list of all possible items
-    const [items, setItems] = useState([]); // Current shop inventory
+    // Master list of all possible items
+    const [allItems, setAllItems] = useState([]);
+
+    // Shop parameters state
     const [currentGold, setCurrentGold] = useState(1000);
     const [lowestLevel, setLowestLevel] = useState(0);
     const [highestLevel, setHighestLevel] = useState(10);
@@ -65,6 +66,9 @@ function ShopGenerator() {
         Rare: 0.49,
         Unique: 0.01,
     });
+
+    // Shop inventory state
+    const [items, setItems] = useState([]);
 
     // Shop details state
     const [shopName, setShopName] = useState('Unnamed Shop');
@@ -84,9 +88,9 @@ function ShopGenerator() {
     const { categoryStates, subcategoryStates, traitStates, setCategoryStates, setSubcategoryStates, setTraitStates } =
         useShopGenerator();
 
-    useEffect(() => {
-        console.log("Current shop state:", { shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId });
-    }, [shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId]);
+    // useEffect(() => {
+    //     console.log("Current shop state:", { shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId });
+    // }, [shopName, shopKeeperName, shopType, shopLocation, shopDetails, shopKeeperDetails, dateCreated, dateLastEdited, shopId]);
 
     // Initial data loading
     useEffect(() => {
@@ -218,7 +222,6 @@ function ShopGenerator() {
 
     const handleShopDetailsChange = (e) => {
         const { name, value } = e.target;
-        console.log("Handling shop details change:", { name, value });
 
         // Update the appropriate state based on the field name
         switch (name) {
@@ -253,7 +256,7 @@ function ShopGenerator() {
         const loadedDateLastEdited = shop.dateLastEdited?.toDate?.() || shop.dateLastEdited || new Date();
         
         // Update all state variables from the loaded shop
-        setShopId(shop.id || '');
+        setShopId(shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
         setShopName(shop.shortData.shopName || 'Unnamed Shop');
         setShopKeeperName(shop.shortData.shopKeeperName || 'Unknown');
         setShopType(shop.shortData.type || 'General Store');
@@ -303,8 +306,11 @@ function ShopGenerator() {
     };
 
     const handleNewShop = () => {
+        // Generate a new unique ID for the shop
+        const newShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
         // Reset all state to initial values
-        setShopId('');
+        setShopId(newShopId);
         setShopName('Unnamed Shop');
         setShopKeeperName('Unknown');
         setShopType('General Store');
@@ -333,7 +339,10 @@ function ShopGenerator() {
     };
 
     const handleCloneShop = () => {
-        setShopId('');
+        // Generate a new unique ID for the cloned shop
+        const clonedShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        setShopId(clonedShopId);
         setShopName(`${shopName} (Clone)`);
         setDateCreated(new Date());
         setDateLastEdited(new Date());
