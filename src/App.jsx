@@ -5,7 +5,7 @@ import Login from "./components/pages/login/Login.jsx";
 import Home from "./components/pages/home/Home.jsx";
 import ItemList from "./components/pages/itemlist/ItemList.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import ShopGeneratorProvider from "./context/ShopGeneratorContext.jsx";
+import ShopGeneratorProvider from "./components/pages/shopgenerator/utils/shopGeneratorContext.jsx";
 import ShopGenerator from "./components/pages/shopgenerator/ShopGenerator.jsx";
 import "./constants/colors.css";
 
