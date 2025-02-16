@@ -400,6 +400,9 @@ function ShopGenerator() {
 
             console.log("Shop saved with ID:", savedShopId);
             alert("Shop saved successfully!");
+            
+            // Reload the shops list after successful save
+            await loadShops();
         } catch (error) {
             console.error("Error saving shop:", error);
             alert("Error saving shop. Please try again.");

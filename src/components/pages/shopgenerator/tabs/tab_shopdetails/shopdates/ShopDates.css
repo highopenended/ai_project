@@ -3,9 +3,8 @@
     flex-direction: column;
     gap: 0.4rem;
     width: calc(100% - 0.8rem);
-    margin: 0.4rem;
-    padding: 0.8rem;
-    background-color: var(--background-secondary);
+    padding: 0.4rem;
+    background-color: var(--background-tertiary);
     border: 1px solid var(--dark-border-color);
     border-radius: 0.375rem;
     font-size: 0.8rem;

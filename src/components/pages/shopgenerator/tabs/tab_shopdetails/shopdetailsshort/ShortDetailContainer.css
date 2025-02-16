@@ -4,7 +4,7 @@
     padding: .2rem .2rem .2rem .2rem;
     border: 1px solid var(--dark-border-color);
     border-radius: 6px;
-    background-color: var(--background-secondary);
+    background-color: var(--background-tertiary);
     box-sizing: border-box;
     box-shadow: 2px 2px 10px 0 rgba(0, 0, 0, 0.95);
     max-width: 100%;

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import SaveShopButton from './SaveShopButton';
-import CloneShopButton from './CloneShopButton';
-import ShopDates from './ShopDates';
+import SaveShopButton from './saveshopbutton/SaveShopButton';
+import CloneShopButton from './cloneshopbutton/CloneShopButton';
+import ShopDates from './shopdates/ShopDates';
 import ShopDetailsShort from './shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailslong/ShopDetailsLong';
 import './Tab_ShopDetails.css';
