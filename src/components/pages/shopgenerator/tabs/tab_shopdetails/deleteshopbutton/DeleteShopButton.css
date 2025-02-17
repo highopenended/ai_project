@@ -3,7 +3,8 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0.4rem;
+    padding: 0.2rem;
+    margin: .8rem auto;
     gap: 0.6rem;
     background: linear-gradient(135deg, #ff3b3b 0%, #dc2626 100%);
     color: #ffffff;
