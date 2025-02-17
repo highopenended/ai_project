@@ -1,5 +1,5 @@
-import ResetMiniButton from './ResetMiniButton';
-import CollapseExpandMiniButton from './CollapseExpandMiniButton';
+import ResetMiniButton from './resetminibutton/ResetMiniButton';
+import CollapseExpandMiniButton from './collapseexpandminibutton/CollapseExpandMiniButton';
 import PropTypes from 'prop-types';
 
 export default function MiniButtonGroup({ handleReset, isCollapsed, setIsCollapsed }) {

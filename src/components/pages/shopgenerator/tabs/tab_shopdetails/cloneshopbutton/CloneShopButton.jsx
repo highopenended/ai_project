@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import CloneConfirmDialog from "./CloneConfirmDialog";
-import ActionButton from "../../../shared/ActionButton";
+import ActionButton from "../../../shared/actionbutton/ActionButton";
 import "./CloneShopButton.css";
 
 /**

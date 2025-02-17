@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./BiasGrid.css";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
-import Section from "../../../shared/Section";
+import Section from "../../../shared/section/Section";
 
 function BiasGrid({ setItemBias, itemBias }) {
     const gridRef = useRef(null);

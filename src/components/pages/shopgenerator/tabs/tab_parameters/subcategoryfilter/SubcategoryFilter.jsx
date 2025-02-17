@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useShopGenerator } from "../../../utils/shopGeneratorContext";
 import { SELECTION_STATES } from "../../../utils/shopGeneratorConstants";
-import Section from "../../../shared/Section";
+import Section from "../../../shared/section/Section";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
-import SearchBar from "../../../shared/SearchBar";
+import SearchBar from "../../../shared/searchbar/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
 
 function SubcategoryFilter() {

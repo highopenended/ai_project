@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./GoldInput.css";
-import Section from "../../../shared/Section";
+import Section from "../../../shared/section/Section";
 
 function GoldInput({ setCurrentGold, currentGold }) {
     const [displayValue, setDisplayValue] = useState("");

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useShopGenerator } from "../../../utils/shopGeneratorContext";
-import Section from "../../../shared/Section";
+import Section from "../../../shared/section/Section";
 import traitList from "../../../../../../../public/trait-list.json";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
-import SearchBar from "../../../shared/SearchBar";
+import SearchBar from "../../../shared/searchbar/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
 
 function TraitFilter() {

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import './RaritySliders.css';
 import { RARITY_COLORS } from '../../../../../../constants/rarityColors';
-import Section from '../../../shared/Section';
+import Section from '../../../shared/section/Section';
 import MiniButtonGroup from '../../../shared/minibuttongroup/MiniButtonGroup';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];

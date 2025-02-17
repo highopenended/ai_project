@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 
 import PropTypes from "prop-types";
 import "./LevelInput.css";
-import Section from "../../../shared/Section";
+import Section from "../../../shared/section/Section";
 
 function LevelInput({ lowestLevel, highestLevel, setLowestLevel, setHighestLevel }) {
     const [localLowest, setLocalLowest] = useState(lowestLevel.toString());
