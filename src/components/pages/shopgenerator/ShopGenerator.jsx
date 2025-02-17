@@ -57,11 +57,8 @@ const STORAGE_KEY = "tabGroupsState";
 function ShopGenerator() {
     // Get auth context
     const { currentUser, isLoading: authLoading } = useAuth();
-
-    // Master list of all possible items
-    const [allItems, setAllItems] = useState([]);
-
-    // Category data state
+    
+    // Initialize category data
     const [categoryData] = useState(() => {
         const saved = localStorage.getItem('shop-categories');
         if (saved) {
@@ -72,6 +69,9 @@ function ShopGenerator() {
         localStorage.setItem('shop-categories', JSON.stringify(extracted));
         return extracted;
     });
+
+    // Master list of all possible items
+    const [allItems, setAllItems] = useState([]);
 
     // Shop parameters state with integrated filter states
     const [shopParameters, setShopParameters] = useState({
@@ -1439,17 +1439,17 @@ function ShopGenerator() {
                                             setRarityDistribution: handleRarityDistributionChange,
                                             itemBias: shopParameters.itemBias,
                                             setItemBias: handleBiasChange,
-                                            categoryData,
+                                            categoryData: categoryData,
                                             categoryStates: shopParameters.filters.categories,
                                             subcategoryStates: shopParameters.filters.subcategories,
                                             traitStates: shopParameters.filters.traits,
-                                            getFilterState,
-                                            toggleCategory,
-                                            toggleSubcategory,
-                                            toggleTrait,
-                                            clearCategorySelections,
-                                            clearSubcategorySelections,
-                                            clearTraitSelections,
+                                            getFilterState: getFilterState,
+                                            toggleCategory: toggleCategory,
+                                            toggleSubcategory: toggleSubcategory,
+                                            toggleTrait: toggleTrait,
+                                            clearCategorySelections: clearCategorySelections,
+                                            clearSubcategorySelections: clearSubcategorySelections,
+                                            clearTraitSelections: clearTraitSelections,
                                             setCategoryStates: (newStates) => {
                                                 setShopParameters(prev => ({
                                                     ...prev,
