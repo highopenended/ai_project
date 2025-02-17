@@ -31,43 +31,110 @@
     letter-spacing: 0.02em;
 }
 
+/* Interactive States */
+.action-button:not(:disabled):hover {
+    transform: translateY(-1px);
+}
+
+.action-button:not(:disabled):active {
+    transform: translateY(0);
+}
+
 /* Disabled state */
 .action-button:disabled {
-    background: var(--button-disabled-background);
+    background: var(--button-disabled-background) !important;
     opacity: var(--button-disabled-opacity);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-/* Hover state */
-.action-button:not(:disabled):hover {
-    transform: translateY(-1px);
-}
+/* Theme Variations */
 
-/* Active state */
-.action-button:not(:disabled):active {
-    transform: translateY(0);
-}
-
-/* Default color scheme - can be overridden by custom classes */
-.action-button {
-    background: var(--button-background);
+/* Save theme */
+.action-button.save-theme {
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
     box-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(0, 0, 0, 0.1);
+        0 2px 4px rgba(76, 175, 80, 0.2),
+        0 0 0 1px rgba(76, 175, 80, 0.1);
 }
 
-.action-button:not(:disabled):hover {
-    background: var(--button-hover-background);
+.action-button.save-theme:not(:disabled):hover {
+    background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
     box-shadow: 
-        0 4px 8px rgba(0, 0, 0, 0.3),
-        0 0 0 1px rgba(0, 0, 0, 0.2);
+        0 4px 8px rgba(76, 175, 80, 0.3),
+        0 0 0 1px rgba(76, 175, 80, 0.2);
 }
 
-.action-button:not(:disabled):active {
-    background: var(--button-active-background);
+.action-button.save-theme:not(:disabled):active {
+    background: linear-gradient(135deg, #388E3C 0%, #4CAF50 100%);
     box-shadow: 
-        0 2px 4px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(0, 0, 0, 0.1);
+        0 2px 4px rgba(76, 175, 80, 0.2),
+        0 0 0 1px rgba(76, 175, 80, 0.1);
+}
+
+/* Delete theme */
+.action-button.delete-theme {
+    background: linear-gradient(135deg, #ff3b3b 0%, #dc2626 100%);
+    box-shadow: 
+        0 2px 4px rgba(220, 38, 38, 0.2),
+        0 0 0 1px rgba(220, 38, 38, 0.1);
+}
+
+.action-button.delete-theme:not(:disabled):hover {
+    background: linear-gradient(135deg, #ff4b4b 0%, #ec3636 100%);
+    box-shadow: 
+        0 4px 8px rgba(220, 38, 38, 0.3),
+        0 0 0 1px rgba(220, 38, 38, 0.2);
+}
+
+.action-button.delete-theme:not(:disabled):active {
+    background: linear-gradient(135deg, #dc2626 0%, #ff3b3b 100%);
+    box-shadow: 
+        0 2px 4px rgba(220, 38, 38, 0.2),
+        0 0 0 1px rgba(220, 38, 38, 0.1);
+}
+
+/* Clone theme */
+.action-button.clone-theme {
+    background: linear-gradient(135deg, #ff8f00 0%, #ff6d00 100%);
+    box-shadow: 
+        0 2px 4px rgba(255, 109, 0, 0.2),
+        0 0 0 1px rgba(255, 109, 0, 0.1);
+}
+
+.action-button.clone-theme:not(:disabled):hover {
+    background: linear-gradient(135deg, #ff9f00 0%, #ff7d00 100%);
+    box-shadow: 
+        0 4px 8px rgba(255, 109, 0, 0.3),
+        0 0 0 1px rgba(255, 109, 0, 0.2);
+}
+
+.action-button.clone-theme:not(:disabled):active {
+    background: linear-gradient(135deg, #ff6d00 0%, #ff8f00 100%);
+    box-shadow: 
+        0 2px 4px rgba(255, 109, 0, 0.2),
+        0 0 0 1px rgba(255, 109, 0, 0.1);
+}
+
+/* Reset theme */
+.action-button.reset-theme {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 
+        0 2px 4px rgba(37, 99, 235, 0.2),
+        0 0 0 1px rgba(37, 99, 235, 0.1);
+}
+
+.action-button.reset-theme:not(:disabled):hover {
+    background: linear-gradient(135deg, #4b92ff 0%, #3573fb 100%);
+    box-shadow: 
+        0 4px 8px rgba(37, 99, 235, 0.3),
+        0 0 0 1px rgba(37, 99, 235, 0.2);
+}
+
+.action-button.reset-theme:not(:disabled):active {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    box-shadow: 
+        0 2px 4px rgba(37, 99, 235, 0.2),
+        0 0 0 1px rgba(37, 99, 235, 0.1);
 } 

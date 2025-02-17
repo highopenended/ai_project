@@ -16,11 +16,12 @@ const ActionButton = ({
     text, 
     ariaLabel,
     title,
-    customClassName = '',
-    children
+    theme = '',
+    customClassName = ''
 }) => {
     const baseClassName = 'action-button';
-    const fullClassName = `${baseClassName} ${customClassName}`.trim();
+    const themeClassName = theme ? `${theme}-theme` : '';
+    const fullClassName = `${baseClassName} ${themeClassName} ${customClassName}`.trim();
 
     return (
         <button 
@@ -32,7 +33,6 @@ const ActionButton = ({
         >
             {icon && <span className="action-icon">{icon}</span>}
             {text && <span className="action-text">{text}</span>}
-            {children}
         </button>
     );
 };
@@ -44,8 +44,8 @@ ActionButton.propTypes = {
     text: PropTypes.string,
     ariaLabel: PropTypes.string,
     title: PropTypes.string,
-    customClassName: PropTypes.string,
-    children: PropTypes.node
+    theme: PropTypes.oneOf(['', 'save', 'delete', 'clone', 'reset']),
+    customClassName: PropTypes.string
 };
 
 export default ActionButton; 
