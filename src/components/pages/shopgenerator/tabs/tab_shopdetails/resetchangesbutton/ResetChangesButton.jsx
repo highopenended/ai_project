@@ -28,7 +28,7 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
                 aria-label="Revert changes"
             >
                 <span className="reset-icon">⎌</span>
-                <span className="reset-text">Reset Changes</span>
+                <span className="reset-text">Reset</span>
             </button>
 
             {showConfirmation && (

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import './ResetButton.css';
+import './ResetMiniButton.css';
 
-const ResetButton = ({ onClick, title }) => {
+const ResetMiniButton = ({ onClick, title }) => {
     return (
         <button 
             className="reset-button" 
@@ -24,9 +24,9 @@ const ResetButton = ({ onClick, title }) => {
     );
 };
 
-ResetButton.propTypes = {
+ResetMiniButton.propTypes = {
     onClick: PropTypes.func.isRequired,
     title: PropTypes.string.isRequired,
 };
 
-export default ResetButton;
+export default ResetMiniButton;

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import './CollapseExpandButton.css';
+import './CollapseExpandMiniButton.css';
 
-function CollapseExpandButton({ isCollapsed, toggleCollapse }) {
+function CollapseExpandMiniButton({ isCollapsed, toggleCollapse }) {
     return (
         <button
             className={`collapse-button ${isCollapsed ? 'collapsed' : ''}`}
@@ -15,9 +15,9 @@ function CollapseExpandButton({ isCollapsed, toggleCollapse }) {
     );
 }
 
-CollapseExpandButton.propTypes = {
+CollapseExpandMiniButton.propTypes = {
     isCollapsed: PropTypes.bool.isRequired,
     toggleCollapse: PropTypes.func.isRequired,
 };
 
-export default CollapseExpandButton; 
+export default CollapseExpandMiniButton; 

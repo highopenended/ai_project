@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./BiasGrid.css";
-import ButtonGroup from "../../../shared/ButtonGroup";
+import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import Section from "../../../shared/Section";
 
 function BiasGrid({ setItemBias, itemBias }) {
@@ -92,8 +92,8 @@ function BiasGrid({ setItemBias, itemBias }) {
     return (
         <Section
             title="Shop Bias"
-            buttonGroup={
-                <ButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            miniButtonGroup={
+                <MiniButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             }
         >
             {/* <div className="bias-grid"> */}

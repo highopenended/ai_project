@@ -1,5 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
+import CloneConfirmDialog from "./CloneConfirmDialog";
+import ActionButton from "../../../shared/ActionButton";
 import "./CloneShopButton.css";
 
 /**
@@ -31,36 +33,16 @@ const CloneShopButton = ({ onClone, shopId }) => {
 
     return (
         <>
-            <button
-                className="clone-shop-button"
+            <ActionButton
                 onClick={handleCloneClick}
                 disabled={!shopId}
-                aria-label="Clone"
+                icon="⧉"
+                text="Clone"
+                customClassName="clone-shop-button"
                 title={!shopId ? "Save the shop first to enable cloning" : "Create a copy of this shop"}
-            >
-                <span className="clone-icon">⧉</span>
-                <span className="clone-text">Clone</span>
-            </button>
+            />
 
-            {showConfirm && (
-                <div className="clone-confirm-overlay" onClick={handleCancel}>
-                    <div className="clone-confirm-dialogue" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="clone-confirm-title">Clone This Shop?</h3>
-                        <p className="clone-confirm-message">
-                            This will create an exact copy of the current shop with a new ID. The cloned shop will have
-                            &quot;(Clone)&quot; appended to its name.
-                        </p>
-                        <div className="clone-confirm-buttons">
-                            <button className="clone-confirm-button clone-confirm-proceed" onClick={handleConfirm}>
-                                Clone
-                            </button>
-                            <button className="clone-confirm-button clone-confirm-cancel" onClick={handleCancel}>
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showConfirm && <CloneConfirmDialog onConfirm={handleConfirm} onCancel={handleCancel} />}
         </>
     );
 };

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useShopGenerator } from "../../../utils/shopGeneratorContext";
 import Section from "../../../shared/Section";
-import ButtonGroup from "../../../shared/ButtonGroup";
+import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
 
@@ -22,8 +22,8 @@ function CategoryFilter() {
     return (
         <Section
             title="Categories"
-            buttonGroup={
-                <ButtonGroup handleReset={clearCategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            miniButtonGroup={
+                <MiniButtonGroup handleReset={clearCategorySelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             }
         >
             {!isCollapsed && (

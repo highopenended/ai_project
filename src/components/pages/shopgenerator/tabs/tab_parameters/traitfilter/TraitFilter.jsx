@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useShopGenerator } from "../../../utils/shopGeneratorContext";
 import Section from "../../../shared/Section";
 import traitList from "../../../../../../../public/trait-list.json";
-import ButtonGroup from "../../../shared/ButtonGroup";
+import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
 
@@ -22,8 +22,8 @@ function TraitFilter() {
 
     return (
         <Section title="Traits"
-            buttonGroup={
-                <ButtonGroup handleReset={clearTraitSelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            miniButtonGroup={
+                <MiniButtonGroup handleReset={clearTraitSelections} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             }
         >
             {!isCollapsed && (

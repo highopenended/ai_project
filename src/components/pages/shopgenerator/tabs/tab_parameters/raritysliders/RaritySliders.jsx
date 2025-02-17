@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import './RaritySliders.css';
 import { RARITY_COLORS } from '../../../../../../constants/rarityColors';
 import Section from '../../../shared/Section';
-import ButtonGroup from '../../../shared/ButtonGroup';
+import MiniButtonGroup from '../../../shared/minibuttongroup/MiniButtonGroup';
 
 const RARITIES = ['Common', 'Uncommon', 'Rare', 'Unique'];
 
@@ -216,8 +216,8 @@ function RaritySliders({ setRarityDistribution, rarityDistribution }) {
     return (
         <Section
             title="Rarity Distribution"
-            buttonGroup={
-                <ButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+            miniButtonGroup={
+                <MiniButtonGroup handleReset={handleReset} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
             }
         >
             {!isCollapsed && (
