@@ -28,11 +28,6 @@ function Tab_ShopDetails({
     onResetChanges,
     changes,
 }) {
-    console.log("Tab_ShopDetails received currentShop:", currentShop);
-    console.log("currentShop.dateCreated type:", typeof currentShop?.dateCreated);
-    console.log("currentShop.dateCreated instanceof Date:", currentShop?.dateCreated instanceof Date);
-    console.log("currentShop.dateCreated value:", currentShop?.dateCreated);
-
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
         if (!currentShop) return false;
