@@ -57,15 +57,19 @@ function ShopGenerator() {
     const [allItems, setAllItems] = useState([]);
 
     // Shop parameters state
-    const [currentGold, setCurrentGold] = useState(1000);
-    const [lowestLevel, setLowestLevel] = useState(0);
-    const [highestLevel, setHighestLevel] = useState(10);
-    const [itemBias, setItemBias] = useState({ x: 0.5, y: 0.5 }); // Default to center
-    const [rarityDistribution, setRarityDistribution] = useState({
-        Common: 95.0,
-        Uncommon: 4.5,
-        Rare: 0.49,
-        Unique: 0.01,
+    const [shopParameters, setShopParameters] = useState({
+        gold: 1000,
+        levelRange: {
+            min: 0,
+            max: 10
+        },
+        itemBias: { x: 0.5, y: 0.5 },
+        rarityDistribution: {
+            Common: 95.0,
+            Uncommon: 4.5,
+            Rare: 0.49,
+            Unique: 0.01,
+        }
     });
 
     // Shop inventory state
@@ -109,15 +113,19 @@ function ShopGenerator() {
         shopLocation: "",
         shopDetails: "",
         shopKeeperDetails: "",
-        currentGold: 0,
-        lowestLevel: 0,
-        highestLevel: 0,
-        itemBias: { x: 0.5, y: 0.5 },
-        rarityDistribution: {
-            Common: 95.0,
-            Uncommon: 4.5,
-            Rare: 0.49,
-            Unique: 0.01,
+        shopParameters: {
+            gold: 1000,
+            levelRange: {
+                min: 0,
+                max: 10
+            },
+            itemBias: { x: 0.5, y: 0.5 },
+            rarityDistribution: {
+                Common: 95.0,
+                Uncommon: 4.5,
+                Rare: 0.49,
+                Unique: 0.01,
+            }
         },
         hasInventoryChanged: false,
     });
@@ -196,11 +204,11 @@ function ShopGenerator() {
                     shopKeeperDetails: shopDetails.keeperDescription,
                 },
                 parameters: {
-                    goldAmount: currentGold,
-                    levelLow: lowestLevel,
-                    levelHigh: highestLevel,
-                    shopBias: itemBias,
-                    rarityDistribution,
+                    goldAmount: shopParameters.gold,
+                    levelLow: shopParameters.levelRange.min,
+                    levelHigh: shopParameters.levelRange.max,
+                    shopBias: shopParameters.itemBias,
+                    rarityDistribution: shopParameters.rarityDistribution,
                     categories: {
                         included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
                         excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE),
@@ -233,11 +241,11 @@ function ShopGenerator() {
         shopDetails.location,
         shopDetails.description,
         shopDetails.keeperDescription,
-        currentGold,
-        lowestLevel,
-        highestLevel,
-        itemBias,
-        rarityDistribution,
+        shopParameters.gold,
+        shopParameters.levelRange.min,
+        shopParameters.levelRange.max,
+        shopParameters.itemBias,
+        shopParameters.rarityDistribution,
         items,
         shopDetails.dateCreated,
         shopDetails.dateLastEdited,
@@ -277,29 +285,29 @@ function ShopGenerator() {
             changes.basic.shopKeeperDetails = { old: originalValues.shopKeeperDetails, new: shopDetails.keeperDescription };
 
         // Check parameters
-        if (currentGold !== originalValues.currentGold)
-            changes.parameters.currentGold = { old: originalValues.currentGold, new: currentGold };
-        if (lowestLevel !== originalValues.lowestLevel)
-            changes.parameters.lowestLevel = { old: originalValues.lowestLevel, new: lowestLevel };
-        if (highestLevel !== originalValues.highestLevel)
-            changes.parameters.highestLevel = { old: originalValues.highestLevel, new: highestLevel };
+        if (shopParameters.gold !== originalValues.shopParameters.gold)
+            changes.parameters.currentGold = { old: originalValues.shopParameters.gold, new: shopParameters.gold };
+        if (shopParameters.levelRange.min !== originalValues.shopParameters.levelRange.min)
+            changes.parameters.lowestLevel = { old: originalValues.shopParameters.levelRange.min, new: shopParameters.levelRange.min };
+        if (shopParameters.levelRange.max !== originalValues.shopParameters.levelRange.max)
+            changes.parameters.highestLevel = { old: originalValues.shopParameters.levelRange.max, new: shopParameters.levelRange.max };
 
         // Check itemBias
-        if (itemBias.x !== originalValues.itemBias.x || itemBias.y !== originalValues.itemBias.y) {
+        if (shopParameters.itemBias.x !== originalValues.shopParameters.itemBias.x || shopParameters.itemBias.y !== originalValues.shopParameters.itemBias.y) {
             changes.parameters.itemBias = {
-                old: originalValues.itemBias,
-                new: itemBias,
+                old: originalValues.shopParameters.itemBias,
+                new: shopParameters.itemBias,
             };
         }
 
         // Check rarity distribution
-        const hasRarityChanged = Object.keys(rarityDistribution).some(
-            (key) => rarityDistribution[key] !== originalValues.rarityDistribution[key]
+        const hasRarityChanged = Object.keys(shopParameters.rarityDistribution).some(
+            (key) => shopParameters.rarityDistribution[key] !== originalValues.shopParameters.rarityDistribution[key]
         );
         if (hasRarityChanged) {
             changes.parameters.rarityDistribution = {
-                old: originalValues.rarityDistribution,
-                new: rarityDistribution,
+                old: originalValues.shopParameters.rarityDistribution,
+                new: shopParameters.rarityDistribution,
             };
         }
 
@@ -326,11 +334,11 @@ function ShopGenerator() {
         }
 
         console.log("Current state:", {
-            currentGold,
-            lowestLevel,
-            highestLevel,
-            itemBias,
-            rarityDistribution,
+            currentGold: shopParameters.gold,
+            lowestLevel: shopParameters.levelRange.min,
+            highestLevel: shopParameters.levelRange.max,
+            itemBias: shopParameters.itemBias,
+            rarityDistribution: shopParameters.rarityDistribution,
             allItemsLength: allItems.length,
         });
 
@@ -375,11 +383,11 @@ function ShopGenerator() {
         });
 
         const result = generateShopInventory({
-            currentGold,
-            lowestLevel,
-            highestLevel,
-            itemBias,
-            rarityDistribution,
+            currentGold: shopParameters.gold,
+            lowestLevel: shopParameters.levelRange.min,
+            highestLevel: shopParameters.levelRange.max,
+            itemBias: shopParameters.itemBias,
+            rarityDistribution: shopParameters.rarityDistribution,
             includedCategories,
             excludedCategories,
             includedSubcategories,
@@ -468,21 +476,31 @@ function ShopGenerator() {
             dateLastEdited: loadedDateLastEdited,
         }));
 
-        setCurrentGold(shop.parameters?.goldAmount || 1000);
-        setLowestLevel(shop.parameters?.levelLow || 0);
-        setHighestLevel(shop.parameters?.levelHigh || 10);
-        setItemBias(shop.parameters?.shopBias || { x: 0.5, y: 0.5 });
-        setRarityDistribution(
-            shop.parameters?.rarityDistribution || {
+        // Update shop parameters
+        const newShopParameters = {
+            gold: shop.parameters?.goldAmount || 1000,
+            levelRange: {
+                min: shop.parameters?.levelLow || 0,
+                max: shop.parameters?.levelHigh || 10
+            },
+            itemBias: shop.parameters?.shopBias || { x: 0.5, y: 0.5 },
+            rarityDistribution: shop.parameters?.rarityDistribution || {
                 Common: 95.0,
                 Uncommon: 4.5,
                 Rare: 0.49,
                 Unique: 0.01,
             }
-        );
+        };
+        setShopParameters(newShopParameters);
         setItems(shop.currentStock || []);
 
         // Restore filter states if they exist in the saved shop
+        const newFilterStates = {
+            categoryStates: shop.filterStates?.categoryStates || [],
+            subcategoryStates: shop.filterStates?.subcategoryStates || [],
+            traitStates: shop.filterStates?.traitStates || []
+        };
+
         if (shop.filterStates) {
             setCategoryStates(new Map(shop.filterStates.categoryStates));
             setSubcategoryStates(new Map(shop.filterStates.subcategoryStates));
@@ -521,28 +539,13 @@ function ShopGenerator() {
             shopLocation: shop.shortData.location || "Unknown Location",
             shopDetails: shop.longData.shopDetails || "No details available",
             shopKeeperDetails: shop.longData.shopKeeperDetails || "No details available",
-            currentGold: shop.parameters?.goldAmount || 1000,
-            lowestLevel: shop.parameters?.levelLow || 0,
-            highestLevel: shop.parameters?.levelHigh || 10,
-            itemBias: shop.parameters?.shopBias || { x: 0.5, y: 0.5 },
-            rarityDistribution: shop.parameters?.rarityDistribution || {
-                Common: 95.0,
-                Uncommon: 4.5,
-                Rare: 0.49,
-                Unique: 0.01,
-            },
+            shopParameters: newShopParameters,
             hasInventoryChanged: false,
             items: shop.currentStock || [],
-            filterStates: shop.filterStates
-                ? {
-                      categoryStates: shop.filterStates.categoryStates,
-                      subcategoryStates: shop.filterStates.subcategoryStates,
-                      traitStates: shop.filterStates.traitStates,
-                  }
-                : null,
+            filterStates: newFilterStates
         });
 
-        // Reset unsaved changes flag after loading
+        // Reset unsaved changes flag
         setHasUnsavedChanges(false);
     };
 
@@ -575,16 +578,22 @@ function ShopGenerator() {
             dateLastEdited: new Date(),
         }));
 
-        setCurrentGold(1000);
-        setLowestLevel(0);
-        setHighestLevel(10);
-        setItemBias({ x: 0.5, y: 0.5 });
-        setRarityDistribution({
-            Common: 95.0,
-            Uncommon: 4.5,
-            Rare: 0.49,
-            Unique: 0.01,
+        // Reset shop parameters to defaults
+        setShopParameters({
+            gold: 1000,
+            levelRange: {
+                min: 0,
+                max: 10
+            },
+            itemBias: { x: 0.5, y: 0.5 },
+            rarityDistribution: {
+                Common: 95.0,
+                Uncommon: 4.5,
+                Rare: 0.49,
+                Unique: 0.01,
+            }
         });
+
         setItems([]);
 
         // Clear all filters
@@ -600,15 +609,19 @@ function ShopGenerator() {
             shopLocation: "Unknown Location",
             shopDetails: "No details available",
             shopKeeperDetails: "No details available",
-            currentGold: 1000,
-            lowestLevel: 0,
-            highestLevel: 10,
-            itemBias: { x: 0.5, y: 0.5 },
-            rarityDistribution: {
-                Common: 95.0,
-                Uncommon: 4.5,
-                Rare: 0.49,
-                Unique: 0.01,
+            shopParameters: {
+                gold: 1000,
+                levelRange: {
+                    min: 0,
+                    max: 10
+                },
+                itemBias: { x: 0.5, y: 0.5 },
+                rarityDistribution: {
+                    Common: 95.0,
+                    Uncommon: 4.5,
+                    Rare: 0.49,
+                    Unique: 0.01,
+                }
             },
             hasInventoryChanged: false,
             items: [],
@@ -669,11 +682,11 @@ function ShopGenerator() {
                     shopKeeperDetails: shopDetails.keeperDescription,
                 },
                 parameters: {
-                    goldAmount: currentGold,
-                    levelLow: lowestLevel,
-                    levelHigh: highestLevel,
-                    shopBias: itemBias,
-                    rarityDistribution,
+                    goldAmount: shopParameters.gold,
+                    levelLow: shopParameters.levelRange.min,
+                    levelHigh: shopParameters.levelRange.max,
+                    shopBias: shopParameters.itemBias,
+                    rarityDistribution: shopParameters.rarityDistribution,
                     categories: {
                         included: getFilteredArray(categoryStates, SELECTION_STATES.INCLUDE),
                         excluded: getFilteredArray(categoryStates, SELECTION_STATES.EXCLUDE),
@@ -733,7 +746,7 @@ function ShopGenerator() {
         }
     };
 
-    // Add handleResetChanges function after handleDeleteShop
+    // Update handleResetChanges to use new structure
     const handleResetChanges = () => {
         if (hasUnsavedChanges) {
             // Reset all state values to their original values
@@ -745,9 +758,10 @@ function ShopGenerator() {
                 location: originalValues.shopLocation,
                 description: originalValues.shopDetails,
                 keeperDescription: originalValues.shopKeeperDetails,
-                dateCreated: originalValues.dateCreated,
-                dateLastEdited: originalValues.dateLastEdited,
             }));
+
+            // Reset shop parameters
+            setShopParameters(originalValues.shopParameters);
 
             // Reset filter states if they were changed
             if (originalValues.filterStates) {
@@ -782,27 +796,33 @@ function ShopGenerator() {
 
     // Shop management functions
     const handleGoldChange = (gold) => {
-        setCurrentGold(gold);
+        setShopParameters(prev => ({ ...prev, gold }));
         setHasUnsavedChanges(true);
     };
 
-    const handleLowestLevelChange = (level) => {
-        setLowestLevel(level);
+    const handleLowestLevelChange = (min) => {
+        setShopParameters(prev => ({ 
+            ...prev, 
+            levelRange: { ...prev.levelRange, min }
+        }));
         setHasUnsavedChanges(true);
     };
 
-    const handleHighestLevelChange = (level) => {
-        setHighestLevel(level);
+    const handleHighestLevelChange = (max) => {
+        setShopParameters(prev => ({ 
+            ...prev, 
+            levelRange: { ...prev.levelRange, max }
+        }));
         setHasUnsavedChanges(true);
     };
 
     const handleBiasChange = (bias) => {
-        setItemBias(bias);
+        setShopParameters(prev => ({ ...prev, itemBias: bias }));
         setHasUnsavedChanges(true);
     };
 
-    const handleRarityDistributionChange = (newDistribution) => {
-        setRarityDistribution(newDistribution);
+    const handleRarityDistributionChange = (distribution) => {
+        setShopParameters(prev => ({ ...prev, rarityDistribution: distribution }));
         setHasUnsavedChanges(true);
     };
 
@@ -810,11 +830,11 @@ function ShopGenerator() {
     useEffect(() => {
         const updateTimeout = setTimeout(() => {
             const newParameters = {
-                goldAmount: currentGold,
-                levelLow: lowestLevel,
-                levelHigh: highestLevel,
-                shopBias: itemBias,
-                rarityDistribution,
+                goldAmount: shopParameters.gold,
+                levelLow: shopParameters.levelRange.min,
+                levelHigh: shopParameters.levelRange.max,
+                shopBias: shopParameters.itemBias,
+                rarityDistribution: shopParameters.rarityDistribution,
                 categories: {
                     included: Array.from((categoryStates || new Map()).entries())
                         .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
@@ -847,11 +867,11 @@ function ShopGenerator() {
 
         return () => clearTimeout(updateTimeout);
     }, [
-        currentGold,
-        lowestLevel,
-        highestLevel,
-        itemBias,
-        rarityDistribution,
+        shopParameters.gold,
+        shopParameters.levelRange.min,
+        shopParameters.levelRange.max,
+        shopParameters.itemBias,
+        shopParameters.rarityDistribution,
         categoryStates,
         subcategoryStates,
         traitStates,
@@ -888,15 +908,15 @@ function ShopGenerator() {
                                         <Tab_Parameters
                                             key={tab.key}
                                             type={{ name: "Tab_Parameters" }}
-                                            currentGold={currentGold}
+                                            currentGold={shopParameters.gold}
                                             setCurrentGold={handleGoldChange}
-                                            lowestLevel={lowestLevel}
+                                            lowestLevel={shopParameters.levelRange.min}
                                             setLowestLevel={handleLowestLevelChange}
-                                            highestLevel={highestLevel}
+                                            highestLevel={shopParameters.levelRange.max}
                                             setHighestLevel={handleHighestLevelChange}
-                                            rarityDistribution={rarityDistribution}
+                                            rarityDistribution={shopParameters.rarityDistribution}
                                             setRarityDistribution={handleRarityDistributionChange}
-                                            itemBias={itemBias}
+                                            itemBias={shopParameters.itemBias}
                                             setItemBias={handleBiasChange}
                                             setCategoryStates={handleCategoryStatesChange}
                                             setSubcategoryStates={handleSubcategoryStatesChange}
@@ -996,15 +1016,15 @@ function ShopGenerator() {
                     <Tab_Parameters
                         key="Tab_Parameters-0"
                         type={{ name: "Tab_Parameters" }}
-                        currentGold={currentGold}
+                        currentGold={shopParameters.gold}
                         setCurrentGold={handleGoldChange}
-                        lowestLevel={lowestLevel}
+                        lowestLevel={shopParameters.levelRange.min}
                         setLowestLevel={handleLowestLevelChange}
-                        highestLevel={highestLevel}
+                        highestLevel={shopParameters.levelRange.max}
                         setHighestLevel={handleHighestLevelChange}
-                        rarityDistribution={rarityDistribution}
+                        rarityDistribution={shopParameters.rarityDistribution}
                         setRarityDistribution={handleRarityDistributionChange}
-                        itemBias={itemBias}
+                        itemBias={shopParameters.itemBias}
                         setItemBias={handleBiasChange}
                         setCategoryStates={handleCategoryStatesChange}
                         setSubcategoryStates={handleSubcategoryStatesChange}
@@ -1339,15 +1359,15 @@ function ShopGenerator() {
                                 switch (tab.type.name) {
                                     case "Tab_Parameters":
                                         return React.cloneElement(tab, {
-                                            currentGold,
+                                            currentGold: shopParameters.gold,
                                             setCurrentGold: handleGoldChange,
-                                            lowestLevel,
+                                            lowestLevel: shopParameters.levelRange.min,
                                             setLowestLevel: handleLowestLevelChange,
-                                            highestLevel,
+                                            highestLevel: shopParameters.levelRange.max,
                                             setHighestLevel: handleHighestLevelChange,
-                                            rarityDistribution,
+                                            rarityDistribution: shopParameters.rarityDistribution,
                                             setRarityDistribution: handleRarityDistributionChange,
-                                            itemBias,
+                                            itemBias: shopParameters.itemBias,
                                             setItemBias: handleBiasChange,
                                             setCategoryStates: handleCategoryStatesChange,
                                             setSubcategoryStates: handleSubcategoryStatesChange,
