@@ -1,44 +1,45 @@
-// Define the shopData object
+// Template for default shop data structure
+// This serves as the initial state template for new shops
 const shopData = {
-  shortData: {
-    shopName: 'Unnamed Shop',
-    shopKeeperName: 'Unknown',
-    type: 'General Store',
-    location: 'Unknown Location'
-  },
-  longData: {
-    shopDetails: 'No details available',
-    shopKeeperDetails: 'No details available'
-  },
-  parameters: {
-    goldAmount: 1000,
-    levelLow: 0,
-    levelHigh: 10,
-    shopBias: { x: 0.5, y: 0.5 },
-    rarityDistribution: {
-      Common: 95.0,
-      Uncommon: 4.5,
-      Rare: 0.49,
-      Unique: 0.01
-    },
-    categories: {
-      included: [],
-      excluded: []
-    },
-    subcategories: {
-      included: [],
-      excluded: []
-    },
-    traits: {
-      included: [],
-      excluded: []
-    },
-    currentStock: []
-  },
+  // Basic shop information
   id: '',
+  name: 'Unnamed Shop',
+  keeperName: 'Unknown',
+  type: 'General Store',
+  location: 'Unknown Location',
+  description: 'No details available',
+  keeperDescription: 'No details available',
   dateCreated: new Date(),
-  dateLastEdited: new Date()
+  dateLastEdited: new Date(),
+
+  // Shop generation settings
+  gold: 1000,
+  levelRange: {
+    min: 0,
+    max: 10
+  },
+  itemBias: { x: 0.5, y: 0.5 },
+  rarityDistribution: {
+    Common: 95.0,
+    Uncommon: 4.5,
+    Rare: 0.49,
+    Unique: 0.01
+  },
+
+  // Filter states using Map objects
+  // Each filter cycles through three states when toggled:
+  // - Not in Map (or IGNORE): Default state, item neither included nor excluded
+  // - INCLUDE: Item is specifically included in generation
+  // - EXCLUDE: Item is specifically excluded from generation
+  // The cycle goes: IGNORE -> INCLUDE -> EXCLUDE -> IGNORE
+  filters: {
+    categories: new Map(),
+    subcategories: new Map(),
+    traits: new Map()
+  },
+
+  // Current inventory
+  currentStock: []
 };
 
-// Export the shopData object
 export default shopData; 
