@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { useShopGenerator } from "../../../utils/shopGeneratorContext";
+import PropTypes from 'prop-types';
 import Section from "../../../shared/section/Section";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
 
-function CategoryFilter() {
-    const { categoryData, getCategoryState, toggleCategory, clearCategorySelections } = useShopGenerator();
+function CategoryFilter({ categoryData, getFilterState, toggleCategory, clearCategorySelections }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -38,11 +37,18 @@ function CategoryFilter() {
                 <TagContainer
                     tags={filteredCategories}
                     onTagClick={toggleCategory}
-                    getTagState={getCategoryState}
+                    getTagState={(category) => getFilterState('categories', category)}
                 />
             )}
         </Section>
     );
 }
+
+CategoryFilter.propTypes = {
+    categoryData: PropTypes.object.isRequired,
+    getFilterState: PropTypes.func.isRequired,
+    toggleCategory: PropTypes.func.isRequired,
+    clearCategorySelections: PropTypes.func.isRequired
+};
 
 export default CategoryFilter;

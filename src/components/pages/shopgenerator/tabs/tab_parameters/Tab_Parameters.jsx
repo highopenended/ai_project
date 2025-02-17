@@ -20,6 +20,15 @@ function Tab_Parameters({
     setRarityDistribution,
     itemBias,
     setItemBias,
+    categoryData,
+    categoryStates,
+    getFilterState,
+    toggleCategory,
+    toggleSubcategory,
+    toggleTrait,
+    clearCategorySelections,
+    clearSubcategorySelections,
+    clearTraitSelections
 }) {
     return (
         <div className="main-wrapper-parameter">
@@ -32,9 +41,24 @@ function Tab_Parameters({
             />
             <RaritySliders setRarityDistribution={setRarityDistribution} rarityDistribution={rarityDistribution} />
             <BiasGrid setItemBias={setItemBias} itemBias={itemBias} />
-            <CategoryFilter />
-            <SubcategoryFilter />
-            <TraitFilter />
+            <CategoryFilter 
+                categoryData={categoryData}
+                getFilterState={getFilterState}
+                toggleCategory={toggleCategory}
+                clearCategorySelections={clearCategorySelections}
+            />
+            <SubcategoryFilter 
+                categoryData={categoryData}
+                categoryStates={categoryStates}
+                getFilterState={getFilterState}
+                toggleSubcategory={toggleSubcategory}
+                clearSubcategorySelections={clearSubcategorySelections}
+            />
+            <TraitFilter 
+                getFilterState={getFilterState}
+                toggleTrait={toggleTrait}
+                clearTraitSelections={clearTraitSelections}
+            />
         </div>
     );
 }
@@ -50,6 +74,15 @@ Tab_Parameters.propTypes = {
     setRarityDistribution: PropTypes.func.isRequired,
     itemBias: PropTypes.object.isRequired,
     setItemBias: PropTypes.func.isRequired,
+    categoryData: PropTypes.object.isRequired,
+    categoryStates: PropTypes.object.isRequired,
+    getFilterState: PropTypes.func.isRequired,
+    toggleCategory: PropTypes.func.isRequired,
+    toggleSubcategory: PropTypes.func.isRequired,
+    toggleTrait: PropTypes.func.isRequired,
+    clearCategorySelections: PropTypes.func.isRequired,
+    clearSubcategorySelections: PropTypes.func.isRequired,
+    clearTraitSelections: PropTypes.func.isRequired
 };
 
 Tab_Parameters.displayName = "Parameters";

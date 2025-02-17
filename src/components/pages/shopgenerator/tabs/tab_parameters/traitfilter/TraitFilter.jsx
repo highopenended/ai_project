@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { useShopGenerator } from "../../../utils/shopGeneratorContext";
+import PropTypes from 'prop-types';
 import Section from "../../../shared/section/Section";
 import traitList from "../../../../../../../public/trait-list.json";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
 
-function TraitFilter() {
-    const { getTraitState, toggleTrait, clearTraitSelections } = useShopGenerator();
+function TraitFilter({ getFilterState, toggleTrait, clearTraitSelections }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -38,11 +37,17 @@ function TraitFilter() {
                 <TagContainer
                     tags={filteredTraits}
                     onTagClick={toggleTrait}
-                    getTagState={getTraitState}
+                    getTagState={(trait) => getFilterState('traits', trait)}
                 />
             )}
         </Section>
     );
 }
+
+TraitFilter.propTypes = {
+    getFilterState: PropTypes.func.isRequired,
+    toggleTrait: PropTypes.func.isRequired,
+    clearTraitSelections: PropTypes.func.isRequired
+};
 
 export default TraitFilter;
