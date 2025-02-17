@@ -849,13 +849,13 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
-    // Update items when sorted items change
-    useEffect(() => {
-        if (sortedItems !== items) {
-            setItems(sortedItems);
-            setHasUnsavedChanges(true);
-        }
-    }, [sortedItems]);
+    // Update items when sorted items change(causes infinite looping, keep commented out)
+    // useEffect(() => {
+    //     if (sortedItems !== items) {
+    //         setItems(sortedItems);
+    //         setHasUnsavedChanges(true);
+    //     }
+    // }, [sortedItems]);
 
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
