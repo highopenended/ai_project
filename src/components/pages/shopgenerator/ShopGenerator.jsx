@@ -15,6 +15,7 @@ import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/fire
 import UnsavedChangesDialogue from "./shared/UnsavedChangesDialogue";
 import { useSorting } from "./utils/sortingUtils";
 import { extractUniqueCategories } from "./utils/categoryUtils";
+import defaultShopData from "./utils/shopData";
 
 /**
  * ShopGenerator Component
@@ -63,6 +64,24 @@ function ShopGenerator() {
 
     // Master list of all possible items
     const [allItems, setAllItems] = useState([]);
+
+    // Combined shop state using the template
+    const [shopState, setShopState] = useState(() => {
+        // Deep clone the default data to ensure we don't modify the template
+        return JSON.parse(JSON.stringify({
+            ...defaultShopData,
+            // Ensure new Maps are created for filters
+            filters: {
+                categories: new Map(),
+                subcategories: new Map(),
+                traits: new Map(),
+            }
+        }));
+    });
+
+    // Inventory state (kept separate for performance)
+    const [items, setItems] = useState([]);
+    const { sortedItems, sortConfig, handleSort } = useSorting(items);
 
     // Shop parameters state with integrated filter states
     const [shopParameters, setShopParameters] = useState({
@@ -139,10 +158,6 @@ function ShopGenerator() {
     const clearCategorySelections = () => clearFilter("categories");
     const clearSubcategorySelections = () => clearFilter("subcategories");
     const clearTraitSelections = () => clearFilter("traits");
-
-    // Shop inventory state
-    const [items, setItems] = useState([]);
-    const { sortedItems, sortConfig, handleSort } = useSorting(items);
 
     // Shop details state
     const [shopDetails, setShopDetails] = useState({
