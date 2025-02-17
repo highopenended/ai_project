@@ -18,13 +18,12 @@ const DeleteShopButton = ({ onDelete, shopId, currentShop }) => {
         setShowConfirmation(false);
     };
 
-    if (!shopId) return null;
-
     return (
         <>
             <button 
                 className="delete-shop-button"
                 onClick={handleClick}
+                disabled={!shopId}
                 aria-label="Delete shop"
             >
                 <span className="delete-icon">&#128465;</span>

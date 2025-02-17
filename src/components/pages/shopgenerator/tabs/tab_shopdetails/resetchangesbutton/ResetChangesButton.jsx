@@ -19,22 +19,21 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
         setShowConfirmation(false);
     };
 
-    if (!hasUnsavedChanges) return null;
-
     return (
         <>
             <button 
                 className="reset-changes-button"
                 onClick={handleClick}
-                aria-label="Reset changes"
+                disabled={!hasUnsavedChanges}
+                aria-label="Revert changes"
             >
-                <span className="reset-icon">↺</span>
+                <span className="reset-icon">⎌</span>
                 <span className="reset-text">Reset Changes</span>
             </button>
 
             {showConfirmation && (
                 <UnsavedChangesDialogue
-                    title="Reset Changes?"
+                    headerText="Revert All Changes?"
                     description="Are you sure you want to reset all changes made to this shop? This will revert the shop back to its last saved state."
                     changes={changes}
                     currentShopName={currentShop.shortData.shopName}

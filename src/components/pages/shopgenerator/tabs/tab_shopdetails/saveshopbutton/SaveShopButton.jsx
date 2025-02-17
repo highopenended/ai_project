@@ -7,10 +7,10 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled }) => {
             className="save-shop-button"
             onClick={onSave}
             disabled={!areAllDetailsFilled()}
-            aria-label="Save shop"
+            aria-label="Save"
         >
             <span className="save-icon">&#128427;</span>
-            <span className="save-text">Save Shop</span>
+            <span className="save-text">Save</span>
         </button>
     );
 };

@@ -2,7 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './UnsavedChangesDialogue.css';
 
-const UnsavedChangesDialogue = ({ onConfirm, onCancel, changes, currentShopName }) => {
+const UnsavedChangesDialogue = ({ 
+    onConfirm, 
+    onCancel, 
+    changes, 
+    currentShopName,
+    headerText = "Unsaved Changes",
+    continueButtonText = "Discard all changes and continue",
+    cancelButtonText = "Cancel",
+    description
+}) => {
     const formatValue = (value) => {
         if (typeof value === 'object' && value !== null) {
             if ('x' in value && 'y' in value) {
@@ -50,9 +59,10 @@ const UnsavedChangesDialogue = ({ onConfirm, onCancel, changes, currentShopName 
     return (
         <div className="unsaved-changes-overlay">
             <div className="unsaved-changes-dialogue">
-                <h3 className="unsaved-changes-title">Unsaved Changes</h3>
+                <h3 className="unsaved-changes-title">{headerText}</h3>
                 <p className="unsaved-changes-description">
-                    You have unsaved changes to the current shop <span className="shop-name">&ldquo;{currentShopName}&rdquo;</span>.
+                    {description || `You have unsaved changes to the current shop `}
+                    <span className="shop-name">&ldquo;{currentShopName}&rdquo;</span>.
                 </p>
                 <div className="unsaved-changes-content">
                     {renderChangeSection("Basic Information", changes.basic)}
@@ -69,13 +79,13 @@ const UnsavedChangesDialogue = ({ onConfirm, onCancel, changes, currentShopName 
                         className="unsaved-changes-button unsaved-changes-proceed"
                         onClick={onConfirm}
                     >
-                        Discard all changes and continue
+                        {continueButtonText}
                     </button>
                     <button 
                         className="unsaved-changes-button unsaved-changes-cancel"
                         onClick={onCancel}
                     >
-                        Cancel
+                        {cancelButtonText}
                     </button>
                 </div>
             </div>
@@ -91,7 +101,11 @@ UnsavedChangesDialogue.propTypes = {
         parameters: PropTypes.object.isRequired,
         hasInventoryChanged: PropTypes.bool.isRequired
     }).isRequired,
-    currentShopName: PropTypes.string.isRequired
+    currentShopName: PropTypes.string.isRequired,
+    headerText: PropTypes.string,
+    continueButtonText: PropTypes.string,
+    cancelButtonText: PropTypes.string,
+    description: PropTypes.string
 };
 
 export default UnsavedChangesDialogue; 

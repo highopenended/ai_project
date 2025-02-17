@@ -11,6 +11,8 @@
     --button-background: #2a324d;
     --button-hover-background: #49588d;
     --button-active-background: #49588d;
+    --button-disabled-background: linear-gradient(135deg, #ccc 0%, #999 100%);
+    --button-disabled-opacity: 0.6;
 
     --dark-text-primary: #000000;
     --text-primary: #ffffff;
