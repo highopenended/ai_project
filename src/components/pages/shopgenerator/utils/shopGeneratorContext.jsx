@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import itemData from '../../../../../public/item-table.json';
 import { extractUniqueCategories } from './categoryUtils';
@@ -33,12 +33,5 @@ ShopGeneratorProvider.propTypes = {
     children: PropTypes.node.isRequired,
 };
 
-export function useShopGenerator() {
-    const context = useContext(ShopGeneratorContext);
-    if (!context) {
-        throw new Error('useShopGenerator must be used within a ShopGeneratorProvider');
-    }
-    return context;
-}
 
 export default ShopGeneratorProvider; 
