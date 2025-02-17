@@ -75,15 +75,19 @@ function ShopGenerator() {
     console.log("Checking in");
 
     // Shop details state
-    const [shopName, setShopName] = useState("Unnamed Shop");
-    const [shopKeeperName, setShopKeeperName] = useState("Unknown");
-    const [shopType, setShopType] = useState("General Store");
-    const [shopLocation, setShopLocation] = useState("Unknown Location");
-    const [shopDetails, setShopDetails] = useState("No details available");
-    const [shopKeeperDetails, setShopKeeperDetails] = useState("No details available");
-    const [dateCreated, setDateCreated] = useState(new Date());
-    const [dateLastEdited, setDateLastEdited] = useState(new Date());
-    const [shopId, setShopId] = useState("");
+    const [shopDetails, setShopDetails] = useState({
+        id: "",
+        name: "Unnamed Shop",
+        keeperName: "Unknown",
+        type: "General Store",
+        location: "Unknown Location",
+        description: "No details available",
+        keeperDescription: "No details available",
+        dateCreated: new Date(),
+        dateLastEdited: new Date()
+    });
+
+    // Unsaved changes state
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     // Shop state management
@@ -161,7 +165,7 @@ function ShopGenerator() {
             if (savedShop) {
                 const parsedShop = JSON.parse(savedShop);
                 handleLoadShop(parsedShop);
-            } else if (!shopId) {
+            } else if (!shopDetails.id) {
                 handleNewShop();
             }
         }
@@ -178,18 +182,18 @@ function ShopGenerator() {
 
     // Save shop state when it changes
     useEffect(() => {
-        if (shopId) {
+        if (shopDetails.id) {
             const shopState = {
-                id: shopId,
+                id: shopDetails.id,
                 shortData: {
-                    shopName,
-                    shopKeeperName,
-                    type: shopType,
-                    location: shopLocation,
+                    shopName: shopDetails.name,
+                    shopKeeperName: shopDetails.keeperName,
+                    type: shopDetails.type,
+                    location: shopDetails.location,
                 },
                 longData: {
-                    shopDetails,
-                    shopKeeperDetails,
+                    shopDetails: shopDetails.description,
+                    shopKeeperDetails: shopDetails.keeperDescription,
                 },
                 parameters: {
                     goldAmount: currentGold,
@@ -211,8 +215,8 @@ function ShopGenerator() {
                     },
                 },
                 currentStock: items,
-                dateCreated,
-                dateLastEdited,
+                dateCreated: shopDetails.dateCreated,
+                dateLastEdited: shopDetails.dateLastEdited,
                 filterStates: {
                     categoryStates: Array.from(categoryStates.entries()),
                     subcategoryStates: Array.from(subcategoryStates.entries()),
@@ -222,21 +226,21 @@ function ShopGenerator() {
             localStorage.setItem("currentShop", JSON.stringify(shopState));
         }
     }, [
-        shopId,
-        shopName,
-        shopKeeperName,
-        shopType,
-        shopLocation,
-        shopDetails,
-        shopKeeperDetails,
+        shopDetails.id,
+        shopDetails.name,
+        shopDetails.keeperName,
+        shopDetails.type,
+        shopDetails.location,
+        shopDetails.description,
+        shopDetails.keeperDescription,
         currentGold,
         lowestLevel,
         highestLevel,
         itemBias,
         rarityDistribution,
         items,
-        dateCreated,
-        dateLastEdited,
+        shopDetails.dateCreated,
+        shopDetails.dateLastEdited,
         categoryStates,
         subcategoryStates,
         traitStates,
@@ -259,18 +263,18 @@ function ShopGenerator() {
         };
 
         // Check basic fields
-        if (shopName !== originalValues.shopName)
-            changes.basic.shopName = { old: originalValues.shopName, new: shopName };
-        if (shopKeeperName !== originalValues.shopKeeperName)
-            changes.basic.shopKeeperName = { old: originalValues.shopKeeperName, new: shopKeeperName };
-        if (shopType !== originalValues.shopType)
-            changes.basic.shopType = { old: originalValues.shopType, new: shopType };
-        if (shopLocation !== originalValues.shopLocation)
-            changes.basic.shopLocation = { old: originalValues.shopLocation, new: shopLocation };
-        if (shopDetails !== originalValues.shopDetails)
-            changes.basic.shopDetails = { old: originalValues.shopDetails, new: shopDetails };
-        if (shopKeeperDetails !== originalValues.shopKeeperDetails)
-            changes.basic.shopKeeperDetails = { old: originalValues.shopKeeperDetails, new: shopKeeperDetails };
+        if (shopDetails.name !== originalValues.shopName)
+            changes.basic.shopName = { old: originalValues.shopName, new: shopDetails.name };
+        if (shopDetails.keeperName !== originalValues.shopKeeperName)
+            changes.basic.shopKeeperName = { old: originalValues.shopKeeperName, new: shopDetails.keeperName };
+        if (shopDetails.type !== originalValues.shopType)
+            changes.basic.shopType = { old: originalValues.shopType, new: shopDetails.type };
+        if (shopDetails.location !== originalValues.shopLocation)
+            changes.basic.shopLocation = { old: originalValues.shopLocation, new: shopDetails.location };
+        if (shopDetails.description !== originalValues.shopDetails)
+            changes.basic.shopDetails = { old: originalValues.shopDetails, new: shopDetails.description };
+        if (shopDetails.keeperDescription !== originalValues.shopKeeperDetails)
+            changes.basic.shopKeeperDetails = { old: originalValues.shopKeeperDetails, new: shopDetails.keeperDescription };
 
         // Check parameters
         if (currentGold !== originalValues.currentGold)
@@ -406,27 +410,27 @@ function ShopGenerator() {
         // Update the appropriate state based on the field name
         switch (name) {
             case "shopName":
-                setShopName(value);
+                setShopDetails((prev) => ({ ...prev, name: value }));
                 break;
             case "shopKeeperName":
-                setShopKeeperName(value);
+                setShopDetails((prev) => ({ ...prev, keeperName: value }));
                 break;
             case "type":
-                setShopType(value);
+                setShopDetails((prev) => ({ ...prev, type: value }));
                 break;
             case "location":
-                setShopLocation(value);
+                setShopDetails((prev) => ({ ...prev, location: value }));
                 break;
             case "shopDetails":
-                setShopDetails(value);
+                setShopDetails((prev) => ({ ...prev, description: value }));
                 break;
             case "shopKeeperDetails":
-                setShopKeeperDetails(value);
+                setShopDetails((prev) => ({ ...prev, keeperDescription: value }));
                 break;
             default:
                 console.warn("Unknown field name:", name);
         }
-        setDateLastEdited(new Date());
+        setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
         setHasUnsavedChanges(true);
     };
 
@@ -451,15 +455,18 @@ function ShopGenerator() {
             (typeof shop.dateLastEdited === "string" ? new Date(shop.dateLastEdited) : new Date());
 
         // Update all state variables from the loaded shop
-        setShopId(shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-        setShopName(shop.shortData.shopName || "Unnamed Shop");
-        setShopKeeperName(shop.shortData.shopKeeperName || "Unknown");
-        setShopType(shop.shortData.type || "General Store");
-        setShopLocation(shop.shortData.location || "Unknown Location");
-        setShopDetails(shop.longData.shopDetails || "No details available");
-        setShopKeeperDetails(shop.longData.shopKeeperDetails || "No details available");
-        setDateCreated(loadedDateCreated);
-        setDateLastEdited(loadedDateLastEdited);
+        setShopDetails((prev) => ({
+            ...prev,
+            id: shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            name: shop.shortData.shopName || "Unnamed Shop",
+            keeperName: shop.shortData.shopKeeperName || "Unknown",
+            type: shop.shortData.type || "General Store",
+            location: shop.shortData.location || "Unknown Location",
+            description: shop.longData.shopDetails || "No details available",
+            keeperDescription: shop.longData.shopKeeperDetails || "No details available",
+            dateCreated: loadedDateCreated,
+            dateLastEdited: loadedDateLastEdited,
+        }));
 
         setCurrentGold(shop.parameters?.goldAmount || 1000);
         setLowestLevel(shop.parameters?.levelLow || 0);
@@ -555,15 +562,18 @@ function ShopGenerator() {
         const newShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         // Reset all state to initial values
-        setShopId(newShopId);
-        setShopName("Unnamed Shop");
-        setShopKeeperName("Unknown");
-        setShopType("General Store");
-        setShopLocation("Unknown Location");
-        setShopDetails("No details available");
-        setShopKeeperDetails("No details available");
-        setDateCreated(new Date());
-        setDateLastEdited(new Date());
+        setShopDetails((prev) => ({
+            ...prev,
+            id: newShopId,
+            name: "Unnamed Shop",
+            keeperName: "Unknown",
+            type: "General Store",
+            location: "Unknown Location",
+            description: "No details available",
+            keeperDescription: "No details available",
+            dateCreated: new Date(),
+            dateLastEdited: new Date(),
+        }));
 
         setCurrentGold(1000);
         setLowestLevel(0);
@@ -630,10 +640,13 @@ function ShopGenerator() {
         // Generate a new unique ID for the cloned shop
         const clonedShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-        setShopId(clonedShopId);
-        setShopName(`${shopName} (Clone)`);
-        setDateCreated(new Date());
-        setDateLastEdited(new Date());
+        setShopDetails((prev) => ({
+            ...prev,
+            id: clonedShopId,
+            name: `${prev.name} (Clone)`,
+            dateCreated: new Date(),
+            dateLastEdited: new Date(),
+        }));
     };
 
     const handleSaveShop = async () => {
@@ -644,16 +657,16 @@ function ShopGenerator() {
 
         try {
             const shopState = {
-                id: shopId,
+                id: shopDetails.id,
                 shortData: {
-                    shopName,
-                    shopKeeperName,
-                    type: shopType,
-                    location: shopLocation,
+                    shopName: shopDetails.name,
+                    shopKeeperName: shopDetails.keeperName,
+                    type: shopDetails.type,
+                    location: shopDetails.location,
                 },
                 longData: {
-                    shopDetails,
-                    shopKeeperDetails,
+                    shopDetails: shopDetails.description,
+                    shopKeeperDetails: shopDetails.keeperDescription,
                 },
                 parameters: {
                     goldAmount: currentGold,
@@ -675,15 +688,15 @@ function ShopGenerator() {
                     },
                 },
                 currentStock: items,
-                dateCreated,
-                dateLastEdited: new Date(),
+                dateCreated: shopDetails.dateCreated,
+                dateLastEdited: shopDetails.dateLastEdited,
             };
 
             console.log("Saving shop state:", shopState);
             const userId = currentUser.uid;
             const savedShopId = await saveOrUpdateShopData(userId, shopState);
-            setShopId(savedShopId);
-            setDateLastEdited(new Date());
+            setShopDetails((prev) => ({ ...prev, id: savedShopId }));
+            setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
             setHasUnsavedChanges(false);
 
             console.log("Shop saved with ID:", savedShopId);
@@ -698,14 +711,14 @@ function ShopGenerator() {
     };
 
     const handleDeleteShop = async () => {
-        if (!currentUser || !shopId) {
+        if (!currentUser || !shopDetails.id) {
             alert("Cannot delete shop. Please ensure you are logged in and have a valid shop selected.");
             return;
         }
 
         try {
             const userId = currentUser.uid;
-            await deleteShopData(userId, shopId);
+            await deleteShopData(userId, shopDetails.id);
 
             // Reset all state
             handleNewShop();
@@ -724,17 +737,17 @@ function ShopGenerator() {
     const handleResetChanges = () => {
         if (hasUnsavedChanges) {
             // Reset all state values to their original values
-            setShopName(originalValues.shopName);
-            setShopKeeperName(originalValues.shopKeeperName);
-            setShopType(originalValues.shopType);
-            setShopLocation(originalValues.shopLocation);
-            setShopDetails(originalValues.shopDetails);
-            setShopKeeperDetails(originalValues.shopKeeperDetails);
-            setCurrentGold(originalValues.currentGold);
-            setLowestLevel(originalValues.lowestLevel);
-            setHighestLevel(originalValues.highestLevel);
-            setItemBias(originalValues.itemBias);
-            setRarityDistribution(originalValues.rarityDistribution);
+            setShopDetails((prev) => ({
+                ...prev,
+                name: originalValues.shopName,
+                keeperName: originalValues.shopKeeperName,
+                type: originalValues.shopType,
+                location: originalValues.shopLocation,
+                description: originalValues.shopDetails,
+                keeperDescription: originalValues.shopKeeperDetails,
+                dateCreated: originalValues.dateCreated,
+                dateLastEdited: originalValues.dateLastEdited,
+            }));
 
             // Reset filter states if they were changed
             if (originalValues.filterStates) {
@@ -896,7 +909,7 @@ function ShopGenerator() {
                                             key={tab.key}
                                             type={{ name: "Tab_InventoryTable" }}
                                             items={items}
-                                            currentShopName={shopName}
+                                            currentShopName={shopDetails.name}
                                             handleGenerateClick={handleGenerateClick}
                                             sortConfig={sortConfig}
                                             onSort={handleSort}
@@ -910,7 +923,7 @@ function ShopGenerator() {
                                             savedShops={savedShops}
                                             onLoadShop={handleLoadShop}
                                             onNewShop={handleNewShop}
-                                            currentShopId={shopId}
+                                            currentShopId={shopDetails.id}
                                         />
                                     );
                                 case "Tab_ShopDetails":
@@ -919,19 +932,19 @@ function ShopGenerator() {
                                             key={tab.key}
                                             type={{ name: "Tab_ShopDetails" }}
                                             currentShop={{
-                                                id: shopId,
+                                                id: shopDetails.id,
                                                 shortData: {
-                                                    shopName,
-                                                    shopKeeperName,
-                                                    type: shopType,
-                                                    location: shopLocation,
+                                                    shopName: shopDetails.name,
+                                                    shopKeeperName: shopDetails.keeperName,
+                                                    type: shopDetails.type,
+                                                    location: shopDetails.location,
                                                 },
                                                 longData: {
-                                                    shopDetails,
-                                                    shopKeeperDetails,
+                                                    shopDetails: shopDetails.description,
+                                                    shopKeeperDetails: shopDetails.keeperDescription,
                                                 },
-                                                dateCreated,
-                                                dateLastEdited,
+                                                dateCreated: shopDetails.dateCreated,
+                                                dateLastEdited: shopDetails.dateLastEdited,
                                             }}
                                             onShopDetailsChange={handleShopDetailsChange}
                                             onSaveShop={handleSaveShop}
@@ -949,19 +962,19 @@ function ShopGenerator() {
                                             key={tab.key}
                                             type={{ name: "Tab_AiAssistant" }}
                                             currentShop={{
-                                                id: shopId,
+                                                id: shopDetails.id,
                                                 shortData: {
-                                                    shopName,
-                                                    shopKeeperName,
-                                                    type: shopType,
-                                                    location: shopLocation,
+                                                    shopName: shopDetails.name,
+                                                    shopKeeperName: shopDetails.keeperName,
+                                                    type: shopDetails.type,
+                                                    location: shopDetails.location,
                                                 },
                                                 longData: {
-                                                    shopDetails,
-                                                    shopKeeperDetails,
+                                                    shopDetails: shopDetails.description,
+                                                    shopKeeperDetails: shopDetails.keeperDescription,
                                                 },
-                                                dateCreated,
-                                                dateLastEdited,
+                                                dateCreated: shopDetails.dateCreated,
+                                                dateLastEdited: shopDetails.dateLastEdited,
                                             }}
                                             onAiAssistantChange={handleAiAssistantChange}
                                         />
@@ -1001,7 +1014,7 @@ function ShopGenerator() {
                         key="Tab_InventoryTable-0"
                         type={{ name: "Tab_InventoryTable" }}
                         items={items}
-                        currentShopName={shopName}
+                        currentShopName={shopDetails.name}
                         handleGenerateClick={handleGenerateClick}
                         sortConfig={sortConfig}
                         onSort={handleSort}
@@ -1012,25 +1025,25 @@ function ShopGenerator() {
                         savedShops={savedShops}
                         onLoadShop={handleLoadShop}
                         onNewShop={handleNewShop}
-                        currentShopId={shopId}
+                        currentShopId={shopDetails.id}
                     />,
                     <Tab_ShopDetails
                         key="Tab_ShopDetails-0"
                         type={{ name: "Tab_ShopDetails" }}
                         currentShop={{
-                            id: shopId,
+                            id: shopDetails.id,
                             shortData: {
-                                shopName,
-                                shopKeeperName,
-                                type: shopType,
-                                location: shopLocation,
+                                shopName: shopDetails.name,
+                                shopKeeperName: shopDetails.keeperName,
+                                type: shopDetails.type,
+                                location: shopDetails.location,
                             },
                             longData: {
-                                shopDetails,
-                                shopKeeperDetails,
+                                shopDetails: shopDetails.description,
+                                shopKeeperDetails: shopDetails.keeperDescription,
                             },
-                            dateCreated,
-                            dateLastEdited,
+                            dateCreated: shopDetails.dateCreated,
+                            dateLastEdited: shopDetails.dateLastEdited,
                         }}
                         onShopDetailsChange={handleShopDetailsChange}
                         onSaveShop={handleSaveShop}
@@ -1045,19 +1058,19 @@ function ShopGenerator() {
                         key="Tab_AiAssistant-0"
                         type={{ name: "Tab_AiAssistant" }}
                         currentShop={{
-                            id: shopId,
+                            id: shopDetails.id,
                             shortData: {
-                                shopName,
-                                shopKeeperName,
-                                type: shopType,
-                                location: shopLocation,
+                                shopName: shopDetails.name,
+                                shopKeeperName: shopDetails.keeperName,
+                                type: shopDetails.type,
+                                location: shopDetails.location,
                             },
                             longData: {
-                                shopDetails,
-                                shopKeeperDetails,
+                                shopDetails: shopDetails.description,
+                                shopKeeperDetails: shopDetails.keeperDescription,
                             },
-                            dateCreated,
-                            dateLastEdited,
+                            dateCreated: shopDetails.dateCreated,
+                            dateLastEdited: shopDetails.dateLastEdited,
                         }}
                         onAiAssistantChange={handleAiAssistantChange}
                     />,
@@ -1298,12 +1311,10 @@ function ShopGenerator() {
     // Add this before the return statement
     useEffect(() => {
         console.log("Current shop state values:", {
-            dateCreated,
-            dateLastEdited,
-            isDateCreatedDate: dateCreated instanceof Date,
-            isDateLastEditedDate: dateLastEdited instanceof Date,
+            dateCreated: shopDetails.dateCreated instanceof Date,
+            dateLastEdited: shopDetails.dateLastEdited instanceof Date,
         });
-    }, [dateCreated, dateLastEdited]);
+    }, [shopDetails.dateCreated, shopDetails.dateLastEdited]);
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
@@ -1316,7 +1327,7 @@ function ShopGenerator() {
                             onConfirm={handleUnsavedDialogueConfirm}
                             onCancel={handleUnsavedDialogueCancel}
                             changes={getChangedFields()}
-                            currentShopName={shopName}
+                            currentShopName={shopDetails.name}
                         />
                     )}
                     {tabGroups.map((tabs, index) => (
@@ -1347,25 +1358,25 @@ function ShopGenerator() {
                                             items: sortedItems,
                                             sortConfig,
                                             onSort: handleSort,
-                                            currentShopName: shopName,
+                                            currentShopName: shopDetails.name,
                                             handleGenerateClick,
                                         });
                                     case "Tab_ShopDetails":
                                         return React.cloneElement(tab, {
                                             currentShop: {
-                                                id: shopId,
+                                                id: shopDetails.id,
                                                 shortData: {
-                                                    shopName,
-                                                    shopKeeperName,
-                                                    type: shopType,
-                                                    location: shopLocation,
+                                                    shopName: shopDetails.name,
+                                                    shopKeeperName: shopDetails.keeperName,
+                                                    type: shopDetails.type,
+                                                    location: shopDetails.location,
                                                 },
                                                 longData: {
-                                                    shopDetails,
-                                                    shopKeeperDetails,
+                                                    shopDetails: shopDetails.description,
+                                                    shopKeeperDetails: shopDetails.keeperDescription,
                                                 },
-                                                dateCreated,
-                                                dateLastEdited,
+                                                dateCreated: shopDetails.dateCreated,
+                                                dateLastEdited: shopDetails.dateLastEdited,
                                             },
                                             onShopDetailsChange: handleShopDetailsChange,
                                             onSaveShop: handleSaveShop,
@@ -1381,24 +1392,24 @@ function ShopGenerator() {
                                             savedShops,
                                             onLoadShop: handleLoadShop,
                                             onNewShop: handleNewShop,
-                                            currentShopId: shopId,
+                                            currentShopId: shopDetails.id,
                                         });
                                     case "Tab_AiAssistant":
                                         return React.cloneElement(tab, {
                                             currentShop: {
-                                                id: shopId,
+                                                id: shopDetails.id,
                                                 shortData: {
-                                                    shopName,
-                                                    shopKeeperName,
-                                                    type: shopType,
-                                                    location: shopLocation,
+                                                    shopName: shopDetails.name,
+                                                    shopKeeperName: shopDetails.keeperName,
+                                                    type: shopDetails.type,
+                                                    location: shopDetails.location,
                                                 },
                                                 longData: {
-                                                    shopDetails,
-                                                    shopKeeperDetails,
+                                                    shopDetails: shopDetails.description,
+                                                    shopKeeperDetails: shopDetails.keeperDescription,
                                                 },
-                                                dateCreated,
-                                                dateLastEdited,
+                                                dateCreated: shopDetails.dateCreated,
+                                                dateLastEdited: shopDetails.dateLastEdited,
                                             },
                                             onAiAssistantChange: handleAiAssistantChange,
                                         });
