@@ -33,7 +33,7 @@ const DeleteShopButton = ({ onDelete, shopId, currentShop }) => {
 
             {showConfirmation && (
                 <div className="delete-confirm-overlay">
-                    <div className="delete-confirm-dialog">
+                    <div className="delete-confirm-dialogue">
                         <h3 className="delete-confirm-title">Delete Shop?</h3>
                         <div className="delete-confirm-details">
                             <p className="shop-summary">

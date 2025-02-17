@@ -76,7 +76,7 @@
     opacity: 0.5;
 }
 
-/* Confirmation Dialog Styles */
+/* Confirmation Dialogue Styles */
 .clone-confirm-overlay {
     position: fixed;
     top: 0;
@@ -92,7 +92,7 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-.clone-confirm-dialog {
+.clone-confirm-dialogue {
     background: var(--background-primary);
     border-radius: 0.5rem;
     padding: 1.5rem;

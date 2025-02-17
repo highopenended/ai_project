@@ -16,7 +16,7 @@ import { SELECTION_STATES } from "./utils/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
 import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/firebaseShopUtils";
 import { RARITY_ORDER } from "../../../constants/rarityOrder";
-import UnsavedChangesDialog from "./shared/UnsavedChangesDialog";
+import UnsavedChangesDialogue from "./shared/UnsavedChangesDialogue";
 
 /**
  * ShopGenerator Component
@@ -91,8 +91,8 @@ function ShopGenerator() {
     const { categoryStates, subcategoryStates, traitStates, setCategoryStates, setSubcategoryStates, setTraitStates } =
         useShopGenerator();
 
-    // Dialog state
-    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+    // Dialogue state
+    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false);
     const [pendingAction, setPendingAction] = useState(null);
 
     // Original values state for change tracking
@@ -406,7 +406,7 @@ function ShopGenerator() {
             setPendingAction(() => () => {
                 loadShopInternal(shop);
             });
-            setShowUnsavedDialog(true);
+            setShowUnsavedDialogue(true);
             return;
         }
         loadShopInternal(shop);
@@ -504,7 +504,7 @@ function ShopGenerator() {
             setPendingAction(() => () => {
                 createNewShop();
             });
-            setShowUnsavedDialog(true);
+            setShowUnsavedDialogue(true);
             return;
         }
         createNewShop();
@@ -567,16 +567,16 @@ function ShopGenerator() {
         setHasUnsavedChanges(false);
     };
 
-    const handleUnsavedDialogConfirm = () => {
-        setShowUnsavedDialog(false);
+    const handleUnsavedDialogueConfirm = () => {
+        setShowUnsavedDialogue(false);
         if (pendingAction) {
             pendingAction();
             setPendingAction(null);
         }
     };
 
-    const handleUnsavedDialogCancel = () => {
-        setShowUnsavedDialog(false);
+    const handleUnsavedDialogueCancel = () => {
+        setShowUnsavedDialogue(false);
         setPendingAction(null);
     };
 
@@ -1334,10 +1334,10 @@ function ShopGenerator() {
                 <div>Loading...</div>
             ) : (
                 <>
-                    {showUnsavedDialog && (
-                        <UnsavedChangesDialog
-                            onConfirm={handleUnsavedDialogConfirm}
-                            onCancel={handleUnsavedDialogCancel}
+                    {showUnsavedDialogue && (
+                        <UnsavedChangesDialogue
+                            onConfirm={handleUnsavedDialogueConfirm}
+                            onCancel={handleUnsavedDialogueCancel}
                             changes={getChangedFields()}
                             currentShopName={shopName}
                         />

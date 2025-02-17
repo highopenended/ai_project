@@ -57,7 +57,7 @@
     letter-spacing: 0.02em;
 }
 
-/* Confirmation Dialog Styles */
+/* Confirmation Dialogue Styles */
 .delete-confirm-overlay {
     position: fixed;
     top: 0;
@@ -73,7 +73,7 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-.delete-confirm-dialog {
+.delete-confirm-dialogue {
     background: var(--background-secondary);
     border-radius: 0.5rem;
     padding: 1.5rem;

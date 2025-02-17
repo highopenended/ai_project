@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import './UnsavedChangesDialog.css';
+import './UnsavedChangesDialogue.css';
 
-const UnsavedChangesDialog = ({ onConfirm, onCancel, changes, currentShopName }) => {
+const UnsavedChangesDialogue = ({ onConfirm, onCancel, changes, currentShopName }) => {
     const formatValue = (value) => {
         if (typeof value === 'object' && value !== null) {
             if ('x' in value && 'y' in value) {
@@ -49,7 +49,7 @@ const UnsavedChangesDialog = ({ onConfirm, onCancel, changes, currentShopName })
 
     return (
         <div className="unsaved-changes-overlay">
-            <div className="unsaved-changes-dialog">
+            <div className="unsaved-changes-dialogue">
                 <h3 className="unsaved-changes-title">Unsaved Changes</h3>
                 <p className="unsaved-changes-description">
                     You have unsaved changes to the current shop <span className="shop-name">&ldquo;{currentShopName}&rdquo;</span>.
@@ -83,7 +83,7 @@ const UnsavedChangesDialog = ({ onConfirm, onCancel, changes, currentShopName })
     );
 };
 
-UnsavedChangesDialog.propTypes = {
+UnsavedChangesDialogue.propTypes = {
     onConfirm: PropTypes.func.isRequired,
     onCancel: PropTypes.func.isRequired,
     changes: PropTypes.shape({
@@ -94,4 +94,4 @@ UnsavedChangesDialog.propTypes = {
     currentShopName: PropTypes.string.isRequired
 };
 
-export default UnsavedChangesDialog; 
+export default UnsavedChangesDialogue; 

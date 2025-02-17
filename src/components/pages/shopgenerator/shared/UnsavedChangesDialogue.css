@@ -13,7 +13,7 @@
     animation: fadeIn 0.2s ease-out;
 }
 
-.unsaved-changes-dialog {
+.unsaved-changes-dialogue {
     background: var(--background-secondary);
     border-radius: 0.5rem;
     padding: 1.5rem;
@@ -72,7 +72,7 @@
     gap: 0.5rem;
     background: var(--background-tertiary);
     border-radius: 0.375rem;
-    padding: 0.5rem;
+    padding: 0.75rem;
     font-size: 0.9rem;
 }
 
@@ -81,11 +81,13 @@
     font-weight: 500;
     padding: 0.25rem 0.5rem;
     border-bottom: 1px solid var(--dark-border-color);
+    opacity: 0.8;
 }
 
 .changes-field {
     color: var(--text-primary);
     padding: 0.25rem 0.5rem;
+    font-weight: 500;
 }
 
 .changes-value {
@@ -98,26 +100,31 @@
 .bias-value {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.25rem;
-    border: 1px solid var(--dark-border-color);
-    border-radius: 0.25rem;
-    background: var(--background-tertiary);
+    gap: 0.125rem;
+    padding: 0.25rem 0;
+    font-family: monospace;
 }
 
 .bias-value div {
     display: flex;
     align-items: center;
-}
-
-.bias-value div:first-child {
-    margin-bottom: 0.125rem;
+    color: inherit;
 }
 
 .changes-value-new {
     color: var(--text-primary);
-    background: var(--accent-color);
-    border-radius: 0.25rem;
+    position: relative;
+}
+
+.changes-value-new::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--text-secondary);
+    border-radius: 1px;
 }
 
 .inventory-change-message {
