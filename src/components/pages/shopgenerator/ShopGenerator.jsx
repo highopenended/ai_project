@@ -45,28 +45,19 @@ import { extractUniqueCategories } from "./utils/categoryUtils";
  * 4. State sync issues: Verify parent-child prop flow
  */
 
-// Toggle state helper function
-const toggleState = (currentState) => {
-    if (currentState === SELECTION_STATES.IGNORE) return SELECTION_STATES.INCLUDE;
-    if (currentState === SELECTION_STATES.INCLUDE) return SELECTION_STATES.EXCLUDE;
-    return SELECTION_STATES.IGNORE;
-};
-
 const STORAGE_KEY = "tabGroupsState";
 
 function ShopGenerator() {
     // Get auth context
     const { currentUser, isLoading: authLoading } = useAuth();
-    
-    // Initialize category data
+
+    // Initialize category data (Categories with subcategories and their count)
     const [categoryData] = useState(() => {
-        const saved = localStorage.getItem('shop-categories');
-        if (saved) {
-            return JSON.parse(saved);
-        }
-        
+        const saved = localStorage.getItem("shop-categories");
+        if (saved) return JSON.parse(saved);
+
         const extracted = extractUniqueCategories(itemData);
-        localStorage.setItem('shop-categories', JSON.stringify(extracted));
+        localStorage.setItem("shop-categories", JSON.stringify(extracted));
         return extracted;
     });
 
@@ -78,7 +69,7 @@ function ShopGenerator() {
         gold: 1000,
         levelRange: {
             min: 0,
-            max: 10
+            max: 10,
         },
         itemBias: { x: 0.5, y: 0.5 },
         rarityDistribution: {
@@ -90,8 +81,8 @@ function ShopGenerator() {
         filters: {
             categories: new Map(),
             subcategories: new Map(),
-            traits: new Map()
-        }
+            traits: new Map(),
+        },
     });
 
     // Filter state management functions
@@ -102,58 +93,57 @@ function ShopGenerator() {
     const updateFilter = (filterType, key) => {
         const currentState = getFilterState(filterType, key);
         const nextState = toggleState(currentState);
-        
-        setShopParameters(prev => {
+
+        // Toggle state helper function
+        function toggleState(currentState) {
+            if (currentState === SELECTION_STATES.IGNORE) return SELECTION_STATES.INCLUDE;
+            if (currentState === SELECTION_STATES.INCLUDE) return SELECTION_STATES.EXCLUDE;
+            return SELECTION_STATES.IGNORE;
+        }
+
+        setShopParameters((prev) => {
             const newFilters = { ...prev.filters };
             const newMap = new Map(newFilters[filterType]);
-            
+
             if (nextState === SELECTION_STATES.IGNORE) {
                 newMap.delete(key);
             } else {
                 newMap.set(key, nextState);
             }
-            
+
             newFilters[filterType] = newMap;
             return {
                 ...prev,
-                filters: newFilters
+                filters: newFilters,
             };
         });
         setHasUnsavedChanges(true);
     };
 
     const clearFilter = (filterType) => {
-        setShopParameters(prev => ({
+        setShopParameters((prev) => ({
             ...prev,
             filters: {
                 ...prev.filters,
-                [filterType]: new Map()
-            }
+                [filterType]: new Map(),
+            },
         }));
         setHasUnsavedChanges(true);
     };
 
     // Specific filter handlers
-    const toggleCategory = (category) => updateFilter('categories', category);
-    const toggleSubcategory = (subcategory) => updateFilter('subcategories', subcategory);
-    const toggleTrait = (trait) => updateFilter('traits', trait);
-    
-    const clearCategorySelections = () => clearFilter('categories');
-    const clearSubcategorySelections = () => clearFilter('subcategories');
-    const clearTraitSelections = () => clearFilter('traits');
+    const toggleCategory = (category) => updateFilter("categories", category);
+    const toggleSubcategory = (subcategory) => updateFilter("subcategories", subcategory);
+    const toggleTrait = (trait) => updateFilter("traits", trait);
+
+    const clearCategorySelections = () => clearFilter("categories");
+    const clearSubcategorySelections = () => clearFilter("subcategories");
+    const clearTraitSelections = () => clearFilter("traits");
 
     // Shop inventory state
     const [items, setItems] = useState([]);
     const { sortedItems, sortConfig, handleSort } = useSorting(items);
 
-    // Function to get filtered arrays from Maps
-    const getFilteredArray = useCallback((filterType, includeState) => {
-        const filterMap = shopParameters.filters[filterType];
-        return Array.from(filterMap.entries())
-            .filter(([, state]) => state === includeState)
-            .map(([item]) => item);
-    }, [shopParameters.filters]);
-    
     // Shop details state
     const [shopDetails, setShopDetails] = useState({
         id: "",
@@ -164,18 +154,21 @@ function ShopGenerator() {
         description: "No details available",
         keeperDescription: "No details available",
         dateCreated: new Date(),
-        dateLastEdited: new Date()
+        dateLastEdited: new Date(),
     });
 
-    // Unsaved changes state
-    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    // Function to get filtered arrays from Maps
+    const getFilteredArray = useCallback((filterType, includeState) => {
+        const filterMap = shopParameters.filters[filterType];
+        return Array.from(filterMap.entries())
+            .filter(([, state]) => state === includeState)
+            .map(([item]) => item);
+    }, [shopParameters.filters]);
 
-    // Shop state management
-    const [savedShops, setSavedShops] = useState([]);
-
-    // Dialogue state
-    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false); // Unsaved changes state
+    const [savedShops, setSavedShops] = useState([]); // List of saved shops
+    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false); // Dialogue state
+    const [pendingAction, setPendingAction] = useState(null); // Pending action state (allows for async operations like unsaved dialogue)
 
     // Original values state for change tracking
     const [originalValues, setOriginalValues] = useState({
@@ -189,7 +182,7 @@ function ShopGenerator() {
             gold: 1000,
             levelRange: {
                 min: 0,
-                max: 10
+                max: 10,
             },
             itemBias: { x: 0.5, y: 0.5 },
             rarityDistribution: {
@@ -201,12 +194,26 @@ function ShopGenerator() {
             filters: {
                 categories: new Map(),
                 subcategories: new Map(),
-                traits: new Map()
-            }
+                traits: new Map(),
+            },
         },
         hasInventoryChanged: false,
-        items: []
+        items: [],
     });
+
+    // Add this before the return statement
+    useEffect(() => {
+        console.log("Current shop state values:", {
+            dateCreated: shopDetails.dateCreated instanceof Date,
+            dateLastEdited: shopDetails.dateLastEdited instanceof Date,
+            filters: {
+                categories: Array.from(shopParameters.filters.categories.entries()),
+                subcategories: Array.from(shopParameters.filters.subcategories.entries()),
+                traits: Array.from(shopParameters.filters.traits.entries()),
+            },
+        });
+    }, [shopDetails.dateCreated, shopDetails.dateLastEdited, shopParameters.filters]);
+
 
     // Initial data loading
     useEffect(() => {
@@ -272,16 +279,16 @@ function ShopGenerator() {
                     shopBias: shopParameters.itemBias,
                     rarityDistribution: shopParameters.rarityDistribution,
                     categories: {
-                        included: getFilteredArray('categories', SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray('categories', SELECTION_STATES.EXCLUDE),
+                        included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
                     },
                     subcategories: {
-                        included: getFilteredArray('subcategories', SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray('subcategories', SELECTION_STATES.EXCLUDE),
+                        included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
                     },
                     traits: {
-                        included: getFilteredArray('traits', SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray('traits', SELECTION_STATES.EXCLUDE),
+                        included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
                     },
                 },
                 currentStock: items,
@@ -290,7 +297,7 @@ function ShopGenerator() {
                 filterStates: {
                     categories: Array.from(shopParameters.filters.categories.entries()),
                     subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                    traits: Array.from(shopParameters.filters.traits.entries())
+                    traits: Array.from(shopParameters.filters.traits.entries()),
                 },
             };
             localStorage.setItem("currentShop", JSON.stringify(shopState));
@@ -314,9 +321,8 @@ function ShopGenerator() {
         shopParameters.filters.categories,
         shopParameters.filters.subcategories,
         shopParameters.filters.traits,
-        getFilteredArray
+        getFilteredArray,
     ]);
-
 
     // Function to get changed fields
     const getChangedFields = () => {
@@ -338,18 +344,30 @@ function ShopGenerator() {
         if (shopDetails.description !== originalValues.shopDetails)
             changes.basic.shopDetails = { old: originalValues.shopDetails, new: shopDetails.description };
         if (shopDetails.keeperDescription !== originalValues.shopKeeperDetails)
-            changes.basic.shopKeeperDetails = { old: originalValues.shopKeeperDetails, new: shopDetails.keeperDescription };
+            changes.basic.shopKeeperDetails = {
+                old: originalValues.shopKeeperDetails,
+                new: shopDetails.keeperDescription,
+            };
 
         // Check parameters
         if (shopParameters.gold !== originalValues.shopParameters.gold)
             changes.parameters.currentGold = { old: originalValues.shopParameters.gold, new: shopParameters.gold };
         if (shopParameters.levelRange.min !== originalValues.shopParameters.levelRange.min)
-            changes.parameters.lowestLevel = { old: originalValues.shopParameters.levelRange.min, new: shopParameters.levelRange.min };
+            changes.parameters.lowestLevel = {
+                old: originalValues.shopParameters.levelRange.min,
+                new: shopParameters.levelRange.min,
+            };
         if (shopParameters.levelRange.max !== originalValues.shopParameters.levelRange.max)
-            changes.parameters.highestLevel = { old: originalValues.shopParameters.levelRange.max, new: shopParameters.levelRange.max };
+            changes.parameters.highestLevel = {
+                old: originalValues.shopParameters.levelRange.max,
+                new: shopParameters.levelRange.max,
+            };
 
         // Check itemBias
-        if (shopParameters.itemBias.x !== originalValues.shopParameters.itemBias.x || shopParameters.itemBias.y !== originalValues.shopParameters.itemBias.y) {
+        if (
+            shopParameters.itemBias.x !== originalValues.shopParameters.itemBias.x ||
+            shopParameters.itemBias.y !== originalValues.shopParameters.itemBias.y
+        ) {
             changes.parameters.itemBias = {
                 old: originalValues.shopParameters.itemBias,
                 new: shopParameters.itemBias,
@@ -391,7 +409,7 @@ function ShopGenerator() {
                 categories: Array.from(shopParameters.filters.categories.entries()),
                 subcategories: Array.from(shopParameters.filters.subcategories.entries()),
                 traits: Array.from(shopParameters.filters.traits.entries()),
-            }
+            },
         });
 
         const result = generateShopInventory({
@@ -400,12 +418,12 @@ function ShopGenerator() {
             highestLevel: shopParameters.levelRange.max,
             itemBias: shopParameters.itemBias,
             rarityDistribution: shopParameters.rarityDistribution,
-            includedCategories: getFilteredArray('categories', SELECTION_STATES.INCLUDE),
-            excludedCategories: getFilteredArray('categories', SELECTION_STATES.EXCLUDE),
-            includedSubcategories: getFilteredArray('subcategories', SELECTION_STATES.INCLUDE),
-            excludedSubcategories: getFilteredArray('subcategories', SELECTION_STATES.EXCLUDE),
-            includedTraits: getFilteredArray('traits', SELECTION_STATES.INCLUDE),
-            excludedTraits: getFilteredArray('traits', SELECTION_STATES.EXCLUDE),
+            includedCategories: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
+            excludedCategories: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
+            includedSubcategories: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
+            excludedSubcategories: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
+            includedTraits: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
+            excludedTraits: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
             allItems,
         });
 
@@ -493,7 +511,7 @@ function ShopGenerator() {
             gold: shop.parameters?.goldAmount || 1000,
             levelRange: {
                 min: shop.parameters?.levelLow || 0,
-                max: shop.parameters?.levelHigh || 10
+                max: shop.parameters?.levelHigh || 10,
             },
             itemBias: shop.parameters?.shopBias || { x: 0.5, y: 0.5 },
             rarityDistribution: shop.parameters?.rarityDistribution || {
@@ -505,8 +523,8 @@ function ShopGenerator() {
             filters: {
                 categories: new Map(),
                 subcategories: new Map(),
-                traits: new Map()
-            }
+                traits: new Map(),
+            },
         };
 
         // Load filter states from saved shop
@@ -552,7 +570,7 @@ function ShopGenerator() {
             shopKeeperDetails: shop.longData.shopKeeperDetails || "No details available",
             shopParameters: newShopParameters,
             hasInventoryChanged: false,
-            items: shop.currentStock || []
+            items: shop.currentStock || [],
         });
 
         // Reset unsaved changes flag
@@ -593,7 +611,7 @@ function ShopGenerator() {
             gold: 1000,
             levelRange: {
                 min: 0,
-                max: 10
+                max: 10,
             },
             itemBias: { x: 0.5, y: 0.5 },
             rarityDistribution: {
@@ -605,8 +623,8 @@ function ShopGenerator() {
             filters: {
                 categories: new Map(),
                 subcategories: new Map(),
-                traits: new Map()
-            }
+                traits: new Map(),
+            },
         });
 
         setItems([]);
@@ -623,7 +641,7 @@ function ShopGenerator() {
                 gold: 1000,
                 levelRange: {
                     min: 0,
-                    max: 10
+                    max: 10,
                 },
                 itemBias: { x: 0.5, y: 0.5 },
                 rarityDistribution: {
@@ -635,11 +653,11 @@ function ShopGenerator() {
                 filters: {
                     categories: new Map(),
                     subcategories: new Map(),
-                    traits: new Map()
-                }
+                    traits: new Map(),
+                },
             },
             hasInventoryChanged: false,
-            items: []
+            items: [],
         });
 
         // Reset unsaved changes flag
@@ -698,16 +716,16 @@ function ShopGenerator() {
                     shopBias: shopParameters.itemBias,
                     rarityDistribution: shopParameters.rarityDistribution,
                     categories: {
-                        included: getFilteredArray('categories', SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray('categories', SELECTION_STATES.EXCLUDE),
+                        included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
                     },
                     subcategories: {
-                        included: getFilteredArray('subcategories', SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray('subcategories', SELECTION_STATES.EXCLUDE),
+                        included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
                     },
                     traits: {
-                        included: getFilteredArray('traits', SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray('traits', SELECTION_STATES.EXCLUDE),
+                        included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
+                        excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
                     },
                 },
                 currentStock: items,
@@ -716,8 +734,8 @@ function ShopGenerator() {
                 filterStates: {
                     categories: Array.from(shopParameters.filters.categories.entries()),
                     subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                    traits: Array.from(shopParameters.filters.traits.entries())
-                }
+                    traits: Array.from(shopParameters.filters.traits.entries()),
+                },
             };
 
             console.log("Saving shop state:", shopState);
@@ -804,33 +822,33 @@ function ShopGenerator() {
 
     // Shop management functions
     const handleGoldChange = (gold) => {
-        setShopParameters(prev => ({ ...prev, gold }));
+        setShopParameters((prev) => ({ ...prev, gold }));
         setHasUnsavedChanges(true);
     };
-
+    // Lowest level change
     const handleLowestLevelChange = (min) => {
-        setShopParameters(prev => ({ 
-            ...prev, 
-            levelRange: { ...prev.levelRange, min }
+        setShopParameters((prev) => ({
+            ...prev,
+            levelRange: { ...prev.levelRange, min },
         }));
         setHasUnsavedChanges(true);
     };
 
     const handleHighestLevelChange = (max) => {
-        setShopParameters(prev => ({ 
-            ...prev, 
-            levelRange: { ...prev.levelRange, max }
+        setShopParameters((prev) => ({
+            ...prev,
+            levelRange: { ...prev.levelRange, max },
         }));
         setHasUnsavedChanges(true);
     };
 
     const handleBiasChange = (bias) => {
-        setShopParameters(prev => ({ ...prev, itemBias: bias }));
+        setShopParameters((prev) => ({ ...prev, itemBias: bias }));
         setHasUnsavedChanges(true);
     };
 
     const handleRarityDistributionChange = (distribution) => {
-        setShopParameters(prev => ({ ...prev, rarityDistribution: distribution }));
+        setShopParameters((prev) => ({ ...prev, rarityDistribution: distribution }));
         setHasUnsavedChanges(true);
     };
 
@@ -844,16 +862,16 @@ function ShopGenerator() {
                 shopBias: shopParameters.itemBias,
                 rarityDistribution: shopParameters.rarityDistribution,
                 categories: {
-                    included: getFilteredArray('categories', SELECTION_STATES.INCLUDE),
-                    excluded: getFilteredArray('categories', SELECTION_STATES.EXCLUDE),
+                    included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
+                    excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
                 },
                 subcategories: {
-                    included: getFilteredArray('subcategories', SELECTION_STATES.INCLUDE),
-                    excluded: getFilteredArray('subcategories', SELECTION_STATES.EXCLUDE),
+                    included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
+                    excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
                 },
                 traits: {
-                    included: getFilteredArray('traits', SELECTION_STATES.INCLUDE),
-                    excluded: getFilteredArray('traits', SELECTION_STATES.EXCLUDE),
+                    included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
+                    excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
                 },
                 currentStock: items,
             };
@@ -872,7 +890,7 @@ function ShopGenerator() {
         shopParameters.filters.subcategories,
         shopParameters.filters.traits,
         items,
-        getFilteredArray
+        getFilteredArray,
     ]);
 
     const handleAiAssistantChange = (newState) => {
@@ -919,32 +937,32 @@ function ShopGenerator() {
                                             clearSubcategorySelections={clearSubcategorySelections}
                                             clearTraitSelections={clearTraitSelections}
                                             setCategoryStates={(newStates) => {
-                                                setShopParameters(prev => ({
+                                                setShopParameters((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
-                                                        categories: newStates
-                                                    }
+                                                        categories: newStates,
+                                                    },
                                                 }));
                                                 setHasUnsavedChanges(true);
                                             }}
                                             setSubcategoryStates={(newStates) => {
-                                                setShopParameters(prev => ({
+                                                setShopParameters((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
-                                                        subcategories: newStates
-                                                    }
+                                                        subcategories: newStates,
+                                                    },
                                                 }));
                                                 setHasUnsavedChanges(true);
                                             }}
                                             setTraitStates={(newStates) => {
-                                                setShopParameters(prev => ({
+                                                setShopParameters((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
-                                                        traits: newStates
-                                                    }
+                                                        traits: newStates,
+                                                    },
                                                 }));
                                                 setHasUnsavedChanges(true);
                                             }}
@@ -1065,32 +1083,32 @@ function ShopGenerator() {
                         clearSubcategorySelections={clearSubcategorySelections}
                         clearTraitSelections={clearTraitSelections}
                         setCategoryStates={(newStates) => {
-                            setShopParameters(prev => ({
+                            setShopParameters((prev) => ({
                                 ...prev,
                                 filters: {
                                     ...prev.filters,
-                                    categories: newStates
-                                }
+                                    categories: newStates,
+                                },
                             }));
                             setHasUnsavedChanges(true);
                         }}
                         setSubcategoryStates={(newStates) => {
-                            setShopParameters(prev => ({
+                            setShopParameters((prev) => ({
                                 ...prev,
                                 filters: {
                                     ...prev.filters,
-                                    subcategories: newStates
-                                }
+                                    subcategories: newStates,
+                                },
                             }));
                             setHasUnsavedChanges(true);
                         }}
                         setTraitStates={(newStates) => {
-                            setShopParameters(prev => ({
+                            setShopParameters((prev) => ({
                                 ...prev,
                                 filters: {
                                     ...prev.filters,
-                                    traits: newStates
-                                }
+                                    traits: newStates,
+                                },
                             }));
                             setHasUnsavedChanges(true);
                         }}
@@ -1393,18 +1411,6 @@ function ShopGenerator() {
         });
     };
 
-    // Add this before the return statement
-    useEffect(() => {
-        console.log("Current shop state values:", {
-            dateCreated: shopDetails.dateCreated instanceof Date,
-            dateLastEdited: shopDetails.dateLastEdited instanceof Date,
-            filters: {
-                categories: Array.from(shopParameters.filters.categories.entries()),
-                subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                traits: Array.from(shopParameters.filters.traits.entries()),
-            }
-        });
-    }, [shopDetails.dateCreated, shopDetails.dateLastEdited, shopParameters.filters]);
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
@@ -1451,35 +1457,35 @@ function ShopGenerator() {
                                             clearSubcategorySelections: clearSubcategorySelections,
                                             clearTraitSelections: clearTraitSelections,
                                             setCategoryStates: (newStates) => {
-                                                setShopParameters(prev => ({
+                                                setShopParameters((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
-                                                        categories: newStates
-                                                    }
+                                                        categories: newStates,
+                                                    },
                                                 }));
                                                 setHasUnsavedChanges(true);
                                             },
                                             setSubcategoryStates: (newStates) => {
-                                                setShopParameters(prev => ({
+                                                setShopParameters((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
-                                                        subcategories: newStates
-                                                    }
+                                                        subcategories: newStates,
+                                                    },
                                                 }));
                                                 setHasUnsavedChanges(true);
                                             },
                                             setTraitStates: (newStates) => {
-                                                setShopParameters(prev => ({
+                                                setShopParameters((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
-                                                        traits: newStates
-                                                    }
+                                                        traits: newStates,
+                                                    },
                                                 }));
                                                 setHasUnsavedChanges(true);
-                                            }
+                                            },
                                         });
                                     case "Tab_InventoryTable":
                                         return React.cloneElement(tab, {
