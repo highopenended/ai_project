@@ -1,0 +1,58 @@
+.reset-changes-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.2rem;
+    margin: .8rem auto;
+    gap: 0.6rem;
+    background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    box-shadow: 
+        0 2px 4px rgba(142, 68, 173, 0.2),
+        0 0 0 1px rgba(142, 68, 173, 0.1);
+}
+
+.reset-changes-button:hover {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    transform: translateY(-1px);
+    box-shadow: 
+        0 4px 8px rgba(142, 68, 173, 0.3),
+        0 0 0 1px rgba(142, 68, 173, 0.2);
+}
+
+.reset-changes-button:active {
+    transform: translateY(0);
+    background: linear-gradient(135deg, #6c3483 0%, #8e44ad 100%);
+    box-shadow: 
+        0 2px 4px rgba(142, 68, 173, 0.2),
+        0 0 0 1px rgba(142, 68, 173, 0.1);
+}
+
+.reset-changes-button:disabled {
+    background: linear-gradient(135deg, #ccc 0%, #999 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+.reset-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2));
+}
+
+.reset-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.02em;
+}

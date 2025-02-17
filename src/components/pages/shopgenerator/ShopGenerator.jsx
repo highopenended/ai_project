@@ -492,7 +492,13 @@ function ShopGenerator() {
                 Rare: 0.49,
                 Unique: 0.01,
             },
-            hasInventoryChanged: false
+            hasInventoryChanged: false,
+            items: shop.currentStock || [],
+            filterStates: shop.filterStates ? {
+                categoryStates: shop.filterStates.categoryStates,
+                subcategoryStates: shop.filterStates.subcategoryStates,
+                traitStates: shop.filterStates.traitStates
+            } : null
         });
 
         // Reset unsaved changes flag after loading
@@ -560,7 +566,13 @@ function ShopGenerator() {
                 Rare: 0.49,
                 Unique: 0.01,
             },
-            hasInventoryChanged: false
+            hasInventoryChanged: false,
+            items: [],
+            filterStates: {
+                categoryStates: [],
+                subcategoryStates: [],
+                traitStates: []
+            }
         });
 
         // Reset unsaved changes flag
@@ -671,6 +683,39 @@ function ShopGenerator() {
         } catch (error) {
             console.error("Error deleting shop:", error);
             alert("Error deleting shop. Please try again.");
+        }
+    };
+
+    // Add handleResetChanges function after handleDeleteShop
+    const handleResetChanges = () => {
+        if (hasUnsavedChanges) {
+            // Reset all state values to their original values
+            setShopName(originalValues.shopName);
+            setShopKeeperName(originalValues.shopKeeperName);
+            setShopType(originalValues.shopType);
+            setShopLocation(originalValues.shopLocation);
+            setShopDetails(originalValues.shopDetails);
+            setShopKeeperDetails(originalValues.shopKeeperDetails);
+            setCurrentGold(originalValues.currentGold);
+            setLowestLevel(originalValues.lowestLevel);
+            setHighestLevel(originalValues.highestLevel);
+            setItemBias(originalValues.itemBias);
+            setRarityDistribution(originalValues.rarityDistribution);
+            
+            // Reset filter states if they were changed
+            if (originalValues.filterStates) {
+                setCategoryStates(new Map(originalValues.filterStates.categoryStates));
+                setSubcategoryStates(new Map(originalValues.filterStates.subcategoryStates));
+                setTraitStates(new Map(originalValues.filterStates.traitStates));
+            }
+            
+            // Reset inventory if it was changed
+            if (originalValues.hasInventoryChanged) {
+                setItems(originalValues.items || []);
+            }
+            
+            // Reset unsaved changes flag
+            setHasUnsavedChanges(false);
         }
     };
 
@@ -871,7 +916,10 @@ function ShopGenerator() {
                                             onSaveShop={handleSaveShop}
                                             onCloneShop={handleCloneShop}
                                             onDeleteShop={handleDeleteShop}
+                                            onResetChanges={handleResetChanges}
                                             savedShops={savedShops}
+                                            hasUnsavedChanges={hasUnsavedChanges}
+                                            changes={getChangedFields()}
                                         />
                                     );
                                 case "Tab_AiAssistant":
@@ -967,7 +1015,10 @@ function ShopGenerator() {
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
                         onDeleteShop={handleDeleteShop}
+                        onResetChanges={handleResetChanges}
                         savedShops={savedShops}
+                        hasUnsavedChanges={hasUnsavedChanges}
+                        changes={getChangedFields()}
                     />,
                     <Tab_AiAssistant 
                         key="Tab_AiAssistant-0" 
@@ -1394,7 +1445,10 @@ function ShopGenerator() {
                                             onSaveShop: handleSaveShop,
                                             onCloneShop: handleCloneShop,
                                             onDeleteShop: handleDeleteShop,
-                                            savedShops: savedShops
+                                            onResetChanges: handleResetChanges,
+                                            savedShops: savedShops,
+                                            hasUnsavedChanges: hasUnsavedChanges,
+                                            changes: getChangedFields()
                                         });
                                     case "Tab_ChooseShop":
                                         return React.cloneElement(tab, {

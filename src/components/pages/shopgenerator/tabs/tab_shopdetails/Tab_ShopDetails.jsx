@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import SaveShopButton from './saveshopbutton/SaveShopButton';
 import CloneShopButton from './cloneshopbutton/CloneShopButton';
 import DeleteShopButton from './deleteshopbutton/DeleteShopButton';
+import ResetChangesButton from './resetchangesbutton/ResetChangesButton';
 import ShopDates from './shopdates/ShopDates';
 import ShopDetailsShort from './shopdetailsshort/ShopDetailsShort';
 import ShopDetailsLong from './shopdetailslong/ShopDetailsLong';
@@ -16,7 +17,7 @@ import './Tab_ShopDetails.css';
  * - Shop dates (created, last edited)
  * - Save, clone, and delete functionality
  */
-function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onCloneShop, onDeleteShop, savedShops }) {
+function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onCloneShop, onDeleteShop, savedShops, hasUnsavedChanges, onResetChanges, changes }) {
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
         if (!currentShop) return false;
@@ -63,6 +64,12 @@ function Tab_ShopDetails({ currentShop, onShopDetailsChange, onSaveShop, onClone
                         currentShop={currentShop}
                     />
                 )}
+                <ResetChangesButton
+                    onReset={onResetChanges}
+                    hasUnsavedChanges={hasUnsavedChanges}
+                    currentShop={currentShop}
+                    changes={changes}
+                />
             </div>
         </div>
     );
@@ -88,7 +95,14 @@ Tab_ShopDetails.propTypes = {
     onSaveShop: PropTypes.func.isRequired,
     onCloneShop: PropTypes.func.isRequired,
     onDeleteShop: PropTypes.func.isRequired,
-    savedShops: PropTypes.array.isRequired
+    onResetChanges: PropTypes.func.isRequired,
+    savedShops: PropTypes.array.isRequired,
+    hasUnsavedChanges: PropTypes.bool.isRequired,
+    changes: PropTypes.shape({
+        basic: PropTypes.object.isRequired,
+        parameters: PropTypes.object.isRequired,
+        hasInventoryChanged: PropTypes.bool.isRequired
+    }).isRequired
 };
 
 Tab_ShopDetails.displayName = 'Shop Details';
