@@ -27,7 +27,6 @@ export async function loadShopData(userId) {
     const shopsRef = collection(db, `users/${userId}/shops`);
     const querySnapshot = await getDocs(shopsRef);
     const shops = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    console.log('Loaded shop data:', shops);
     return shops;
   } catch (error) {
     console.error('Error loading shop data:', error);

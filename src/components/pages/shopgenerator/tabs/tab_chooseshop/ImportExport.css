@@ -45,7 +45,7 @@
 }
 
 .drag-drop-zone {
-    border: 2px dashed var(--dark-border-color);
+    border: 2px dashed var(--light-background-color);
     border-radius: 0.25rem;
     padding: 1rem;
     text-align: center;

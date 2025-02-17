@@ -72,6 +72,8 @@ function ShopGenerator() {
     // Shop inventory state
     const [items, setItems] = useState([]);
 
+    console.log("Checking in")
+
     // Shop details state
     const [shopName, setShopName] = useState('Unnamed Shop');
     const [shopKeeperName, setShopKeeperName] = useState('Unknown');
@@ -154,11 +156,16 @@ function ShopGenerator() {
 
     // Initialize shop - either from saved state or create new
     useEffect(() => {
+        console.log("Shop initialization effect running, authLoading:", authLoading);
         if (!authLoading) {
             const savedShop = localStorage.getItem('currentShop');
+            console.log("Saved shop from localStorage:", savedShop);
             if (savedShop) {
-                handleLoadShop(JSON.parse(savedShop));
+                const parsedShop = JSON.parse(savedShop);
+                console.log("Parsed saved shop:", parsedShop);
+                handleLoadShop(parsedShop);
             } else if (!shopId) {
+                console.log("No saved shop found, creating new shop");
                 handleNewShop();
             }
         }
@@ -413,10 +420,22 @@ function ShopGenerator() {
     };
 
     const loadShopInternal = (shop) => {
-        console.log("Loading shop:", shop);
-        // Convert Firebase Timestamps to JavaScript Dates
-        const loadedDateCreated = shop.dateCreated?.toDate?.() || shop.dateCreated || new Date();
-        const loadedDateLastEdited = shop.dateLastEdited?.toDate?.() || shop.dateLastEdited || new Date();
+        console.log("loadShopInternal called with shop:", shop);
+        console.log("dateCreated type:", typeof shop.dateCreated);
+        console.log("dateCreated value:", shop.dateCreated);
+
+        // Convert date strings or Firebase Timestamps to JavaScript Dates
+        const loadedDateCreated = shop.dateCreated?.toDate?.() || 
+            (typeof shop.dateCreated === 'string' ? new Date(shop.dateCreated) : new Date());
+        const loadedDateLastEdited = shop.dateLastEdited?.toDate?.() || 
+            (typeof shop.dateLastEdited === 'string' ? new Date(shop.dateLastEdited) : new Date());
+        
+        console.log("Processed dates:", {
+            loadedDateCreated,
+            loadedDateLastEdited,
+            isDateCreatedDate: loadedDateCreated instanceof Date,
+            isDateLastEditedDate: loadedDateLastEdited instanceof Date
+        });
         
         // Update all state variables from the loaded shop
         setShopId(shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
@@ -1378,6 +1397,38 @@ function ShopGenerator() {
         setHasUnsavedChanges(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sortConfig]);
+
+    const getCurrentShopState = () => {
+        const currentShop = {
+            id: shopId,
+            shortData: {
+                shopName,
+                shopKeeperName,
+                type: shopType,
+                location: shopLocation
+            },
+            longData: {
+                shopDetails,
+                shopKeeperDetails
+            },
+            dateCreated,
+            dateLastEdited
+        };
+        console.log("getCurrentShopState returning:", currentShop);
+        console.log("dateCreated is Date?", dateCreated instanceof Date);
+        console.log("dateLastEdited is Date?", dateLastEdited instanceof Date);
+        return currentShop;
+    };
+
+    // Add this before the return statement
+    useEffect(() => {
+        console.log("Current shop state values:", {
+            dateCreated,
+            dateLastEdited,
+            isDateCreatedDate: dateCreated instanceof Date,
+            isDateLastEditedDate: dateLastEdited instanceof Date
+        });
+    }, [dateCreated, dateLastEdited]);
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
