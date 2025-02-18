@@ -5,7 +5,7 @@ export function exportShopData(shopData) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${shopData.shortData.shopName || 'shop'}.shop`;
+  a.download = `${shopData.name || 'shop'}.shop`;
   a.click();
   URL.revokeObjectURL(url);
 }

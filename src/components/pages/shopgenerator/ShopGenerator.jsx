@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import "./ShopGenerator.css";
@@ -16,6 +16,7 @@ import UnsavedChangesDialogue from "./shared/UnsavedChangesDialogue";
 import { useSorting } from "./utils/sortingUtils";
 import { extractUniqueCategories } from "./utils/categoryUtils";
 import defaultShopData from "./utils/shopData";
+import { compareShopStates, hasChanges, takeShopSnapshot } from "./utils/shopStateUtils";
 
 /**
  * ShopGenerator Component
@@ -114,7 +115,6 @@ function ShopGenerator() {
                 filters: newFilters,
             };
         });
-        setHasUnsavedChanges(true);
     };
 
     const clearFilter = (filterType) => {
@@ -125,7 +125,6 @@ function ShopGenerator() {
                 [filterType]: new Map(),
             },
         }));
-        setHasUnsavedChanges(true);
     };
 
     // Specific filter handlers
@@ -158,65 +157,35 @@ function ShopGenerator() {
             .map(([item]) => item);
     }, [shopState.filters]);
 
-    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false); // Unsaved changes state
-    const [savedShops, setSavedShops] = useState([]); // List of saved shops
-    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false); // Dialogue state
-    const [pendingAction, setPendingAction] = useState(null); // Pending action state (allows for async operations like unsaved dialogue)
+    const [savedShops, setSavedShops] = useState([]);
+    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null);
+    const [shopSnapshot, setShopSnapshot] = useState(null);
 
-    // Original values state for change tracking
-    const [originalValues, setOriginalValues] = useState({
-        // Basic shop information
-        id: "",
-        name: "Unnamed Shop",
-        keeperName: "Unknown",
-        type: "General Store",
-        location: "Unknown Location",
-        description: "No details available",
-        keeperDescription: "No details available",
-        dateCreated: new Date(),
-        dateLastEdited: new Date(),
-
-        // Shop generation settings
-        gold: 1000,
-        levelRange: {
-            min: 0,
-            max: 10,
-        },
-        itemBias: { x: 0.5, y: 0.5 },
-        rarityDistribution: {
-            Common: 95.0,
-            Uncommon: 4.5,
-            Rare: 0.49,
-            Unique: 0.01,
-        },
-
-        // Filter states
-        filters: {
-            categories: new Map(),
-            subcategories: new Map(),
-            traits: new Map(),
-        },
-
-        // Current inventory (maintained separately for performance)
-        currentStock: [],
-
-        // Additional tracking fields not in template but needed for UI
-        hasInventoryChanged: false,
-    });
-
-    // Add this before the return statement
-    useEffect(() => {
-        console.log("Current shop state values:", {
-            dateCreated: shopDetails.dateCreated instanceof Date,
-            dateLastEdited: shopDetails.dateLastEdited instanceof Date,
-            filters: {
-                categories: Array.from(shopState.filters.categories.entries()),
-                subcategories: Array.from(shopState.filters.subcategories.entries()),
-                traits: Array.from(shopState.filters.traits.entries()),
+    // Function to get changed fields by comparing current state with snapshot
+    const getChangedFields = () => {
+        if (!shopSnapshot) return { basic: {}, parameters: {}, hasInventoryChanged: false };
+        
+        return compareShopStates(
+            {
+                // Current state
+                ...shopDetails,
+                gold: shopState.gold,
+                levelRange: shopState.levelRange,
+                itemBias: shopState.itemBias,
+                rarityDistribution: shopState.rarityDistribution,
+                filters: shopState.filters,
+                currentStock: items
             },
-        });
-    }, [shopDetails.dateCreated, shopDetails.dateLastEdited, shopState.filters]);
+            shopSnapshot
+        );
+    };
 
+    // Add computed hasUnsavedChanges
+    const hasUnsavedChanges = useMemo(() => {
+        const changes = getChangedFields();
+        return hasChanges(changes);
+    }, [shopDetails, shopState, items, shopSnapshot]);
 
     // Initial data loading
     useEffect(() => {
@@ -323,70 +292,6 @@ function ShopGenerator() {
         getFilteredArray,
     ]);
 
-    // Function to get changed fields
-    const getChangedFields = () => {
-        const changes = {
-            basic: {},
-            parameters: {},
-            hasInventoryChanged: originalValues.hasInventoryChanged,
-        };
-
-        // Check basic fields
-        if (shopDetails.name !== originalValues.name)
-            changes.basic.shopName = { old: originalValues.name, new: shopDetails.name };
-        if (shopDetails.keeperName !== originalValues.keeperName)
-            changes.basic.shopKeeperName = { old: originalValues.keeperName, new: shopDetails.keeperName };
-        if (shopDetails.type !== originalValues.type)
-            changes.basic.shopType = { old: originalValues.type, new: shopDetails.type };
-        if (shopDetails.location !== originalValues.location)
-            changes.basic.shopLocation = { old: originalValues.location, new: shopDetails.location };
-        if (shopDetails.description !== originalValues.description)
-            changes.basic.shopDetails = { old: originalValues.description, new: shopDetails.description };
-        if (shopDetails.keeperDescription !== originalValues.keeperDescription)
-            changes.basic.shopKeeperDetails = {
-                old: originalValues.keeperDescription,
-                new: shopDetails.keeperDescription,
-            };
-
-        // Check parameters
-        if (shopState.gold !== originalValues.gold)
-            changes.parameters.currentGold = { old: originalValues.gold, new: shopState.gold };
-        if (shopState.levelRange.min !== originalValues.levelRange.min)
-            changes.parameters.lowestLevel = {
-                old: originalValues.levelRange.min,
-                new: shopState.levelRange.min,
-            };
-        if (shopState.levelRange.max !== originalValues.levelRange.max)
-            changes.parameters.highestLevel = {
-                old: originalValues.levelRange.max,
-                new: shopState.levelRange.max,
-            };
-
-        // Check itemBias
-        if (
-            shopState.itemBias.x !== originalValues.itemBias.x ||
-            shopState.itemBias.y !== originalValues.itemBias.y
-        ) {
-            changes.parameters.itemBias = {
-                old: originalValues.itemBias,
-                new: shopState.itemBias,
-            };
-        }
-
-        // Check rarity distribution
-        const hasRarityChanged = Object.keys(shopState.rarityDistribution).some(
-            (key) => shopState.rarityDistribution[key] !== originalValues.rarityDistribution[key]
-        );
-        if (hasRarityChanged) {
-            changes.parameters.rarityDistribution = {
-                old: originalValues.rarityDistribution,
-                new: shopState.rarityDistribution,
-            };
-        }
-
-        return changes;
-    };
-
     // Shop generation
     const handleGenerateClick = () => {
         console.log("handleGenerateClick called");
@@ -430,11 +335,7 @@ function ShopGenerator() {
 
         if (result && Array.isArray(result.items)) {
             setItems(result.items);
-            setHasUnsavedChanges(true);
-            setOriginalValues((prev) => ({
-                ...prev,
-                hasInventoryChanged: true,
-            }));
+            setShopSnapshot(result.items);
             console.log("Items state updated with", result.items.length, "items");
         } else {
             console.error("Invalid result from generateShopInventory:", result);
@@ -468,7 +369,6 @@ function ShopGenerator() {
                 console.warn("Unknown field name:", name);
         }
         setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
-        setHasUnsavedChanges(true);
     };
 
     const handleLoadShop = (shop) => {
@@ -482,132 +382,92 @@ function ShopGenerator() {
         loadShopInternal(shop);
     };
 
-    const loadShopInternal = (shop) => {
-        // Convert date strings or Firebase Timestamps to JavaScript Dates
-        const loadedDateCreated =
-            shop.dateCreated?.toDate?.() ||
-            (typeof shop.dateCreated === "string" ? new Date(shop.dateCreated) : new Date());
-        const loadedDateLastEdited =
-            shop.dateLastEdited?.toDate?.() ||
-            (typeof shop.dateLastEdited === "string" ? new Date(shop.dateLastEdited) : new Date());
+    const loadShopInternal = async (shop) => {
+        try {
+            // Convert date strings or Firebase Timestamps to JavaScript Dates
+            const loadedDateCreated =
+                shop.dateCreated?.toDate?.() ||
+                (typeof shop.dateCreated === "string" ? new Date(shop.dateCreated) : new Date());
+            const loadedDateLastEdited =
+                shop.dateLastEdited?.toDate?.() ||
+                (typeof shop.dateLastEdited === "string" ? new Date(shop.dateLastEdited) : new Date());
 
-        // Update all state variables from the loaded shop
-        setShopDetails((prev) => ({
-            ...prev,
-            id: shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            name: shop.name || shop.shortData?.shopName || "Unnamed Shop",
-            keeperName: shop.keeperName || shop.shortData?.shopKeeperName || "Unknown",
-            type: shop.type || shop.shortData?.type || "General Store",
-            location: shop.location || shop.shortData?.location || "Unknown Location",
-            description: shop.description || shop.longData?.shopDetails || "No details available",
-            keeperDescription: shop.keeperDescription || shop.longData?.shopKeeperDetails || "No details available",
-            dateCreated: loadedDateCreated,
-            dateLastEdited: loadedDateLastEdited,
-        }));
+            // Update all state variables from the loaded shop
+            await Promise.all([
+                // Update shop details
+                setShopDetails({
+                    id: shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    name: shop.name || "Unnamed Shop",
+                    keeperName: shop.keeperName || "Unknown",
+                    type: shop.type || "General Store",
+                    location: shop.location || "Unknown Location",
+                    description: shop.description || "No details available",
+                    keeperDescription: shop.keeperDescription || "No details available",
+                    dateCreated: loadedDateCreated,
+                    dateLastEdited: loadedDateLastEdited,
+                }),
 
-        // Update shop parameters with filter states
-        const newShopParameters = {
-            gold: shop.parameters?.goldAmount || shop.gold || 1000,
-            levelRange: {
-                min: shop.parameters?.levelLow || shop.levelRange?.min || 0,
-                max: shop.parameters?.levelHigh || shop.levelRange?.max || 10,
-            },
-            itemBias: shop.parameters?.shopBias || shop.itemBias || { x: 0.5, y: 0.5 },
-            rarityDistribution: shop.parameters?.rarityDistribution || shop.rarityDistribution || {
-                Common: 95.0,
-                Uncommon: 4.5,
-                Rare: 0.49,
-                Unique: 0.01,
-            },
-            filters: {
-                categories: new Map(),
-                subcategories: new Map(),
-                traits: new Map(),
-            },
-        };
+                // Update shop parameters
+                setShopState({
+                    gold: shop.parameters?.goldAmount || shop.gold || 1000,
+                    levelRange: {
+                        min: shop.parameters?.levelLow || shop.levelRange?.min || 0,
+                        max: shop.parameters?.levelHigh || shop.levelRange?.max || 10,
+                    },
+                    itemBias: shop.parameters?.shopBias || shop.itemBias || { x: 0.5, y: 0.5 },
+                    rarityDistribution: shop.parameters?.rarityDistribution || shop.rarityDistribution || {
+                        Common: 95.0,
+                        Uncommon: 4.5,
+                        Rare: 0.49,
+                        Unique: 0.01,
+                    },
+                    filters: {
+                        categories: new Map(shop.filterStates?.categories ? Object.entries(shop.filterStates.categories) : []),
+                        subcategories: new Map(shop.filterStates?.subcategories ? Object.entries(shop.filterStates.subcategories) : []),
+                        traits: new Map(shop.filterStates?.traits ? Object.entries(shop.filterStates.traits) : []),
+                    },
+                }),
 
-        // Load filter states from saved shop
-        if (shop.filterStates) {
-            // Convert the object format back to Map
-            Object.entries(shop.filterStates).forEach(([filterType, states]) => {
-                newShopParameters.filters[filterType] = new Map(
-                    Object.entries(states)
-                );
-            });
-        } else {
-            // If loading an older shop without filter states, try to restore from parameters
-            shop.parameters?.categories?.included?.forEach((category) =>
-                newShopParameters.filters.categories.set(category, SELECTION_STATES.INCLUDE)
-            );
-            shop.parameters?.categories?.excluded?.forEach((category) =>
-                newShopParameters.filters.categories.set(category, SELECTION_STATES.EXCLUDE)
-            );
+                // Update inventory
+                setItems(shop.currentStock || shop.parameters?.currentStock || [])
+            ]);
 
-            shop.parameters?.subcategories?.included?.forEach((subcategory) =>
-                newShopParameters.filters.subcategories.set(subcategory, SELECTION_STATES.INCLUDE)
-            );
-            shop.parameters?.subcategories?.excluded?.forEach((subcategory) =>
-                newShopParameters.filters.subcategories.set(subcategory, SELECTION_STATES.EXCLUDE)
-            );
+            // After all state updates are complete, take a snapshot
+            const newSnapshot = takeShopSnapshot({
+                id: shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                name: shop.name || "Unnamed Shop",
+                keeperName: shop.keeperName || "Unknown",
+                type: shop.type || "General Store",
+                location: shop.location || "Unknown Location",
+                description: shop.description || "No details available",
+                keeperDescription: shop.keeperDescription || "No details available",
+                dateCreated: loadedDateCreated,
+                dateLastEdited: loadedDateLastEdited,
+            }, {
+                gold: shop.parameters?.goldAmount || shop.gold || 1000,
+                levelRange: {
+                    min: shop.parameters?.levelLow || shop.levelRange?.min || 0,
+                    max: shop.parameters?.levelHigh || shop.levelRange?.max || 10,
+                },
+                itemBias: shop.parameters?.shopBias || shop.itemBias || { x: 0.5, y: 0.5 },
+                rarityDistribution: shop.parameters?.rarityDistribution || shop.rarityDistribution || {
+                    Common: 95.0,
+                    Uncommon: 4.5,
+                    Rare: 0.49,
+                    Unique: 0.01,
+                },
+                filters: {
+                    categories: new Map(shop.filterStates?.categories ? Object.entries(shop.filterStates.categories) : []),
+                    subcategories: new Map(shop.filterStates?.subcategories ? Object.entries(shop.filterStates.subcategories) : []),
+                    traits: new Map(shop.filterStates?.traits ? Object.entries(shop.filterStates.traits) : []),
+                }
+            }, shop.currentStock || shop.parameters?.currentStock || []);
 
-            shop.parameters?.traits?.included?.forEach((trait) =>
-                newShopParameters.filters.traits.set(trait, SELECTION_STATES.INCLUDE)
-            );
-            shop.parameters?.traits?.excluded?.forEach((trait) =>
-                newShopParameters.filters.traits.set(trait, SELECTION_STATES.EXCLUDE)
-            );
+            setShopSnapshot(newSnapshot);
+        } catch (error) {
+            console.error("Error loading shop:", error);
+            alert("Error loading shop. Please try again.");
         }
-
-        setShopState(newShopParameters);
-        
-        // Handle inventory data from both old and new structure
-        const inventoryData = shop.currentStock || shop.parameters?.currentStock || [];
-        console.log("Loading inventory data:", inventoryData);
-        setItems(inventoryData);
-
-        // Set original values for change tracking
-        setOriginalValues({
-            // Basic shop information
-            id: shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            name: shop.name || "Unnamed Shop",
-            keeperName: shop.keeperName || "Unknown",
-            type: shop.type || "General Store",
-            location: shop.location || "Unknown Location",
-            description: shop.description || "No details available",
-            keeperDescription: shop.keeperDescription || "No details available",
-            dateCreated: loadedDateCreated,
-            dateLastEdited: loadedDateLastEdited,
-
-            // Shop generation settings
-            gold: shop.parameters?.goldAmount || 1000,
-            levelRange: {
-                min: shop.parameters?.levelLow || 0,
-                max: shop.parameters?.levelHigh || 10,
-            },
-            itemBias: shop.parameters?.shopBias || { x: 0.5, y: 0.5 },
-            rarityDistribution: shop.parameters?.rarityDistribution || {
-                Common: 95.0,
-                Uncommon: 4.5,
-                Rare: 0.49,
-                Unique: 0.01,
-            },
-
-            // Filter states
-            filters: {
-                categories: new Map(Object.entries(shop.filterStates?.categories || {})),
-                subcategories: new Map(Object.entries(shop.filterStates?.subcategories || {})),
-                traits: new Map(Object.entries(shop.filterStates?.traits || {})),
-            },
-
-            // Current inventory (maintained separately for performance)
-            currentStock: [...(shop.currentStock || [])],
-
-            // Reset inventory changed flag
-            hasInventoryChanged: false
-        });
-
-        // Reset unsaved changes flag
-        setHasUnsavedChanges(false);
     };
 
     const handleNewShop = () => {
@@ -621,91 +481,88 @@ function ShopGenerator() {
         createNewShop();
     };
 
-    const createNewShop = () => {
-        // Generate a new unique ID for the shop
-        const newShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const currentDate = new Date();
+    const createNewShop = async () => {
+        try {
+            // Generate a new unique ID for the shop
+            const newShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const currentDate = new Date();
 
-        // Reset all state to initial values
-        setShopDetails((prev) => ({
-            ...prev,
-            id: newShopId,
-            name: "Unnamed Shop",
-            keeperName: "Unknown",
-            type: "General Store",
-            location: "Unknown Location",
-            description: "No details available",
-            keeperDescription: "No details available",
-            dateCreated: currentDate,
-            dateLastEdited: currentDate,
-        }));
+            // Reset all state to initial values
+            await Promise.all([
+                // Reset shop details
+                setShopDetails({
+                    id: newShopId,
+                    name: "Unnamed Shop",
+                    keeperName: "Unknown",
+                    type: "General Store",
+                    location: "Unknown Location",
+                    description: "No details available",
+                    keeperDescription: "No details available",
+                    dateCreated: currentDate,
+                    dateLastEdited: currentDate,
+                }),
 
-        // Reset shop parameters to defaults
-        setShopState({
-            gold: 1000,
-            levelRange: {
-                min: 0,
-                max: 10,
-            },
-            itemBias: { x: 0.5, y: 0.5 },
-            rarityDistribution: {
-                Common: 95.0,
-                Uncommon: 4.5,
-                Rare: 0.49,
-                Unique: 0.01,
-            },
-            filters: {
-                categories: new Map(),
-                subcategories: new Map(),
-                traits: new Map(),
-            },
-        });
+                // Reset shop parameters
+                setShopState({
+                    gold: 1000,
+                    levelRange: {
+                        min: 0,
+                        max: 10,
+                    },
+                    itemBias: { x: 0.5, y: 0.5 },
+                    rarityDistribution: {
+                        Common: 95.0,
+                        Uncommon: 4.5,
+                        Rare: 0.49,
+                        Unique: 0.01,
+                    },
+                    filters: {
+                        categories: new Map(),
+                        subcategories: new Map(),
+                        traits: new Map(),
+                    },
+                }),
 
-        setItems([]);
+                // Reset inventory
+                setItems([])
+            ]);
 
-        // Reset original values to match the new shop data template
-        setOriginalValues({
-            // Basic shop information
-            id: newShopId,
-            name: "Unnamed Shop",
-            keeperName: "Unknown",
-            type: "General Store",
-            location: "Unknown Location",
-            description: "No details available",
-            keeperDescription: "No details available",
-            dateCreated: currentDate,
-            dateLastEdited: currentDate,
+            // After all state updates are complete, take a snapshot
+            const newSnapshot = takeShopSnapshot({
+                id: newShopId,
+                name: "Unnamed Shop",
+                keeperName: "Unknown",
+                type: "General Store",
+                location: "Unknown Location",
+                description: "No details available",
+                keeperDescription: "No details available",
+                dateCreated: currentDate,
+                dateLastEdited: currentDate,
+            }, {
+                gold: 1000,
+                levelRange: {
+                    min: 0,
+                    max: 10,
+                },
+                itemBias: { x: 0.5, y: 0.5 },
+                rarityDistribution: {
+                    Common: 95.0,
+                    Uncommon: 4.5,
+                    Rare: 0.49,
+                    Unique: 0.01,
+                },
+                filters: {
+                    categories: new Map(),
+                    subcategories: new Map(),
+                    traits: new Map(),
+                }
+            }, []);
 
-            // Shop generation settings
-            gold: 1000,
-            levelRange: {
-                min: 0,
-                max: 10,
-            },
-            itemBias: { x: 0.5, y: 0.5 },
-            rarityDistribution: {
-                Common: 95.0,
-                Uncommon: 4.5,
-                Rare: 0.49,
-                Unique: 0.01,
-            },
-
-            // Filter states
-            filters: {
-                categories: new Map(),
-                subcategories: new Map(),
-                traits: new Map(),
-            },
-
-            // Current inventory
-            currentStock: [],
-
-            // Reset inventory changed flag
-            hasInventoryChanged: false
-        });
-
-        // Reset unsaved changes flag
-        setHasUnsavedChanges(false);
+            setShopSnapshot(newSnapshot);
+        } catch (error) {
+            console.error("Error creating new shop:", error);
+            alert("Error creating new shop. Please try again.");
+        }
     };
 
     const handleUnsavedDialogueConfirm = () => {
@@ -775,47 +632,9 @@ function ShopGenerator() {
             setShopDetails((prev) => ({ ...prev, id: savedShopId }));
             setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
             
-            // Update original values to match current state
-            setOriginalValues({
-                // Basic shop information
-                id: shopDetails.id,
-                name: shopDetails.name,
-                keeperName: shopDetails.keeperName,
-                type: shopDetails.type,
-                location: shopDetails.location,
-                description: shopDetails.description,
-                keeperDescription: shopDetails.keeperDescription,
-                dateCreated: shopDetails.dateCreated,
-                dateLastEdited: new Date(),
-
-                // Shop generation settings
-                gold: shopState.gold,
-                levelRange: {
-                    min: shopState.levelRange.min,
-                    max: shopState.levelRange.max,
-                },
-                itemBias: { ...shopState.itemBias },
-                rarityDistribution: { ...shopState.rarityDistribution },
-
-                // Filter states
-                filters: {
-                    categories: new Map(shopState.filters.categories),
-                    subcategories: new Map(shopState.filters.subcategories),
-                    traits: new Map(shopState.filters.traits),
-                },
-
-                // Current inventory (create new array to ensure clean reference)
-                currentStock: [...items],
-
-                // Reset inventory changed flag since we're saving
-                hasInventoryChanged: false
-            });
+            // Update shop snapshot
+            setShopSnapshot(items);
             
-            setHasUnsavedChanges(false);
-
-            console.log("Shop saved with ID:", savedShopId);
-            alert("Shop saved successfully!");
-
             // Reload the shops list after successful save
             await loadShops();
         } catch (error) {
@@ -847,46 +666,6 @@ function ShopGenerator() {
         }
     };
 
-    // Update handleResetChanges to use new structure
-    const handleResetChanges = () => {
-        if (hasUnsavedChanges) {
-            // Reset all state values to their original values
-            setShopDetails((prev) => ({
-                ...prev,
-                name: originalValues.name,
-                keeperName: originalValues.keeperName,
-                type: originalValues.type,
-                location: originalValues.location,
-                description: originalValues.description,
-                keeperDescription: originalValues.keeperDescription,
-                dateCreated: originalValues.dateCreated,
-                dateLastEdited: originalValues.dateLastEdited,
-            }));
-
-            // Reset shop parameters
-            setShopState((prev) => ({
-                ...prev,
-                gold: originalValues.gold,
-                levelRange: originalValues.levelRange,
-                itemBias: originalValues.itemBias,
-                rarityDistribution: originalValues.rarityDistribution,
-                filters: {
-                    categories: new Map(originalValues.filters.categories),
-                    subcategories: new Map(originalValues.filters.subcategories),
-                    traits: new Map(originalValues.filters.traits),
-                },
-            }));
-
-            // Reset inventory if it was changed
-            if (originalValues.hasInventoryChanged) {
-                setItems(originalValues.currentStock || []);
-            }
-
-            // Reset unsaved changes flag
-            setHasUnsavedChanges(false);
-        }
-    };
-
     /**
      * Loads all shops for the current user from Firebase
      * Called on component mount and after successful saves
@@ -915,7 +694,6 @@ function ShopGenerator() {
     // Shop management functions
     const handleGoldChange = (gold) => {
         setShopState((prev) => ({ ...prev, gold }));
-        setHasUnsavedChanges(true);
     };
 
     // Lowest level change
@@ -924,7 +702,6 @@ function ShopGenerator() {
             ...prev,
             levelRange: { ...prev.levelRange, min },
         }));
-        setHasUnsavedChanges(true);
     };
 
     const handleHighestLevelChange = (max) => {
@@ -932,17 +709,14 @@ function ShopGenerator() {
             ...prev,
             levelRange: { ...prev.levelRange, max },
         }));
-        setHasUnsavedChanges(true);
     };
 
     const handleBiasChange = (bias) => {
         setShopState((prev) => ({ ...prev, itemBias: bias }));
-        setHasUnsavedChanges(true);
     };
 
     const handleRarityDistributionChange = (distribution) => {
         setShopState((prev) => ({ ...prev, rarityDistribution: distribution }));
-        setHasUnsavedChanges(true);
     };
 
     // Shop state synchronization
@@ -989,6 +763,45 @@ function ShopGenerator() {
     const handleAiAssistantChange = (newState) => {
         console.log("Ai Assistant state updated:", newState);
     };
+
+    const handleResetChanges = async () => {
+        if (!shopSnapshot) return;
+
+        try {
+            // Reset all state to match the snapshot
+            await Promise.all([
+                setShopDetails({
+                    id: shopSnapshot.id,
+                    name: shopSnapshot.name,
+                    keeperName: shopSnapshot.keeperName,
+                    type: shopSnapshot.type,
+                    location: shopSnapshot.location,
+                    description: shopSnapshot.description,
+                    keeperDescription: shopSnapshot.keeperDescription,
+                    dateCreated: shopSnapshot.dateCreated,
+                    dateLastEdited: shopSnapshot.dateLastEdited,
+                }),
+
+                setShopState({
+                    gold: shopSnapshot.gold,
+                    levelRange: shopSnapshot.levelRange,
+                    itemBias: shopSnapshot.itemBias,
+                    rarityDistribution: shopSnapshot.rarityDistribution,
+                    filters: {
+                        categories: new Map(shopSnapshot.filters.categories),
+                        subcategories: new Map(shopSnapshot.filters.subcategories),
+                        traits: new Map(shopSnapshot.filters.traits),
+                    },
+                }),
+
+                setItems(shopSnapshot.currentStock)
+            ]);
+        } catch (error) {
+            console.error("Error resetting changes:", error);
+            alert("Error resetting changes. Please try again.");
+        }
+    };
+
 
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
@@ -1037,7 +850,6 @@ function ShopGenerator() {
                                                         categories: newStates,
                                                     },
                                                 }));
-                                                setHasUnsavedChanges(true);
                                             }}
                                             setSubcategoryStates={(newStates) => {
                                                 setShopState((prev) => ({
@@ -1047,7 +859,6 @@ function ShopGenerator() {
                                                         subcategories: newStates,
                                                     },
                                                 }));
-                                                setHasUnsavedChanges(true);
                                             }}
                                             setTraitStates={(newStates) => {
                                                 setShopState((prev) => ({
@@ -1057,7 +868,6 @@ function ShopGenerator() {
                                                         traits: newStates,
                                                     },
                                                 }));
-                                                setHasUnsavedChanges(true);
                                             }}
                                         />
                                     );
@@ -1175,7 +985,6 @@ function ShopGenerator() {
                                     categories: newStates,
                                 },
                             }));
-                            setHasUnsavedChanges(true);
                         }}
                         setSubcategoryStates={(newStates) => {
                             setShopState((prev) => ({
@@ -1185,7 +994,6 @@ function ShopGenerator() {
                                     subcategories: newStates,
                                 },
                             }));
-                            setHasUnsavedChanges(true);
                         }}
                         setTraitStates={(newStates) => {
                             setShopState((prev) => ({
@@ -1195,7 +1003,6 @@ function ShopGenerator() {
                                     traits: newStates,
                                 },
                             }));
-                            setHasUnsavedChanges(true);
                         }}
                     />,
                     <Tab_InventoryTable
@@ -1489,6 +1296,7 @@ function ShopGenerator() {
     };
 
 
+
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {authLoading ? (
@@ -1541,7 +1349,6 @@ function ShopGenerator() {
                                                         categories: newStates,
                                                     },
                                                 }));
-                                                setHasUnsavedChanges(true);
                                             },
                                             setSubcategoryStates: (newStates) => {
                                                 setShopState((prev) => ({
@@ -1551,7 +1358,6 @@ function ShopGenerator() {
                                                         subcategories: newStates,
                                                     },
                                                 }));
-                                                setHasUnsavedChanges(true);
                                             },
                                             setTraitStates: (newStates) => {
                                                 setShopState((prev) => ({
@@ -1561,7 +1367,6 @@ function ShopGenerator() {
                                                         traits: newStates,
                                                     },
                                                 }));
-                                                setHasUnsavedChanges(true);
                                             },
                                         });
                                     case "Tab_InventoryTable":
