@@ -11,12 +11,13 @@ import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import itemData from "../../../../public/item-table.json";
 import { SELECTION_STATES } from "./utils/shopGeneratorConstants";
 import { generateShopInventory } from "./utils/generateShopInventory";
-import { saveOrUpdateShopData, loadShopData, deleteShopData } from "./utils/firebaseShopUtils";
+import { loadShopData } from "./utils/firebaseShopUtils";
 import UnsavedChangesDialogue from "./shared/UnsavedChangesDialogue";
 import { useSorting } from "./utils/sortingUtils";
 import { extractUniqueCategories } from "./utils/categoryUtils";
 import defaultShopData from "./utils/shopData";
 import { compareShopStates, hasChanges, takeShopSnapshot } from "./utils/shopStateUtils";
+import { useShopOperations } from "./hooks/useShopOperations";
 
 /**
  * ShopGenerator Component
@@ -177,12 +178,18 @@ function ShopGenerator() {
         );
     };
 
+
     // Add computed hasUnsavedChanges
     const hasUnsavedChanges = useMemo(() => {
         const changes = getChangedFields();
         return hasChanges(changes);
     }, [shopDetails, shopState, items, shopSnapshot]);
 
+
+
+
+
+    
     // Initial data loading
     useEffect(() => {
         try {
@@ -551,116 +558,6 @@ function ShopGenerator() {
         setPendingAction(null);
     };
 
-    const handleCloneShop = () => {
-        // Generate a new unique ID for the cloned shop
-        const clonedShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        const currentDate = new Date();
-
-        // Create new shop details with cloned data
-        const clonedDetails = {
-            ...shopDetails,
-            id: clonedShopId,
-            name: `${shopDetails.name} (Clone)`,
-            dateCreated: currentDate,
-            dateLastEdited: currentDate,
-        };
-
-        // Update shop details
-        setShopDetails(clonedDetails);
-
-        // Take a new snapshot with the cloned state
-        const newSnapshot = takeShopSnapshot(
-            clonedDetails,
-            shopState,
-            items
-        );
-        setShopSnapshot(newSnapshot);
-    };
-
-    const handleSaveShop = async () => {
-        if (!currentUser) {
-            alert("Please log in to save shops");
-            return;
-        }
-
-        try {
-            // Convert Map objects to a flat object structure for Firebase
-            const filterStatesForStorage = {
-                categories: Object.fromEntries(shopState.filters.categories.entries()),
-                subcategories: Object.fromEntries(shopState.filters.subcategories.entries()),
-                traits: Object.fromEntries(shopState.filters.traits.entries()),
-            };
-
-            const savedShopData = {
-                id: shopDetails.id,
-                name: shopDetails.name,
-                keeperName: shopDetails.keeperName,
-                type: shopDetails.type,
-                location: shopDetails.location,
-                description: shopDetails.description,
-                keeperDescription: shopDetails.keeperDescription,
-                gold: shopState.gold,
-                levelRange: {
-                    min: shopState.levelRange.min,
-                    max: shopState.levelRange.max,
-                },
-                itemBias: shopState.itemBias,
-                rarityDistribution: shopState.rarityDistribution,
-                currentStock: items,
-                dateCreated: shopDetails.dateCreated,
-                dateLastEdited: shopDetails.dateLastEdited,
-                filterStates: filterStatesForStorage,
-            };
-
-            console.log("Saving shop state:", savedShopData);
-            const userId = currentUser.uid;
-            const savedShopId = await saveOrUpdateShopData(userId, savedShopData);
-            setShopDetails((prev) => ({ ...prev, id: savedShopId }));
-            setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
-            
-            // Take a new snapshot with the current state
-            const newSnapshot = takeShopSnapshot(
-                {
-                    ...shopDetails,
-                    id: savedShopId,
-                    dateLastEdited: new Date()
-                },
-                shopState,
-                items
-            );
-            setShopSnapshot(newSnapshot);
-            
-            // Reload the shops list after successful save
-            await loadShops();
-        } catch (error) {
-            console.error("Error saving shop:", error);
-            alert("Error saving shop. Please try again.");
-        }
-    };
-
-    const handleDeleteShop = async () => {
-        if (!currentUser || !shopDetails.id) {
-            alert("Cannot delete shop. Please ensure you are logged in and have a valid shop selected.");
-            return;
-        }
-
-        try {
-            const userId = currentUser.uid;
-            await deleteShopData(userId, shopDetails.id);
-
-            // Reset all state
-            handleNewShop();
-
-            // Reload the shops list
-            await loadShops();
-
-            alert("Shop deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting shop:", error);
-            alert("Error deleting shop. Please try again.");
-        }
-    };
-
     /**
      * Loads all shops for the current user from Firebase
      * Called on component mount and after successful saves
@@ -685,6 +582,18 @@ function ShopGenerator() {
             alert("Error loading shops. Please try again.");
         }
     };
+
+
+    
+    const { handleCloneShop, handleSaveShop, handleDeleteShop } = useShopOperations({
+        currentUser,
+        shopDetails,
+        setShopDetails,
+        shopState,
+        items,
+        setShopSnapshot,
+        loadShops
+    });
 
     // Shop management functions
     const handleGoldChange = (gold) => {
