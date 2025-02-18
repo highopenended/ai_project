@@ -85,6 +85,18 @@ Tab_ShopDetails.propTypes = {
         keeperDescription: PropTypes.string.isRequired,
         dateCreated: PropTypes.instanceOf(Date).isRequired,
         dateLastEdited: PropTypes.instanceOf(Date).isRequired,
+        gold: PropTypes.number,
+        levelRange: PropTypes.shape({
+            min: PropTypes.number,
+            max: PropTypes.number
+        }),
+        itemBias: PropTypes.shape({
+            x: PropTypes.number,
+            y: PropTypes.number
+        }),
+        rarityDistribution: PropTypes.object,
+        currentStock: PropTypes.array,
+        filterStates: PropTypes.object
     }).isRequired,
     onShopDetailsChange: PropTypes.func.isRequired,
     onSaveShop: PropTypes.func.isRequired,

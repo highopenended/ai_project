@@ -70,7 +70,37 @@ const SavedShops = ({ savedShops, loadShop, currentShopId }) => {
 };
 
 SavedShops.propTypes = {
-    savedShops: PropTypes.array.isRequired,
+    savedShops: PropTypes.arrayOf(PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        keeperName: PropTypes.string,
+        type: PropTypes.string,
+        location: PropTypes.string,
+        description: PropTypes.string,
+        keeperDescription: PropTypes.string,
+        dateCreated: PropTypes.oneOfType([
+            PropTypes.instanceOf(Date),
+            PropTypes.string,
+            PropTypes.object // For Firebase Timestamp
+        ]).isRequired,
+        dateLastEdited: PropTypes.oneOfType([
+            PropTypes.instanceOf(Date),
+            PropTypes.string,
+            PropTypes.object // For Firebase Timestamp
+        ]).isRequired,
+        gold: PropTypes.number,
+        levelRange: PropTypes.shape({
+            min: PropTypes.number,
+            max: PropTypes.number
+        }),
+        itemBias: PropTypes.shape({
+            x: PropTypes.number,
+            y: PropTypes.number
+        }),
+        rarityDistribution: PropTypes.object,
+        currentStock: PropTypes.array,
+        filterStates: PropTypes.object
+    })).isRequired,
     loadShop: PropTypes.func.isRequired,
     currentShopId: PropTypes.string
 };

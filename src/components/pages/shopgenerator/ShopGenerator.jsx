@@ -754,25 +754,13 @@ function ShopGenerator() {
                 location: shopDetails.location,
                 description: shopDetails.description,
                 keeperDescription: shopDetails.keeperDescription,
-                parameters: {
-                    goldAmount: shopState.gold,
-                    levelLow: shopState.levelRange.min,
-                    levelHigh: shopState.levelRange.max,
-                    shopBias: shopState.itemBias,
-                    rarityDistribution: shopState.rarityDistribution,
-                    categories: {
-                        included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
-                    },
-                    subcategories: {
-                        included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
-                    },
-                    traits: {
-                        included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
-                    },
+                gold: shopState.gold,
+                levelRange: {
+                    min: shopState.levelRange.min,
+                    max: shopState.levelRange.max,
                 },
+                itemBias: shopState.itemBias,
+                rarityDistribution: shopState.rarityDistribution,
                 currentStock: items,
                 dateCreated: shopDetails.dateCreated,
                 dateLastEdited: shopDetails.dateLastEdited,
@@ -908,21 +896,11 @@ function ShopGenerator() {
             console.log("Loaded shops:", loadedShops);
             
             // Format the loaded shops to match the expected structure
-            const formattedShops = loadedShops.map(shop => {
-                // Handle both old nested and new flat structure
-                return {
-                    ...shop, // Keep all original data
-                    // Override only the fields that need special handling
-                    name: shop.name || shop.shortData?.shopName || '',
-                    keeperName: shop.keeperName || shop.shortData?.shopKeeperName || '',
-                    type: shop.type || shop.shortData?.type || '',
-                    location: shop.location || shop.shortData?.location || '',
-                    description: shop.description || shop.longData?.shopDetails || '',
-                    keeperDescription: shop.keeperDescription || shop.longData?.shopKeeperDetails || '',
-                    dateCreated: shop.dateCreated ? new Date(shop.dateCreated) : new Date(),
-                    dateLastEdited: shop.dateLastEdited ? new Date(shop.dateLastEdited) : new Date()
-                };
-            });
+            const formattedShops = loadedShops.map(shop => ({
+                ...shop,
+                dateCreated: shop.dateCreated ? new Date(shop.dateCreated) : new Date(),
+                dateLastEdited: shop.dateLastEdited ? new Date(shop.dateLastEdited) : new Date()
+            }));
             
             console.log("Formatted shops:", formattedShops);
             setSavedShops(formattedShops);
