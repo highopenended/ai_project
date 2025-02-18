@@ -48,10 +48,10 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
 
 ResetChangesButton.propTypes = {
     onReset: PropTypes.func.isRequired,
-    hasUnsavedChanges: PropTypes.bool.isRequired,
     currentShop: PropTypes.shape({
         name: PropTypes.string.isRequired,
     }).isRequired,
+    hasUnsavedChanges: PropTypes.bool.isRequired,
     changes: PropTypes.object.isRequired,
 };
 

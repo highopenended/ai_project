@@ -3,11 +3,11 @@ import PropTypes from "prop-types";
 import "./SaveShopButton.css";
 import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
 
-const SaveShopButton = ({ onSave, areAllDetailsFilled, changes, currentShop }) => {
+const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, changes, currentShop }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
-        setShowConfirmation(true);
+        setShowConfirmation(hasUnsavedChanges); 
     };
 
     const handleConfirm = () => {
@@ -48,8 +48,9 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, changes, currentShop }) =
 SaveShopButton.propTypes = {
     onSave: PropTypes.func.isRequired,
     areAllDetailsFilled: PropTypes.func.isRequired,
-    changes: PropTypes.object.isRequired,
     currentShop: PropTypes.object.isRequired,
+    hasUnsavedChanges: PropTypes.bool.isRequired,
+    changes: PropTypes.object.isRequired,
 };
 
 export default SaveShopButton;

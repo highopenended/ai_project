@@ -53,19 +53,21 @@ function Tab_ShopDetails({
                 <SaveShopButton
                     onSave={onSaveShop}
                     areAllDetailsFilled={areAllDetailsFilled}
-                    changes={changes}
                     currentShop={currentShop}
+                    hasUnsavedChanges={isNewUnsavedShop ? false : hasUnsavedChanges}
+                    changes={changes}
                 />
                 <CloneShopButton
                     onClone={onCloneShop}
                     shopId={isNewUnsavedShop ? null : currentShop?.id}
-                    changes={changes}
                     currentShop={currentShop}
+                    hasUnsavedChanges={isNewUnsavedShop ? false : hasUnsavedChanges}
+                    changes={changes}
                 />
                 <ResetChangesButton
                     onReset={onResetChanges}
-                    hasUnsavedChanges={isNewUnsavedShop ? false : hasUnsavedChanges}
                     currentShop={currentShop}
+                    hasUnsavedChanges={isNewUnsavedShop ? false : hasUnsavedChanges}
                     changes={changes}
                 />
             </div>

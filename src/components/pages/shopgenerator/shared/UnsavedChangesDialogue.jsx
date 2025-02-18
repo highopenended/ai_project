@@ -91,8 +91,8 @@ const UnsavedChangesDialogue = ({
             <div className="unsaved-changes-dialogue">
                 <h3 className="unsaved-changes-title">{headerText}</h3>
                 <p className="unsaved-changes-description">
+                    <h2 className="shop-name">&ldquo;{currentShopName}&rdquo;</h2>.
                     {description || `You have unsaved changes to the current shop `}
-                    <span className="shop-name">&ldquo;{currentShopName}&rdquo;</span>.
                 </p>
                 <div className="unsaved-changes-content">
                     {renderChangeSection("Basic Information", changes.basic)}
