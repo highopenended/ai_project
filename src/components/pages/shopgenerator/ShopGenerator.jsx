@@ -620,6 +620,7 @@ function ShopGenerator() {
     const createNewShop = () => {
         // Generate a new unique ID for the shop
         const newShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const currentDate = new Date();
 
         // Reset all state to initial values
         setShopDetails((prev) => ({
@@ -631,8 +632,8 @@ function ShopGenerator() {
             location: "Unknown Location",
             description: "No details available",
             keeperDescription: "No details available",
-            dateCreated: new Date(),
-            dateLastEdited: new Date(),
+            dateCreated: currentDate,
+            dateLastEdited: currentDate,
         }));
 
         // Reset shop parameters to defaults
@@ -658,35 +659,45 @@ function ShopGenerator() {
 
         setItems([]);
 
-        // Reset original values
+        // Reset original values to match the new shop data template
         setOriginalValues({
-            shopName: "Unnamed Shop",
-            shopKeeperName: "Unknown",
-            shopType: "General Store",
-            shopLocation: "Unknown Location",
-            shopDetails: "No details available",
-            shopKeeperDetails: "No details available",
-            shopParameters: {
-                gold: 1000,
-                levelRange: {
-                    min: 0,
-                    max: 10,
-                },
-                itemBias: { x: 0.5, y: 0.5 },
-                rarityDistribution: {
-                    Common: 95.0,
-                    Uncommon: 4.5,
-                    Rare: 0.49,
-                    Unique: 0.01,
-                },
-                filters: {
-                    categories: new Map(),
-                    subcategories: new Map(),
-                    traits: new Map(),
-                },
+            // Basic shop information
+            id: newShopId,
+            name: "Unnamed Shop",
+            keeperName: "Unknown",
+            type: "General Store",
+            location: "Unknown Location",
+            description: "No details available",
+            keeperDescription: "No details available",
+            dateCreated: currentDate,
+            dateLastEdited: currentDate,
+
+            // Shop generation settings
+            gold: 1000,
+            levelRange: {
+                min: 0,
+                max: 10,
             },
-            hasInventoryChanged: false,
-            items: [],
+            itemBias: { x: 0.5, y: 0.5 },
+            rarityDistribution: {
+                Common: 95.0,
+                Uncommon: 4.5,
+                Rare: 0.49,
+                Unique: 0.01,
+            },
+
+            // Filter states
+            filters: {
+                categories: new Map(),
+                subcategories: new Map(),
+                traits: new Map(),
+            },
+
+            // Current inventory
+            currentStock: [],
+
+            // Reset inventory changed flag
+            hasInventoryChanged: false
         });
 
         // Reset unsaved changes flag
@@ -726,6 +737,13 @@ function ShopGenerator() {
         }
 
         try {
+            // Convert Map objects to a flat object structure for Firebase
+            const filterStatesForStorage = {
+                categories: Object.fromEntries(shopState.filters.categories.entries()),
+                subcategories: Object.fromEntries(shopState.filters.subcategories.entries()),
+                traits: Object.fromEntries(shopState.filters.traits.entries()),
+            };
+
             const savedShopData = {
                 id: shopDetails.id,
                 shortData: {
@@ -757,14 +775,16 @@ function ShopGenerator() {
                         excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
                     },
                 },
-                currentStock: items,
+                currentStock: items.map(item => ({
+                    ...item,
+                    // Ensure any Map or Set objects are converted to plain objects/arrays
+                    traits: Array.isArray(item.traits) ? item.traits : [],
+                    categories: Array.isArray(item.categories) ? item.categories : [],
+                    subcategories: Array.isArray(item.subcategories) ? item.subcategories : [],
+                })),
                 dateCreated: shopDetails.dateCreated,
                 dateLastEdited: shopDetails.dateLastEdited,
-                filterStates: {
-                    categories: Array.from(shopState.filters.categories.entries()),
-                    subcategories: Array.from(shopState.filters.subcategories.entries()),
-                    traits: Array.from(shopState.filters.traits.entries()),
-                },
+                filterStates: filterStatesForStorage,
             };
 
             console.log("Saving shop state:", savedShopData);
@@ -784,7 +804,7 @@ function ShopGenerator() {
                 description: shopDetails.description,
                 keeperDescription: shopDetails.keeperDescription,
                 dateCreated: shopDetails.dateCreated,
-                dateLastEdited: shopDetails.dateLastEdited,
+                dateLastEdited: new Date(),
 
                 // Shop generation settings
                 gold: shopState.gold,
@@ -792,8 +812,8 @@ function ShopGenerator() {
                     min: shopState.levelRange.min,
                     max: shopState.levelRange.max,
                 },
-                itemBias: shopState.itemBias,
-                rarityDistribution: shopState.rarityDistribution,
+                itemBias: { ...shopState.itemBias },
+                rarityDistribution: { ...shopState.rarityDistribution },
 
                 // Filter states
                 filters: {
@@ -802,10 +822,10 @@ function ShopGenerator() {
                     traits: new Map(shopState.filters.traits),
                 },
 
-                // Current inventory (maintained separately for performance)
+                // Current inventory (create new array to ensure clean reference)
                 currentStock: [...items],
 
-                // Additional tracking fields not in template but needed for UI
+                // Reset inventory changed flag since we're saving
                 hasInventoryChanged: false
             });
             
