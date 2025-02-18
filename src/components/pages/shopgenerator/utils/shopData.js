@@ -39,6 +39,8 @@ const shopData = {
   },
 
   // Current inventory
+  // Note: For performance reasons, this is maintained in a separate state during normal operation
+  // and only synced during save/load/reset operations
   currentStock: []
 };
 
