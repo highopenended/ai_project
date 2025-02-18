@@ -632,8 +632,17 @@ function ShopGenerator() {
             setShopDetails((prev) => ({ ...prev, id: savedShopId }));
             setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
             
-            // Update shop snapshot
-            setShopSnapshot(items);
+            // Take a new snapshot with the current state
+            const newSnapshot = takeShopSnapshot(
+                {
+                    ...shopDetails,
+                    id: savedShopId,
+                    dateLastEdited: new Date()
+                },
+                shopState,
+                items
+            );
+            setShopSnapshot(newSnapshot);
             
             // Reload the shops list after successful save
             await loadShops();
