@@ -36,10 +36,10 @@ const DeleteShopButton = ({ onDelete, shopId, currentShop }) => {
                         <h3 className="delete-confirm-title">Delete Shop?</h3>
                         <div className="delete-confirm-details">
                             <p className="shop-summary">
-                                <span className="shop-summary-label">Shop Name:</span> {currentShop.shortData.shopName}<br/>
-                                <span className="shop-summary-label">Shopkeeper:</span> {currentShop.shortData.shopKeeperName}<br/>
-                                <span className="shop-summary-label">Shop Type:</span> {currentShop.shortData.type}<br/>
-                                <span className="shop-summary-label">Location:</span> {currentShop.shortData.location}
+                                <span className="shop-summary-label">Shop Name:</span> {currentShop.name}<br/>
+                                <span className="shop-summary-label">Shopkeeper:</span> {currentShop.keeperName}<br/>
+                                <span className="shop-summary-label">Shop Type:</span> {currentShop.type}<br/>
+                                <span className="shop-summary-label">Location:</span> {currentShop.location}
                             </p>
                         </div>
                         <p className="delete-confirm-message">
@@ -70,12 +70,10 @@ DeleteShopButton.propTypes = {
     onDelete: PropTypes.func.isRequired,
     shopId: PropTypes.string,
     currentShop: PropTypes.shape({
-        shortData: PropTypes.shape({
-            shopName: PropTypes.string.isRequired,
-            shopKeeperName: PropTypes.string.isRequired,
-            type: PropTypes.string.isRequired,
-            location: PropTypes.string.isRequired
-        }).isRequired
+        name: PropTypes.string.isRequired,
+        keeperName: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired,
+        location: PropTypes.string.isRequired
     }).isRequired
 };
 

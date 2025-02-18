@@ -49,7 +49,7 @@ const SavedShops = ({ savedShops, loadShop, currentShopId }) => {
                             title={`Last edited: ${formatDate(shop.dateLastEdited)}`}
                         >
                             <span className="shop-item-name">
-                                {shop.shortData.shopName || 'Unnamed Shop'}
+                                {shop.name || 'Unnamed Shop'}
                             </span>
                             <span className="shop-item-date">
                                 {formatDate(shop.dateLastEdited)}

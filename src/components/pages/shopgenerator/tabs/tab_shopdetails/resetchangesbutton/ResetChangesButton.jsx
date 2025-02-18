@@ -36,7 +36,7 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
                     headerText="Revert All Changes?"
                     description="Are you sure you want to reset all changes made to this shop? This will revert the shop back to its last saved state."
                     changes={changes}
-                    currentShopName={currentShop.shortData.shopName}
+                    currentShopName={currentShop.name}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
                     confirmButtonText="Reset Changes"
@@ -50,9 +50,7 @@ ResetChangesButton.propTypes = {
     onReset: PropTypes.func.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
     currentShop: PropTypes.shape({
-        shortData: PropTypes.shape({
-            shopName: PropTypes.string.isRequired
-        }).isRequired
+        name: PropTypes.string.isRequired
     }).isRequired,
     changes: PropTypes.object.isRequired
 };

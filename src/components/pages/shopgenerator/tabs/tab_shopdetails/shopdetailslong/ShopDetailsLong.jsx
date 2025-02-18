@@ -7,13 +7,18 @@ const ShopDetailsLong = ({
     onInputChange, 
     placeholders = {} 
 }) => {
+    const longDetails = {
+        shopDetails: shopDetails.description,
+        shopKeeperDetails: shopDetails.keeperDescription
+    };
+
     return (
         <LongDetailsContainer>
-            {Object.keys(shopDetails.longData).map((key) => (
+            {Object.entries(longDetails).map(([key, value]) => (
                 <LongDetailRow
                     key={key}
                     title={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-                    value={shopDetails.longData[key]}
+                    value={value}
                     onChange={onInputChange}
                     name={key}
                     placeholder={placeholders[key] || `Enter ${key.toLowerCase()}`}
@@ -25,7 +30,8 @@ const ShopDetailsLong = ({
 
 ShopDetailsLong.propTypes = {
     shopDetails: PropTypes.shape({
-        longData: PropTypes.object.isRequired
+        description: PropTypes.string.isRequired,
+        keeperDescription: PropTypes.string.isRequired
     }).isRequired,
     onInputChange: PropTypes.func.isRequired,
     placeholders: PropTypes.object

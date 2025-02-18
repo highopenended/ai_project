@@ -31,10 +31,14 @@ function Tab_ShopDetails({
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
         if (!currentShop) return false;
-        const checkDataFilled = (data) => {
-            return Object.values(data).every((value) => value && typeof value === "string" && value.trim() !== "");
-        };
-        return checkDataFilled(currentShop.shortData) && checkDataFilled(currentShop.longData);
+        return Object.values({
+            name: currentShop.name,
+            keeperName: currentShop.keeperName,
+            type: currentShop.type,
+            location: currentShop.location,
+            description: currentShop.description,
+            keeperDescription: currentShop.keeperDescription
+        }).every((value) => value && typeof value === "string" && value.trim() !== "");
     };
 
     // Check if the current shop exists in savedShops
@@ -73,16 +77,12 @@ function Tab_ShopDetails({
 Tab_ShopDetails.propTypes = {
     currentShop: PropTypes.shape({
         id: PropTypes.string,
-        shortData: PropTypes.shape({
-            shopName: PropTypes.string.isRequired,
-            shopKeeperName: PropTypes.string.isRequired,
-            type: PropTypes.string.isRequired,
-            location: PropTypes.string.isRequired,
-        }).isRequired,
-        longData: PropTypes.shape({
-            shopDetails: PropTypes.string.isRequired,
-            shopKeeperDetails: PropTypes.string.isRequired,
-        }).isRequired,
+        name: PropTypes.string.isRequired,
+        keeperName: PropTypes.string.isRequired,
+        type: PropTypes.string.isRequired,
+        location: PropTypes.string.isRequired,
+        description: PropTypes.string.isRequired,
+        keeperDescription: PropTypes.string.isRequired,
         dateCreated: PropTypes.instanceOf(Date).isRequired,
         dateLastEdited: PropTypes.instanceOf(Date).isRequired,
     }).isRequired,

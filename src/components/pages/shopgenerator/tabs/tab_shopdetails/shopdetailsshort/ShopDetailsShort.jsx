@@ -20,7 +20,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
             <ShortDetailRow
                 ref={shopNameRef}
                 title="Shop Name"                    
-                value={shopDetails.shortData.shopName}
+                value={shopDetails.name}
                 onChange={onInputChange}
                 name="shopName"
                 onEnterPress={() => handleEnterPress(shopKeeperNameRef)}
@@ -29,7 +29,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
             <ShortDetailRow
                 ref={shopKeeperNameRef}
                 title="ShopKeeper"
-                value={shopDetails.shortData.shopKeeperName}
+                value={shopDetails.keeperName}
                 onChange={onInputChange}
                 name="shopKeeperName"
                 onEnterPress={() => handleEnterPress(typeRef)}
@@ -38,7 +38,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
             <ShortDetailRow
                 ref={typeRef}
                 title="Shop Type"
-                value={shopDetails.shortData.type}
+                value={shopDetails.type}
                 onChange={onInputChange}
                 name="type"
                 onEnterPress={() => handleEnterPress(locationRef)}
@@ -47,7 +47,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
             <ShortDetailRow
                 ref={locationRef}
                 title="Location"
-                value={shopDetails.shortData.location}
+                value={shopDetails.location}
                 onChange={onInputChange}
                 name="location"
                 onEnterPress={() => handleEnterPress(shopNameRef)}
