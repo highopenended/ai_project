@@ -1,36 +1,36 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import './UnsavedChangesDialogue.css';
+import React from "react";
+import PropTypes from "prop-types";
+import "./UnsavedChangesDialogue.css";
 
-const UnsavedChangesDialogue = ({ 
-    onConfirm, 
-    onCancel, 
-    changes, 
+const UnsavedChangesDialogue = ({
+    onConfirm,
+    onCancel,
+    changes,
     currentShopName,
     headerText = "Unsaved Changes",
     continueButtonText = "Discard all changes and continue",
     cancelButtonText = "Cancel",
-    description
+    description,
 }) => {
     const formatValue = (value) => {
-        if (value === null || value === undefined) return 'N/A';
+        if (value === null || value === undefined) return "N/A";
 
         // Handle Maps (for filter states)
         if (value instanceof Map) {
             return Array.from(value.entries())
                 .map(([key, state]) => `${key}: ${state}`)
-                .join(', ');
+                .join(", ");
         }
 
         // Handle arrays (for filter state entries)
         if (Array.isArray(value)) {
-            return value.map(([key, state]) => `${key}: ${state}`).join(', ');
+            return value.map(([key, state]) => `${key}: ${state}`).join(", ");
         }
 
         // Handle objects
-        if (typeof value === 'object' && value !== null) {
+        if (typeof value === "object" && value !== null) {
             // Handle bias coordinates
-            if ('x' in value && 'y' in value) {
+            if ("x" in value && "y" in value) {
                 const varietyPercent = Math.round(value.x * 100);
                 const costPercent = Math.round(value.y * 100);
                 return (
@@ -42,22 +42,22 @@ const UnsavedChangesDialogue = ({
             }
 
             // Handle rarity distribution
-            if (Object.keys(value).some(key => ['Common', 'Uncommon', 'Rare', 'Unique'].includes(key))) {
+            if (Object.keys(value).some((key) => ["Common", "Uncommon", "Rare", "Unique"].includes(key))) {
                 return Object.entries(value)
                     .map(([key, val]) => `${key}: ${val.toFixed(2)}%`)
-                    .join(', ');
+                    .join(", ");
             }
 
             // Handle filter states object
-            if ('categories' in value || 'subcategories' in value || 'traits' in value) {
+            if ("categories" in value || "subcategories" in value || "traits" in value) {
                 return Object.entries(value)
                     .map(([filterType, entries]) => {
-                        const formattedEntries = Array.isArray(entries) 
-                            ? entries.map(([key, state]) => `${key}: ${state}`).join(', ')
-                            : 'No filters';
+                        const formattedEntries = Array.isArray(entries)
+                            ? entries.map(([key, state]) => `${key}: ${state}`).join(", ")
+                            : "No filters";
                         return `${filterType}: {${formattedEntries}}`;
                     })
-                    .join('\n');
+                    .join("\n");
             }
         }
 
@@ -90,9 +90,9 @@ const UnsavedChangesDialogue = ({
         <div className="unsaved-changes-overlay">
             <div className="unsaved-changes-dialogue">
                 <h3 className="unsaved-changes-title">{headerText}</h3>
+                <h4>{currentShopName}</h4>
                 <p className="unsaved-changes-description">
-                    <h2 className="shop-name">&ldquo;{currentShopName}&rdquo;</h2>.
-                    {description || `You have unsaved changes to the current shop `}
+                    {description || `You have unsaved changes to the current shop "${currentShopName}"`}
                 </p>
                 <div className="unsaved-changes-content">
                     {renderChangeSection("Basic Information", changes.basic)}
@@ -100,21 +100,17 @@ const UnsavedChangesDialogue = ({
                     {changes.hasInventoryChanged && (
                         <div className="changes-section">
                             <h4 className="changes-section-title">Inventory</h4>
-                            <p className="inventory-change-message">The shop inventory has been refreshed at least once</p>
+                            <p className="inventory-change-message">
+                                The shop inventory has been refreshed at least once
+                            </p>
                         </div>
                     )}
                 </div>
                 <div className="unsaved-changes-buttons">
-                    <button 
-                        className="unsaved-changes-button unsaved-changes-proceed"
-                        onClick={onConfirm}
-                    >
+                    <button className="unsaved-changes-button unsaved-changes-proceed" onClick={onConfirm}>
                         {continueButtonText}
                     </button>
-                    <button 
-                        className="unsaved-changes-button unsaved-changes-cancel"
-                        onClick={onCancel}
-                    >
+                    <button className="unsaved-changes-button unsaved-changes-cancel" onClick={onCancel}>
                         {cancelButtonText}
                     </button>
                 </div>
@@ -129,13 +125,13 @@ UnsavedChangesDialogue.propTypes = {
     changes: PropTypes.shape({
         basic: PropTypes.object.isRequired,
         parameters: PropTypes.object.isRequired,
-        hasInventoryChanged: PropTypes.bool.isRequired
+        hasInventoryChanged: PropTypes.bool.isRequired,
     }).isRequired,
     currentShopName: PropTypes.string.isRequired,
     headerText: PropTypes.string,
     continueButtonText: PropTypes.string,
     cancelButtonText: PropTypes.string,
-    description: PropTypes.string
+    description: PropTypes.string,
 };
 
-export default UnsavedChangesDialogue; 
+export default UnsavedChangesDialogue;

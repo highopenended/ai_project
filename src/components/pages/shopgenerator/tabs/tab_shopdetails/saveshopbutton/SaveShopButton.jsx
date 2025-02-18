@@ -31,14 +31,14 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
                 <span className="save-text">Save</span>
             </button>
         {showConfirmation && (
-            <UnsavedChangesDialogue
-                headerText="Save All Changes?"
-                description={`Are you sure you want to save the changes you've made to this shop (${currentShop.name})?`}
-                changes={changes}
-                currentShopName={currentShop.name}
-                onConfirm={handleConfirm}
-                onCancel={handleCancel}
-                confirmButtonText="Reset Changes"
+                <UnsavedChangesDialogue
+                    headerText={`Save Changes?`}
+                    description={`Are you sure you want to save the changes you've made to this shop?`}
+                    changes={changes}
+                    currentShopName={currentShop.name}
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                    continueButtonText="Save Changes"
             />
         )}
         </>

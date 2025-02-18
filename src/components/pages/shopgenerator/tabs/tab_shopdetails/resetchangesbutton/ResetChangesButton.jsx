@@ -39,7 +39,7 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
                     currentShopName={currentShop.name}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
-                    confirmButtonText="Reset Changes"
+                    continueButtonText="Reset Changes"
                 />
             )}
         </>
