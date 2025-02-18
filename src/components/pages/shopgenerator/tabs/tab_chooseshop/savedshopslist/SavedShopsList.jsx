@@ -1,9 +1,9 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
-import Scrollbar from '../../shared/scrollbar/Scrollbar';
-import './SavedShops.css';
+import Scrollbar from '../../../shared/scrollbar/Scrollbar';
+import './SavedShopsList.css';
 
-const SavedShops = ({ savedShops, loadShop, currentShopId }) => {
+const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
     const formatDate = (date) => {
         if (!date) return '';
         
@@ -26,7 +26,7 @@ const SavedShops = ({ savedShops, loadShop, currentShopId }) => {
     const isUnsavedNew = currentShopId && !savedShops.find(shop => shop.id === currentShopId);
 
     return (
-        <div className="saved-shops-container">
+        <div className="saved-shops-list-container">
             <div className="saved-shops-title">Saved Shops</div>
             <Scrollbar style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 <ul className="shop-list">
@@ -69,7 +69,7 @@ const SavedShops = ({ savedShops, loadShop, currentShopId }) => {
     );
 };
 
-SavedShops.propTypes = {
+SavedShopsList.propTypes = {
     savedShops: PropTypes.arrayOf(PropTypes.shape({
         id: PropTypes.string.isRequired,
         name: PropTypes.string.isRequired,
@@ -105,4 +105,4 @@ SavedShops.propTypes = {
     currentShopId: PropTypes.string
 };
 
-export default SavedShops; 
+export default SavedShopsList; 

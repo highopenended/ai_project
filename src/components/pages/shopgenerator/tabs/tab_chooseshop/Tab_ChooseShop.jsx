@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import './Tab_ChooseShop.css';
-import NewShopButton from './NewShopButton';
-import SavedShops from './SavedShops';
-import ImportExport from './ImportExport';
+import NewShopButton from './newshopbutton/NewShopButton';
+import SavedShopsList from './savedshopslist/SavedShopsList';
+import ImportExport from './importexport/ImportExport';
 
 /**
  * Tab_ChooseShop Component
@@ -13,13 +13,14 @@ import ImportExport from './ImportExport';
  * - Importing/Exporting shop data
  */
 function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId }) {
+
+    
     return (
         <div className="tab-choose-shop">
             <NewShopButton handleNewShop={onNewShop} />
-            <SavedShops 
+            <SavedShopsList 
                 savedShops={savedShops} 
                 loadShop={onLoadShop} 
-                handleNewShop={onNewShop}
                 currentShopId={currentShopId}
             />
             <ImportExport 
