@@ -493,12 +493,12 @@ function ShopGenerator() {
         setShopDetails((prev) => ({
             ...prev,
             id: shop.id || `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            name: shop.name || "Unnamed Shop",
-            keeperName: shop.keeperName || "Unknown",
-            type: shop.type || "General Store",
-            location: shop.location || "Unknown Location",
-            description: shop.description || "No details available",
-            keeperDescription: shop.keeperDescription || "No details available",
+            name: shop.name || shop.shortData?.shopName || "Unnamed Shop",
+            keeperName: shop.keeperName || shop.shortData?.shopKeeperName || "Unknown",
+            type: shop.type || shop.shortData?.type || "General Store",
+            location: shop.location || shop.shortData?.location || "Unknown Location",
+            description: shop.description || shop.longData?.shopDetails || "No details available",
+            keeperDescription: shop.keeperDescription || shop.longData?.shopKeeperDetails || "No details available",
             dateCreated: loadedDateCreated,
             dateLastEdited: loadedDateLastEdited,
         }));
@@ -904,17 +904,20 @@ function ShopGenerator() {
             console.log("Loaded shops:", loadedShops);
             
             // Format the loaded shops to match the expected structure
-            const formattedShops = loadedShops.map(shop => ({
-                id: shop.id,
-                name: shop.name || '',
-                keeperName: shop.keeperName || '',
-                type: shop.type || '',
-                location: shop.location || '',
-                description: shop.description || '',
-                keeperDescription: shop.keeperDescription || '',
-                dateCreated: shop.dateCreated ? new Date(shop.dateCreated) : new Date(),
-                dateLastEdited: shop.dateLastEdited ? new Date(shop.dateLastEdited) : new Date()
-            }));
+            const formattedShops = loadedShops.map(shop => {
+                // Handle both old nested and new flat structure
+                return {
+                    id: shop.id,
+                    name: shop.name || shop.shortData?.shopName || '',
+                    keeperName: shop.keeperName || shop.shortData?.shopKeeperName || '',
+                    type: shop.type || shop.shortData?.type || '',
+                    location: shop.location || shop.shortData?.location || '',
+                    description: shop.description || shop.longData?.shopDetails || '',
+                    keeperDescription: shop.keeperDescription || shop.longData?.shopKeeperDetails || '',
+                    dateCreated: shop.dateCreated ? new Date(shop.dateCreated) : new Date(),
+                    dateLastEdited: shop.dateLastEdited ? new Date(shop.dateLastEdited) : new Date()
+                };
+            });
             
             setSavedShops(formattedShops);
         } catch (error) {
