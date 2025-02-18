@@ -66,18 +66,15 @@ function ShopGenerator() {
     const [allItems, setAllItems] = useState([]);
 
     // Combined shop state using the template
-    const [shopState, setShopState] = useState(() => {
-        // Deep clone the default data to ensure we don't modify the template
-        return JSON.parse(JSON.stringify({
-            ...defaultShopData,
-            // Ensure new Maps are created for filters
-            filters: {
-                categories: new Map(),
-                subcategories: new Map(),
-                traits: new Map(),
-            }
-        }));
-    });
+    const [shopState, setShopState] = useState(() => ({
+        ...defaultShopData,
+        // Ensure new Maps are created for filters
+        filters: {
+            categories: new Map(),
+            subcategories: new Map(),
+            traits: new Map(),
+        }
+    }));
 
     // Inventory state (kept separate for performance)
     const [items, setItems] = useState([]);
@@ -106,7 +103,7 @@ function ShopGenerator() {
 
     // Filter state management functions
     const getFilterState = (filterType, key) => {
-        return shopParameters.filters[filterType].get(key) || SELECTION_STATES.IGNORE;
+        return shopState.filters[filterType].get(key) || SELECTION_STATES.IGNORE;
     };
 
     const updateFilter = (filterType, key) => {
@@ -120,7 +117,7 @@ function ShopGenerator() {
             return SELECTION_STATES.IGNORE;
         }
 
-        setShopParameters((prev) => {
+        setShopState((prev) => {
             const newFilters = { ...prev.filters };
             const newMap = new Map(newFilters[filterType]);
 
@@ -140,7 +137,7 @@ function ShopGenerator() {
     };
 
     const clearFilter = (filterType) => {
-        setShopParameters((prev) => ({
+        setShopState((prev) => ({
             ...prev,
             filters: {
                 ...prev.filters,
@@ -174,11 +171,11 @@ function ShopGenerator() {
 
     // Function to get filtered arrays from Maps
     const getFilteredArray = useCallback((filterType, includeState) => {
-        const filterMap = shopParameters.filters[filterType];
+        const filterMap = shopState.filters[filterType];
         return Array.from(filterMap.entries())
             .filter(([, state]) => state === includeState)
             .map(([item]) => item);
-    }, [shopParameters.filters]);
+    }, [shopState.filters]);
 
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false); // Unsaved changes state
     const [savedShops, setSavedShops] = useState([]); // List of saved shops
