@@ -80,27 +80,6 @@ function ShopGenerator() {
     const [items, setItems] = useState([]);
     const { sortedItems, sortConfig, handleSort } = useSorting(items);
 
-    // Shop parameters state with integrated filter states
-    const [shopParameters, setShopParameters] = useState({
-        gold: 1000,
-        levelRange: {
-            min: 0,
-            max: 10,
-        },
-        itemBias: { x: 0.5, y: 0.5 },
-        rarityDistribution: {
-            Common: 95.0,
-            Uncommon: 4.5,
-            Rare: 0.49,
-            Unique: 0.01,
-        },
-        filters: {
-            categories: new Map(),
-            subcategories: new Map(),
-            traits: new Map(),
-        },
-    });
-
     // Filter state management functions
     const getFilterState = (filterType, key) => {
         return shopState.filters[filterType].get(key) || SELECTION_STATES.IGNORE;
@@ -219,12 +198,12 @@ function ShopGenerator() {
             dateCreated: shopDetails.dateCreated instanceof Date,
             dateLastEdited: shopDetails.dateLastEdited instanceof Date,
             filters: {
-                categories: Array.from(shopParameters.filters.categories.entries()),
-                subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                traits: Array.from(shopParameters.filters.traits.entries()),
+                categories: Array.from(shopState.filters.categories.entries()),
+                subcategories: Array.from(shopState.filters.subcategories.entries()),
+                traits: Array.from(shopState.filters.traits.entries()),
             },
         });
-    }, [shopDetails.dateCreated, shopDetails.dateLastEdited, shopParameters.filters]);
+    }, [shopDetails.dateCreated, shopDetails.dateLastEdited, shopState.filters]);
 
 
     // Initial data loading
@@ -272,7 +251,7 @@ function ShopGenerator() {
     // Save shop state when it changes
     useEffect(() => {
         if (shopDetails.id) {
-            const shopState = {
+            const savedShopData = {
                 id: shopDetails.id,
                 shortData: {
                     shopName: shopDetails.name,
@@ -285,11 +264,11 @@ function ShopGenerator() {
                     shopKeeperDetails: shopDetails.keeperDescription,
                 },
                 parameters: {
-                    goldAmount: shopParameters.gold,
-                    levelLow: shopParameters.levelRange.min,
-                    levelHigh: shopParameters.levelRange.max,
-                    shopBias: shopParameters.itemBias,
-                    rarityDistribution: shopParameters.rarityDistribution,
+                    goldAmount: shopState.gold,
+                    levelLow: shopState.levelRange.min,
+                    levelHigh: shopState.levelRange.max,
+                    shopBias: shopState.itemBias,
+                    rarityDistribution: shopState.rarityDistribution,
                     categories: {
                         included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
                         excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
@@ -307,12 +286,12 @@ function ShopGenerator() {
                 dateCreated: shopDetails.dateCreated,
                 dateLastEdited: shopDetails.dateLastEdited,
                 filterStates: {
-                    categories: Array.from(shopParameters.filters.categories.entries()),
-                    subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                    traits: Array.from(shopParameters.filters.traits.entries()),
+                    categories: Array.from(shopState.filters.categories.entries()),
+                    subcategories: Array.from(shopState.filters.subcategories.entries()),
+                    traits: Array.from(shopState.filters.traits.entries()),
                 },
             };
-            localStorage.setItem("currentShop", JSON.stringify(shopState));
+            localStorage.setItem("currentShop", JSON.stringify(savedShopData));
         }
     }, [
         shopDetails.id,
@@ -322,17 +301,17 @@ function ShopGenerator() {
         shopDetails.location,
         shopDetails.description,
         shopDetails.keeperDescription,
-        shopParameters.gold,
-        shopParameters.levelRange.min,
-        shopParameters.levelRange.max,
-        shopParameters.itemBias,
-        shopParameters.rarityDistribution,
+        shopState.gold,
+        shopState.levelRange.min,
+        shopState.levelRange.max,
+        shopState.itemBias,
+        shopState.rarityDistribution,
         items,
         shopDetails.dateCreated,
         shopDetails.dateLastEdited,
-        shopParameters.filters.categories,
-        shopParameters.filters.subcategories,
-        shopParameters.filters.traits,
+        shopState.filters.categories,
+        shopState.filters.subcategories,
+        shopState.filters.traits,
         getFilteredArray,
     ]);
 
@@ -362,38 +341,38 @@ function ShopGenerator() {
             };
 
         // Check parameters
-        if (shopParameters.gold !== originalValues.shopParameters.gold)
-            changes.parameters.currentGold = { old: originalValues.shopParameters.gold, new: shopParameters.gold };
-        if (shopParameters.levelRange.min !== originalValues.shopParameters.levelRange.min)
+        if (shopState.gold !== originalValues.shopParameters.gold)
+            changes.parameters.currentGold = { old: originalValues.shopParameters.gold, new: shopState.gold };
+        if (shopState.levelRange.min !== originalValues.shopParameters.levelRange.min)
             changes.parameters.lowestLevel = {
                 old: originalValues.shopParameters.levelRange.min,
-                new: shopParameters.levelRange.min,
+                new: shopState.levelRange.min,
             };
-        if (shopParameters.levelRange.max !== originalValues.shopParameters.levelRange.max)
+        if (shopState.levelRange.max !== originalValues.shopParameters.levelRange.max)
             changes.parameters.highestLevel = {
                 old: originalValues.shopParameters.levelRange.max,
-                new: shopParameters.levelRange.max,
+                new: shopState.levelRange.max,
             };
 
         // Check itemBias
         if (
-            shopParameters.itemBias.x !== originalValues.shopParameters.itemBias.x ||
-            shopParameters.itemBias.y !== originalValues.shopParameters.itemBias.y
+            shopState.itemBias.x !== originalValues.shopParameters.itemBias.x ||
+            shopState.itemBias.y !== originalValues.shopParameters.itemBias.y
         ) {
             changes.parameters.itemBias = {
                 old: originalValues.shopParameters.itemBias,
-                new: shopParameters.itemBias,
+                new: shopState.itemBias,
             };
         }
 
         // Check rarity distribution
-        const hasRarityChanged = Object.keys(shopParameters.rarityDistribution).some(
-            (key) => shopParameters.rarityDistribution[key] !== originalValues.shopParameters.rarityDistribution[key]
+        const hasRarityChanged = Object.keys(shopState.rarityDistribution).some(
+            (key) => shopState.rarityDistribution[key] !== originalValues.shopParameters.rarityDistribution[key]
         );
         if (hasRarityChanged) {
             changes.parameters.rarityDistribution = {
                 old: originalValues.shopParameters.rarityDistribution,
-                new: shopParameters.rarityDistribution,
+                new: shopState.rarityDistribution,
             };
         }
 
@@ -411,25 +390,25 @@ function ShopGenerator() {
         }
 
         console.log("Current state:", {
-            currentGold: shopParameters.gold,
-            lowestLevel: shopParameters.levelRange.min,
-            highestLevel: shopParameters.levelRange.max,
-            itemBias: shopParameters.itemBias,
-            rarityDistribution: shopParameters.rarityDistribution,
+            currentGold: shopState.gold,
+            lowestLevel: shopState.levelRange.min,
+            highestLevel: shopState.levelRange.max,
+            itemBias: shopState.itemBias,
+            rarityDistribution: shopState.rarityDistribution,
             allItemsLength: allItems.length,
             filters: {
-                categories: Array.from(shopParameters.filters.categories.entries()),
-                subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                traits: Array.from(shopParameters.filters.traits.entries()),
+                categories: Array.from(shopState.filters.categories.entries()),
+                subcategories: Array.from(shopState.filters.subcategories.entries()),
+                traits: Array.from(shopState.filters.traits.entries()),
             },
         });
 
         const result = generateShopInventory({
-            currentGold: shopParameters.gold,
-            lowestLevel: shopParameters.levelRange.min,
-            highestLevel: shopParameters.levelRange.max,
-            itemBias: shopParameters.itemBias,
-            rarityDistribution: shopParameters.rarityDistribution,
+            currentGold: shopState.gold,
+            lowestLevel: shopState.levelRange.min,
+            highestLevel: shopState.levelRange.max,
+            itemBias: shopState.itemBias,
+            rarityDistribution: shopState.rarityDistribution,
             includedCategories: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
             excludedCategories: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
             includedSubcategories: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
@@ -569,7 +548,7 @@ function ShopGenerator() {
             );
         }
 
-        setShopParameters(newShopParameters);
+        setShopState(newShopParameters);
         setItems(shop.currentStock || []);
 
         // Set original values for change tracking
@@ -619,7 +598,7 @@ function ShopGenerator() {
         }));
 
         // Reset shop parameters to defaults
-        setShopParameters({
+        setShopState({
             gold: 1000,
             levelRange: {
                 min: 0,
@@ -709,7 +688,7 @@ function ShopGenerator() {
         }
 
         try {
-            const shopState = {
+            const savedShopData = {
                 id: shopDetails.id,
                 shortData: {
                     shopName: shopDetails.name,
@@ -722,11 +701,11 @@ function ShopGenerator() {
                     shopKeeperDetails: shopDetails.keeperDescription,
                 },
                 parameters: {
-                    goldAmount: shopParameters.gold,
-                    levelLow: shopParameters.levelRange.min,
-                    levelHigh: shopParameters.levelRange.max,
-                    shopBias: shopParameters.itemBias,
-                    rarityDistribution: shopParameters.rarityDistribution,
+                    goldAmount: shopState.gold,
+                    levelLow: shopState.levelRange.min,
+                    levelHigh: shopState.levelRange.max,
+                    shopBias: shopState.itemBias,
+                    rarityDistribution: shopState.rarityDistribution,
                     categories: {
                         included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
                         excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
@@ -744,15 +723,15 @@ function ShopGenerator() {
                 dateCreated: shopDetails.dateCreated,
                 dateLastEdited: shopDetails.dateLastEdited,
                 filterStates: {
-                    categories: Array.from(shopParameters.filters.categories.entries()),
-                    subcategories: Array.from(shopParameters.filters.subcategories.entries()),
-                    traits: Array.from(shopParameters.filters.traits.entries()),
+                    categories: Array.from(shopState.filters.categories.entries()),
+                    subcategories: Array.from(shopState.filters.subcategories.entries()),
+                    traits: Array.from(shopState.filters.traits.entries()),
                 },
             };
 
-            console.log("Saving shop state:", shopState);
+            console.log("Saving shop state:", savedShopData);
             const userId = currentUser.uid;
-            const savedShopId = await saveOrUpdateShopData(userId, shopState);
+            const savedShopId = await saveOrUpdateShopData(userId, savedShopData);
             setShopDetails((prev) => ({ ...prev, id: savedShopId }));
             setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
             setHasUnsavedChanges(false);
@@ -806,7 +785,7 @@ function ShopGenerator() {
             }));
 
             // Reset shop parameters
-            setShopParameters(originalValues.shopParameters);
+            setShopState(originalValues.shopParameters);
 
             // Reset inventory if it was changed
             if (originalValues.hasInventoryChanged) {
@@ -834,12 +813,13 @@ function ShopGenerator() {
 
     // Shop management functions
     const handleGoldChange = (gold) => {
-        setShopParameters((prev) => ({ ...prev, gold }));
+        setShopState((prev) => ({ ...prev, gold }));
         setHasUnsavedChanges(true);
     };
+
     // Lowest level change
     const handleLowestLevelChange = (min) => {
-        setShopParameters((prev) => ({
+        setShopState((prev) => ({
             ...prev,
             levelRange: { ...prev.levelRange, min },
         }));
@@ -847,7 +827,7 @@ function ShopGenerator() {
     };
 
     const handleHighestLevelChange = (max) => {
-        setShopParameters((prev) => ({
+        setShopState((prev) => ({
             ...prev,
             levelRange: { ...prev.levelRange, max },
         }));
@@ -855,12 +835,12 @@ function ShopGenerator() {
     };
 
     const handleBiasChange = (bias) => {
-        setShopParameters((prev) => ({ ...prev, itemBias: bias }));
+        setShopState((prev) => ({ ...prev, itemBias: bias }));
         setHasUnsavedChanges(true);
     };
 
     const handleRarityDistributionChange = (distribution) => {
-        setShopParameters((prev) => ({ ...prev, rarityDistribution: distribution }));
+        setShopState((prev) => ({ ...prev, rarityDistribution: distribution }));
         setHasUnsavedChanges(true);
     };
 
@@ -868,11 +848,11 @@ function ShopGenerator() {
     useEffect(() => {
         const updateTimeout = setTimeout(() => {
             const newParameters = {
-                goldAmount: shopParameters.gold,
-                levelLow: shopParameters.levelRange.min,
-                levelHigh: shopParameters.levelRange.max,
-                shopBias: shopParameters.itemBias,
-                rarityDistribution: shopParameters.rarityDistribution,
+                goldAmount: shopState.gold,
+                levelLow: shopState.levelRange.min,
+                levelHigh: shopState.levelRange.max,
+                shopBias: shopState.itemBias,
+                rarityDistribution: shopState.rarityDistribution,
                 categories: {
                     included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
                     excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
@@ -893,14 +873,14 @@ function ShopGenerator() {
 
         return () => clearTimeout(updateTimeout);
     }, [
-        shopParameters.gold,
-        shopParameters.levelRange.min,
-        shopParameters.levelRange.max,
-        shopParameters.itemBias,
-        shopParameters.rarityDistribution,
-        shopParameters.filters.categories,
-        shopParameters.filters.subcategories,
-        shopParameters.filters.traits,
+        shopState.gold,
+        shopState.levelRange.min,
+        shopState.levelRange.max,
+        shopState.itemBias,
+        shopState.rarityDistribution,
+        shopState.filters.categories,
+        shopState.filters.subcategories,
+        shopState.filters.traits,
         items,
         getFilteredArray,
     ]);
@@ -927,20 +907,20 @@ function ShopGenerator() {
                                         <Tab_Parameters
                                             key={tab.key}
                                             type={{ name: "Tab_Parameters" }}
-                                            currentGold={shopParameters.gold}
+                                            currentGold={shopState.gold}
                                             setCurrentGold={handleGoldChange}
-                                            lowestLevel={shopParameters.levelRange.min}
+                                            lowestLevel={shopState.levelRange.min}
                                             setLowestLevel={handleLowestLevelChange}
-                                            highestLevel={shopParameters.levelRange.max}
+                                            highestLevel={shopState.levelRange.max}
                                             setHighestLevel={handleHighestLevelChange}
-                                            rarityDistribution={shopParameters.rarityDistribution}
+                                            rarityDistribution={shopState.rarityDistribution}
                                             setRarityDistribution={handleRarityDistributionChange}
-                                            itemBias={shopParameters.itemBias}
+                                            itemBias={shopState.itemBias}
                                             setItemBias={handleBiasChange}
                                             categoryData={categoryData}
-                                            categoryStates={shopParameters.filters.categories}
-                                            subcategoryStates={shopParameters.filters.subcategories}
-                                            traitStates={shopParameters.filters.traits}
+                                            categoryStates={shopState.filters.categories}
+                                            subcategoryStates={shopState.filters.subcategories}
+                                            traitStates={shopState.filters.traits}
                                             getFilterState={getFilterState}
                                             toggleCategory={toggleCategory}
                                             toggleSubcategory={toggleSubcategory}
@@ -949,7 +929,7 @@ function ShopGenerator() {
                                             clearSubcategorySelections={clearSubcategorySelections}
                                             clearTraitSelections={clearTraitSelections}
                                             setCategoryStates={(newStates) => {
-                                                setShopParameters((prev) => ({
+                                                setShopState((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
@@ -959,7 +939,7 @@ function ShopGenerator() {
                                                 setHasUnsavedChanges(true);
                                             }}
                                             setSubcategoryStates={(newStates) => {
-                                                setShopParameters((prev) => ({
+                                                setShopState((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
@@ -969,7 +949,7 @@ function ShopGenerator() {
                                                 setHasUnsavedChanges(true);
                                             }}
                                             setTraitStates={(newStates) => {
-                                                setShopParameters((prev) => ({
+                                                setShopState((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
@@ -1073,20 +1053,20 @@ function ShopGenerator() {
                     <Tab_Parameters
                         key="Tab_Parameters-0"
                         type={{ name: "Tab_Parameters" }}
-                        currentGold={shopParameters.gold}
+                        currentGold={shopState.gold}
                         setCurrentGold={handleGoldChange}
-                        lowestLevel={shopParameters.levelRange.min}
+                        lowestLevel={shopState.levelRange.min}
                         setLowestLevel={handleLowestLevelChange}
-                        highestLevel={shopParameters.levelRange.max}
+                        highestLevel={shopState.levelRange.max}
                         setHighestLevel={handleHighestLevelChange}
-                        rarityDistribution={shopParameters.rarityDistribution}
+                        rarityDistribution={shopState.rarityDistribution}
                         setRarityDistribution={handleRarityDistributionChange}
-                        itemBias={shopParameters.itemBias}
+                        itemBias={shopState.itemBias}
                         setItemBias={handleBiasChange}
                         categoryData={categoryData}
-                        categoryStates={shopParameters.filters.categories}
-                        subcategoryStates={shopParameters.filters.subcategories}
-                        traitStates={shopParameters.filters.traits}
+                        categoryStates={shopState.filters.categories}
+                        subcategoryStates={shopState.filters.subcategories}
+                        traitStates={shopState.filters.traits}
                         getFilterState={getFilterState}
                         toggleCategory={toggleCategory}
                         toggleSubcategory={toggleSubcategory}
@@ -1095,7 +1075,7 @@ function ShopGenerator() {
                         clearSubcategorySelections={clearSubcategorySelections}
                         clearTraitSelections={clearTraitSelections}
                         setCategoryStates={(newStates) => {
-                            setShopParameters((prev) => ({
+                            setShopState((prev) => ({
                                 ...prev,
                                 filters: {
                                     ...prev.filters,
@@ -1105,7 +1085,7 @@ function ShopGenerator() {
                             setHasUnsavedChanges(true);
                         }}
                         setSubcategoryStates={(newStates) => {
-                            setShopParameters((prev) => ({
+                            setShopState((prev) => ({
                                 ...prev,
                                 filters: {
                                     ...prev.filters,
@@ -1115,7 +1095,7 @@ function ShopGenerator() {
                             setHasUnsavedChanges(true);
                         }}
                         setTraitStates={(newStates) => {
-                            setShopParameters((prev) => ({
+                            setShopState((prev) => ({
                                 ...prev,
                                 filters: {
                                     ...prev.filters,
@@ -1447,20 +1427,20 @@ function ShopGenerator() {
                                 switch (tab.type.name) {
                                     case "Tab_Parameters":
                                         return React.cloneElement(tab, {
-                                            currentGold: shopParameters.gold,
+                                            currentGold: shopState.gold,
                                             setCurrentGold: handleGoldChange,
-                                            lowestLevel: shopParameters.levelRange.min,
+                                            lowestLevel: shopState.levelRange.min,
                                             setLowestLevel: handleLowestLevelChange,
-                                            highestLevel: shopParameters.levelRange.max,
+                                            highestLevel: shopState.levelRange.max,
                                             setHighestLevel: handleHighestLevelChange,
-                                            rarityDistribution: shopParameters.rarityDistribution,
+                                            rarityDistribution: shopState.rarityDistribution,
                                             setRarityDistribution: handleRarityDistributionChange,
-                                            itemBias: shopParameters.itemBias,
+                                            itemBias: shopState.itemBias,
                                             setItemBias: handleBiasChange,
                                             categoryData: categoryData,
-                                            categoryStates: shopParameters.filters.categories,
-                                            subcategoryStates: shopParameters.filters.subcategories,
-                                            traitStates: shopParameters.filters.traits,
+                                            categoryStates: shopState.filters.categories,
+                                            subcategoryStates: shopState.filters.subcategories,
+                                            traitStates: shopState.filters.traits,
                                             getFilterState: getFilterState,
                                             toggleCategory: toggleCategory,
                                             toggleSubcategory: toggleSubcategory,
@@ -1469,7 +1449,7 @@ function ShopGenerator() {
                                             clearSubcategorySelections: clearSubcategorySelections,
                                             clearTraitSelections: clearTraitSelections,
                                             setCategoryStates: (newStates) => {
-                                                setShopParameters((prev) => ({
+                                                setShopState((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
@@ -1479,7 +1459,7 @@ function ShopGenerator() {
                                                 setHasUnsavedChanges(true);
                                             },
                                             setSubcategoryStates: (newStates) => {
-                                                setShopParameters((prev) => ({
+                                                setShopState((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
@@ -1489,7 +1469,7 @@ function ShopGenerator() {
                                                 setHasUnsavedChanges(true);
                                             },
                                             setTraitStates: (newStates) => {
-                                                setShopParameters((prev) => ({
+                                                setShopState((prev) => ({
                                                     ...prev,
                                                     filters: {
                                                         ...prev.filters,
