@@ -50,8 +50,18 @@ function Tab_ShopDetails({
     return (
         <div className="tab-shop-details">
             <div className="shop-details-actions">
-                <SaveShopButton onSave={onSaveShop} areAllDetailsFilled={areAllDetailsFilled} />
-                <CloneShopButton onClone={onCloneShop} shopId={isNewUnsavedShop ? null : currentShop?.id} />
+                <SaveShopButton
+                    onSave={onSaveShop}
+                    areAllDetailsFilled={areAllDetailsFilled}
+                    changes={changes}
+                    currentShop={currentShop}
+                />
+                <CloneShopButton
+                    onClone={onCloneShop}
+                    shopId={isNewUnsavedShop ? null : currentShop?.id}
+                    changes={changes}
+                    currentShop={currentShop}
+                />
                 <ResetChangesButton
                     onReset={onResetChanges}
                     hasUnsavedChanges={isNewUnsavedShop ? false : hasUnsavedChanges}

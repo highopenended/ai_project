@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import PropTypes from 'prop-types';
-import './ResetChangesButton.css';
-import UnsavedChangesDialogue from '../../../shared/UnsavedChangesDialogue';
+import { useState } from "react";
+import PropTypes from "prop-types";
+import "./ResetChangesButton.css";
+import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
 
 const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -21,7 +21,7 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
 
     return (
         <>
-            <button 
+            <button
                 className="reset-changes-button"
                 onClick={handleClick}
                 disabled={!hasUnsavedChanges}
@@ -50,9 +50,9 @@ ResetChangesButton.propTypes = {
     onReset: PropTypes.func.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
     currentShop: PropTypes.shape({
-        name: PropTypes.string.isRequired
+        name: PropTypes.string.isRequired,
     }).isRequired,
-    changes: PropTypes.object.isRequired
+    changes: PropTypes.object.isRequired,
 };
 
 export default ResetChangesButton;
