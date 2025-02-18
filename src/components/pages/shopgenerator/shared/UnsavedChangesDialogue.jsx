@@ -13,11 +13,24 @@ const UnsavedChangesDialogue = ({
     description
 }) => {
     const formatValue = (value) => {
+        if (value === null || value === undefined) return 'N/A';
+
+        // Handle Maps (for filter states)
+        if (value instanceof Map) {
+            return Array.from(value.entries())
+                .map(([key, state]) => `${key}: ${state}`)
+                .join(', ');
+        }
+
+        // Handle arrays (for filter state entries)
+        if (Array.isArray(value)) {
+            return value.map(([key, state]) => `${key}: ${state}`).join(', ');
+        }
+
+        // Handle objects
         if (typeof value === 'object' && value !== null) {
+            // Handle bias coordinates
             if ('x' in value && 'y' in value) {
-                // Convert x and y coordinates to percentages
-                // x represents Variety (from 0 to 1)
-                // y represents Cost (from 0 to 1)
                 const varietyPercent = Math.round(value.x * 100);
                 const costPercent = Math.round(value.y * 100);
                 return (
@@ -27,10 +40,27 @@ const UnsavedChangesDialogue = ({
                     </div>
                 );
             }
-            return Object.entries(value)
-                .map(([key, val]) => `${key}: ${val.toFixed(2)}%`)
-                .join(', ');
+
+            // Handle rarity distribution
+            if (Object.keys(value).some(key => ['Common', 'Uncommon', 'Rare', 'Unique'].includes(key))) {
+                return Object.entries(value)
+                    .map(([key, val]) => `${key}: ${val.toFixed(2)}%`)
+                    .join(', ');
+            }
+
+            // Handle filter states object
+            if ('categories' in value || 'subcategories' in value || 'traits' in value) {
+                return Object.entries(value)
+                    .map(([filterType, entries]) => {
+                        const formattedEntries = Array.isArray(entries) 
+                            ? entries.map(([key, state]) => `${key}: ${state}`).join(', ')
+                            : 'No filters';
+                        return `${filterType}: {${formattedEntries}}`;
+                    })
+                    .join('\n');
+            }
         }
+
         return value.toString();
     };
 
