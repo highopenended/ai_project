@@ -1,11 +1,7 @@
 // import React from 'react';
 
 function Tab_AiAssistant() {
-    return (
-        <div>
-            Tab Ai Assistant
-        </div>
-    );
+    return <div>Tab Ai Assistant</div>;
 }
 
 Tab_AiAssistant.displayName = "The Oracle";

@@ -37,7 +37,7 @@ function Tab_ShopDetails({
             type: currentShop.type,
             location: currentShop.location,
             description: currentShop.description,
-            keeperDescription: currentShop.keeperDescription
+            keeperDescription: currentShop.keeperDescription,
         }).every((value) => value && typeof value === "string" && value.trim() !== "");
     };
 
@@ -88,15 +88,15 @@ Tab_ShopDetails.propTypes = {
         gold: PropTypes.number,
         levelRange: PropTypes.shape({
             min: PropTypes.number,
-            max: PropTypes.number
+            max: PropTypes.number,
         }),
         itemBias: PropTypes.shape({
             x: PropTypes.number,
-            y: PropTypes.number
+            y: PropTypes.number,
         }),
         rarityDistribution: PropTypes.object,
         currentStock: PropTypes.array,
-        filterStates: PropTypes.object
+        filterStates: PropTypes.object,
     }).isRequired,
     onShopDetailsChange: PropTypes.func.isRequired,
     onSaveShop: PropTypes.func.isRequired,

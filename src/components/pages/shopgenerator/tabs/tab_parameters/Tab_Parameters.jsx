@@ -28,7 +28,7 @@ function Tab_Parameters({
     toggleTrait,
     clearCategorySelections,
     clearSubcategorySelections,
-    clearTraitSelections
+    clearTraitSelections,
 }) {
     return (
         <div className="main-wrapper-parameter">
@@ -41,20 +41,20 @@ function Tab_Parameters({
             />
             <RaritySliders setRarityDistribution={setRarityDistribution} rarityDistribution={rarityDistribution} />
             <BiasGrid setItemBias={setItemBias} itemBias={itemBias} />
-            <CategoryFilter 
+            <CategoryFilter
                 categoryData={categoryData}
                 getFilterState={getFilterState}
                 toggleCategory={toggleCategory}
                 clearCategorySelections={clearCategorySelections}
             />
-            <SubcategoryFilter 
+            <SubcategoryFilter
                 categoryData={categoryData}
                 categoryStates={categoryStates}
                 getFilterState={getFilterState}
                 toggleSubcategory={toggleSubcategory}
                 clearSubcategorySelections={clearSubcategorySelections}
             />
-            <TraitFilter 
+            <TraitFilter
                 getFilterState={getFilterState}
                 toggleTrait={toggleTrait}
                 clearTraitSelections={clearTraitSelections}
@@ -82,7 +82,7 @@ Tab_Parameters.propTypes = {
     toggleTrait: PropTypes.func.isRequired,
     clearCategorySelections: PropTypes.func.isRequired,
     clearSubcategorySelections: PropTypes.func.isRequired,
-    clearTraitSelections: PropTypes.func.isRequired
+    clearTraitSelections: PropTypes.func.isRequired,
 };
 
 Tab_Parameters.displayName = "Parameters";
