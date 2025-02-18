@@ -505,13 +505,13 @@ function ShopGenerator() {
 
         // Update shop parameters with filter states
         const newShopParameters = {
-            gold: shop.parameters?.goldAmount || 1000,
+            gold: shop.parameters?.goldAmount || shop.gold || 1000,
             levelRange: {
-                min: shop.parameters?.levelLow || 0,
-                max: shop.parameters?.levelHigh || 10,
+                min: shop.parameters?.levelLow || shop.levelRange?.min || 0,
+                max: shop.parameters?.levelHigh || shop.levelRange?.max || 10,
             },
-            itemBias: shop.parameters?.shopBias || { x: 0.5, y: 0.5 },
-            rarityDistribution: shop.parameters?.rarityDistribution || {
+            itemBias: shop.parameters?.shopBias || shop.itemBias || { x: 0.5, y: 0.5 },
+            rarityDistribution: shop.parameters?.rarityDistribution || shop.rarityDistribution || {
                 Common: 95.0,
                 Uncommon: 4.5,
                 Rare: 0.49,
@@ -557,7 +557,11 @@ function ShopGenerator() {
         }
 
         setShopState(newShopParameters);
-        setItems(shop.currentStock || []);
+        
+        // Handle inventory data from both old and new structure
+        const inventoryData = shop.currentStock || shop.parameters?.currentStock || [];
+        console.log("Loading inventory data:", inventoryData);
+        setItems(inventoryData);
 
         // Set original values for change tracking
         setOriginalValues({
@@ -596,7 +600,7 @@ function ShopGenerator() {
             // Current inventory (maintained separately for performance)
             currentStock: [...(shop.currentStock || [])],
 
-            // Additional tracking fields not in template but needed for UI
+            // Reset inventory changed flag
             hasInventoryChanged: false
         });
 
@@ -907,7 +911,8 @@ function ShopGenerator() {
             const formattedShops = loadedShops.map(shop => {
                 // Handle both old nested and new flat structure
                 return {
-                    id: shop.id,
+                    ...shop, // Keep all original data
+                    // Override only the fields that need special handling
                     name: shop.name || shop.shortData?.shopName || '',
                     keeperName: shop.keeperName || shop.shortData?.shopKeeperName || '',
                     type: shop.type || shop.shortData?.type || '',
@@ -919,6 +924,7 @@ function ShopGenerator() {
                 };
             });
             
+            console.log("Formatted shops:", formattedShops);
             setSavedShops(formattedShops);
         } catch (error) {
             console.error("Error loading shops:", error);
