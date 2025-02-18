@@ -530,9 +530,11 @@ function ShopGenerator() {
 
         // Load filter states from saved shop
         if (shop.filterStates) {
-            // If we have the new format, use it
-            Object.entries(shop.filterStates).forEach(([filterType, entries]) => {
-                newShopParameters.filters[filterType] = new Map(entries);
+            // Convert the object format back to Map
+            Object.entries(shop.filterStates).forEach(([filterType, states]) => {
+                newShopParameters.filters[filterType] = new Map(
+                    Object.entries(states)
+                );
             });
         } else {
             // If loading an older shop without filter states, try to restore from parameters
@@ -590,9 +592,9 @@ function ShopGenerator() {
 
             // Filter states
             filters: {
-                categories: new Map(shop.parameters?.categories?.included?.map((c) => [c, SELECTION_STATES.INCLUDE]) || new Map()),
-                subcategories: new Map(shop.parameters?.subcategories?.included?.map((c) => [c, SELECTION_STATES.INCLUDE]) || new Map()),
-                traits: new Map(shop.parameters?.traits?.included?.map((c) => [c, SELECTION_STATES.INCLUDE]) || new Map()),
+                categories: new Map(Object.entries(shop.filterStates?.categories || {})),
+                subcategories: new Map(Object.entries(shop.filterStates?.subcategories || {})),
+                traits: new Map(Object.entries(shop.filterStates?.traits || {})),
             },
 
             // Current inventory (maintained separately for performance)
