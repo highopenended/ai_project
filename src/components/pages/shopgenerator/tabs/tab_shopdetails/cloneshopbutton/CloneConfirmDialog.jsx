@@ -4,7 +4,8 @@ import "./CloneConfirmDialog.css";
 const CloneConfirmDialog = ({ onConfirm, onCancel }) => {
     return (
         <div className="clone-confirm-overlay" onClick={onCancel}>
-            <div className="clone-confirm-dialogue" onClick={(e) => e.stopPropagation()}>
+            {/* e.stopPropagation() prevents the click event from bubbling up to the parent and closing it */}
+            <div className="clone-confirm-dialogue" onClick={(e) => e.stopPropagation()}> 
                 <h3 className="clone-confirm-title">Clone This Shop?</h3>
                 <p className="clone-confirm-message">
                     This will create an exact copy of the current shop with a new ID. The cloned shop will have

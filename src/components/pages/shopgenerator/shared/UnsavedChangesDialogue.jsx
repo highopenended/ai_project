@@ -87,8 +87,8 @@ const UnsavedChangesDialogue = ({
     };
 
     return (
-        <div className="unsaved-changes-overlay">
-            <div className="unsaved-changes-dialogue">
+        <div className="unsaved-changes-overlay" onClick={onCancel}>
+            <div className="unsaved-changes-dialogue" onClick={(e) => e.stopPropagation()}>
                 <h3 className="unsaved-changes-title">{headerText}</h3>
                 <h4>{currentShopName}</h4>
                 <p className="unsaved-changes-description">

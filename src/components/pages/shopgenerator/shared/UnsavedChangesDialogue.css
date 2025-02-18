@@ -14,11 +14,10 @@
 }
 
 .unsaved-changes-dialogue {
-    background: var(--background-secondary);
+    background: var(--background-primary);
     border-radius: 0.5rem;
     padding: 1.5rem;
-    width: 90%;
-    max-width: 600px;
+    width: 50%;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     transform-origin: center;
     animation: scaleIn 0.2s ease-out;
