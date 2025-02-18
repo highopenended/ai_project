@@ -55,11 +55,7 @@ function ShopGenerator() {
 
     // Initialize category data (Categories with subcategories and their count)
     const [categoryData] = useState(() => {
-        const saved = localStorage.getItem("shop-categories");
-        if (saved) return JSON.parse(saved);
-
         const extracted = extractUniqueCategories(itemData);
-        localStorage.setItem("shop-categories", JSON.stringify(extracted));
         return extracted;
     });
 
@@ -209,14 +205,8 @@ function ShopGenerator() {
 
     // Initialize shop - either from saved state or create new
     useEffect(() => {
-        if (!authLoading) {
-            const savedShop = localStorage.getItem("currentShop");
-            if (savedShop) {
-                const parsedShop = JSON.parse(savedShop);
-                handleLoadShop(parsedShop);
-            } else if (!shopDetails.id) {
-                handleNewShop();
-            }
+        if (!authLoading && !shopDetails.id) {
+            handleNewShop();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authLoading]);
@@ -232,60 +222,37 @@ function ShopGenerator() {
     // Save shop state when it changes
     useEffect(() => {
         if (shopDetails.id) {
-            const savedShopData = {
-                id: shopDetails.id,
-                name: shopDetails.name,
-                keeperName: shopDetails.keeperName,
-                type: shopDetails.type,
-                location: shopDetails.location,
-                description: shopDetails.description,
-                keeperDescription: shopDetails.keeperDescription,
-                parameters: {
-                    goldAmount: shopState.gold,
-                    levelLow: shopState.levelRange.min,
-                    levelHigh: shopState.levelRange.max,
-                    shopBias: shopState.itemBias,
-                    rarityDistribution: shopState.rarityDistribution,
-                    categories: {
-                        included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
-                    },
-                    subcategories: {
-                        included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
-                    },
-                    traits: {
-                        included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
-                        excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
-                    },
+            const newParameters = {
+                goldAmount: shopState.gold,
+                levelLow: shopState.levelRange.min,
+                levelHigh: shopState.levelRange.max,
+                shopBias: shopState.itemBias,
+                rarityDistribution: shopState.rarityDistribution,
+                categories: {
+                    included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
+                    excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
+                },
+                subcategories: {
+                    included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
+                    excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
+                },
+                traits: {
+                    included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
+                    excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
                 },
                 currentStock: items,
-                dateCreated: shopDetails.dateCreated,
-                dateLastEdited: shopDetails.dateLastEdited,
-                filterStates: {
-                    categories: Array.from(shopState.filters.categories.entries()),
-                    subcategories: Array.from(shopState.filters.subcategories.entries()),
-                    traits: Array.from(shopState.filters.traits.entries()),
-                },
             };
-            localStorage.setItem("currentShop", JSON.stringify(savedShopData));
+
+            console.log("Updated parameters:", newParameters);
         }
     }, [
         shopDetails.id,
-        shopDetails.name,
-        shopDetails.keeperName,
-        shopDetails.type,
-        shopDetails.location,
-        shopDetails.description,
-        shopDetails.keeperDescription,
         shopState.gold,
         shopState.levelRange.min,
         shopState.levelRange.max,
         shopState.itemBias,
         shopState.rarityDistribution,
         items,
-        shopDetails.dateCreated,
-        shopDetails.dateLastEdited,
         shopState.filters.categories,
         shopState.filters.subcategories,
         shopState.filters.traits,
@@ -587,14 +554,27 @@ function ShopGenerator() {
     const handleCloneShop = () => {
         // Generate a new unique ID for the cloned shop
         const clonedShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const currentDate = new Date();
 
-        setShopDetails((prev) => ({
-            ...prev,
+        // Create new shop details with cloned data
+        const clonedDetails = {
+            ...shopDetails,
             id: clonedShopId,
-            name: `${prev.name} (Clone)`,
-            dateCreated: new Date(),
-            dateLastEdited: new Date(),
-        }));
+            name: `${shopDetails.name} (Clone)`,
+            dateCreated: currentDate,
+            dateLastEdited: currentDate,
+        };
+
+        // Update shop details
+        setShopDetails(clonedDetails);
+
+        // Take a new snapshot with the cloned state
+        const newSnapshot = takeShopSnapshot(
+            clonedDetails,
+            shopState,
+            items
+        );
+        setShopSnapshot(newSnapshot);
     };
 
     const handleSaveShop = async () => {
