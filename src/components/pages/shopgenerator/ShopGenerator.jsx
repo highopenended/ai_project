@@ -335,7 +335,13 @@ function ShopGenerator() {
 
         if (result && Array.isArray(result.items)) {
             setItems(result.items);
-            setShopSnapshot(result.items);
+            // Take a new snapshot with the current state and new items
+            const newSnapshot = takeShopSnapshot(
+                shopDetails,
+                shopState,
+                result.items
+            );
+            setShopSnapshot(newSnapshot);
             console.log("Items state updated with", result.items.length, "items");
         } else {
             console.error("Invalid result from generateShopInventory:", result);
