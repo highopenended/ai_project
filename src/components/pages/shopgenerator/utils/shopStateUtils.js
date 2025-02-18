@@ -1,5 +1,3 @@
-import { SELECTION_STATES } from "./shopGeneratorConstants";
-
 /**
  * Creates a complete snapshot of the current shop state
  * @param {Object} shopDetails - Current shop details state
@@ -29,7 +27,7 @@ export const takeShopSnapshot = (shopDetails, shopState, items) => {
         itemBias: { ...shopState.itemBias },
         rarityDistribution: { ...shopState.rarityDistribution },
 
-        // Filter states
+        // Filter states (create new Maps with copied entries)
         filters: {
             categories: new Map(shopState.filters.categories),
             subcategories: new Map(shopState.filters.subcategories),
@@ -41,9 +39,23 @@ export const takeShopSnapshot = (shopDetails, shopState, items) => {
             ...item,
             traits: Array.isArray(item.traits) ? [...item.traits] : [],
             categories: Array.isArray(item.categories) ? [...item.categories] : [],
-            subcategories: Array.isArray(item.subcategories) ? [...item.subcategories] : [],
+            subcategories: Array.isArray(item.subcategories) ? [...item.subcategories] : []
         }))
     };
+};
+
+/**
+ * Helper function to compare two Maps
+ * @param {Map} map1 
+ * @param {Map} map2 
+ * @returns {boolean}
+ */
+const areMapsEqual = (map1, map2) => {
+    if (map1.size !== map2.size) return false;
+    for (const [key, value] of map1) {
+        if (!map2.has(key) || map2.get(key) !== value) return false;
+    }
+    return true;
 };
 
 /**
@@ -61,25 +73,25 @@ export const compareShopStates = (currentState, originalState) => {
 
     // Check basic fields
     if (currentState.name !== originalState.name)
-        changes.basic.shopName = { old: originalState.name, new: currentState.name };
+        changes.basic.name = { old: originalState.name, new: currentState.name };
     if (currentState.keeperName !== originalState.keeperName)
-        changes.basic.shopKeeperName = { old: originalState.keeperName, new: currentState.keeperName };
+        changes.basic.keeperName = { old: originalState.keeperName, new: currentState.keeperName };
     if (currentState.type !== originalState.type)
-        changes.basic.shopType = { old: originalState.type, new: currentState.type };
+        changes.basic.type = { old: originalState.type, new: currentState.type };
     if (currentState.location !== originalState.location)
-        changes.basic.shopLocation = { old: originalState.location, new: currentState.location };
+        changes.basic.location = { old: originalState.location, new: currentState.location };
     if (currentState.description !== originalState.description)
-        changes.basic.shopDetails = { old: originalState.description, new: currentState.description };
+        changes.basic.description = { old: originalState.description, new: currentState.description };
     if (currentState.keeperDescription !== originalState.keeperDescription)
-        changes.basic.shopKeeperDetails = { old: originalState.keeperDescription, new: currentState.keeperDescription };
+        changes.basic.keeperDescription = { old: originalState.keeperDescription, new: currentState.keeperDescription };
 
     // Check parameters
     if (currentState.gold !== originalState.gold)
-        changes.parameters.currentGold = { old: originalState.gold, new: currentState.gold };
+        changes.parameters.gold = { old: originalState.gold, new: currentState.gold };
     if (currentState.levelRange.min !== originalState.levelRange.min)
-        changes.parameters.lowestLevel = { old: originalState.levelRange.min, new: currentState.levelRange.min };
+        changes.parameters.levelMin = { old: originalState.levelRange.min, new: currentState.levelRange.min };
     if (currentState.levelRange.max !== originalState.levelRange.max)
-        changes.parameters.highestLevel = { old: originalState.levelRange.max, new: currentState.levelRange.max };
+        changes.parameters.levelMax = { old: originalState.levelRange.max, new: currentState.levelRange.max };
 
     // Check itemBias
     if (
@@ -103,23 +115,23 @@ export const compareShopStates = (currentState, originalState) => {
         };
     }
 
-    // Check filter states by converting Maps to arrays for comparison
-    const currentFilters = {
-        categories: Array.from(currentState.filters.categories.entries()),
-        subcategories: Array.from(currentState.filters.subcategories.entries()),
-        traits: Array.from(currentState.filters.traits.entries())
-    };
-    const originalFilters = {
-        categories: Array.from(originalState.filters.categories.entries()),
-        subcategories: Array.from(originalState.filters.subcategories.entries()),
-        traits: Array.from(originalState.filters.traits.entries())
-    };
-
-    const hasFilterChanges = JSON.stringify(currentFilters) !== JSON.stringify(originalFilters);
+    // Check filter states using Map comparison
+    const hasFilterChanges = !areMapsEqual(currentState.filters.categories, originalState.filters.categories) ||
+                           !areMapsEqual(currentState.filters.subcategories, originalState.filters.subcategories) ||
+                           !areMapsEqual(currentState.filters.traits, originalState.filters.traits);
+    
     if (hasFilterChanges) {
         changes.parameters.filters = {
-            old: originalFilters,
-            new: currentFilters,
+            old: {
+                categories: Array.from(originalState.filters.categories.entries()),
+                subcategories: Array.from(originalState.filters.subcategories.entries()),
+                traits: Array.from(originalState.filters.traits.entries())
+            },
+            new: {
+                categories: Array.from(currentState.filters.categories.entries()),
+                subcategories: Array.from(currentState.filters.subcategories.entries()),
+                traits: Array.from(currentState.filters.traits.entries())
+            }
         };
     }
 

@@ -67,8 +67,10 @@ function ShopGenerator() {
 
     // Combined shop state using the template
     const [shopState, setShopState] = useState(() => ({
-        ...defaultShopData,
-        // Ensure new Maps are created for filters
+        gold: defaultShopData.gold,
+        levelRange: defaultShopData.levelRange,
+        itemBias: defaultShopData.itemBias,
+        rarityDistribution: defaultShopData.rarityDistribution,
         filters: {
             categories: new Map(),
             subcategories: new Map(),
