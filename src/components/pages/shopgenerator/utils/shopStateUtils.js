@@ -9,61 +9,40 @@ import { SELECTION_STATES } from "./shopGeneratorConstants";
  */
 export const takeShopSnapshot = (shopDetails, shopState, items) => {
     return {
+        // Basic shop information
         id: shopDetails.id,
-        shortData: {
-            shopName: shopDetails.name,
-            shopKeeperName: shopDetails.keeperName,
-            type: shopDetails.type,
-            location: shopDetails.location,
+        name: shopDetails.name,
+        keeperName: shopDetails.keeperName,
+        type: shopDetails.type,
+        location: shopDetails.location,
+        description: shopDetails.description,
+        keeperDescription: shopDetails.keeperDescription,
+        dateCreated: shopDetails.dateCreated,
+        dateLastEdited: shopDetails.dateLastEdited,
+
+        // Shop generation settings
+        gold: shopState.gold,
+        levelRange: {
+            min: shopState.levelRange.min,
+            max: shopState.levelRange.max
         },
-        longData: {
-            shopDetails: shopDetails.description,
-            shopKeeperDetails: shopDetails.keeperDescription,
+        itemBias: { ...shopState.itemBias },
+        rarityDistribution: { ...shopState.rarityDistribution },
+
+        // Filter states
+        filters: {
+            categories: new Map(shopState.filters.categories),
+            subcategories: new Map(shopState.filters.subcategories),
+            traits: new Map(shopState.filters.traits)
         },
-        parameters: {
-            goldAmount: shopState.gold,
-            levelLow: shopState.levelRange.min,
-            levelHigh: shopState.levelRange.max,
-            shopBias: { ...shopState.itemBias },
-            rarityDistribution: { ...shopState.rarityDistribution },
-            categories: {
-                included: Array.from(shopState.filters.categories.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                    .map(([item]) => item),
-                excluded: Array.from(shopState.filters.categories.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                    .map(([item]) => item),
-            },
-            subcategories: {
-                included: Array.from(shopState.filters.subcategories.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                    .map(([item]) => item),
-                excluded: Array.from(shopState.filters.subcategories.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                    .map(([item]) => item),
-            },
-            traits: {
-                included: Array.from(shopState.filters.traits.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.INCLUDE)
-                    .map(([item]) => item),
-                excluded: Array.from(shopState.filters.traits.entries())
-                    .filter(([, state]) => state === SELECTION_STATES.EXCLUDE)
-                    .map(([item]) => item),
-            },
-        },
-        filterStates: {
-            categories: Object.fromEntries(shopState.filters.categories),
-            subcategories: Object.fromEntries(shopState.filters.subcategories),
-            traits: Object.fromEntries(shopState.filters.traits),
-        },
+
+        // Current inventory with clean copies of arrays
         currentStock: items.map(item => ({
             ...item,
             traits: Array.isArray(item.traits) ? [...item.traits] : [],
             categories: Array.isArray(item.categories) ? [...item.categories] : [],
             subcategories: Array.isArray(item.subcategories) ? [...item.subcategories] : [],
-        })),
-        dateCreated: shopDetails.dateCreated,
-        dateLastEdited: shopDetails.dateLastEdited,
+        }))
     };
 };
 
@@ -81,55 +60,66 @@ export const compareShopStates = (currentState, originalState) => {
     };
 
     // Check basic fields
-    if (currentState.shortData.shopName !== originalState.shortData.shopName)
-        changes.basic.shopName = { old: originalState.shortData.shopName, new: currentState.shortData.shopName };
-    if (currentState.shortData.shopKeeperName !== originalState.shortData.shopKeeperName)
-        changes.basic.shopKeeperName = { old: originalState.shortData.shopKeeperName, new: currentState.shortData.shopKeeperName };
-    if (currentState.shortData.type !== originalState.shortData.type)
-        changes.basic.shopType = { old: originalState.shortData.type, new: currentState.shortData.type };
-    if (currentState.shortData.location !== originalState.shortData.location)
-        changes.basic.shopLocation = { old: originalState.shortData.location, new: currentState.shortData.location };
-    if (currentState.longData.shopDetails !== originalState.longData.shopDetails)
-        changes.basic.shopDetails = { old: originalState.longData.shopDetails, new: currentState.longData.shopDetails };
-    if (currentState.longData.shopKeeperDetails !== originalState.longData.shopKeeperDetails)
-        changes.basic.shopKeeperDetails = { old: originalState.longData.shopKeeperDetails, new: currentState.longData.shopKeeperDetails };
+    if (currentState.name !== originalState.name)
+        changes.basic.shopName = { old: originalState.name, new: currentState.name };
+    if (currentState.keeperName !== originalState.keeperName)
+        changes.basic.shopKeeperName = { old: originalState.keeperName, new: currentState.keeperName };
+    if (currentState.type !== originalState.type)
+        changes.basic.shopType = { old: originalState.type, new: currentState.type };
+    if (currentState.location !== originalState.location)
+        changes.basic.shopLocation = { old: originalState.location, new: currentState.location };
+    if (currentState.description !== originalState.description)
+        changes.basic.shopDetails = { old: originalState.description, new: currentState.description };
+    if (currentState.keeperDescription !== originalState.keeperDescription)
+        changes.basic.shopKeeperDetails = { old: originalState.keeperDescription, new: currentState.keeperDescription };
 
     // Check parameters
-    if (currentState.parameters.goldAmount !== originalState.parameters.goldAmount)
-        changes.parameters.currentGold = { old: originalState.parameters.goldAmount, new: currentState.parameters.goldAmount };
-    if (currentState.parameters.levelLow !== originalState.parameters.levelLow)
-        changes.parameters.lowestLevel = { old: originalState.parameters.levelLow, new: currentState.parameters.levelLow };
-    if (currentState.parameters.levelHigh !== originalState.parameters.levelHigh)
-        changes.parameters.highestLevel = { old: originalState.parameters.levelHigh, new: currentState.parameters.levelHigh };
+    if (currentState.gold !== originalState.gold)
+        changes.parameters.currentGold = { old: originalState.gold, new: currentState.gold };
+    if (currentState.levelRange.min !== originalState.levelRange.min)
+        changes.parameters.lowestLevel = { old: originalState.levelRange.min, new: currentState.levelRange.min };
+    if (currentState.levelRange.max !== originalState.levelRange.max)
+        changes.parameters.highestLevel = { old: originalState.levelRange.max, new: currentState.levelRange.max };
 
     // Check itemBias
     if (
-        currentState.parameters.shopBias.x !== originalState.parameters.shopBias.x ||
-        currentState.parameters.shopBias.y !== originalState.parameters.shopBias.y
+        currentState.itemBias.x !== originalState.itemBias.x ||
+        currentState.itemBias.y !== originalState.itemBias.y
     ) {
         changes.parameters.itemBias = {
-            old: originalState.parameters.shopBias,
-            new: currentState.parameters.shopBias,
+            old: originalState.itemBias,
+            new: currentState.itemBias,
         };
     }
 
     // Check rarity distribution
-    const hasRarityChanged = Object.keys(currentState.parameters.rarityDistribution).some(
-        (key) => currentState.parameters.rarityDistribution[key] !== originalState.parameters.rarityDistribution[key]
+    const hasRarityChanged = Object.keys(currentState.rarityDistribution).some(
+        (key) => currentState.rarityDistribution[key] !== originalState.rarityDistribution[key]
     );
     if (hasRarityChanged) {
         changes.parameters.rarityDistribution = {
-            old: originalState.parameters.rarityDistribution,
-            new: currentState.parameters.rarityDistribution,
+            old: originalState.rarityDistribution,
+            new: currentState.rarityDistribution,
         };
     }
 
-    // Check filter states
-    const hasFilterChanges = JSON.stringify(currentState.filterStates) !== JSON.stringify(originalState.filterStates);
+    // Check filter states by converting Maps to arrays for comparison
+    const currentFilters = {
+        categories: Array.from(currentState.filters.categories.entries()),
+        subcategories: Array.from(currentState.filters.subcategories.entries()),
+        traits: Array.from(currentState.filters.traits.entries())
+    };
+    const originalFilters = {
+        categories: Array.from(originalState.filters.categories.entries()),
+        subcategories: Array.from(originalState.filters.subcategories.entries()),
+        traits: Array.from(originalState.filters.traits.entries())
+    };
+
+    const hasFilterChanges = JSON.stringify(currentFilters) !== JSON.stringify(originalFilters);
     if (hasFilterChanges) {
         changes.parameters.filters = {
-            old: originalState.filterStates,
-            new: currentState.filterStates,
+            old: originalFilters,
+            new: currentFilters,
         };
     }
 
