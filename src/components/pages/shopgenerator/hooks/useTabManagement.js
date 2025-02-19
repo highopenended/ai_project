@@ -20,6 +20,22 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         betweenGroupsRight: null,
     });
 
+    // Add window-level mouse up handler for resize operations
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            if (isResizing) {
+                handleDragEnd();
+            }
+        };
+
+        window.addEventListener("mouseup", handleGlobalMouseUp);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener("mouseup", handleGlobalMouseUp);
+        };
+    }, [isResizing]);
+
     /**
      * Handles moving tabs within and between groups
      * @param {Array|Array[]} newTabs - Either the reordered tabs or [sourceTab, dropIndex]

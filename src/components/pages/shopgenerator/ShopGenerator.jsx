@@ -475,22 +475,6 @@ function ShopGenerator() {
         saveState();
     }, [tabGroups, flexBasis]);
 
-    // Add window-level mouse up handler
-    useEffect(() => {
-        const handleGlobalMouseUp = () => {
-            if (isResizing) {
-                handleDragEnd();
-            }
-        };
-
-        window.addEventListener("mouseup", handleGlobalMouseUp);
-
-        // Cleanup
-        return () => {
-            window.removeEventListener("mouseup", handleGlobalMouseUp);
-        };
-    }, [isResizing, handleDragEnd]);
-
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {authLoading ? (
