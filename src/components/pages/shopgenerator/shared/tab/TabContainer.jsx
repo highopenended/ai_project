@@ -189,50 +189,52 @@ function TabContainer({
             const isFirstGroup = currentGroupIndex === 0;
             const isLastGroup = currentGroupIndex === allGroups.length - 1;
 
+            // Calculate edge thresholds based on container width
+            const containerWidth = containerRect.width;
+            const dynamicEdgeThreshold = Math.min(edgeThreshold, containerWidth * 0.2); // 20% of container width or edgeThreshold, whichever is smaller
+
             // Only show split indicators when NOT over the header
             const newIndicators = {
-                leftGroup: !isOverHeader && isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
-                rightGroup: !isOverHeader && isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null,
-                betweenGroups: !isOverHeader && !isFirstGroup && distanceFromLeft < edgeThreshold ? groupIndex : null,
-                betweenGroupsRight: !isOverHeader && !isLastGroup && distanceFromRight < edgeThreshold ? groupIndex : null
+                leftGroup: !isOverHeader && isFirstGroup && distanceFromLeft < dynamicEdgeThreshold ? groupIndex : null,
+                rightGroup: !isOverHeader && isLastGroup && distanceFromRight < dynamicEdgeThreshold ? groupIndex : null,
+                betweenGroups: !isOverHeader && !isFirstGroup && distanceFromLeft < dynamicEdgeThreshold ? groupIndex : null,
+                betweenGroupsRight: !isOverHeader && !isLastGroup && distanceFromRight < dynamicEdgeThreshold ? groupIndex : null
             };
             
             // Use the debounced version for indicator changes
             debouncedDropIndicatorChange(newIndicators);
 
-            // Calculate drop index using originalPositions for smooth animations
-            const relativeX = mouseX - headerRect.left;
-            let newDropIndex = tabs.length;
-            
-            if (originalPositions.current.length > 0) {
-                if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
-                    newDropIndex = 0;
-                } else {
-                    for (let i = 1; i < originalPositions.current.length; i++) {
-                        const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
-                        const currentCenter = originalPositions.current[i]?.center - headerRect.left;
-                        
-                        if (relativeX >= prevCenter && relativeX < currentCenter) {
-                            newDropIndex = i;
-                            break;
+            // Only calculate drop index if we're not showing any edge indicators
+            if (!Object.values(newIndicators).some(val => val !== null)) {
+                // Calculate drop index using originalPositions for smooth animations
+                const relativeX = mouseX - headerRect.left;
+                let newDropIndex = tabs.length;
+                
+                if (originalPositions.current.length > 0) {
+                    if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
+                        newDropIndex = 0;
+                    } else {
+                        for (let i = 1; i < originalPositions.current.length; i++) {
+                            const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
+                            const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+                            
+                            if (relativeX >= prevCenter && relativeX < currentCenter) {
+                                newDropIndex = i;
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            // Ensure dropIndex doesn't exceed current group's length
-            newDropIndex = Math.min(newDropIndex, tabs.length);
-
-            // When creating a new group, default to index 0
-            if (!isOverHeader && (newIndicators.leftGroup !== null || 
-                newIndicators.rightGroup !== null || 
-                newIndicators.betweenGroups !== null ||
-                newIndicators.betweenGroupsRight !== null)) {
-                newDropIndex = 0;
-            }
-            
-            if (dropIndex !== newDropIndex) {
-                setDropIndex(newDropIndex);
+                // Ensure dropIndex doesn't exceed current group's length
+                newDropIndex = Math.min(newDropIndex, tabs.length);
+                
+                if (dropIndex !== newDropIndex) {
+                    setDropIndex(newDropIndex);
+                }
+            } else {
+                // Reset dropIndex when showing edge indicators
+                setDropIndex(null);
             }
         }
     };

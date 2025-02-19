@@ -1,88 +1,24 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 
-const STORAGE_KEY = "tabGroupsState";
-
 /**
- * Hook for managing tab operations like moving, splitting, and drag/drop state
+ * Hook for managing tab groups, including moving, splitting, and resizing operations
  */
-export const useTabOperations = (initialState) => {
-    const [tabGroups, setTabGroups] = useState(initialState.groups);
-    const [flexBasis, setFlexBasis] = useState(initialState.widths);
-    const [dragState, setDragState] = useState({
-        draggedTab: null,
-        draggedTabIndex: null,
-        sourceGroupIndex: null,
-        dropIndicators: {
-            leftGroup: null,
-            rightGroup: null,
-            betweenGroups: null,
-            betweenGroupsRight: null,
-        }
-    });
+export const useTabManagement = (initialGroups, initialWidths) => {
+    const [tabGroups, setTabGroups] = useState(initialGroups);
+    const [flexBasis, setFlexBasis] = useState(initialWidths);
     const [isResizing, setIsResizing] = useState(false);
 
-    // Helper function to save state to localStorage
-    const saveState = useCallback(() => {
-        const groupsData = tabGroups.map((group) =>
-            group.map((tab) => ({
-                type: tab.type.name,
-                key: tab.key,
-            }))
-        );
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({
-                groups: groupsData,
-                widths: flexBasis,
-            })
-        );
-    }, [tabGroups, flexBasis]);
-
-    // Helper function to reset drag state
-    const resetDragState = useCallback(() => {
-        setDragState({
-            draggedTab: null,
-            draggedTabIndex: null,
-            sourceGroupIndex: null,
-            dropIndicators: {
-                leftGroup: null,
-                rightGroup: null,
-                betweenGroups: null,
-                betweenGroupsRight: null,
-            }
-        });
-    }, []);
-
-    // Add window-level mouse up handler
-    useEffect(() => {
-        const handleGlobalMouseUp = () => {
-            if (isResizing) {
-                setIsResizing(false);
-            }
-        };
-
-        window.addEventListener("mouseup", handleGlobalMouseUp);
-
-        return () => {
-            window.removeEventListener("mouseup", handleGlobalMouseUp);
-        };
-    }, [isResizing]);
-
-    // Save state whenever tab groups or widths change
-    useEffect(() => {
-        saveState();
-    }, [tabGroups, flexBasis, saveState]);
-
-    // Initialize flex basis when tab groups change
-    useEffect(() => {
-        if (tabGroups.length !== flexBasis.length) {
-            const defaultWidths = tabGroups.map(() => `${100 / tabGroups.length}%`);
-            setFlexBasis(defaultWidths);
-            saveState();
-        }
-    }, [tabGroups.length, flexBasis.length, saveState]);
+    // State for drag and drop operations
+    const [draggedTab, setDraggedTab] = useState(null);
+    const [draggedTabIndex, setDraggedTabIndex] = useState(null);
+    const [sourceGroupIndex, setSourceGroupIndex] = useState(null);
+    const [dropIndicators, setDropIndicators] = useState({
+        leftGroup: null,
+        rightGroup: null,
+        betweenGroups: null,
+        betweenGroupsRight: null,
+    });
 
     /**
      * Handles moving tabs within and between groups
@@ -91,9 +27,18 @@ export const useTabOperations = (initialState) => {
      * @param {number} [targetGroupIndex] - Index of the target group (if moving between groups)
      */
     const handleTabMove = (newTabs, sourceGroupIndex, targetGroupIndex) => {
-        resetDragState();
+        // First reset all drag states to ensure clean state for next operation
+        setDraggedTab(null);
+        setDraggedTabIndex(null);
+        setSourceGroupIndex(null);
+        setDropIndicators({
+            leftGroup: null,
+            rightGroup: null,
+            betweenGroups: null,
+            betweenGroupsRight: null,
+        });
 
-        // Update the groups after a short delay to ensure state is clean
+        // Then update the groups after a short delay to ensure state is clean
         setTimeout(() => {
             setTabGroups((prevGroups) => {
                 const newGroups = [...prevGroups];
@@ -149,47 +94,64 @@ export const useTabOperations = (initialState) => {
      * @param {boolean|number} targetPosition - Where to create the new group
      */
     const handleTabSplit = (tabInfo, sourceGroupIndex, targetPosition) => {
-        setTabGroups((prevGroups) => {
-            const newGroups = [...prevGroups];
-            const sourceGroup = [...prevGroups[sourceGroupIndex]];
-
-            const sourceTab = sourceGroup.find((tab) => tab.type.name === tabInfo.type);
-
-            if (!sourceTab) {
-                return prevGroups;
-            }
-
-            sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
-
-            const newTab = React.cloneElement(sourceTab, {
-                key: `${sourceTab.type.name}-${Date.now()}`,
-            });
-
-            const newGroup = [newTab];
-
-            if (sourceGroup.length === 0) {
-                newGroups.splice(sourceGroupIndex, 1);
-                if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
-                    targetPosition--;
-                }
-            } else {
-                newGroups[sourceGroupIndex] = sourceGroup;
-            }
-
-            if (typeof targetPosition === "number") {
-                newGroups.splice(targetPosition, 0, newGroup);
-            } else if (targetPosition === true) {
-                newGroups.push(newGroup);
-            } else {
-                newGroups.unshift(newGroup);
-            }
-
-            return newGroups;
+        // First reset all drag states to ensure clean state for next operation
+        setDraggedTab(null);
+        setDraggedTabIndex(null);
+        setSourceGroupIndex(null);
+        setDropIndicators({
+            leftGroup: null,
+            rightGroup: null,
+            betweenGroups: null,
+            betweenGroupsRight: null,
         });
+
+        // Then update the groups after a short delay to ensure state is clean
+        setTimeout(() => {
+            setTabGroups((prevGroups) => {
+                const newGroups = [...prevGroups];
+                const sourceGroup = [...prevGroups[sourceGroupIndex]];
+
+                const sourceTab = sourceGroup.find((tab) => tab.type.name === tabInfo.type);
+
+                if (!sourceTab) {
+                    return prevGroups;
+                }
+
+                sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
+
+                const newTab = React.cloneElement(sourceTab, {
+                    key: `${sourceTab.type.name}-${Date.now()}`,
+                });
+
+                const newGroup = [newTab];
+
+                if (sourceGroup.length === 0) {
+                    newGroups.splice(sourceGroupIndex, 1);
+                    if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
+                        targetPosition--;
+                    }
+                } else {
+                    newGroups[sourceGroupIndex] = sourceGroup;
+                }
+
+                // Handle numeric target position (between groups)
+                if (typeof targetPosition === "number") {
+                    newGroups.splice(targetPosition, 0, newGroup);
+                } else if (targetPosition === true) {
+                    newGroups.push(newGroup);
+                } else {
+                    newGroups.unshift(newGroup);
+                }
+
+                return newGroups;
+            });
+        }, 0);
     };
 
     /**
      * Handles resizing tab groups
+     * @param {number} newWidth - The new width of the group being resized
+     * @param {number} groupIndex - Index of the group being resized
      */
     const handleResize = (newWidth, groupIndex) => {
         if (groupIndex >= tabGroups.length - 1) return;
@@ -228,36 +190,57 @@ export const useTabOperations = (initialState) => {
         });
     };
 
+    /**
+     * Handles drag start event
+     */
     const handleDragStart = (tab, tabIndex, groupIndex) => {
-        setDragState(prev => ({
-            ...prev,
-            draggedTab: tab,
-            draggedTabIndex: tabIndex,
-            sourceGroupIndex: groupIndex
-        }));
+        setDraggedTab(tab);
+        setDraggedTabIndex(tabIndex);
+        setSourceGroupIndex(groupIndex);
     };
 
+    /**
+     * Handles drag end event
+     */
     const handleDragEnd = () => {
-        resetDragState();
+        setDraggedTab(null);
+        setDraggedTabIndex(null);
+        setSourceGroupIndex(null);
         setIsResizing(false);
+        setDropIndicators({
+            leftGroup: null,
+            rightGroup: null,
+            betweenGroups: null,
+            betweenGroupsRight: null,
+        });
     };
 
+    /**
+     * Updates drop indicators
+     */
     const handleDropIndicatorChange = (indicators) => {
-        setDragState(prev => ({
-            ...prev,
-            dropIndicators: { ...prev.dropIndicators, ...indicators }
-        }));
+        setDropIndicators((prev) => ({ ...prev, ...indicators }));
     };
+
+    // Initialize flex basis when tab groups change
+    useEffect(() => {
+        if (tabGroups.length !== flexBasis.length) {
+            const defaultWidths = tabGroups.map(() => `${100 / tabGroups.length}%`);
+            setFlexBasis(defaultWidths);
+        }
+    }, [tabGroups.length, flexBasis.length]);
 
     return {
         // State
         tabGroups,
+        setTabGroups,
         flexBasis,
-        draggedTab: dragState.draggedTab,
-        draggedTabIndex: dragState.draggedTabIndex,
-        sourceGroupIndex: dragState.sourceGroupIndex,
-        dropIndicators: dragState.dropIndicators,
+        setFlexBasis,
         isResizing,
+        draggedTab,
+        draggedTabIndex,
+        sourceGroupIndex,
+        dropIndicators,
         // Handlers
         handleTabMove,
         handleTabSplit,

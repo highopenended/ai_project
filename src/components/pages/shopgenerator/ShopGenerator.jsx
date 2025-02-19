@@ -20,7 +20,7 @@ import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
 import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
-import { useTabOperations } from "./hooks/useTabOperations";
+import { useTabManagement } from "./hooks/useTabManagement";
 
 /**
  * ShopGenerator Component
@@ -435,23 +435,61 @@ function ShopGenerator() {
     };
 
     const initialState = loadInitialState();
-
-    // Tab operations
+    
+    // Tab management
     const {
         tabGroups,
         flexBasis,
+        isResizing,
         draggedTab,
         draggedTabIndex,
         sourceGroupIndex,
         dropIndicators,
-        isResizing,
         handleTabMove,
         handleTabSplit,
         handleResize,
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
-    } = useTabOperations(initialState);
+    } = useTabManagement(initialState.groups, initialState.widths);
+
+    // Save state whenever tab groups or widths change
+    useEffect(() => {
+        const saveState = () => {
+            const groupsData = tabGroups.map((group) =>
+                group.map((tab) => ({
+                    type: tab.type.name,
+                    key: tab.key,
+                }))
+            );
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify({
+                    groups: groupsData,
+                    widths: flexBasis,
+                })
+            );
+        };
+
+        saveState();
+    }, [tabGroups, flexBasis]);
+
+    // Add window-level mouse up handler
+    useEffect(() => {
+        const handleGlobalMouseUp = () => {
+            if (isResizing) {
+                handleDragEnd();
+            }
+        };
+
+        window.addEventListener("mouseup", handleGlobalMouseUp);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener("mouseup", handleGlobalMouseUp);
+        };
+    }, [isResizing, handleDragEnd]);
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
@@ -559,7 +597,7 @@ function ShopGenerator() {
                             sourceGroupIndex={sourceGroupIndex}
                             dropIndicators={dropIndicators}
                             isLastGroup={index === tabGroups.length - 1}
-                            onResize={(newWidth) => handleResize(newWidth, index)}
+                            onResize={handleResize}
                             style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
                             onDragStart={(tab, tabIndex) => handleDragStart(tab, tabIndex, index)}
                             onDragEnd={handleDragEnd}
@@ -572,7 +610,7 @@ function ShopGenerator() {
                                 }
                             }}
                             onTabClick={() => {}}
-                            onTabSplit={(tabInfo, targetPosition) => handleTabSplit(tabInfo, index, targetPosition)}
+                            onTabSplit={handleTabSplit}
                         />
                     ))}
                 </>
