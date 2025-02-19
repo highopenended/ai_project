@@ -43,7 +43,23 @@ export const getCurrentShopState = (shopState, filters, items, getFilteredArray)
 });
 
 /**
- * Hook for managing shop state including parameters and details
+ * Hook for managing shop state and parameters
+ * 
+ * Manages the core shop state including generation parameters, shop details,
+ * and provides handlers for updating various aspects of the shop state.
+ * 
+ * @param {Object} initialState - Initial shop state from defaultShopData
+ * 
+ * @returns {Object} Shop state and handlers
+ * @property {Object} shopState - Current shop state
+ * @property {Function} setShopState - Function to update the entire shop state
+ * @property {Function} handleGoldChange - Handler for updating shop gold
+ * @property {Function} handleLowestLevelChange - Handler for updating minimum level
+ * @property {Function} handleHighestLevelChange - Handler for updating maximum level
+ * @property {Function} handleBiasChange - Handler for updating item bias
+ * @property {Function} handleRarityDistributionChange - Handler for updating rarity distribution
+ * @property {Function} handleShopDetailsChange - Handler for updating shop details
+ * @property {Function} handleResetChanges - Handler for resetting state to a snapshot
  */
 export const useShopState = (initialState) => {
     const [shopState, setShopState] = useState({

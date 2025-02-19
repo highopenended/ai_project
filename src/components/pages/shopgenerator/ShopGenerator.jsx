@@ -9,46 +9,54 @@ import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
 import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import itemData from "../../../../public/item-table.json";
-import { SELECTION_STATES } from "./utils/shopGeneratorConstants";
-import { generateShopInventory } from "./utils/generateShopInventory";
 import UnsavedChangesDialogue from "./shared/UnsavedChangesDialogue";
 import { useSorting } from "./utils/sortingUtils";
 import { extractUniqueCategories } from "./utils/categoryUtils";
 import defaultShopData from "./utils/shopData";
-import { takeShopSnapshot } from "./utils/shopStateUtils";
 import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
 import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
 import { useTabManagement } from "./hooks/useTabManagement";
+import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 /**
  * ShopGenerator Component
- * Parent component that manages multiple tab groups with drag and drop functionality
- *
+ * 
+ * Main component for the shop generation system. Manages the overall state and coordinates
+ * between different features through custom hooks.
+ * 
+ * Features:
+ * 1. Shop Management
+ *    - Create, load, save, and delete shops
+ *    - Track unsaved changes
+ *    - Maintain shop snapshots for state restoration
+ * 
+ * 2. Inventory Generation
+ *    - Generate shop inventory based on parameters
+ *    - Filter by categories, subcategories, and traits
+ *    - Sort and display inventory items
+ * 
+ * 3. Tab System
+ *    - Draggable and resizable tab groups
+ *    - Persistent tab layout saved to localStorage
+ *    - Tab types:
+ *      - Parameters: Shop generation settings
+ *      - Inventory Table: View and generate inventory
+ *      - Choose Shop: Load and manage saved shops
+ *      - Shop Details: Edit shop information
+ *      - AI Assistant: AI-powered shop assistance
+ * 
  * State Management:
- * - tabGroups: 2D array where each inner array represents a group of tabs
- * - draggedTab: Currently dragged tab component
- * - draggedTabIndex: Index of dragged tab in its group
- * - sourceGroupIndex: Index of the group where drag started
- * - dropIndicators: Visual indicators for group splitting
- *
- * Key Behaviors:
- * 1. Tab Movement:
- *    - Within same group: Reorders tabs
- *    - Between groups: Moves tab to new group
- *    - To edges: Creates new groups
- *
- * 2. State Updates:
- *    - Uses setTimeout to ensure clean state transitions
- *    - Resets drag states before updating groups
- *    - Maintains group integrity during operations
- *
- * Common Issues & Solutions:
- * 1. Double drag required: Check state reset timing
- * 2. Groups not updating: Verify setTimeout execution
- * 3. Tab duplication: Check key generation
- * 4. State sync issues: Verify parent-child prop flow
+ * - Uses custom hooks for specific features:
+ *   - useShopState: Shop parameters and details
+ *   - useShopFilters: Category and trait filtering
+ *   - useShopSnapshot: Change tracking and state restoration
+ *   - useShopOperations: Shop CRUD operations
+ *   - useInventoryGeneration: Inventory generation logic
+ *   - useTabManagement: Tab layout and interactions
+ * 
+ * @component
  */
 
 const STORAGE_KEY = "tabGroupsState";
@@ -111,7 +119,7 @@ function ShopGenerator() {
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
         shopState,
         filters,
-        items: inventory,
+        inventory
     });
 
     // Shop operations
@@ -137,6 +145,20 @@ function ShopGenerator() {
         setPendingAction,
         setShowUnsavedDialogue,
     });
+
+    // Shop generation
+    const { generateInventory, isGenerating } = useInventoryGeneration({
+        allItems,
+        shopState,
+        filters,
+        getFilteredArray,
+        setInventory,
+        setShopSnapshot
+    });
+
+    const handleGenerateClick = () => {
+        generateInventory();
+    };
 
     const handleUnsavedDialogueConfirm = () => {
         setShowUnsavedDialogue(false);
@@ -187,58 +209,6 @@ function ShopGenerator() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authLoading, currentUser]);
 
-    // Shop generation
-    const handleGenerateClick = () => {
-        console.log("handleGenerateClick called");
-
-        // Validate required data
-        if (!allItems || allItems.length === 0) {
-            console.error("No items loaded in allItems!");
-            return;
-        }
-
-        console.log("Current state:", {
-            currentGold: shopState.gold,
-            lowestLevel: shopState.levelRange.min,
-            highestLevel: shopState.levelRange.max,
-            itemBias: shopState.itemBias,
-            rarityDistribution: shopState.rarityDistribution,
-            allItemsLength: allItems.length,
-            filters: {
-                categories: Array.from(filters.categories.entries()),
-                subcategories: Array.from(filters.subcategories.entries()),
-                traits: Array.from(filters.traits.entries()),
-            },
-        });
-
-        const result = generateShopInventory({
-            currentGold: shopState.gold,
-            lowestLevel: shopState.levelRange.min,
-            highestLevel: shopState.levelRange.max,
-            itemBias: shopState.itemBias,
-            rarityDistribution: shopState.rarityDistribution,
-            includedCategories: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
-            excludedCategories: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
-            includedSubcategories: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
-            excludedSubcategories: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
-            includedTraits: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
-            excludedTraits: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
-            allItems,
-        });
-
-        console.log("Generation result:", result);
-
-        if (result && Array.isArray(result.items)) {
-            setInventory(result.items);
-            // Take a new snapshot with the current state
-            const newSnapshot = takeShopSnapshot(shopState, filters, result.items);
-            setShopSnapshot(newSnapshot);
-            console.log("Inventory state updated with", result.items.length, "items");
-        } else {
-            console.error("Invalid result from generateShopInventory:", result);
-        }
-    };
-
     const handleAiAssistantChange = (newState) => {
         console.log("Ai Assistant state updated:", newState);
     };
@@ -284,6 +254,7 @@ function ShopGenerator() {
                         handleGenerateClick={handleGenerateClick}
                         sortConfig={sortConfig}
                         onSort={handleSort}
+                        isGenerating={isGenerating}
                     />
                 );
             case "Tab_ChooseShop":
@@ -461,6 +432,7 @@ function ShopGenerator() {
                                             onSort: handleSort,
                                             currentShopName: shopState.name,
                                             handleGenerateClick,
+                                            isGenerating,
                                         });
                                     case "Tab_ShopDetails":
                                         return React.cloneElement(tab, {

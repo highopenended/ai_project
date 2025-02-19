@@ -2,7 +2,27 @@ import { useState, useEffect } from 'react';
 import React from 'react';
 
 /**
- * Hook for managing tab groups, including moving, splitting, and resizing operations
+ * Hook for managing tab navigation and content in the shop generator
+ * 
+ * Provides functionality for switching between different views (tabs) of the shop generator,
+ * including inventory management, shop details, and generation settings. Handles tab state,
+ * content rendering, and navigation logic.
+ * 
+ * @param {Object} params - The parameters for tab management
+ * @param {Object} params.shopState - Current shop state
+ * @param {Function} params.setShopState - Function to update shop state
+ * @param {Object} params.filters - Current filter states
+ * @param {Array} params.inventory - Current shop inventory
+ * @param {Function} params.setInventory - Function to update inventory
+ * @param {Function} params.handleSort - Function to handle inventory sorting
+ * @param {Object} params.sortConfig - Current sort configuration
+ * @param {boolean} params.isGenerating - Whether inventory generation is in progress
+ * 
+ * @returns {Object} Tab management handlers and state
+ * @property {string} activeTab - Currently active tab
+ * @property {Function} setActiveTab - Function to change active tab
+ * @property {Object} tabContent - Content to render for current tab
+ * @property {Function} handleTabChange - Handler for tab change events
  */
 export const useTabManagement = (initialGroups, initialWidths) => {
     const [tabGroups, setTabGroups] = useState(initialGroups);

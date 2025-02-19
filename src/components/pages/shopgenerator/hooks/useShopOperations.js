@@ -10,7 +10,34 @@ import defaultShopData from "../utils/shopData";
 const generateShopId = () => `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 /**
- * Custom hook to handle shop operations like loading, cloning, saving, and deleting
+ * Hook for managing shop CRUD operations
+ * 
+ * Provides functionality for creating, loading, saving, and deleting shops.
+ * Handles user authentication, unsaved changes, and state synchronization
+ * between local state and Firebase.
+ * 
+ * @param {Object} params - The parameters for shop operations
+ * @param {Object} params.currentUser - Current authenticated user
+ * @param {Object} params.shopState - Current shop state
+ * @param {Function} params.setShopState - Function to update shop state
+ * @param {Object} params.filters - Current filter states
+ * @param {Array} params.inventory - Current shop inventory
+ * @param {Function} params.setInventory - Function to update inventory
+ * @param {Function} params.setShopSnapshot - Function to update shop snapshot
+ * @param {Function} params.setSavedShops - Function to update list of saved shops
+ * @param {Function} params.setFilters - Function to update filter states
+ * @param {Function} params.getFilteredArray - Function to get filtered arrays
+ * @param {boolean} params.hasUnsavedChanges - Whether there are unsaved changes
+ * @param {Function} params.setPendingAction - Function to set pending action
+ * @param {Function} params.setShowUnsavedDialogue - Function to show/hide unsaved changes dialogue
+ * 
+ * @returns {Object} Shop operation handlers
+ * @property {Function} handleLoadShops - Load all shops for current user
+ * @property {Function} handleLoadShopWithCheck - Load a specific shop with unsaved changes check
+ * @property {Function} handleNewShop - Create a new shop
+ * @property {Function} handleCloneShop - Clone the current shop
+ * @property {Function} handleSaveShop - Save the current shop
+ * @property {Function} handleDeleteShop - Delete the current shop
  */
 export const useShopOperations = ({
     currentUser,

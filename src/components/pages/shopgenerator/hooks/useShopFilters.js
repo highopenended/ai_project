@@ -43,9 +43,28 @@ const updateFilterMap = (filterMap, key, state) => {
 };
 
 /**
- * Custom hook for managing shop filter states (categories, subcategories, traits)
- * @param {Object} initialFilters - Initial filter states
+ * Hook for managing shop inventory filters
+ * 
+ * Manages the filter states for categories, subcategories, and traits. Each filter
+ * can be in one of three states: IGNORE (default), INCLUDE, or EXCLUDE. The hook
+ * provides functionality to toggle states and get filtered arrays based on the
+ * current filter states.
+ * 
+ * @param {Object} [initialFilters=null] - Initial filter states
+ * 
  * @returns {Object} Filter state and operations
+ * @property {Object} filters - Current filter states for all filter types
+ * @property {Function} setFilters - Function to update all filter states
+ * @property {Function} getFilterState - Get the current state of a specific filter
+ * @property {Function} updateFilter - Update a specific filter's state
+ * @property {Function} clearFilter - Clear all filters of a specific type
+ * @property {Function} getFilteredArray - Get array of items matching a filter state
+ * @property {Function} toggleCategory - Toggle a category's filter state
+ * @property {Function} toggleSubcategory - Toggle a subcategory's filter state
+ * @property {Function} toggleTrait - Toggle a trait's filter state
+ * @property {Function} clearCategorySelections - Clear all category filters
+ * @property {Function} clearSubcategorySelections - Clear all subcategory filters
+ * @property {Function} clearTraitSelections - Clear all trait filters
  */
 export const useShopFilters = (initialFilters = null) => {
     const [filters, setFilters] = useState(() => 
