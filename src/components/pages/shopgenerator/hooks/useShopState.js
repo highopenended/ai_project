@@ -1,4 +1,46 @@
 import { useState } from 'react';
+import { SELECTION_STATES } from '../utils/shopGeneratorConstants';
+
+/**
+ * Helper function to get current shop state including parameters, details, and filters
+ */
+export const getCurrentShopState = (shopState, filters, items, getFilteredArray) => ({
+    
+    // Shop details
+    id: shopState.id,
+    name: shopState.name,
+    keeperName: shopState.keeperName,
+    type: shopState.type,
+    location: shopState.location,
+    description: shopState.description,
+    keeperDescription: shopState.keeperDescription,
+    dateCreated: shopState.dateCreated,
+    dateLastEdited: shopState.dateLastEdited,
+    
+    // Shop parameters
+    gold: shopState.gold,
+    levelRange: {
+        min: shopState.levelRange.min,
+        max: shopState.levelRange.max
+    },
+    itemBias: shopState.itemBias,
+    rarityDistribution: shopState.rarityDistribution,
+    
+    // Filter states
+    categories: {
+        included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
+        excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
+    },
+    subcategories: {
+        included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
+        excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
+    },
+    traits: {
+        included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
+        excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
+    },
+    currentStock: items,
+});
 
 /**
  * Hook for managing shop state including parameters and details

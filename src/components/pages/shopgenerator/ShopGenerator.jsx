@@ -101,7 +101,7 @@ function ShopGenerator() {
     const [pendingAction, setPendingAction] = useState(null);
 
     // Shop operations
-    const { handleLoadShops, handleLoadShop, handleCloneShop, handleSaveShop, handleDeleteShop } = useShopOperations({
+    const { handleLoadShops, handleLoadShopWithCheck, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } = useShopOperations({
         currentUser,
         shopState,
         setShopState,
@@ -111,8 +111,24 @@ function ShopGenerator() {
         setSavedShops,
         setFilters,
         setItems,
-        getFilteredArray
+        getFilteredArray,
+        hasUnsavedChanges,
+        setPendingAction,
+        setShowUnsavedDialogue
     });
+
+    const handleUnsavedDialogueConfirm = () => {
+        setShowUnsavedDialogue(false);
+        if (pendingAction) {
+            pendingAction();
+            setPendingAction(null);
+        }
+    };
+
+    const handleUnsavedDialogueCancel = () => {
+        setShowUnsavedDialogue(false);
+        setPendingAction(null);
+    };
 
     // Initial data loading
     useEffect(() => {
@@ -200,125 +216,6 @@ function ShopGenerator() {
         } else {
             console.error("Invalid result from generateShopInventory:", result);
         }
-    };
-
-    const handleLoadShopWithCheck = (shop) => {
-        if (hasUnsavedChanges) {
-            setPendingAction(() => () => {
-                handleLoadShop(shop);
-            });
-            setShowUnsavedDialogue(true);
-            return;
-        }
-        handleLoadShop(shop);
-    };
-
-    const handleNewShop = () => {
-        if (hasUnsavedChanges) {
-            setPendingAction(() => () => {
-                createNewShop();
-            });
-            setShowUnsavedDialogue(true);
-            return;
-        }
-        createNewShop();
-    };
-
-    const createNewShop = async () => {
-        try {
-            // Generate a new unique ID for the shop
-            const newShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            const currentDate = new Date();
-
-            // Reset all state to initial values
-            await Promise.all([
-                // Reset shop state with all details and parameters
-                setShopState({
-                    id: newShopId,
-                    name: "Unnamed Shop",
-                    keeperName: "Unknown",
-                    type: "General Store",
-                    location: "Unknown Location",
-                    description: "No details available",
-                    keeperDescription: "No details available",
-                    dateCreated: currentDate,
-                    dateLastEdited: currentDate,
-                    gold: 1000,
-                    levelRange: {
-                        min: 0,
-                        max: 10,
-                    },
-                    itemBias: { x: 0.5, y: 0.5 },
-                    rarityDistribution: {
-                        Common: 95.0,
-                        Uncommon: 4.5,
-                        Rare: 0.49,
-                        Unique: 0.01,
-                    },
-                }),
-
-                // Reset filters
-                setFilters({
-                    categories: new Map(),
-                    subcategories: new Map(),
-                    traits: new Map(),
-                }),
-
-                // Reset inventory
-                setItems([]),
-            ]);
-
-            // After all state updates are complete, take a snapshot
-            const newSnapshot = takeShopSnapshot(
-                {
-                    id: newShopId,
-                    name: "Unnamed Shop",
-                    keeperName: "Unknown",
-                    type: "General Store",
-                    location: "Unknown Location",
-                    description: "No details available",
-                    keeperDescription: "No details available",
-                    dateCreated: currentDate,
-                    dateLastEdited: currentDate,
-                    gold: 1000,
-                    levelRange: {
-                        min: 0,
-                        max: 10,
-                    },
-                    itemBias: { x: 0.5, y: 0.5 },
-                    rarityDistribution: {
-                        Common: 95.0,
-                        Uncommon: 4.5,
-                        Rare: 0.49,
-                        Unique: 0.01,
-                    },
-                },
-                {
-                    categories: new Map(),
-                    subcategories: new Map(),
-                    traits: new Map(),
-                },
-                []
-            );
-
-            setShopSnapshot(newSnapshot);
-        } catch (error) {
-            console.error("Error creating new shop:", error);
-            alert("Error creating new shop. Please try again.");
-        }
-    };
-
-    const handleUnsavedDialogueConfirm = () => {
-        setShowUnsavedDialogue(false);
-        if (pendingAction) {
-            pendingAction();
-            setPendingAction(null);
-        }
-    };
-
-    const handleUnsavedDialogueCancel = () => {
-        setShowUnsavedDialogue(false);
-        setPendingAction(null);
     };
 
     const handleAiAssistantChange = (newState) => {

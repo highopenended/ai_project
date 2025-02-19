@@ -1,7 +1,8 @@
 import { useEffect, useCallback } from 'react';
 import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/firebaseShopUtils";
 import { takeShopSnapshot } from "../utils/shopStateUtils";
-import { SELECTION_STATES } from "../utils/shopGeneratorConstants";
+import { getCurrentShopState } from "./useShopState";
+import defaultShopData from "../utils/shopData";
 
 /**
  * Helper function to generate a unique shop ID
@@ -21,7 +22,10 @@ export const useShopOperations = ({
     setSavedShops,
     setFilters,
     setItems,
-    getFilteredArray
+    getFilteredArray,
+    hasUnsavedChanges,
+    setPendingAction,
+    setShowUnsavedDialogue
 }) => {
     // Helper function to create a new shop snapshot
     const createShopSnapshot = useCallback((shopData, filterData, stockData) => {
@@ -36,46 +40,78 @@ export const useShopOperations = ({
                (typeof dateInput === "string" ? new Date(dateInput) : dateInput);
     }, []);
 
-    // Helper function to get current parameters state
-    const getCurrentParameters = useCallback(() => ({
-        gold: shopState.gold,
-        levelLow: shopState.levelRange.min,
-        levelHigh: shopState.levelRange.max,
-        itemBias: shopState.itemBias,
-        rarityDistribution: shopState.rarityDistribution,
-        categories: {
-            included: getFilteredArray("categories", SELECTION_STATES.INCLUDE),
-            excluded: getFilteredArray("categories", SELECTION_STATES.EXCLUDE),
-        },
-        subcategories: {
-            included: getFilteredArray("subcategories", SELECTION_STATES.INCLUDE),
-            excluded: getFilteredArray("subcategories", SELECTION_STATES.EXCLUDE),
-        },
-        traits: {
-            included: getFilteredArray("traits", SELECTION_STATES.INCLUDE),
-            excluded: getFilteredArray("traits", SELECTION_STATES.EXCLUDE),
-        },
-        currentStock: items,
-    }), [
-        shopState.gold,
-        shopState.levelRange.min,
-        shopState.levelRange.max,
-        shopState.itemBias,
-        shopState.rarityDistribution,
-        items,
-        getFilteredArray
-    ]);
-
     // Track shop parameter changes
     useEffect(() => {
         if (shopState.id) {
-            const newParameters = getCurrentParameters();
-            console.log("Updated parameters:", newParameters);
+            const newState = getCurrentShopState(shopState, filters, items, getFilteredArray);
+            console.log("Updated shop state:", newState);
         }
-    }, [
-        shopState.id,
-        getCurrentParameters
-    ]);
+    }, [shopState, filters, items, getFilteredArray]);
+
+    /**
+     * Create a new shop with default values
+     */
+    const createNewShop = async () => {
+        try {
+            const newShopId = generateShopId();
+            const currentDate = new Date();
+            const newShopState = {
+                ...defaultShopData,
+                id: newShopId,
+                dateCreated: currentDate,
+                dateLastEdited: currentDate,
+            };
+
+            // Reset all state to initial values
+            await Promise.all([
+                setShopState(newShopState),
+                setFilters({
+                    categories: new Map(),
+                    subcategories: new Map(),
+                    traits: new Map(),
+                }),
+                setItems([])
+            ]);
+
+            // Create new snapshot
+            createShopSnapshot(
+                newShopState,
+                {
+                    categories: new Map(),
+                    subcategories: new Map(),
+                    traits: new Map(),
+                },
+                []
+            );
+        } catch (error) {
+            console.error("Error creating new shop:", error);
+            alert("Error creating new shop. Please try again.");
+        }
+    };
+
+    /**
+     * Handle creating a new shop with unsaved changes check
+     */
+    const handleNewShop = () => {
+        if (hasUnsavedChanges) {
+            setPendingAction(() => () => createNewShop());
+            setShowUnsavedDialogue(true);
+            return;
+        }
+        createNewShop();
+    };
+
+    /**
+     * Handle loading a shop with unsaved changes check
+     */
+    const handleLoadShopWithCheck = (shop) => {
+        if (hasUnsavedChanges) {
+            setPendingAction(() => () => handleLoadShop(shop));
+            setShowUnsavedDialogue(true);
+            return;
+        }
+        handleLoadShop(shop);
+    };
 
     /**
      * Load all shops for the current user
@@ -105,10 +141,15 @@ export const useShopOperations = ({
      */
     const handleLoadShop = async (shop) => {
         try {
-            const loadedDateCreated = formatDate(shop.dateCreated);
-            const loadedDateLastEdited = formatDate(shop.dateLastEdited);
+            // Extract parameters with fallbacks
+            const {
+                parameters = {},
+                filterStates = {},
+                currentStock = [],
+            } = shop;
 
-            const newShopState = {
+            // Create base state with defaults
+            const baseState = {
                 id: shop.id || generateShopId(),
                 name: shop.name || "Unnamed Shop",
                 keeperName: shop.keeperName || "Unknown",
@@ -116,44 +157,38 @@ export const useShopOperations = ({
                 location: shop.location || "Unknown Location",
                 description: shop.description || "No details available",
                 keeperDescription: shop.keeperDescription || "No details available",
-                dateCreated: loadedDateCreated,
-                dateLastEdited: loadedDateLastEdited,
-                gold: shop.parameters?.gold || shop.gold || 1000,
+                dateCreated: formatDate(shop.dateCreated),
+                dateLastEdited: formatDate(shop.dateLastEdited),
+                gold: parameters.gold || shop.gold || 1000,
                 levelRange: {
-                    min: shop.parameters?.levelLow || shop.levelRange?.min || 0,
-                    max: shop.parameters?.levelHigh || shop.levelRange?.max || 10,
+                    min: parameters.levelLow || shop.levelRange?.min || 0,
+                    max: parameters.levelHigh || shop.levelRange?.max || 10,
                 },
-                itemBias: shop.parameters?.itemBias || shop.itemBias || { x: 0.5, y: 0.5 },
-                rarityDistribution: shop.parameters?.rarityDistribution ||
-                    shop.rarityDistribution || {
-                        Common: 95.0,
-                        Uncommon: 4.5,
-                        Rare: 0.49,
-                        Unique: 0.01,
-                    },
+                itemBias: parameters.itemBias || shop.itemBias || { x: 0.5, y: 0.5 },
+                rarityDistribution: parameters.rarityDistribution || shop.rarityDistribution || {
+                    Common: 95.0,
+                    Uncommon: 4.5,
+                    Rare: 0.49,
+                    Unique: 0.01,
+                }
             };
 
+            // Create filter maps from stored states
             const newFilters = {
-                categories: new Map(
-                    shop.filterStates?.categories ? Object.entries(shop.filterStates.categories) : []
-                ),
-                subcategories: new Map(
-                    shop.filterStates?.subcategories ? Object.entries(shop.filterStates.subcategories) : []
-                ),
-                traits: new Map(shop.filterStates?.traits ? Object.entries(shop.filterStates.traits) : []),
+                categories: new Map(Object.entries(filterStates.categories || {})),
+                subcategories: new Map(Object.entries(filterStates.subcategories || {})),
+                traits: new Map(Object.entries(filterStates.traits || {}))
             };
 
-            const newItems = shop.currentStock || shop.parameters?.currentStock || [];
-
-            // Update all state variables from the loaded shop
+            // Update all state variables
             await Promise.all([
-                setShopState(newShopState),
+                setShopState(baseState),
                 setFilters(newFilters),
-                setItems(newItems),
+                setItems(currentStock)
             ]);
 
             // Create new snapshot
-            createShopSnapshot(newShopState, newFilters, newItems);
+            createShopSnapshot(baseState, newFilters, currentStock);
         } catch (error) {
             console.error("Error loading shop:", error);
             alert("Error loading shop. Please try again.");
@@ -243,6 +278,8 @@ export const useShopOperations = ({
     return {
         handleLoadShops,
         handleLoadShop,
+        handleLoadShopWithCheck,
+        handleNewShop,
         handleCloneShop,
         handleSaveShop,
         handleDeleteShop
