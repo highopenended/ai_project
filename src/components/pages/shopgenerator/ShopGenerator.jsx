@@ -439,9 +439,7 @@ function ShopGenerator() {
     // Tab operations
     const {
         tabGroups,
-        setTabGroups,
         flexBasis,
-        setFlexBasis,
         draggedTab,
         draggedTabIndex,
         sourceGroupIndex,

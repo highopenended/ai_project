@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import React from 'react';
 
 const STORAGE_KEY = "tabGroupsState";
@@ -9,16 +9,51 @@ const STORAGE_KEY = "tabGroupsState";
 export const useTabOperations = (initialState) => {
     const [tabGroups, setTabGroups] = useState(initialState.groups);
     const [flexBasis, setFlexBasis] = useState(initialState.widths);
-    const [draggedTab, setDraggedTab] = useState(null);
-    const [draggedTabIndex, setDraggedTabIndex] = useState(null);
-    const [sourceGroupIndex, setSourceGroupIndex] = useState(null);
-    const [dropIndicators, setDropIndicators] = useState({
-        leftGroup: null,
-        rightGroup: null,
-        betweenGroups: null,
-        betweenGroupsRight: null,
+    const [dragState, setDragState] = useState({
+        draggedTab: null,
+        draggedTabIndex: null,
+        sourceGroupIndex: null,
+        dropIndicators: {
+            leftGroup: null,
+            rightGroup: null,
+            betweenGroups: null,
+            betweenGroupsRight: null,
+        }
     });
     const [isResizing, setIsResizing] = useState(false);
+
+    // Helper function to save state to localStorage
+    const saveState = useCallback(() => {
+        const groupsData = tabGroups.map((group) =>
+            group.map((tab) => ({
+                type: tab.type.name,
+                key: tab.key,
+            }))
+        );
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify({
+                groups: groupsData,
+                widths: flexBasis,
+            })
+        );
+    }, [tabGroups, flexBasis]);
+
+    // Helper function to reset drag state
+    const resetDragState = useCallback(() => {
+        setDragState({
+            draggedTab: null,
+            draggedTabIndex: null,
+            sourceGroupIndex: null,
+            dropIndicators: {
+                leftGroup: null,
+                rightGroup: null,
+                betweenGroups: null,
+                betweenGroupsRight: null,
+            }
+        });
+    }, []);
 
     // Add window-level mouse up handler
     useEffect(() => {
@@ -30,7 +65,6 @@ export const useTabOperations = (initialState) => {
 
         window.addEventListener("mouseup", handleGlobalMouseUp);
 
-        // Cleanup
         return () => {
             window.removeEventListener("mouseup", handleGlobalMouseUp);
         };
@@ -38,47 +72,17 @@ export const useTabOperations = (initialState) => {
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
-        const saveState = () => {
-            const groupsData = tabGroups.map((group) =>
-                group.map((tab) => ({
-                    type: tab.type.name,
-                    key: tab.key,
-                }))
-            );
-
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({
-                    groups: groupsData,
-                    widths: flexBasis,
-                })
-            );
-        };
-
         saveState();
-    }, [tabGroups, flexBasis]);
+    }, [tabGroups, flexBasis, saveState]);
 
     // Initialize flex basis when tab groups change
     useEffect(() => {
         if (tabGroups.length !== flexBasis.length) {
             const defaultWidths = tabGroups.map(() => `${100 / tabGroups.length}%`);
             setFlexBasis(defaultWidths);
-
-            // Save the new widths
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({
-                    groups: tabGroups.map((group) =>
-                        group.map((tab) => ({
-                            type: tab.type.name,
-                            key: tab.key,
-                        }))
-                    ),
-                    widths: defaultWidths,
-                })
-            );
+            saveState();
         }
-    }, [tabGroups.length, flexBasis.length]);
+    }, [tabGroups.length, flexBasis.length, saveState]);
 
     /**
      * Handles moving tabs within and between groups
@@ -87,18 +91,9 @@ export const useTabOperations = (initialState) => {
      * @param {number} [targetGroupIndex] - Index of the target group (if moving between groups)
      */
     const handleTabMove = (newTabs, sourceGroupIndex, targetGroupIndex) => {
-        // First reset all drag states to ensure clean state for next operation
-        setDraggedTab(null);
-        setDraggedTabIndex(null);
-        setSourceGroupIndex(null);
-        setDropIndicators({
-            leftGroup: null,
-            rightGroup: null,
-            betweenGroups: null,
-            betweenGroupsRight: null,
-        });
+        resetDragState();
 
-        // Then update the groups after a short delay to ensure state is clean
+        // Update the groups after a short delay to ensure state is clean
         setTimeout(() => {
             setTabGroups((prevGroups) => {
                 const newGroups = [...prevGroups];
@@ -181,7 +176,6 @@ export const useTabOperations = (initialState) => {
                 newGroups[sourceGroupIndex] = sourceGroup;
             }
 
-            // Handle numeric target position (between groups)
             if (typeof targetPosition === "number") {
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
@@ -235,38 +229,34 @@ export const useTabOperations = (initialState) => {
     };
 
     const handleDragStart = (tab, tabIndex, groupIndex) => {
-        setDraggedTab(tab);
-        setDraggedTabIndex(tabIndex);
-        setSourceGroupIndex(groupIndex);
+        setDragState(prev => ({
+            ...prev,
+            draggedTab: tab,
+            draggedTabIndex: tabIndex,
+            sourceGroupIndex: groupIndex
+        }));
     };
 
     const handleDragEnd = () => {
-        setDraggedTab(null);
-        setDraggedTabIndex(null);
-        setSourceGroupIndex(null);
+        resetDragState();
         setIsResizing(false);
-        setDropIndicators({
-            leftGroup: null,
-            rightGroup: null,
-            betweenGroups: null,
-            betweenGroupsRight: null,
-        });
     };
 
     const handleDropIndicatorChange = (indicators) => {
-        setDropIndicators((prev) => ({ ...prev, ...indicators }));
+        setDragState(prev => ({
+            ...prev,
+            dropIndicators: { ...prev.dropIndicators, ...indicators }
+        }));
     };
 
     return {
         // State
         tabGroups,
-        setTabGroups,
         flexBasis,
-        setFlexBasis,
-        draggedTab,
-        draggedTabIndex,
-        sourceGroupIndex,
-        dropIndicators,
+        draggedTab: dragState.draggedTab,
+        draggedTabIndex: dragState.draggedTabIndex,
+        sourceGroupIndex: dragState.sourceGroupIndex,
+        dropIndicators: dragState.dropIndicators,
         isResizing,
         // Handlers
         handleTabMove,
