@@ -1,49 +1,34 @@
 /**
  * Creates a complete snapshot of the current shop state
- * @param {Object} shopDetails - Current shop details state
  * @param {Object} shopState - Current shop state (parameters, filters, etc)
  * @param {Object} filters - Current filter state (categories, subcategories, traits)
  * @param {Array} items - Current inventory items
  * @returns {Object} A complete snapshot of the shop state
  */
-export const takeShopSnapshot = (shopDetails, shopState, filters, items) => {
-    return {
-        // Basic shop information
-        id: shopDetails.id,
-        name: shopDetails.name,
-        keeperName: shopDetails.keeperName,
-        type: shopDetails.type,
-        location: shopDetails.location,
-        description: shopDetails.description,
-        keeperDescription: shopDetails.keeperDescription,
-        dateCreated: shopDetails.dateCreated,
-        dateLastEdited: shopDetails.dateLastEdited,
-
-        // Shop generation settings
-        gold: shopState.gold,
-        levelRange: {
-            min: shopState.levelRange.min,
-            max: shopState.levelRange.max
-        },
-        itemBias: { ...shopState.itemBias },
-        rarityDistribution: { ...shopState.rarityDistribution },
-
-        // Filter states (create new Maps with copied entries)
-        filters: {
-            categories: new Map(filters?.categories || []),
-            subcategories: new Map(filters?.subcategories || []),
-            traits: new Map(filters?.traits || [])
-        },
-
-        // Current inventory with clean copies of arrays
-        currentStock: items.map(item => ({
-            ...item,
-            traits: Array.isArray(item.traits) ? [...item.traits] : [],
-            categories: Array.isArray(item.categories) ? [...item.categories] : [],
-            subcategories: Array.isArray(item.subcategories) ? [...item.subcategories] : []
-        }))
-    };
-};
+export const takeShopSnapshot = (shopState, filters, items) => ({
+    // Shop details
+    id: shopState.id,
+    name: shopState.name,
+    keeperName: shopState.keeperName,
+    type: shopState.type,
+    location: shopState.location,
+    description: shopState.description,
+    keeperDescription: shopState.keeperDescription,
+    dateCreated: shopState.dateCreated,
+    dateLastEdited: shopState.dateLastEdited,
+    // Shop parameters
+    gold: shopState.gold,
+    levelRange: shopState.levelRange,
+    itemBias: shopState.itemBias,
+    rarityDistribution: shopState.rarityDistribution,
+    // Filters and inventory
+    filters: {
+        categories: new Map(filters.categories),
+        subcategories: new Map(filters.subcategories),
+        traits: new Map(filters.traits),
+    },
+    currentStock: [...items],
+});
 
 /**
  * Helper function to compare two Maps

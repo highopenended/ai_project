@@ -6,9 +6,8 @@ import { takeShopSnapshot } from "../utils/shopStateUtils";
  */
 export const useShopOperations = ({
     currentUser,
-    shopDetails,
-    setShopDetails,
     shopState,
+    setShopState,
     filters,
     items,
     setShopSnapshot,
@@ -19,25 +18,20 @@ export const useShopOperations = ({
         const clonedShopId = `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const currentDate = new Date();
 
-        // Create new shop details with cloned data
-        const clonedDetails = {
-            ...shopDetails,
+        // Create new shop state with cloned data
+        const clonedState = {
+            ...shopState,
             id: clonedShopId,
-            name: `${shopDetails.name} (Clone)`,
+            name: `${shopState.name} (Clone)`,
             dateCreated: currentDate,
             dateLastEdited: currentDate,
         };
 
-        // Update shop details
-        setShopDetails(clonedDetails);
+        // Update shop state
+        setShopState(clonedState);
 
         // Take a new snapshot with the cloned state
-        const newSnapshot = takeShopSnapshot(
-            clonedDetails,
-            shopState,
-            filters,
-            items
-        );
+        const newSnapshot = takeShopSnapshot(clonedState, filters, items);
         setShopSnapshot(newSnapshot);
     };
 
@@ -48,6 +42,8 @@ export const useShopOperations = ({
         }
 
         try {
+            const currentDate = new Date();
+            
             // Convert Map objects to a flat object structure for Firebase
             const filterStatesForStorage = {
                 categories: Object.fromEntries(filters.categories.entries()),
@@ -56,43 +52,26 @@ export const useShopOperations = ({
             };
 
             const savedShopData = {
-                id: shopDetails.id,
-                name: shopDetails.name,
-                keeperName: shopDetails.keeperName,
-                type: shopDetails.type,
-                location: shopDetails.location,
-                description: shopDetails.description,
-                keeperDescription: shopDetails.keeperDescription,
-                gold: shopState.gold,
-                levelRange: {
-                    min: shopState.levelRange.min,
-                    max: shopState.levelRange.max,
-                },
-                itemBias: shopState.itemBias,
-                rarityDistribution: shopState.rarityDistribution,
+                ...shopState,
+                dateLastEdited: currentDate,
                 currentStock: items,
-                dateCreated: shopDetails.dateCreated,
-                dateLastEdited: shopDetails.dateLastEdited,
                 filterStates: filterStatesForStorage,
             };
 
             console.log("Saving shop state:", savedShopData);
             const userId = currentUser.uid;
             const savedShopId = await saveOrUpdateShopData(userId, savedShopData);
-            setShopDetails((prev) => ({ ...prev, id: savedShopId }));
-            setShopDetails((prev) => ({ ...prev, dateLastEdited: new Date() }));
+            
+            // Update shop state with new ID and last edited date
+            const updatedState = {
+                ...shopState,
+                id: savedShopId,
+                dateLastEdited: currentDate
+            };
+            setShopState(updatedState);
             
             // Take a new snapshot with the current state
-            const newSnapshot = takeShopSnapshot(
-                {
-                    ...shopDetails,
-                    id: savedShopId,
-                    dateLastEdited: new Date()
-                },
-                shopState,
-                filters,
-                items
-            );
+            const newSnapshot = takeShopSnapshot(updatedState, filters, items);
             setShopSnapshot(newSnapshot);
             
             // Reload the shops list after successful save
@@ -104,14 +83,14 @@ export const useShopOperations = ({
     };
 
     const handleDeleteShop = async () => {
-        if (!currentUser || !shopDetails.id) {
+        if (!currentUser || !shopState.id) {
             alert("Cannot delete shop. Please ensure you are logged in and have a valid shop selected.");
             return;
         }
 
         try {
             const userId = currentUser.uid;
-            await deleteShopData(userId, shopDetails.id);
+            await deleteShopData(userId, shopState.id);
             alert("Shop deleted successfully!");
         } catch (error) {
             console.error("Error deleting shop:", error);
