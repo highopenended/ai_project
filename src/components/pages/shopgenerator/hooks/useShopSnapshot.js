@@ -4,7 +4,7 @@ import { compareShopStates, hasChanges } from '../utils/shopStateUtils';
 /**
  * Hook for managing shop snapshots and detecting changes
  */
-export const useShopSnapshot = ({ shopDetails, shopState, filters, items }) => {
+export const useShopSnapshot = ({ shopState, filters, items }) => {
     const [shopSnapshot, setShopSnapshot] = useState(null);
 
     const getChangedFields = useCallback(() => {
@@ -12,17 +12,13 @@ export const useShopSnapshot = ({ shopDetails, shopState, filters, items }) => {
         
         return compareShopStates(
             {
-                ...shopDetails,
-                gold: shopState.gold,
-                levelRange: shopState.levelRange,
-                itemBias: shopState.itemBias,
-                rarityDistribution: shopState.rarityDistribution,
+                ...shopState,
                 filters: filters,
                 currentStock: items
             },
             shopSnapshot
         );
-    }, [shopSnapshot, shopDetails, shopState, filters, items]);
+    }, [shopSnapshot, shopState, filters, items]);
 
     const hasUnsavedChanges = useMemo(() => {
         const changes = getChangedFields();

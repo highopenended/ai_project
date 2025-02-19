@@ -86,27 +86,13 @@ function ShopGenerator() {
 
     // Inventory state
     const [items, setItems] = useState([]);
+    
+    // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(items);
 
     // Snapshot and change tracking
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
-        shopDetails: {
-            id: shopState.id,
-            name: shopState.name,
-            keeperName: shopState.keeperName,
-            type: shopState.type,
-            location: shopState.location,
-            description: shopState.description,
-            keeperDescription: shopState.keeperDescription,
-            dateCreated: shopState.dateCreated,
-            dateLastEdited: shopState.dateLastEdited,
-        },
-        shopState: {
-            gold: shopState.gold,
-            levelRange: shopState.levelRange,
-            itemBias: shopState.itemBias,
-            rarityDistribution: shopState.rarityDistribution,
-        },
+        shopState,
         filters,
         items,
     });
