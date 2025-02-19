@@ -9,6 +9,7 @@ export const useShopOperations = ({
     shopDetails,
     setShopDetails,
     shopState,
+    filters,
     items,
     setShopSnapshot,
     loadShops
@@ -34,6 +35,7 @@ export const useShopOperations = ({
         const newSnapshot = takeShopSnapshot(
             clonedDetails,
             shopState,
+            filters,
             items
         );
         setShopSnapshot(newSnapshot);
@@ -48,9 +50,9 @@ export const useShopOperations = ({
         try {
             // Convert Map objects to a flat object structure for Firebase
             const filterStatesForStorage = {
-                categories: Object.fromEntries(shopState.filters.categories.entries()),
-                subcategories: Object.fromEntries(shopState.filters.subcategories.entries()),
-                traits: Object.fromEntries(shopState.filters.traits.entries()),
+                categories: Object.fromEntries(filters.categories.entries()),
+                subcategories: Object.fromEntries(filters.subcategories.entries()),
+                traits: Object.fromEntries(filters.traits.entries()),
             };
 
             const savedShopData = {
@@ -88,6 +90,7 @@ export const useShopOperations = ({
                     dateLastEdited: new Date()
                 },
                 shopState,
+                filters,
                 items
             );
             setShopSnapshot(newSnapshot);

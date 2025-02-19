@@ -2,10 +2,11 @@
  * Creates a complete snapshot of the current shop state
  * @param {Object} shopDetails - Current shop details state
  * @param {Object} shopState - Current shop state (parameters, filters, etc)
+ * @param {Object} filters - Current filter state (categories, subcategories, traits)
  * @param {Array} items - Current inventory items
  * @returns {Object} A complete snapshot of the shop state
  */
-export const takeShopSnapshot = (shopDetails, shopState, items) => {
+export const takeShopSnapshot = (shopDetails, shopState, filters, items) => {
     return {
         // Basic shop information
         id: shopDetails.id,
@@ -29,9 +30,9 @@ export const takeShopSnapshot = (shopDetails, shopState, items) => {
 
         // Filter states (create new Maps with copied entries)
         filters: {
-            categories: new Map(shopState.filters.categories),
-            subcategories: new Map(shopState.filters.subcategories),
-            traits: new Map(shopState.filters.traits)
+            categories: new Map(filters?.categories || []),
+            subcategories: new Map(filters?.subcategories || []),
+            traits: new Map(filters?.traits || [])
         },
 
         // Current inventory with clean copies of arrays
@@ -48,12 +49,16 @@ export const takeShopSnapshot = (shopDetails, shopState, items) => {
  * Helper function to compare two Maps
  * @param {Map} map1 
  * @param {Map} map2 
- * @returns {boolean}
  */
 const areMapsEqual = (map1, map2) => {
+    // Handle undefined/null cases
+    if (!map1 && !map2) return true;
+    if (!map1 || !map2) return false;
+    
     if (map1.size !== map2.size) return false;
-    for (const [key, value] of map1) {
-        if (!map2.has(key) || map2.get(key) !== value) return false;
+    for (const [key, val1] of map1) {
+        const val2 = map2.get(key);
+        if (val2 !== val1) return false;
     }
     return true;
 };
@@ -95,56 +100,55 @@ export const compareShopStates = (currentState, originalState) => {
 
     // Check itemBias
     if (
-        currentState.itemBias.x !== originalState.itemBias.x ||
-        currentState.itemBias.y !== originalState.itemBias.y
+        currentState.itemBias?.x !== originalState.itemBias?.x ||
+        currentState.itemBias?.y !== originalState.itemBias?.y
     ) {
         changes.parameters.itemBias = {
-            old: originalState.itemBias,
-            new: currentState.itemBias,
+            old: { ...originalState.itemBias },
+            new: { ...currentState.itemBias }
         };
     }
 
-    // Check rarity distribution
-    const hasRarityChanged = Object.keys(currentState.rarityDistribution).some(
-        (key) => currentState.rarityDistribution[key] !== originalState.rarityDistribution[key]
-    );
-    if (hasRarityChanged) {
+    // Check rarityDistribution
+    const currentRarityKeys = Object.keys(currentState.rarityDistribution || {});
+    const originalRarityKeys = Object.keys(originalState.rarityDistribution || {});
+    if (
+        currentRarityKeys.length !== originalRarityKeys.length ||
+        currentRarityKeys.some(key => 
+            currentState.rarityDistribution[key] !== originalState.rarityDistribution[key]
+        )
+    ) {
         changes.parameters.rarityDistribution = {
-            old: originalState.rarityDistribution,
-            new: currentState.rarityDistribution,
+            old: { ...originalState.rarityDistribution },
+            new: { ...currentState.rarityDistribution }
         };
     }
 
-    // Check filter states using Map comparison
-    const hasFilterChanges = !areMapsEqual(currentState.filters.categories, originalState.filters.categories) ||
-                           !areMapsEqual(currentState.filters.subcategories, originalState.filters.subcategories) ||
-                           !areMapsEqual(currentState.filters.traits, originalState.filters.traits);
+    // Check filters
+    const currentFilters = currentState.filters || {};
+    const originalFilters = originalState.filters || {};
     
-    if (hasFilterChanges) {
+    if (!areMapsEqual(currentFilters.categories, originalFilters.categories) ||
+        !areMapsEqual(currentFilters.subcategories, originalFilters.subcategories) ||
+        !areMapsEqual(currentFilters.traits, originalFilters.traits)) {
         changes.parameters.filters = {
             old: {
-                categories: Array.from(originalState.filters.categories.entries()),
-                subcategories: Array.from(originalState.filters.subcategories.entries()),
-                traits: Array.from(originalState.filters.traits.entries())
+                categories: new Map(originalFilters.categories || []),
+                subcategories: new Map(originalFilters.subcategories || []),
+                traits: new Map(originalFilters.traits || [])
             },
             new: {
-                categories: Array.from(currentState.filters.categories.entries()),
-                subcategories: Array.from(currentState.filters.subcategories.entries()),
-                traits: Array.from(currentState.filters.traits.entries())
+                categories: new Map(currentFilters.categories || []),
+                subcategories: new Map(currentFilters.subcategories || []),
+                traits: new Map(currentFilters.traits || [])
             }
         };
     }
 
-    // Check inventory
-    // First check if lengths are different
-    if (currentState.currentStock.length !== originalState.currentStock.length) {
-        changes.hasInventoryChanged = true;
-    } else {
-        // If lengths are same, do a deep comparison of items
-        const currentInventoryString = JSON.stringify(currentState.currentStock);
-        const originalInventoryString = JSON.stringify(originalState.currentStock);
-        changes.hasInventoryChanged = currentInventoryString !== originalInventoryString;
-    }
+    // Check if inventory has changed
+    const currentStock = currentState.currentStock || [];
+    const originalStock = originalState.currentStock || [];
+    changes.hasInventoryChanged = currentStock.length !== originalStock.length;
 
     return changes;
 };
