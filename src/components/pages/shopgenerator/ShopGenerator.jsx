@@ -57,19 +57,7 @@ function ShopGenerator() {
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
     const [categoryData] = useState(() => extractUniqueCategories(itemData));// Initialize category data
 
-    // Shop state management
-    const {
-        shopState,
-        setShopState,
-        handleGoldChange,
-        handleLowestLevelChange,
-        handleHighestLevelChange,
-        handleBiasChange,
-        handleRarityDistributionChange,
-        handleShopDetailsChange,
-    } = useShopState(defaultShopData);
-
-    // Filter groups state management ()
+    // Filter groups state management
     const {
         filters,
         setFilters,
@@ -88,6 +76,19 @@ function ShopGenerator() {
 
     // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(items);
+
+    // Initialize base shop state
+    const {
+        shopState,
+        setShopState,
+        handleGoldChange,
+        handleLowestLevelChange,
+        handleHighestLevelChange,
+        handleBiasChange,
+        handleRarityDistributionChange,
+        handleShopDetailsChange,
+        handleResetChanges,
+    } = useShopState(defaultShopData);
 
     // Snapshot and change tracking
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
@@ -222,42 +223,6 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
-    const handleResetChanges = async () => {
-        if (!shopSnapshot) return;
-
-        try {
-            // Reset all state to match the snapshot
-            await Promise.all([
-                setShopState({
-                    id: shopSnapshot.id,
-                    name: shopSnapshot.name,
-                    keeperName: shopSnapshot.keeperName,
-                    type: shopSnapshot.type,
-                    location: shopSnapshot.location,
-                    description: shopSnapshot.description,
-                    keeperDescription: shopSnapshot.keeperDescription,
-                    dateCreated: shopSnapshot.dateCreated,
-                    dateLastEdited: shopSnapshot.dateLastEdited,
-                    gold: shopSnapshot.gold,
-                    levelRange: shopSnapshot.levelRange,
-                    itemBias: shopSnapshot.itemBias,
-                    rarityDistribution: shopSnapshot.rarityDistribution,
-                }),
-
-                setFilters({
-                    categories: new Map(shopSnapshot.filters.categories),
-                    subcategories: new Map(shopSnapshot.filters.subcategories),
-                    traits: new Map(shopSnapshot.filters.traits),
-                }),
-
-                setItems(shopSnapshot.currentStock),
-            ]);
-        } catch (error) {
-            console.error("Error resetting changes:", error);
-            alert("Error resetting changes. Please try again.");
-        }
-    };
-
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
         // localStorage.clear(STORAGE_KEY);
@@ -342,7 +307,7 @@ function ShopGenerator() {
                                             onSaveShop={handleSaveShop}
                                             onCloneShop={handleCloneShop}
                                             onDeleteShop={handleDeleteShop}
-                                            onResetChanges={handleResetChanges}
+                                            onResetChanges={() => handleResetChanges(shopSnapshot, setFilters, setItems)}
                                             savedShops={savedShops}
                                             hasUnsavedChanges={hasUnsavedChanges}
                                             changes={getChangedFields()}
@@ -441,7 +406,7 @@ function ShopGenerator() {
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
                         onDeleteShop={handleDeleteShop}
-                        onResetChanges={handleResetChanges}
+                        onResetChanges={() => handleResetChanges(shopSnapshot, setFilters, setItems)}
                         savedShops={savedShops}
                         hasUnsavedChanges={hasUnsavedChanges}
                         changes={getChangedFields()}
@@ -766,7 +731,7 @@ function ShopGenerator() {
                                             onSaveShop: handleSaveShop,
                                             onCloneShop: handleCloneShop,
                                             onDeleteShop: handleDeleteShop,
-                                            onResetChanges: handleResetChanges,
+                                            onResetChanges: () => handleResetChanges(shopSnapshot, setFilters, setItems),
                                             savedShops,
                                             hasUnsavedChanges,
                                             changes: getChangedFields(),

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { SELECTION_STATES } from '../utils/shopGeneratorConstants';
 
 /**
@@ -127,6 +127,43 @@ export const useShopState = (initialState) => {
         });
     };
 
+    /**
+     * Reset all state to match the last snapshot
+     */
+    const handleResetChanges = useCallback(async (snapshot, setFilters, setItems) => {
+        if (!snapshot) return;
+
+        try {
+            // Reset all state to match the snapshot
+            await Promise.all([
+                setShopState({
+                    id: snapshot.id,
+                    name: snapshot.name,
+                    keeperName: snapshot.keeperName,
+                    type: snapshot.type,
+                    location: snapshot.location,
+                    description: snapshot.description,
+                    keeperDescription: snapshot.keeperDescription,
+                    dateCreated: snapshot.dateCreated,
+                    dateLastEdited: snapshot.dateLastEdited,
+                    gold: snapshot.gold,
+                    levelRange: snapshot.levelRange,
+                    itemBias: snapshot.itemBias,
+                    rarityDistribution: snapshot.rarityDistribution,
+                }),
+                setFilters?.({
+                    categories: new Map(snapshot.filters.categories),
+                    subcategories: new Map(snapshot.filters.subcategories),
+                    traits: new Map(snapshot.filters.traits),
+                }),
+                setItems?.(snapshot.currentStock),
+            ]);
+        } catch (error) {
+            console.error("Error resetting changes:", error);
+            alert("Error resetting changes. Please try again.");
+        }
+    }, []);
+
     return {
         shopState,
         setShopState,
@@ -138,5 +175,7 @@ export const useShopState = (initialState) => {
         handleRarityDistributionChange,
         // Shop details handlers
         handleShopDetailsChange,
+        // Reset handler
+        handleResetChanges,
     };
 }; 
