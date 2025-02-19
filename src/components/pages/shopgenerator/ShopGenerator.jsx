@@ -53,6 +53,16 @@ import { useTabManagement } from "./hooks/useTabManagement";
 
 const STORAGE_KEY = "tabGroupsState";
 
+const DEFAULT_TAB_CONFIG = [
+    [
+        { type: "Tab_Parameters", key: "Tab_Parameters-0" },
+        { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
+        { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
+        { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
+        { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" },
+    ],
+];
+
 function ShopGenerator() {
     const { currentUser, isLoading: authLoading } = useAuth(); // Get auth context
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
@@ -224,131 +234,13 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
-    // Load initial state from localStorage or use default
-    const loadInitialState = () => {
-        // localStorage.clear(STORAGE_KEY);
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (savedState) {
-            const { groups, widths } = JSON.parse(savedState);
-            // Recreate tab components from saved data
-            const recreatedGroups = groups.map(
-                (group) =>
-                    group
-                        .map((tab) => {
-                            // Create component with appropriate props based on type
-                            switch (tab.type) {
-                                case "Tab_Parameters":
-                                    return (
-                                        <Tab_Parameters
-                                            key={tab.key}
-                                            type={{ name: "Tab_Parameters" }}
-                                            currentGold={shopState.gold}
-                                            setCurrentGold={handleGoldChange}
-                                            lowestLevel={shopState.levelRange.min}
-                                            setLowestLevel={handleLowestLevelChange}
-                                            highestLevel={shopState.levelRange.max}
-                                            setHighestLevel={handleHighestLevelChange}
-                                            rarityDistribution={shopState.rarityDistribution}
-                                            setRarityDistribution={handleRarityDistributionChange}
-                                            itemBias={shopState.itemBias}
-                                            setItemBias={handleBiasChange}
-                                            categoryData={categoryData}
-                                            categoryStates={filters.categories}
-                                            subcategoryStates={filters.subcategories}
-                                            traitStates={filters.traits}
-                                            getFilterState={getFilterState}
-                                            toggleCategory={toggleCategory}
-                                            toggleSubcategory={toggleSubcategory}
-                                            toggleTrait={toggleTrait}
-                                            clearCategorySelections={clearCategorySelections}
-                                            clearSubcategorySelections={clearSubcategorySelections}
-                                            clearTraitSelections={clearTraitSelections}
-                                        />
-                                    );
-                                case "Tab_InventoryTable":
-                                    return (
-                                        <Tab_InventoryTable
-                                            key={tab.key}
-                                            type={{ name: "Tab_InventoryTable" }}
-                                            items={items}
-                                            currentShopName={shopState.name}
-                                            handleGenerateClick={handleGenerateClick}
-                                            sortConfig={sortConfig}
-                                            onSort={handleSort}
-                                        />
-                                    );
-                                case "Tab_ChooseShop":
-                                    return (
-                                        <Tab_ChooseShop
-                                            key={tab.key}
-                                            type={{ name: "Tab_ChooseShop" }}
-                                            savedShops={savedShops}
-                                            onLoadShop={handleLoadShopWithCheck}
-                                            onNewShop={handleNewShop}
-                                            currentShopId={shopState.id}
-                                        />
-                                    );
-                                case "Tab_ShopDetails":
-                                    return (
-                                        <Tab_ShopDetails
-                                            key={tab.key}
-                                            type={{ name: "Tab_ShopDetails" }}
-                                            currentShop={{
-                                                id: shopState.id,
-                                                name: shopState.name,
-                                                keeperName: shopState.keeperName,
-                                                type: shopState.type,
-                                                location: shopState.location,
-                                                description: shopState.description,
-                                                keeperDescription: shopState.keeperDescription,
-                                                dateCreated: shopState.dateCreated,
-                                                dateLastEdited: shopState.dateLastEdited,
-                                            }}
-                                            onShopDetailsChange={handleShopDetailsChange}
-                                            onSaveShop={handleSaveShop}
-                                            onCloneShop={handleCloneShop}
-                                            onDeleteShop={handleDeleteShop}
-                                            onResetChanges={() => handleResetChanges(shopSnapshot, setFilters, setItems)}
-                                            savedShops={savedShops}
-                                            hasUnsavedChanges={hasUnsavedChanges}
-                                            changes={getChangedFields()}
-                                        />
-                                    );
-                                case "Tab_AiAssistant":
-                                    return (
-                                        <Tab_AiAssistant
-                                            key={tab.key}
-                                            type={{ name: "Tab_AiAssistant" }}
-                                            currentShop={{
-                                                id: shopState.id,
-                                                name: shopState.name,
-                                                keeperName: shopState.keeperName,
-                                                type: shopState.type,
-                                                location: shopState.location,
-                                                description: shopState.description,
-                                                keeperDescription: shopState.keeperDescription,
-                                                dateCreated: shopState.dateCreated,
-                                                dateLastEdited: shopState.dateLastEdited,
-                                            }}
-                                            onAiAssistantChange={handleAiAssistantChange}
-                                        />
-                                    );
-                                default:
-                                    console.warn(`Unknown tab type: ${tab.type}`);
-                                    return null;
-                            }
-                        })
-                        .filter(Boolean) // Remove any null components
-            );
-            return { groups: recreatedGroups, widths };
-        }
-
-        // Default state if nothing is saved
-        return {
-            groups: [
-                [
+    // Helper function to create a tab component
+    const createTab = (type, key) => {
+        switch (type) {
+            case "Tab_Parameters":
+                return (
                     <Tab_Parameters
-                        key="Tab_Parameters-0"
+                        key={key}
                         type={{ name: "Tab_Parameters" }}
                         currentGold={shopState.gold}
                         setCurrentGold={handleGoldChange}
@@ -371,26 +263,35 @@ function ShopGenerator() {
                         clearCategorySelections={clearCategorySelections}
                         clearSubcategorySelections={clearSubcategorySelections}
                         clearTraitSelections={clearTraitSelections}
-                    />,
+                    />
+                );
+            case "Tab_InventoryTable":
+                return (
                     <Tab_InventoryTable
-                        key="Tab_InventoryTable-0"
+                        key={key}
                         type={{ name: "Tab_InventoryTable" }}
                         items={items}
                         currentShopName={shopState.name}
                         handleGenerateClick={handleGenerateClick}
                         sortConfig={sortConfig}
                         onSort={handleSort}
-                    />,
+                    />
+                );
+            case "Tab_ChooseShop":
+                return (
                     <Tab_ChooseShop
-                        key="Tab_ChooseShop-0"
+                        key={key}
                         type={{ name: "Tab_ChooseShop" }}
                         savedShops={savedShops}
                         onLoadShop={handleLoadShopWithCheck}
                         onNewShop={handleNewShop}
                         currentShopId={shopState.id}
-                    />,
+                    />
+                );
+            case "Tab_ShopDetails":
+                return (
                     <Tab_ShopDetails
-                        key="Tab_ShopDetails-0"
+                        key={key}
                         type={{ name: "Tab_ShopDetails" }}
                         currentShop={{
                             id: shopState.id,
@@ -411,9 +312,12 @@ function ShopGenerator() {
                         savedShops={savedShops}
                         hasUnsavedChanges={hasUnsavedChanges}
                         changes={getChangedFields()}
-                    />,
+                    />
+                );
+            case "Tab_AiAssistant":
+                return (
                     <Tab_AiAssistant
-                        key="Tab_AiAssistant-0"
+                        key={key}
                         type={{ name: "Tab_AiAssistant" }}
                         currentShop={{
                             id: shopState.id,
@@ -427,11 +331,37 @@ function ShopGenerator() {
                             dateLastEdited: shopState.dateLastEdited,
                         }}
                         onAiAssistantChange={handleAiAssistantChange}
-                    />,
-                ],
-            ],
-            widths: ["100%"],
-        };
+                    />
+                );
+            default:
+                console.warn(`Unknown tab type: ${type}`);
+                return null;
+        }
+    };
+
+    // Load initial state from localStorage or use default
+    const loadInitialState = () => {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        let widths = ["100%"];
+        let tabConfig = DEFAULT_TAB_CONFIG;
+
+        // If we have a saved state, use saved configuration
+        if (savedState) {
+            try {
+                const saved = JSON.parse(savedState);
+                widths = saved.widths;
+                tabConfig = saved.groups;
+            } catch (error) {
+                console.error("Error loading saved tab state:", error);
+            }
+        }
+
+        // Create tab components from configuration
+        const groups = tabConfig.map(group =>
+            group.map(tab => createTab(tab.type, tab.key))
+        );
+
+        return { groups, widths };
     };
 
     const initialState = loadInitialState();
