@@ -53,20 +53,29 @@ import { useTabManagement } from "./hooks/useTabManagement";
 
 const STORAGE_KEY = "tabGroupsState";
 
-const DEFAULT_TAB_CONFIG = [
-    [
-        { type: "Tab_Parameters", key: "Tab_Parameters-0" },
-        { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
-        { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
-        { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
-        { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" },
+const DEFAULT_TAB_STATE = {
+    groups: [
+        [
+            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
+            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
+            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
+            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
+            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" },
+        ],
     ],
-];
+    widths: ["100%"],
+};
 
 function ShopGenerator() {
     const { currentUser, isLoading: authLoading } = useAuth(); // Get auth context
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
-    const [categoryData] = useState(() => extractUniqueCategories(itemData));// Initialize category data
+    const [categoryData] = useState(() => extractUniqueCategories(itemData)); // Initialize category data
+    const [savedShops, setSavedShops] = useState([]);
+    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null);
+
+    // Inventory state
+    const [inventory, setInventory] = useState([]);
 
     // Filter groups state management
     const {
@@ -82,11 +91,8 @@ function ShopGenerator() {
         getFilteredArray,
     } = useShopFilters();
 
-    // Inventory state
-    const [items, setItems] = useState([]);
-
     // Sorting state
-    const { sortedItems, sortConfig, handleSort } = useSorting(items);
+    const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
 
     // Initialize base shop state
     const {
@@ -105,28 +111,31 @@ function ShopGenerator() {
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
         shopState,
         filters,
-        items,
+        items: inventory,
     });
 
-    const [savedShops, setSavedShops] = useState([]);
-    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
-
     // Shop operations
-    const { handleLoadShops, handleLoadShopWithCheck, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } = useShopOperations({
+    const {
+        handleLoadShops,
+        handleLoadShopWithCheck,
+        handleNewShop,
+        handleCloneShop,
+        handleSaveShop,
+        handleDeleteShop,
+    } = useShopOperations({
         currentUser,
         shopState,
         setShopState,
         filters,
-        items,
+        items: inventory,
+        setItems: setInventory,
         setShopSnapshot,
         setSavedShops,
         setFilters,
-        setItems,
         getFilteredArray,
         hasUnsavedChanges,
         setPendingAction,
-        setShowUnsavedDialogue
+        setShowUnsavedDialogue,
     });
 
     const handleUnsavedDialogueConfirm = () => {
@@ -220,11 +229,11 @@ function ShopGenerator() {
         console.log("Generation result:", result);
 
         if (result && Array.isArray(result.items)) {
-            setItems(result.items);
+            setInventory(result.items);
             // Take a new snapshot with the current state
             const newSnapshot = takeShopSnapshot(shopState, filters, result.items);
             setShopSnapshot(newSnapshot);
-            console.log("Items state updated with", result.items.length, "items");
+            console.log("Inventory state updated with", result.items.length, "items");
         } else {
             console.error("Invalid result from generateShopInventory:", result);
         }
@@ -270,7 +279,7 @@ function ShopGenerator() {
                     <Tab_InventoryTable
                         key={key}
                         type={{ name: "Tab_InventoryTable" }}
-                        items={items}
+                        items={sortedItems}
                         currentShopName={shopState.name}
                         handleGenerateClick={handleGenerateClick}
                         sortConfig={sortConfig}
@@ -308,7 +317,7 @@ function ShopGenerator() {
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
                         onDeleteShop={handleDeleteShop}
-                        onResetChanges={() => handleResetChanges(shopSnapshot, setFilters, setItems)}
+                        onResetChanges={() => handleResetChanges(shopSnapshot, setFilters, setInventory)}
                         savedShops={savedShops}
                         hasUnsavedChanges={hasUnsavedChanges}
                         changes={getChangedFields()}
@@ -342,30 +351,25 @@ function ShopGenerator() {
     // Load initial state from localStorage or use default
     const loadInitialState = () => {
         const savedState = localStorage.getItem(STORAGE_KEY);
-        let widths = ["100%"];
-        let tabConfig = DEFAULT_TAB_CONFIG;
+        let config = DEFAULT_TAB_STATE;
 
         // If we have a saved state, use saved configuration
         if (savedState) {
             try {
-                const saved = JSON.parse(savedState);
-                widths = saved.widths;
-                tabConfig = saved.groups;
+                config = JSON.parse(savedState);
             } catch (error) {
                 console.error("Error loading saved tab state:", error);
             }
         }
 
         // Create tab components from configuration
-        const groups = tabConfig.map(group =>
-            group.map(tab => createTab(tab.type, tab.key))
-        );
+        const groups = config.groups.map((group) => group.map((tab) => createTab(tab.type, tab.key)));
 
-        return { groups, widths };
+        return { groups, widths: config.widths };
     };
 
     const initialState = loadInitialState();
-    
+
     // Tab management
     const {
         tabGroups,
@@ -475,7 +479,7 @@ function ShopGenerator() {
                                             onSaveShop: handleSaveShop,
                                             onCloneShop: handleCloneShop,
                                             onDeleteShop: handleDeleteShop,
-                                            onResetChanges: () => handleResetChanges(shopSnapshot, setFilters, setItems),
+                                            onResetChanges: () => handleResetChanges(shopSnapshot, setFilters, setInventory),
                                             savedShops,
                                             hasUnsavedChanges,
                                             changes: getChangedFields(),
