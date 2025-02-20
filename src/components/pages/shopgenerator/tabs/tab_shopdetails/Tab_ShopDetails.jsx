@@ -44,8 +44,8 @@ function Tab_ShopDetails({
     // Check if the current shop exists in savedShops
     const isExistingShop = shopState?.id && savedShops?.some((shop) => shop.id === shopState.id);
 
-    // Check if this is just a new unsaved shop placeholder
-    const isNewUnsavedShop = shopState?.id && !isExistingShop;
+    // Ensure boolean result
+    const isNewUnsavedShop = Boolean(shopState?.id) && !isExistingShop;
 
     return (
         <div className="tab-shop-details">

@@ -15,7 +15,7 @@ const SaveShopButton = ({
 
     const handleClick = () => {
         console.log("Save button clicked - Full state:", {
-            "hasUnsavedChanges:": hasUnsavedChanges,
+            "hasUnsavedChanges:": isNewUnsavedShop,
             "isNewUnsavedShop:": isNewUnsavedShop,
             "showConfirmation:": showConfirmation,
             "shopName:": shopName,
