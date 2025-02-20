@@ -51,9 +51,10 @@ function Tab_ShopDetails({
         <div className="tab-shop-details">
             <div className="shop-details-actions">
                 <SaveShopButton
-                    onSave={onSaveShop}
+                    onSaveShop={onSaveShop}
                     areAllDetailsFilled={areAllDetailsFilled}
                     shopName={shopState.name}
+                    isNewUnsavedShop={isNewUnsavedShop}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
                 />

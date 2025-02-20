@@ -3,25 +3,33 @@ import PropTypes from "prop-types";
 import "./SaveShopButton.css";
 import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
 
-const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, changes, shopName }) => {
+const SaveShopButton = ({
+    onSaveShop,
+    areAllDetailsFilled,
+    hasUnsavedChanges,
+    isNewUnsavedShop,
+    changes,
+    shopName,
+}) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
         console.log("Save button clicked - Full state:", {
-            hasUnsavedChanges,
-            showConfirmation,
-            shopName,
-            willShowConfirmation: hasUnsavedChanges,
-            isDisabled: !areAllDetailsFilled(),
-            allDetailsFilled: areAllDetailsFilled()
+            "hasUnsavedChanges:": hasUnsavedChanges,
+            "isNewUnsavedShop:": isNewUnsavedShop,
+            "showConfirmation:": showConfirmation,
+            "shopName:": shopName,
+            "willShowConfirmation:": hasUnsavedChanges || isNewUnsavedShop,
+            "isDisabled:": !areAllDetailsFilled(),
+            "allDetailsFilled:": areAllDetailsFilled(),
         });
-        setShowConfirmation(hasUnsavedChanges); 
+        setShowConfirmation(hasUnsavedChanges || isNewUnsavedShop);
     };
 
     const handleConfirm = () => {
-        console.log("Save confirmation dialog confirmed - calling onSave");
-        onSave();
-        console.log("onSave completed");
+        console.log("Save confirmation dialog confirmed - calling onSaveShop");
+        onSaveShop();
+        console.log("onSaveShop completed");
         setShowConfirmation(false);
     };
 
@@ -32,19 +40,19 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
 
     return (
         <>
-            <button 
+            <button
                 className="save-shop-button"
                 onClick={() => {
                     console.log("Raw button click event received");
                     handleClick();
-                }} 
-                disabled={!areAllDetailsFilled()} 
+                }}
+                disabled={!areAllDetailsFilled()}
                 aria-label="Save"
             >
                 <span className="save-icon">&#128427;</span>
                 <span className="save-text">Save</span>
             </button>
-        {showConfirmation && (
+            {showConfirmation && (
                 <UnsavedChangesDialogue
                     headerText={`Save Changes?`}
                     description={`Are you sure you want to save the changes you've made to this shop?`}
@@ -53,17 +61,18 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
                     continueButtonText="Save Changes"
-            />
-        )}
+                />
+            )}
         </>
     );
 };
 
 SaveShopButton.propTypes = {
-    onSave: PropTypes.func.isRequired,
+    onSaveShop: PropTypes.func.isRequired,
     areAllDetailsFilled: PropTypes.func.isRequired,
     shopName: PropTypes.string.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
+    isNewUnsavedShop: PropTypes.bool.isRequired,
     changes: PropTypes.object.isRequired,
 };
 

@@ -126,25 +126,39 @@ export const useShopOperations = ({
     /**
      * Load all shops for the current user
      */
-    const handleLoadShopList = async () => {
-        if (!currentUser) return;
+   const handleLoadShopList = async () => {
+    if (!currentUser) return;
+    
+    try {
+        const userId = currentUser.uid;
+        const loadedShops = await loadShopData(userId);
         
-        try {
-            const userId = currentUser.uid;
-            const loadedShops = await loadShopData(userId);
-            
-            const formattedShops = loadedShops.map((shop) => ({
+        const formattedShops = loadedShops.map((shop) => {
+            // Format the dates
+            const formattedShop = {
                 ...shop,
                 dateCreated: formatDate(shop.dateCreated),
                 dateLastEdited: formatDate(shop.dateLastEdited),
-            }));
+            };
 
-            setSavedShops(formattedShops);
-        } catch (error) {
-            console.error("Error loading shops:", error);
-            alert("Error loading shops. Please try again.");
-        }
-    };
+            // Convert filter states to Maps if they exist
+            if (formattedShop.filterStates) {
+                formattedShop.filterStates = {
+                    categories: new Map(Object.entries(formattedShop.filterStates.categories || {})),
+                    subcategories: new Map(Object.entries(formattedShop.filterStates.subcategories || {})),
+                    traits: new Map(Object.entries(formattedShop.filterStates.traits || {}))
+                };
+            }
+
+            return formattedShop;
+        });
+
+        setSavedShops(formattedShops);
+    } catch (error) {
+        console.error("Error loading shops:", error);
+        alert("Error loading shops. Please try again.");
+    }
+};
 
     /**
      * Load a specific shop's data
