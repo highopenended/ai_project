@@ -9,7 +9,6 @@ import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
 import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import itemData from "../../../../public/item-table.json";
-import UnsavedChangesDialogue from "./shared/UnsavedChangesDialogue";
 import { useSorting } from "./utils/sortingUtils";
 import { extractUniqueCategories } from "./utils/categoryUtils";
 import defaultShopData from "./utils/shopData";
@@ -79,9 +78,6 @@ function ShopGenerator() {
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
     const [categoryData] = useState(() => extractUniqueCategories(itemData)); // Initialize category data
     const [savedShops, setSavedShops] = useState([]);
-    const [showUnsavedDialogue, setShowUnsavedDialogue] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
-
     // Inventory state
     const [inventory, setInventory] = useState([]);
 
@@ -125,7 +121,7 @@ function ShopGenerator() {
     // Shop operations
     const {
         handleLoadShops,
-        handleLoadShopWithCheck,
+        handleLoadShop,
         handleNewShop,
         handleCloneShop,
         handleSaveShop,
@@ -135,15 +131,13 @@ function ShopGenerator() {
         shopState,
         setShopState,
         filters,
-        items: inventory,
-        setItems: setInventory,
+        inventory,
+        setInventory,
         setShopSnapshot,
         setSavedShops,
         setFilters,
         getFilteredArray,
         hasUnsavedChanges,
-        setPendingAction,
-        setShowUnsavedDialogue,
     });
 
     // Shop generation
@@ -158,19 +152,6 @@ function ShopGenerator() {
 
     const handleGenerateClick = () => {
         generateInventory();
-    };
-
-    const handleUnsavedDialogueConfirm = () => {
-        setShowUnsavedDialogue(false);
-        if (pendingAction) {
-            pendingAction();
-            setPendingAction(null);
-        }
-    };
-
-    const handleUnsavedDialogueCancel = () => {
-        setShowUnsavedDialogue(false);
-        setPendingAction(null);
     };
 
     // Initial data loading
@@ -263,7 +244,7 @@ function ShopGenerator() {
                         key={key}
                         type={{ name: "Tab_ChooseShop" }}
                         savedShops={savedShops}
-                        onLoadShop={handleLoadShopWithCheck}
+                        onLoadShop={handleLoadShop}
                         onNewShop={handleNewShop}
                         currentShopId={shopState.id}
                     />
@@ -385,15 +366,7 @@ function ShopGenerator() {
             {authLoading ? (
                 <div>Loading...</div>
             ) : (
-                <>
-                    {showUnsavedDialogue && (
-                        <UnsavedChangesDialogue
-                            onConfirm={handleUnsavedDialogueConfirm}
-                            onCancel={handleUnsavedDialogueCancel}
-                            changes={getChangedFields()}
-                            currentShopName={shopState.name}
-                        />
-                    )}
+                <>                    
                     {tabGroups.map((tabs, index) => (
                         <TabContainer
                             key={index}
@@ -459,7 +432,7 @@ function ShopGenerator() {
                                     case "Tab_ChooseShop":
                                         return React.cloneElement(tab, {
                                             savedShops,
-                                            onLoadShop: handleLoadShopWithCheck,
+                                            onLoadShop: handleLoadShop,
                                             onNewShop: handleNewShop,
                                             currentShopId: shopState.id,
                                         });

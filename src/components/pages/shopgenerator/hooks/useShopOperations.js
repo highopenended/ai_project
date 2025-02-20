@@ -3,7 +3,6 @@ import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/fir
 import { takeShopSnapshot } from "../utils/shopStateUtils";
 import { getCurrentShopState } from "./useShopState";
 import defaultShopData from "../utils/shopData";
-import UnsavedChangesDialogue from "../shared/UnsavedChangesDialogue";
 
 /**
  * Helper function to generate a unique shop ID
@@ -29,12 +28,9 @@ const generateShopId = () => `shop_${Date.now()}_${Math.random().toString(36).su
  * @param {Function} params.setFilters - Function to update filter states
  * @param {Function} params.getFilteredArray - Function to get filtered arrays
  * @param {boolean} params.hasUnsavedChanges - Whether there are unsaved changes
- * @param {Function} params.setPendingAction - Function to set pending action
- * @param {Function} params.setShowUnsavedDialogue - Function to show/hide unsaved changes dialogue
  * 
  * @returns {Object} Shop operation handlers
  * @property {Function} handleLoadShops - Load all shops for current user
- * @property {Function} handleLoadShopWithCheck - Load a specific shop with unsaved changes check
  * @property {Function} handleNewShop - Create a new shop
  * @property {Function} handleCloneShop - Clone the current shop
  * @property {Function} handleSaveShop - Save the current shop
@@ -45,15 +41,14 @@ export const useShopOperations = ({
     shopState,
     setShopState,
     filters,
-    items,
+    inventory,
     setShopSnapshot,
     setSavedShops,
     setFilters,
-    setItems,
+    setInventory,
     getFilteredArray,
     hasUnsavedChanges,
-    setPendingAction,
-    setShowUnsavedDialogue
+    
 }) => {
     // Helper function to create a new shop snapshot
     const createShopSnapshot = useCallback((shopData, filterData, stockData) => {
@@ -71,10 +66,10 @@ export const useShopOperations = ({
     // Track shop parameter changes
     useEffect(() => {
         if (shopState.id) {
-            const newState = getCurrentShopState(shopState, filters, items, getFilteredArray);
+            const newState = getCurrentShopState(shopState, filters, inventory, getFilteredArray);
             console.log("Updated shop state:", newState);
         }
-    }, [shopState, filters, items, getFilteredArray]);
+    }, [shopState, filters, inventory, getFilteredArray]);
 
     /**
      * Create a new shop with default values
@@ -98,7 +93,7 @@ export const useShopOperations = ({
                     subcategories: new Map(),
                     traits: new Map(),
                 }),
-                setItems([])
+                setInventory([])
             ]);
 
             // Create new snapshot
@@ -122,23 +117,10 @@ export const useShopOperations = ({
      */
     const handleNewShop = () => {
         if (hasUnsavedChanges) {
-            setPendingAction(() => () => createNewShop());
-            setShowUnsavedDialogue(true);
+            createNewShop();
             return;
         }
         createNewShop();
-    };
-
-    /**
-     * Handle loading a shop with unsaved changes check
-     */
-    const handleLoadShopWithCheck = (shop) => {
-        if (hasUnsavedChanges) {
-            setPendingAction(() => () => handleLoadShop(shop));
-            setShowUnsavedDialogue(true);
-            return;
-        }
-        handleLoadShop(shop);
     };
 
     /**
@@ -212,7 +194,7 @@ export const useShopOperations = ({
             await Promise.all([
                 setShopState(baseState),
                 setFilters(newFilters),
-                setItems(currentStock)
+                setInventory(currentStock)
             ]);
 
             // Create new snapshot
@@ -236,7 +218,7 @@ export const useShopOperations = ({
         };
 
         setShopState(clonedState);
-        createShopSnapshot(clonedState, filters, items);
+        createShopSnapshot(clonedState, filters, inventory);
     };
 
     /**
@@ -248,7 +230,7 @@ export const useShopOperations = ({
             hasCurrentUser: !!currentUser,
             currentShopState: shopState,
             currentFilters: filters,
-            itemsCount: items?.length
+            itemsCount: inventory?.length
         });
 
         if (!currentUser) {
@@ -277,7 +259,7 @@ export const useShopOperations = ({
             const savedShopData = {
                 ...shopState,
                 dateLastEdited: currentDate,
-                currentStock: items,
+                currentStock: inventory,
                 filterStates: filterStatesForStorage,
             };
 
@@ -298,7 +280,7 @@ export const useShopOperations = ({
 
             console.log("Updating local state after save");
             setShopState(updatedState);
-            createShopSnapshot(updatedState, filters, items);
+            createShopSnapshot(updatedState, filters, inventory);
             await handleLoadShops();
             console.log("Save process completed successfully");
         } catch (error) {
@@ -330,7 +312,6 @@ export const useShopOperations = ({
     return {
         handleLoadShops,
         handleLoadShop,
-        handleLoadShopWithCheck,
         handleNewShop,
         handleCloneShop,
         handleSaveShop,
