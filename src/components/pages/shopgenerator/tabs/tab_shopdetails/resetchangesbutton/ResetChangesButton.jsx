@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import "./ResetChangesButton.css";
 import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
 
-const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }) => {
+const ResetChangesButton = ({ onReset, shopName,hasUnsavedChanges, changes }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
@@ -36,7 +36,7 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
                     headerText="Revert All Changes?"
                     description="Are you sure you want to reset all changes made to this shop? This will revert the shop back to its last saved state."
                     changes={changes}
-                    currentShopName={currentShop.name}
+                    currentShopName={shopName}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
                     continueButtonText="Reset Changes"
@@ -48,9 +48,7 @@ const ResetChangesButton = ({ onReset, hasUnsavedChanges, currentShop, changes }
 
 ResetChangesButton.propTypes = {
     onReset: PropTypes.func.isRequired,
-    currentShop: PropTypes.shape({
-        name: PropTypes.string.isRequired,
-    }).isRequired,
+    shopName: PropTypes.string.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
     changes: PropTypes.object.isRequired,
 };

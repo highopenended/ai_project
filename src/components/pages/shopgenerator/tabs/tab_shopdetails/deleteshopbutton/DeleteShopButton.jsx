@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import './DeleteShopButton.css';
 import ActionButton from '../../../shared/actionbutton/ActionButton';
 
-const DeleteShopButton = ({ onDelete, shopId, currentShop }) => {
+const DeleteShopButton = ({ onDelete, shopId, shopState }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
@@ -36,10 +36,10 @@ const DeleteShopButton = ({ onDelete, shopId, currentShop }) => {
                         <h3 className="delete-confirm-title">Delete Shop?</h3>
                         <div className="delete-confirm-details">
                             <p className="shop-summary">
-                                <span className="shop-summary-label">Shop Name:</span> {currentShop.name}<br/>
-                                <span className="shop-summary-label">Shopkeeper:</span> {currentShop.keeperName}<br/>
-                                <span className="shop-summary-label">Shop Type:</span> {currentShop.type}<br/>
-                                <span className="shop-summary-label">Location:</span> {currentShop.location}
+                                <span className="shop-summary-label">Shop Name:</span> {shopState.name}<br/>
+                                <span className="shop-summary-label">Shopkeeper:</span> {shopState.keeperName}<br/>
+                                <span className="shop-summary-label">Shop Type:</span> {shopState.type}<br/>
+                                <span className="shop-summary-label">Location:</span> {shopState.location}
                             </p>
                         </div>
                         <p className="delete-confirm-message">
@@ -69,7 +69,7 @@ const DeleteShopButton = ({ onDelete, shopId, currentShop }) => {
 DeleteShopButton.propTypes = {
     onDelete: PropTypes.func.isRequired,
     shopId: PropTypes.string,
-    currentShop: PropTypes.shape({
+    shopState: PropTypes.shape({
         name: PropTypes.string.isRequired,
         keeperName: PropTypes.string.isRequired,
         type: PropTypes.string.isRequired,

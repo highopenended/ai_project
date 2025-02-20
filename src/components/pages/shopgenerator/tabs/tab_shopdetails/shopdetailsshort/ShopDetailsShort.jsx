@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import ShortDetailRow from './ShortDetailRow';
 import ShortDetailContainer from './ShortDetailContainer';
-import { useRef } from 'react';
+import { useRef, useCallback } from 'react';
 
 const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
     const shopNameRef = useRef(null);
@@ -15,13 +15,17 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
         }
     };
 
+    const handleChange = useCallback((e) => {
+        onInputChange(e);
+    }, [onInputChange]);
+
     return (
         <ShortDetailContainer>
             <ShortDetailRow
                 ref={shopNameRef}
                 title="Shop Name"                    
                 value={shopDetails.name}
-                onChange={onInputChange}
+                onChange={handleChange}
                 name="shopName"
                 onEnterPress={() => handleEnterPress(shopKeeperNameRef)}
                 placeholder="Enter the shop's name"
@@ -30,7 +34,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 ref={shopKeeperNameRef}
                 title="ShopKeeper"
                 value={shopDetails.keeperName}
-                onChange={onInputChange}
+                onChange={handleChange}
                 name="shopKeeperName"
                 onEnterPress={() => handleEnterPress(typeRef)}
                 placeholder="Enter the shopkeeper's name"
@@ -39,7 +43,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 ref={typeRef}
                 title="Shop Type"
                 value={shopDetails.type}
-                onChange={onInputChange}
+                onChange={handleChange}
                 name="type"
                 onEnterPress={() => handleEnterPress(locationRef)}
                 placeholder="Enter the type of shop"
@@ -48,7 +52,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 ref={locationRef}
                 title="Location"
                 value={shopDetails.location}
-                onChange={onInputChange}
+                onChange={handleChange}
                 name="location"
                 onEnterPress={() => handleEnterPress(shopNameRef)}
                 placeholder="Enter the shop's location"

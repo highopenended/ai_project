@@ -18,7 +18,7 @@ import "./Tab_ShopDetails.css";
  * - Save, clone, and delete functionality
  */
 function Tab_ShopDetails({
-    currentShop,
+    shopState,
     onShopDetailsChange,
     onSaveShop,
     onCloneShop,
@@ -30,22 +30,22 @@ function Tab_ShopDetails({
 }) {
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
-        if (!currentShop) return false;
+        if (!shopState) return false;
         return Object.values({
-            name: currentShop.name,
-            keeperName: currentShop.keeperName,
-            type: currentShop.type,
-            location: currentShop.location,
-            description: currentShop.description,
-            keeperDescription: currentShop.keeperDescription,
+            name: shopState.name,
+            keeperName: shopState.keeperName,
+            type: shopState.type,
+            location: shopState.location,
+            description: shopState.description,
+            keeperDescription: shopState.keeperDescription,
         }).every((value) => value && typeof value === "string" && value.trim() !== "");
     };
 
     // Check if the current shop exists in savedShops
-    const isExistingShop = currentShop?.id && savedShops?.some((shop) => shop.id === currentShop.id);
+    const isExistingShop = shopState?.id && savedShops?.some((shop) => shop.id === shopState.id);
 
     // Check if this is just a new unsaved shop placeholder
-    const isNewUnsavedShop = currentShop?.id && !isExistingShop;
+    const isNewUnsavedShop = shopState?.id && !isExistingShop;
 
     return (
         <div className="tab-shop-details">
@@ -53,33 +53,33 @@ function Tab_ShopDetails({
                 <SaveShopButton
                     onSave={onSaveShop}
                     areAllDetailsFilled={areAllDetailsFilled}
-                    currentShop={currentShop}
+                    shopName={shopState.name}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
                 />
                 <CloneShopButton
                     onClone={onCloneShop}
-                    shopId={isNewUnsavedShop ? null : currentShop?.id}
-                    currentShop={currentShop}
+                    shopId={isNewUnsavedShop ? null : shopState?.id}
+                    shopState={shopState}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
                 />
                 <ResetChangesButton
                     onReset={onRevertChanges}
-                    currentShop={currentShop}
+                    shopName={shopState.name}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
                 />
             </div>
             <div className="tab-shop-details scrollable">
-                <ShopDetailsShort shopDetails={currentShop} onInputChange={onShopDetailsChange} />
-                <ShopDetailsLong shopDetails={currentShop} onInputChange={onShopDetailsChange} />
-                <ShopDates dateCreated={currentShop?.dateCreated} dateLastEdited={currentShop?.dateLastEdited} />
+                <ShopDetailsShort shopDetails={shopState} onInputChange={onShopDetailsChange} />
+                <ShopDetailsLong shopDetails={shopState} onInputChange={onShopDetailsChange} />
+                <ShopDates dateCreated={shopState?.dateCreated} dateLastEdited={shopState?.dateLastEdited} />
 
                 <DeleteShopButton
                     onDelete={onDeleteShop}
-                    shopId={isNewUnsavedShop ? null : currentShop?.id}
-                    currentShop={currentShop}
+                    shopId={isNewUnsavedShop ? null : shopState?.id}
+                    shopState={shopState}
                 />
             </div>
         </div>
@@ -87,7 +87,7 @@ function Tab_ShopDetails({
 }
 
 Tab_ShopDetails.propTypes = {
-    currentShop: PropTypes.shape({
+    shopState: PropTypes.shape({
         id: PropTypes.string,
         name: PropTypes.string.isRequired,
         keeperName: PropTypes.string.isRequired,

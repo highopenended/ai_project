@@ -3,14 +3,14 @@ import PropTypes from "prop-types";
 import "./SaveShopButton.css";
 import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
 
-const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, changes, currentShop }) => {
+const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, changes, shopName }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
         console.log("Save button clicked - Full state:", {
             hasUnsavedChanges,
             showConfirmation,
-            currentShop,
+            shopName,
             willShowConfirmation: hasUnsavedChanges,
             isDisabled: !areAllDetailsFilled(),
             allDetailsFilled: areAllDetailsFilled()
@@ -49,7 +49,7 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
                     headerText={`Save Changes?`}
                     description={`Are you sure you want to save the changes you've made to this shop?`}
                     changes={changes}
-                    currentShopName={currentShop.name}
+                    currentShopName={shopName}
                     onConfirm={handleConfirm}
                     onCancel={handleCancel}
                     continueButtonText="Save Changes"
@@ -62,7 +62,7 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
 SaveShopButton.propTypes = {
     onSave: PropTypes.func.isRequired,
     areAllDetailsFilled: PropTypes.func.isRequired,
-    currentShop: PropTypes.object.isRequired,
+    shopName: PropTypes.string.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
     changes: PropTypes.object.isRequired,
 };

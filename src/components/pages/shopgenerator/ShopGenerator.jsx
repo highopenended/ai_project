@@ -238,17 +238,7 @@ function ShopGenerator() {
                     <Tab_ShopDetails
                         key={key}
                         type={{ name: "Tab_ShopDetails" }}
-                        currentShop={{
-                            id: shopState.id,
-                            name: shopState.name,
-                            keeperName: shopState.keeperName,
-                            type: shopState.type,
-                            location: shopState.location,
-                            description: shopState.description,
-                            keeperDescription: shopState.keeperDescription,
-                            dateCreated: shopState.dateCreated,
-                            dateLastEdited: shopState.dateLastEdited,
-                        }}
+                        shopState={shopState}
                         onShopDetailsChange={handleShopDetailsChange}
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
@@ -264,17 +254,7 @@ function ShopGenerator() {
                     <Tab_AiAssistant
                         key={key}
                         type={{ name: "Tab_AiAssistant" }}
-                        currentShop={{
-                            id: shopState.id,
-                            name: shopState.name,
-                            keeperName: shopState.keeperName,
-                            type: shopState.type,
-                            location: shopState.location,
-                            description: shopState.description,
-                            keeperDescription: shopState.keeperDescription,
-                            dateCreated: shopState.dateCreated,
-                            dateLastEdited: shopState.dateLastEdited,
-                        }}
+                        shopState={shopState}
                         onAiAssistantChange={handleAiAssistantChange}
                     />
                 );
@@ -393,17 +373,7 @@ function ShopGenerator() {
                                         });
                                     case "Tab_ShopDetails":
                                         return React.cloneElement(tab, {
-                                            currentShop: {
-                                                id: shopState.id,
-                                                name: shopState.name,
-                                                keeperName: shopState.keeperName,
-                                                type: shopState.type,
-                                                location: shopState.location,
-                                                description: shopState.description,
-                                                keeperDescription: shopState.keeperDescription,
-                                                dateCreated: shopState.dateCreated,
-                                                dateLastEdited: shopState.dateLastEdited,
-                                            },
+                                            shopState,
                                             onShopDetailsChange: handleShopDetailsChange,
                                             onSaveShop: handleSaveShop,
                                             onCloneShop: handleCloneShop,

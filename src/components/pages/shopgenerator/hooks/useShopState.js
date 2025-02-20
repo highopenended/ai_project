@@ -110,6 +110,7 @@ export const useShopState = (initialState) => {
 
     // Shop details handlers
     const handleShopDetailsChange = (e) => {
+        console.log("handleShopDetailsChange called");
         const { name, value } = e.target;
         setShopState(prev => {
             const newState = { ...prev };
