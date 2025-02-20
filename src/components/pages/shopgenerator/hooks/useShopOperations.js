@@ -30,7 +30,7 @@ const generateShopId = () => `shop_${Date.now()}_${Math.random().toString(36).su
  * @param {boolean} params.hasUnsavedChanges - Whether there are unsaved changes
  * 
  * @returns {Object} Shop operation handlers
- * @property {Function} handleLoadShops - Load all shops for current user
+ * @property {Function} handleLoadShopList - Load all shops for current user
  * @property {Function} handleNewShop - Create a new shop
  * @property {Function} handleCloneShop - Clone the current shop
  * @property {Function} handleSaveShop - Save the current shop
@@ -126,7 +126,7 @@ export const useShopOperations = ({
     /**
      * Load all shops for the current user
      */
-    const handleLoadShops = async () => {
+    const handleLoadShopList = async () => {
         if (!currentUser) return;
         
         try {
@@ -281,7 +281,7 @@ export const useShopOperations = ({
             console.log("Updating local state after save");
             setShopState(updatedState);
             createShopSnapshot(updatedState, filters, inventory);
-            await handleLoadShops();
+            await handleLoadShopList();
             console.log("Save process completed successfully");
         } catch (error) {
             console.error("Error saving shop:", error);
@@ -301,7 +301,7 @@ export const useShopOperations = ({
         try {
             const userId = currentUser.uid;
             await deleteShopData(userId, shopState.id);
-            await handleLoadShops();
+            await handleLoadShopList();
             alert("Shop deleted successfully!");
         } catch (error) {
             console.error("Error deleting shop:", error);
@@ -310,7 +310,7 @@ export const useShopOperations = ({
     };
 
     return {
-        handleLoadShops,
+        handleLoadShopList,
         handleLoadShop,
         handleNewShop,
         handleCloneShop,

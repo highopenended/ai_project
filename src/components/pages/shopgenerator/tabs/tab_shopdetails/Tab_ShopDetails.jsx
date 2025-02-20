@@ -25,7 +25,7 @@ function Tab_ShopDetails({
     onDeleteShop,
     savedShops,
     hasUnsavedChanges,
-    onResetChanges,
+    onRevertChanges,
     changes,
 }) {
     // Function to check if all shop details are filled
@@ -65,7 +65,7 @@ function Tab_ShopDetails({
                     changes={changes}
                 />
                 <ResetChangesButton
-                    onReset={onResetChanges}
+                    onReset={onRevertChanges}
                     currentShop={currentShop}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
@@ -114,7 +114,7 @@ Tab_ShopDetails.propTypes = {
     onSaveShop: PropTypes.func.isRequired,
     onCloneShop: PropTypes.func.isRequired,
     onDeleteShop: PropTypes.func.isRequired,
-    onResetChanges: PropTypes.func.isRequired,
+    onRevertChanges: PropTypes.func.isRequired,
     savedShops: PropTypes.array.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
     changes: PropTypes.shape({

@@ -59,7 +59,7 @@ export const getCurrentShopState = (shopState, filters, items, getFilteredArray)
  * @property {Function} handleBiasChange - Handler for updating item bias
  * @property {Function} handleRarityDistributionChange - Handler for updating rarity distribution
  * @property {Function} handleShopDetailsChange - Handler for updating shop details
- * @property {Function} handleResetChanges - Handler for resetting state to a snapshot
+ * @property {Function} handleRevertChanges - Handler for resetting state to a snapshot
  */
 export const useShopState = (initialState) => {
     const [shopState, setShopState] = useState({
@@ -146,7 +146,7 @@ export const useShopState = (initialState) => {
     /**
      * Reset all state to match the last snapshot
      */
-    const handleResetChanges = useCallback(async (snapshot, setFilters, setItems) => {
+    const handleRevertChanges = useCallback(async (snapshot, setFilters, setItems) => {
         if (!snapshot) return;
 
         try {
@@ -192,6 +192,6 @@ export const useShopState = (initialState) => {
         // Shop details handlers
         handleShopDetailsChange,
         // Reset handler
-        handleResetChanges,
+        handleRevertChanges,
     };
 }; 

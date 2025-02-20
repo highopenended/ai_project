@@ -107,7 +107,7 @@ function ShopGenerator() {
         handleBiasChange,
         handleRarityDistributionChange,
         handleShopDetailsChange,
-        handleResetChanges,
+        handleRevertChanges,
     } = useShopState(defaultShopData);
 
     // Snapshot and change tracking
@@ -118,7 +118,7 @@ function ShopGenerator() {
     });
 
     // Shop operations
-    const { handleLoadShops, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
+    const { handleLoadShopList, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
         useShopOperations({
             currentUser,
             shopState,
@@ -169,17 +169,8 @@ function ShopGenerator() {
 
     // Initialize shop - either from saved state or create new
     useEffect(() => {
-        if (!authLoading && !shopState.id) {
-            handleNewShop();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authLoading]);
-
-    // Load shops when auth is ready and user is logged in
-    useEffect(() => {
-        if (!authLoading && currentUser) {
-            handleLoadShops();
-        }
+        if (!authLoading && !shopState.id) handleNewShop();
+        if (!authLoading && currentUser) handleLoadShopList();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authLoading, currentUser]);
 
@@ -262,7 +253,7 @@ function ShopGenerator() {
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
                         onDeleteShop={handleDeleteShop}
-                        onResetChanges={() => handleResetChanges(shopSnapshot, setFilters, setInventory)}
+                        onRevertChanges={() => handleRevertChanges(shopSnapshot, setFilters, setInventory)}
                         savedShops={savedShops}
                         hasUnsavedChanges={hasUnsavedChanges}
                         changes={getChangedFields()}
@@ -417,8 +408,8 @@ function ShopGenerator() {
                                             onSaveShop: handleSaveShop,
                                             onCloneShop: handleCloneShop,
                                             onDeleteShop: handleDeleteShop,
-                                            onResetChanges: () =>
-                                                handleResetChanges(shopSnapshot, setFilters, setInventory),
+                                            onRevertChanges: () =>
+                                                handleRevertChanges(shopSnapshot, setFilters, setInventory),
                                             savedShops,
                                             hasUnsavedChanges,
                                             changes: getChangedFields(),
