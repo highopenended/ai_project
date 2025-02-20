@@ -21,21 +21,21 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 /**
  * ShopGenerator Component
- * 
+ *
  * Main component for the shop generation system. Manages the overall state and coordinates
  * between different features through custom hooks.
- * 
+ *
  * Features:
  * 1. Shop Management
  *    - Create, load, save, and delete shops
  *    - Track unsaved changes
  *    - Maintain shop snapshots for state restoration
- * 
+ *
  * 2. Inventory Generation
  *    - Generate shop inventory based on parameters
  *    - Filter by categories, subcategories, and traits
  *    - Sort and display inventory items
- * 
+ *
  * 3. Tab System
  *    - Draggable and resizable tab groups
  *    - Persistent tab layout saved to localStorage
@@ -45,7 +45,7 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
  *      - Choose Shop: Load and manage saved shops
  *      - Shop Details: Edit shop information
  *      - AI Assistant: AI-powered shop assistance
- * 
+ *
  * State Management:
  * - Uses custom hooks for specific features:
  *   - useShopState: Shop parameters and details
@@ -54,7 +54,7 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
  *   - useShopOperations: Shop CRUD operations
  *   - useInventoryGeneration: Inventory generation logic
  *   - useTabManagement: Tab layout and interactions
- * 
+ *
  * @component
  */
 
@@ -77,9 +77,8 @@ function ShopGenerator() {
     const { currentUser, isLoading: authLoading } = useAuth(); // Get auth context
     const [allItems, setAllItems] = useState([]); // Master list of all possible items
     const [categoryData] = useState(() => extractUniqueCategories(itemData)); // Initialize category data
-    const [savedShops, setSavedShops] = useState([]);
-    // Inventory state
-    const [inventory, setInventory] = useState([]);
+    const [savedShops, setSavedShops] = useState([]); // Saved shops state
+    const [inventory, setInventory] = useState([]); // Inventory state
 
     // Filter groups state management
     const {
@@ -115,30 +114,24 @@ function ShopGenerator() {
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
         shopState,
         filters,
-        inventory
+        inventory,
     });
 
     // Shop operations
-    const {
-        handleLoadShops,
-        handleLoadShop,
-        handleNewShop,
-        handleCloneShop,
-        handleSaveShop,
-        handleDeleteShop,
-    } = useShopOperations({
-        currentUser,
-        shopState,
-        setShopState,
-        filters,
-        inventory,
-        setInventory,
-        setShopSnapshot,
-        setSavedShops,
-        setFilters,
-        getFilteredArray,
-        hasUnsavedChanges,
-    });
+    const { handleLoadShops, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
+        useShopOperations({
+            currentUser,
+            shopState,
+            setShopState,
+            filters,
+            inventory,
+            setInventory,
+            setShopSnapshot,
+            setSavedShops,
+            setFilters,
+            getFilteredArray,
+            hasUnsavedChanges,
+        });
 
     // Shop generation
     const { generateInventory, isGenerating } = useInventoryGeneration({
@@ -147,7 +140,7 @@ function ShopGenerator() {
         filters,
         getFilteredArray,
         setInventory,
-        setShopSnapshot
+        setShopSnapshot,
     });
 
     const handleGenerateClick = () => {
@@ -366,7 +359,7 @@ function ShopGenerator() {
             {authLoading ? (
                 <div>Loading...</div>
             ) : (
-                <>                    
+                <>
                     {tabGroups.map((tabs, index) => (
                         <TabContainer
                             key={index}
@@ -424,7 +417,8 @@ function ShopGenerator() {
                                             onSaveShop: handleSaveShop,
                                             onCloneShop: handleCloneShop,
                                             onDeleteShop: handleDeleteShop,
-                                            onResetChanges: () => handleResetChanges(shopSnapshot, setFilters, setInventory),
+                                            onResetChanges: () =>
+                                                handleResetChanges(shopSnapshot, setFilters, setInventory),
                                             savedShops,
                                             hasUnsavedChanges,
                                             changes: getChangedFields(),
