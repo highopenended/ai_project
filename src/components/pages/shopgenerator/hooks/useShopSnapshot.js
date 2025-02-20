@@ -36,9 +36,23 @@ export const useShopSnapshot = ({ shopState, filters, inventory }) => {
     }, [shopSnapshot, shopState, filters, inventory]);
 
     const hasUnsavedChanges = useMemo(() => {
+        if (!shopSnapshot && shopState) {
+            console.log("No snapshot but has shop state - treating as unsaved new shop");
+            return true;
+        }
+        
         const changes = getChangedFields();
-        return hasChanges(changes);
-    }, [getChangedFields]);
+        const hasChangeResult = hasChanges(changes);
+        
+        console.log("Change detection:", {
+            hasSnapshot: !!shopSnapshot,
+            hasShopState: !!shopState,
+            changes,
+            hasChangeResult
+        });
+        
+        return hasChangeResult;
+    }, [getChangedFields, shopSnapshot, shopState]);
 
     return {
         shopSnapshot,

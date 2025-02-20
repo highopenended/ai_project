@@ -3,6 +3,7 @@ import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/fir
 import { takeShopSnapshot } from "../utils/shopStateUtils";
 import { getCurrentShopState } from "./useShopState";
 import defaultShopData from "../utils/shopData";
+import UnsavedChangesDialogue from "../shared/UnsavedChangesDialogue";
 
 /**
  * Helper function to generate a unique shop ID
@@ -242,12 +243,22 @@ export const useShopOperations = ({
      * Save the current shop
      */
     const handleSaveShop = async () => {
+        console.log("handleSaveShop called - Starting save process", {
+            isUserLoggedIn: !!currentUser,
+            hasCurrentUser: !!currentUser,
+            currentShopState: shopState,
+            currentFilters: filters,
+            itemsCount: items?.length
+        });
+
         if (!currentUser) {
+            console.log("Save failed: User not logged in");
             alert("Please log in to save shops");
             return;
         }
 
         try {
+            console.log("Starting save operation");
             const currentDate = new Date();
             
             // Convert Map objects to a flat object structure for Firebase
@@ -257,6 +268,12 @@ export const useShopOperations = ({
                 traits: Object.fromEntries(filters.traits.entries()),
             };
 
+            console.log("Preparing shop data for save", {
+                filterStatesForStorage,
+                currentDate,
+                shopState
+            });
+
             const savedShopData = {
                 ...shopState,
                 dateLastEdited: currentDate,
@@ -264,18 +281,26 @@ export const useShopOperations = ({
                 filterStates: filterStatesForStorage,
             };
 
-            const userId = currentUser.uid;
-            const savedShopId = await saveOrUpdateShopData(userId, savedShopData);
+            console.log("About to call saveOrUpdateShopData with:", {
+                userId: currentUser.uid,
+                savedShopData
+            });
+
+            const savedShopId = await saveOrUpdateShopData(currentUser.uid, savedShopData);
             
+            console.log("Shop saved successfully", { savedShopId });
+
             const updatedState = {
                 ...shopState,
                 id: savedShopId,
                 dateLastEdited: currentDate
             };
 
+            console.log("Updating local state after save");
             setShopState(updatedState);
             createShopSnapshot(updatedState, filters, items);
             await handleLoadShops();
+            console.log("Save process completed successfully");
         } catch (error) {
             console.error("Error saving shop:", error);
             alert("Error saving shop. Please try again.");

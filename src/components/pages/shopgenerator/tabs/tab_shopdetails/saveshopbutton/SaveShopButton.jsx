@@ -7,15 +7,26 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
+        console.log("Save button clicked - Full state:", {
+            hasUnsavedChanges,
+            showConfirmation,
+            currentShop,
+            willShowConfirmation: hasUnsavedChanges,
+            isDisabled: !areAllDetailsFilled(),
+            allDetailsFilled: areAllDetailsFilled()
+        });
         setShowConfirmation(hasUnsavedChanges); 
     };
 
     const handleConfirm = () => {
+        console.log("Save confirmation dialog confirmed - calling onSave");
         onSave();
+        console.log("onSave completed");
         setShowConfirmation(false);
     };
 
     const handleCancel = () => {
+        console.log("Save confirmation dialog cancelled");
         setShowConfirmation(false);
     };
 
@@ -23,7 +34,10 @@ const SaveShopButton = ({ onSave, areAllDetailsFilled, hasUnsavedChanges, change
         <>
             <button 
                 className="save-shop-button"
-                onClick={handleClick} 
+                onClick={() => {
+                    console.log("Raw button click event received");
+                    handleClick();
+                }} 
                 disabled={!areAllDetailsFilled()} 
                 aria-label="Save"
             >
