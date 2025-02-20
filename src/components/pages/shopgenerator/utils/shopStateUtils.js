@@ -21,32 +21,14 @@ export const takeShopSnapshot = (shopState, filters, items) => ({
     levelRange: shopState.levelRange,
     itemBias: shopState.itemBias,
     rarityDistribution: shopState.rarityDistribution,
-    // Filters and inventory
-    filters: {
-        categories: new Map(filters.categories),
-        subcategories: new Map(filters.subcategories),
-        traits: new Map(filters.traits),
+    // Filters and inventory - store as plain objects for Firebase compatibility
+    filterStates: {
+        categories: Object.fromEntries(filters.categories.entries()),
+        subcategories: Object.fromEntries(filters.subcategories.entries()),
+        traits: Object.fromEntries(filters.traits.entries()),
     },
     currentStock: [...items],
 });
-
-/**
- * Helper function to compare two Maps
- * @param {Map} map1 
- * @param {Map} map2 
- */
-const areMapsEqual = (map1, map2) => {
-    // Handle undefined/null cases
-    if (!map1 && !map2) return true;
-    if (!map1 || !map2) return false;
-    
-    if (map1.size !== map2.size) return false;
-    for (const [key, val1] of map1) {
-        const val2 = map2.get(key);
-        if (val2 !== val1) return false;
-    }
-    return true;
-};
 
 /**
  * Compares two shop states and returns the differences
@@ -110,22 +92,29 @@ export const compareShopStates = (currentState, originalState) => {
     }
 
     // Check filters
-    const currentFilters = currentState.filters || {};
-    const originalFilters = originalState.filters || {};
+    const currentFilters = currentState.filterStates || {};
+    const originalFilters = originalState.filterStates || {};
     
-    if (!areMapsEqual(currentFilters.categories, originalFilters.categories) ||
-        !areMapsEqual(currentFilters.subcategories, originalFilters.subcategories) ||
-        !areMapsEqual(currentFilters.traits, originalFilters.traits)) {
+    const areFiltersEqual = (filter1, filter2) => {
+        const keys1 = Object.keys(filter1 || {});
+        const keys2 = Object.keys(filter2 || {});
+        if (keys1.length !== keys2.length) return false;
+        return keys1.every(key => filter1[key] === filter2[key]);
+    };
+
+    if (!areFiltersEqual(currentFilters.categories, originalFilters.categories) ||
+        !areFiltersEqual(currentFilters.subcategories, originalFilters.subcategories) ||
+        !areFiltersEqual(currentFilters.traits, originalFilters.traits)) {
         changes.parameters.filters = {
             old: {
-                categories: new Map(originalFilters.categories || []),
-                subcategories: new Map(originalFilters.subcategories || []),
-                traits: new Map(originalFilters.traits || [])
+                categories: { ...(originalFilters.categories || {}) },
+                subcategories: { ...(originalFilters.subcategories || {}) },
+                traits: { ...(originalFilters.traits || {}) }
             },
             new: {
-                categories: new Map(currentFilters.categories || []),
-                subcategories: new Map(currentFilters.subcategories || []),
-                traits: new Map(currentFilters.traits || [])
+                categories: { ...(currentFilters.categories || {}) },
+                subcategories: { ...(currentFilters.subcategories || {}) },
+                traits: { ...(currentFilters.traits || {}) }
             }
         };
     }

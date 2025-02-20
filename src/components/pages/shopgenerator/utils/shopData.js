@@ -26,16 +26,16 @@ const shopData = {
     Unique: 0.01
   },
 
-  // Filter states using Map objects
+  // Filter states
   // Each filter cycles through three states when toggled:
-  // - Not in Map (or IGNORE): Default state, item neither included nor excluded
+  // - Not in object (or IGNORE): Default state, item neither included nor excluded
   // - INCLUDE: Item is specifically included in generation
   // - EXCLUDE: Item is specifically excluded from generation
   // The cycle goes: IGNORE -> INCLUDE -> EXCLUDE -> IGNORE
-  filters: {
-    categories: new Map(),
-    subcategories: new Map(),
-    traits: new Map()
+  filterStates: {
+    categories: {},
+    subcategories: {},
+    traits: {}
   },
 
   // Current inventory

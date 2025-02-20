@@ -250,14 +250,12 @@ export const useShopOperations = ({
                 traits: Object.fromEntries(filters.traits.entries()),
             };
 
-            console.log("Preparing shop data for save", {
-                filterStatesForStorage,
-                currentDate,
-                shopState
-            });
+            // Create a clean copy of shop data without the filters field
+            const { filters: _, ...cleanShopState } = shopState;
 
+            // Ensure we're not passing any Map objects to Firebase
             const savedShopData = {
-                ...shopState,
+                ...cleanShopState,
                 dateLastEdited: currentDate,
                 currentStock: inventory,
                 filterStates: filterStatesForStorage,
