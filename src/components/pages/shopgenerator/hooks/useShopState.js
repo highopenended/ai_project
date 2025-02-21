@@ -2,9 +2,9 @@ import { useState, useCallback } from 'react';
 import { SELECTION_STATES } from '../utils/shopGeneratorConstants';
 
 /**
- * Helper function to get current shop state including parameters, details, and filters
+ * Helper function to get current shop state including parameters, details, and filterMaps
  */
-export const getCurrentShopState = (shopState, filters, items, getFilteredArray) => ({
+export const getCurrentShopState = (shopState, filterMaps, items, getFilteredArray) => ({
     
     // Shop details
     id: shopState.id,
@@ -147,7 +147,7 @@ export const useShopState = (initialState) => {
     /**
      * Reset all state to match the last snapshot
      */
-    const handleRevertChanges = useCallback(async (snapshot, setFilters, setItems) => {
+    const handleRevertChanges = useCallback(async (snapshot, setFilterMaps, setItems) => {
         if (!snapshot) return;
 
         try {
@@ -168,10 +168,10 @@ export const useShopState = (initialState) => {
                     itemBias: snapshot.itemBias,
                     rarityDistribution: snapshot.rarityDistribution,
                 }),
-                setFilters?.({
-                    categories: new Map(snapshot.filters.categories),
-                    subcategories: new Map(snapshot.filters.subcategories),
-                    traits: new Map(snapshot.filters.traits),
+                setFilterMaps?.({
+                    categories: new Map(snapshot.filterMaps.categories),
+                    subcategories: new Map(snapshot.filterMaps.subcategories),
+                    traits: new Map(snapshot.filterMaps.traits),
                 }),
                 setItems?.(snapshot.currentStock),
             ]);

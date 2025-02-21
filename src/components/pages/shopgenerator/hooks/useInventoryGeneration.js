@@ -6,13 +6,13 @@ import { takeShopSnapshot } from '../utils/shopStateUtils';
 /**
  * Hook for managing shop inventory generation
  * 
- * Handles the generation of shop inventory based on various parameters and filters.
+ * Handles the generation of shop inventory based on various parameters and filterMaps.
  * Includes loading state management and error handling.
  * 
  * @param {Object} params - The parameters for inventory generation
  * @param {Array} params.allItems - Master list of all available items
  * @param {Object} params.shopState - Current shop state including parameters
- * @param {Object} params.filters - Current filter states for categories, subcategories, and traits
+ * @param {Object} params.filterMaps - Current filter states for categories, subcategories, and traits
  * @param {Function} params.getFilteredArray - Function to get filtered arrays based on selection state
  * @param {Function} params.setInventory - Function to update the inventory state
  * @param {Function} params.setShopSnapshot - Function to update the shop snapshot
@@ -24,7 +24,7 @@ import { takeShopSnapshot } from '../utils/shopStateUtils';
 export const useInventoryGeneration = ({
     allItems,
     shopState,
-    filters,
+    filterMaps,
     getFilteredArray,
     setInventory,
     setShopSnapshot
@@ -49,10 +49,10 @@ export const useInventoryGeneration = ({
                 itemBias: shopState.itemBias,
                 rarityDistribution: shopState.rarityDistribution,
                 allItemsLength: allItems.length,
-                filters: {
-                    categories: Array.from(filters.categories.entries()),
-                    subcategories: Array.from(filters.subcategories.entries()),
-                    traits: Array.from(filters.traits.entries()),
+                filterMaps: {
+                    categories: Array.from(filterMaps.categories.entries()),
+                    subcategories: Array.from(filterMaps.subcategories.entries()),
+                    traits: Array.from(filterMaps.traits.entries()),
                 },
             });
 
@@ -76,7 +76,7 @@ export const useInventoryGeneration = ({
             if (result && Array.isArray(result.items)) {
                 setInventory(result.items);
                 // Take a new snapshot with the current state
-                const newSnapshot = takeShopSnapshot(shopState, filters, result.items);
+                const newSnapshot = takeShopSnapshot(shopState, filterMaps, result.items);
                 setShopSnapshot(newSnapshot);
                 console.log("Inventory state updated with", result.items.length, "items");
             } else {

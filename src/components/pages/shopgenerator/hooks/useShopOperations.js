@@ -20,12 +20,12 @@ const generateShopId = () => `shop_${Date.now()}_${Math.random().toString(36).su
  * @param {Object} params.currentUser - Current authenticated user
  * @param {Object} params.shopState - Current shop state
  * @param {Function} params.setShopState - Function to update shop state
- * @param {Object} params.filters - Current filter states
+ * @param {Object} params.filterMaps - Current filter states
  * @param {Array} params.inventory - Current shop inventory
  * @param {Function} params.setInventory - Function to update inventory
  * @param {Function} params.setShopSnapshot - Function to update shop snapshot
  * @param {Function} params.setSavedShops - Function to update list of saved shops
- * @param {Function} params.setFilters - Function to update filter states
+ * @param {Function} params.setFilterMaps - Function to update filter states
  * @param {Function} params.getFilteredArray - Function to get filtered arrays
  * @param {boolean} params.hasUnsavedChanges - Whether there are unsaved changes
  * 
@@ -40,11 +40,11 @@ export const useShopOperations = ({
     currentUser,
     shopState,
     setShopState,
-    filters,
+    filterMaps,
     inventory,
     setShopSnapshot,
     setSavedShops,
-    setFilters,
+    setFilterMaps,
     setInventory,
     getFilteredArray,
     hasUnsavedChanges,
@@ -66,10 +66,10 @@ export const useShopOperations = ({
     // Track shop parameter changes
     useEffect(() => {
         if (shopState.id) {
-            const newState = getCurrentShopState(shopState, filters, inventory, getFilteredArray);
+            const newState = getCurrentShopState(shopState, filterMaps, inventory, getFilteredArray);
             console.log("Updated shop state:", newState);
         }
-    }, [shopState, filters, inventory, getFilteredArray]);
+    }, [shopState, filterMaps, inventory, getFilteredArray]);
 
     /**
      * Create a new shop with default values
@@ -88,7 +88,7 @@ export const useShopOperations = ({
             // Reset all state to initial values
             await Promise.all([
                 setShopState(newShopState),
-                setFilters({
+                setFilterMaps({
                     categories: new Map(),
                     subcategories: new Map(),
                     traits: new Map(),
@@ -193,7 +193,7 @@ export const useShopOperations = ({
             // Update all state variables
             await Promise.all([
                 setShopState(baseState),
-                setFilters(newFilters),
+                setFilterMaps(newFilters),
                 setInventory(currentStock)
             ]);
 
@@ -218,7 +218,7 @@ export const useShopOperations = ({
         };
 
         setShopState(clonedState);
-        createShopSnapshot(clonedState, filters, inventory);
+        createShopSnapshot(clonedState, filterMaps, inventory);
     };
 
     /**
@@ -229,7 +229,7 @@ export const useShopOperations = ({
             isUserLoggedIn: !!currentUser,
             hasCurrentUser: !!currentUser,
             currentShopState: shopState,
-            currentFilters: filters,
+            currentFilters: filterMaps,
             itemsCount: inventory?.length
         });
 
@@ -245,9 +245,9 @@ export const useShopOperations = ({
             
             // Convert Map objects to a flat object structure for Firebase
             const filterStatesForStorage = {
-                categories: Object.fromEntries(filters.categories.entries()),
-                subcategories: Object.fromEntries(filters.subcategories.entries()),
-                traits: Object.fromEntries(filters.traits.entries()),
+                categories: Object.fromEntries(filterMaps.categories.entries()),
+                subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
+                traits: Object.fromEntries(filterMaps.traits.entries()),
             };
 
             // Create a clean copy of shop data without the filters field
@@ -278,7 +278,7 @@ export const useShopOperations = ({
 
             console.log("Updating local state after save");
             setShopState(updatedState);
-            createShopSnapshot(updatedState, filters, inventory);
+            createShopSnapshot(updatedState, filterMaps, inventory);
             await handleLoadShopList();
             console.log("Save process completed successfully");
         } catch (error) {

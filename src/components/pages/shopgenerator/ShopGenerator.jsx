@@ -82,8 +82,8 @@ function ShopGenerator() {
 
     // Filter groups state management
     const {
-        filters,
-        setFilters,
+        filterMaps,
+        setFilterMaps,
         getFilterState,
         toggleCategory,
         toggleSubcategory,
@@ -113,7 +113,7 @@ function ShopGenerator() {
     // Snapshot and change tracking
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
         shopState,
-        filters,
+        filterMaps,
         inventory,
     });
 
@@ -123,12 +123,12 @@ function ShopGenerator() {
             currentUser,
             shopState,
             setShopState,
-            filters,
+            filterMaps,
             inventory,
             setInventory,
             setShopSnapshot,
             setSavedShops,
-            setFilters,
+            setFilterMaps,
             getFilteredArray,
             hasUnsavedChanges,
         });
@@ -137,7 +137,7 @@ function ShopGenerator() {
     const { generateInventory, isGenerating } = useInventoryGeneration({
         allItems,
         shopState,
-        filters,
+        filterMaps,
         getFilteredArray,
         setInventory,
         setShopSnapshot,
@@ -197,9 +197,9 @@ function ShopGenerator() {
                         itemBias={shopState.itemBias}
                         setItemBias={handleBiasChange}
                         categoryData={categoryData}
-                        categoryStates={filters.categories}
-                        subcategoryStates={filters.subcategories}
-                        traitStates={filters.traits}
+                        categoryStates={filterMaps.categories}
+                        subcategoryStates={filterMaps.subcategories}
+                        traitStates={filterMaps.traits}
                         getFilterState={getFilterState}
                         toggleCategory={toggleCategory}
                         toggleSubcategory={toggleSubcategory}
@@ -243,7 +243,7 @@ function ShopGenerator() {
                         onSaveShop={handleSaveShop}
                         onCloneShop={handleCloneShop}
                         onDeleteShop={handleDeleteShop}
-                        onRevertChanges={() => handleRevertChanges(shopSnapshot, setFilters, setInventory)}
+                        onRevertChanges={() => handleRevertChanges(shopSnapshot, setFilterMaps, setInventory)}
                         savedShops={savedShops}
                         hasUnsavedChanges={hasUnsavedChanges}
                         changes={getChangedFields()}
@@ -351,9 +351,9 @@ function ShopGenerator() {
                                             itemBias: shopState.itemBias,
                                             setItemBias: handleBiasChange,
                                             categoryData: categoryData,
-                                            categoryStates: filters.categories,
-                                            subcategoryStates: filters.subcategories,
-                                            traitStates: filters.traits,
+                                            categoryStates: filterMaps.categories,
+                                            subcategoryStates: filterMaps.subcategories,
+                                            traitStates: filterMaps.traits,
                                             getFilterState: getFilterState,
                                             toggleCategory: toggleCategory,
                                             toggleSubcategory: toggleSubcategory,
@@ -379,7 +379,7 @@ function ShopGenerator() {
                                             onCloneShop: handleCloneShop,
                                             onDeleteShop: handleDeleteShop,
                                             onRevertChanges: () =>
-                                                handleRevertChanges(shopSnapshot, setFilters, setInventory),
+                                                handleRevertChanges(shopSnapshot, setFilterMaps, setInventory),
                                             savedShops,
                                             hasUnsavedChanges,
                                             changes: getChangedFields(),

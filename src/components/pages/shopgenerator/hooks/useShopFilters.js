@@ -53,8 +53,8 @@ const updateFilterMap = (filterMap, key, state) => {
  * @param {Object} [initialFilters=null] - Initial filter states
  * 
  * @returns {Object} Filter state and operations
- * @property {Object} filters - Current filter states for all filter types
- * @property {Function} setFilters - Function to update all filter states
+ * @property {Object} filterMaps - Current filter states for all filter types
+ * @property {Function} setFilterMaps - Function to update all filter states
  * @property {Function} getFilterState - Get the current state of a specific filter
  * @property {Function} updateFilter - Update a specific filter's state
  * @property {Function} clearFilter - Clear all filters of a specific type
@@ -67,7 +67,7 @@ const updateFilterMap = (filterMap, key, state) => {
  * @property {Function} clearTraitSelections - Clear all trait filters
  */
 export const useShopFilters = (initialFilters = null) => {
-    const [filters, setFilters] = useState(() => 
+    const [filterMaps, setFilterMaps] = useState(() => 
         Object.keys(FILTER_TYPES).reduce((acc, type) => ({
             ...acc,
             [type]: initializeFilter(initialFilters?.[type])
@@ -75,36 +75,36 @@ export const useShopFilters = (initialFilters = null) => {
     );
 
     const getFilterState = useCallback((filterType, key) => {
-        const filterMap = filters[filterType];
+        const filterMap = filterMaps[filterType];
         if (!filterMap) return SELECTION_STATES.IGNORE;
         return filterMap.get(key) || SELECTION_STATES.IGNORE;
-    }, [filters]);
+    }, [filterMaps]);
 
     const updateFilter = useCallback((filterType, key) => {
         const currentState = getFilterState(filterType, key);
         const nextState = toggleState(currentState);
 
-        setFilters(prev => ({
+        setFilterMaps(prev => ({
             ...prev,
             [filterType]: updateFilterMap(prev[filterType], key, nextState)
         }));
     }, [getFilterState]);
 
     const clearFilter = useCallback((filterType) => {
-        setFilters(prev => ({
+        setFilterMaps(prev => ({
             ...prev,
             [filterType]: new Map()
         }));
     }, []);
 
     const getFilteredArray = useCallback((filterType, includeState) => {
-        const filterMap = filters[filterType];
+        const filterMap = filterMaps[filterType];
         if (!filterMap) return [];
         
         return Array.from(filterMap.entries())
             .filter(([, state]) => state === includeState)
             .map(([item]) => item);
-    }, [filters]);
+    }, [filterMaps]);
 
     // Create toggle callbacks
     const toggleCategory = useCallback((key) => updateFilter(FILTER_TYPES.categories, key), [updateFilter]);
@@ -117,8 +117,8 @@ export const useShopFilters = (initialFilters = null) => {
     const clearTraitSelections = useCallback(() => clearFilter(FILTER_TYPES.traits), [clearFilter]);
 
     return {
-        filters,
-        setFilters,
+        filterMaps,
+        setFilterMaps,
         getFilterState,
         updateFilter,
         clearFilter,
