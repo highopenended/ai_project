@@ -2,6 +2,13 @@ import React from "react";
 import PropTypes from "prop-types";
 import "./UnsavedChangesDialogue.css";
 
+// Define selection states to match the constants used elsewhere
+const SELECTION_STATES = {
+    INCLUDE: 1,
+    EXCLUDE: -1,
+    IGNORE: 0
+};
+
 const UnsavedChangesDialogue = ({
     onConfirm,
     onCancel,
@@ -12,19 +19,45 @@ const UnsavedChangesDialogue = ({
     cancelButtonText = "Cancel",
     description,
 }) => {
+    const formatFilterState = (key, state) => {
+        const numericState = parseInt(state);
+        switch (numericState) {
+            case SELECTION_STATES.INCLUDE:
+                return <span className="filter-tag filter-include">{key}</span>;
+            case SELECTION_STATES.EXCLUDE:
+                return <span className="filter-tag filter-exclude">{key}</span>;
+            case SELECTION_STATES.IGNORE:
+                return <span className="filter-tag filter-ignore">{key}</span>;
+            default:
+                return key;
+        }
+    };
+
+    const formatFilterObject = (obj) => {
+        if (!obj || Object.keys(obj).length === 0) return "No filters";
+        
+        return (
+            <div className="filter-tags-container">
+                {Object.entries(obj).map(([key, state], index) => (
+                    <div key={`${key}-${index}`} className="filter-tag-row">
+                        {formatFilterState(key, state)}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
     const formatValue = (value) => {
         if (value === null || value === undefined) return "N/A";
 
         // Handle Maps (for filter states)
         if (value instanceof Map) {
-            return Array.from(value.entries())
-                .map(([key, state]) => `${key}: ${state}`)
-                .join(", ");
+            return formatFilterObject(Object.fromEntries(value));
         }
 
         // Handle arrays (for filter state entries)
         if (Array.isArray(value)) {
-            return value.map(([key, state]) => `${key}: ${state}`).join(", ");
+            return formatFilterObject(Object.fromEntries(value));
         }
 
         // Handle objects
@@ -49,12 +82,7 @@ const UnsavedChangesDialogue = ({
             }
 
             // Handle filter states
-            const entries = Object.entries(value);
-            if (entries.length === 0) return "No filters";
-            
-            return entries
-                .map(([key, state]) => `${key}: ${state}`)
-                .join(", ");
+            return formatFilterObject(value);
         }
 
         return value.toString();
@@ -63,6 +91,51 @@ const UnsavedChangesDialogue = ({
     const renderChangeSection = (title, changes) => {
         if (Object.keys(changes).length === 0) return null;
 
+        const renderFilterChange = (field, values) => {
+            // Get all unique keys from both old and new states
+            const allKeys = new Set([
+                ...Object.keys(values.old || {}),
+                ...Object.keys(values.new || {})
+            ]);
+
+            // Create arrays of tags for both columns, maintaining order
+            const oldTags = [];
+            const newTags = [];
+
+            allKeys.forEach(key => {
+                const oldState = parseInt(values.old?.[key] || 0);
+                const newState = parseInt(values.new?.[key] || 0);
+
+                // Add tags to both columns, using ignore state as placeholder when needed
+                oldTags.push(
+                    <div key={`old-${key}`} className="filter-tag-row">
+                        {formatFilterState(key, oldState)}
+                    </div>
+                );
+                newTags.push(
+                    <div key={`new-${key}`} className="filter-tag-row">
+                        {formatFilterState(key, newState)}
+                    </div>
+                );
+            });
+
+            return (
+                <React.Fragment key={field}>
+                    <div className="changes-field">{field}</div>
+                    <div className="changes-value">
+                        <div className="filter-tags-container">
+                            {oldTags}
+                        </div>
+                    </div>
+                    <div className="changes-value changes-value-new">
+                        <div className="filter-tags-container">
+                            {newTags}
+                        </div>
+                    </div>
+                </React.Fragment>
+            );
+        };
+
         return (
             <div className="changes-section">
                 <h4 className="changes-section-title">{title}</h4>
@@ -70,13 +143,15 @@ const UnsavedChangesDialogue = ({
                     <div className="changes-header">Field</div>
                     <div className="changes-header">Original</div>
                     <div className="changes-header">New</div>
-                    {Object.entries(changes).map(([field, values]) => (
-                        <React.Fragment key={field}>
-                            <div className="changes-field">{field}</div>
-                            <div className="changes-value">{formatValue(values.old)}</div>
-                            <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
-                        </React.Fragment>
-                    ))}
+                    {Object.entries(changes).map(([field, values]) => 
+                        field.includes("Filter") ? renderFilterChange(field, values) : (
+                            <React.Fragment key={field}>
+                                <div className="changes-field">{field}</div>
+                                <div className="changes-value">{formatValue(values.old)}</div>
+                                <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
+                            </React.Fragment>
+                        )
+                    )}
                 </div>
             </div>
         );
