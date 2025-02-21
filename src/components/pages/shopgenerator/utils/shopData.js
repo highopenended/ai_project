@@ -32,7 +32,7 @@ const shopData = {
   // - INCLUDE: Item is specifically included in generation
   // - EXCLUDE: Item is specifically excluded from generation
   // The cycle goes: IGNORE -> INCLUDE -> EXCLUDE -> IGNORE
-  filterStates: {
+  filterStorageObjects: {
     categories: {},
     subcategories: {},
     traits: {}

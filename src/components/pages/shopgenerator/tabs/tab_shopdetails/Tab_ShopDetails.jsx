@@ -109,7 +109,7 @@ Tab_ShopDetails.propTypes = {
         }),
         rarityDistribution: PropTypes.object,
         currentStock: PropTypes.array,
-        filterStates: PropTypes.object,
+        filterStorageObjects: PropTypes.object,
     }).isRequired,
     onShopDetailsChange: PropTypes.func.isRequired,
     onSaveShop: PropTypes.func.isRequired,

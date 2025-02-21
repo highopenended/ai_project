@@ -154,7 +154,7 @@ export const useShopOperations = ({
             // Extract parameters with fallbacks
             const {
                 parameters = {},
-                filterStates = {},
+                filterStorageObjects = {},
                 currentStock = [],
             } = shop;
 
@@ -185,9 +185,9 @@ export const useShopOperations = ({
 
             // Create filter maps from stored states
             const newFilters = {
-                categories: new Map(Object.entries(filterStates.categories || {})),
-                subcategories: new Map(Object.entries(filterStates.subcategories || {})),
-                traits: new Map(Object.entries(filterStates.traits || {}))
+                categories: new Map(Object.entries(filterStorageObjects.categories || {})),
+                subcategories: new Map(Object.entries(filterStorageObjects.subcategories || {})),
+                traits: new Map(Object.entries(filterStorageObjects.traits || {}))
             };
 
             // Update all state variables
@@ -258,7 +258,7 @@ export const useShopOperations = ({
                 ...cleanShopState,
                 dateLastEdited: currentDate,
                 currentStock: inventory,
-                filterStates: filterStatesForStorage,
+                filterStorageObjects: filterStatesForStorage,
             };
 
             console.log("About to call saveOrUpdateShopData with:", {

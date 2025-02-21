@@ -99,7 +99,7 @@ SavedShopsList.propTypes = {
         }),
         rarityDistribution: PropTypes.object,
         currentStock: PropTypes.array,
-        filterStates: PropTypes.object
+        filterStorageObjects: PropTypes.object
     })).isRequired,
     loadShop: PropTypes.func.isRequired,
     currentShopId: PropTypes.string

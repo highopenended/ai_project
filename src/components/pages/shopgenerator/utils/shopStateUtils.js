@@ -22,7 +22,7 @@ export const takeShopSnapshot = (shopState, filters, items) => ({
     itemBias: shopState.itemBias,
     rarityDistribution: shopState.rarityDistribution,
     // Filters and inventory - store as plain objects for Firebase compatibility
-    filterStates: {
+    filterStorageObjects: {
         categories: Object.fromEntries(filters.categories.entries()),
         subcategories: Object.fromEntries(filters.subcategories.entries()),
         traits: Object.fromEntries(filters.traits.entries()),
@@ -92,8 +92,8 @@ export const compareShopStates = (currentState, originalState) => {
     }
 
     // Check filters
-    const currentFilters = currentState.filterStates || {};
-    const originalFilters = originalState.filterStates || {};
+    const currentFilters = currentState.filterStorageObjects || {};
+    const originalFilters = originalState.filterStorageObjects || {};
     
     const areFiltersEqual = (filter1, filter2) => {
         const keys1 = Object.keys(filter1 || {});
