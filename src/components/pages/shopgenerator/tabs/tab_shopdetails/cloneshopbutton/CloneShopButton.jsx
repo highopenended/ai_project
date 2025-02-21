@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import CloneConfirmDialog from "./CloneConfirmDialog";
 import ActionButton from "../../../shared/actionbutton/ActionButton";
+import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
 import "./CloneShopButton.css";
 
 /**
@@ -14,27 +14,40 @@ import "./CloneShopButton.css";
  * @param {Object} props
  * @param {Function} props.onClone - Callback function to handle shop cloning
  * @param {string} props.shopId - Current shop ID for display
+ * @param {Object} props.shopState - Current shop state
+ * @param {boolean} props.hasUnsavedChanges - Whether there are unsaved changes
+ * @param {Object} props.changes - Current changes to the shop
  */
-const CloneShopButton = ({ onClone, shopId }) => {
-    const [showConfirm, setShowConfirm] = useState(false);
+const CloneShopButton = ({ onClone, shopId, shopState, hasUnsavedChanges, changes }) => {
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
-    const handleCloneClick = () => {
-        setShowConfirm(true);
+    const handleClick = () => {
+        console.log("Clone button clicked - Full state:", {
+            "hasUnsavedChanges:": hasUnsavedChanges,
+            "showConfirmation:": showConfirmation,
+            "shopName:": shopState.name,
+            "willShowConfirmation:": true,
+            "isDisabled:": !shopId,
+        });
+        setShowConfirmation(true);
     };
 
     const handleConfirm = () => {
+        console.log("Clone confirmation dialog confirmed - calling onClone");
         onClone();
-        setShowConfirm(false);
+        console.log("onClone completed");
+        setShowConfirmation(false);
     };
 
     const handleCancel = () => {
-        setShowConfirm(false);
+        console.log("Clone confirmation dialog cancelled");
+        setShowConfirmation(false);
     };
 
     return (
         <>
             <ActionButton
-                onClick={handleCloneClick}
+                onClick={handleClick}
                 disabled={!shopId}
                 icon="⧉"
                 text="Clone"
@@ -42,7 +55,17 @@ const CloneShopButton = ({ onClone, shopId }) => {
                 title={!shopId ? "Save the shop first to enable cloning" : "Create a copy of this shop"}
             />
 
-            {showConfirm && <CloneConfirmDialog onConfirm={handleConfirm} onCancel={handleCancel} />}
+            {showConfirmation && (
+                <UnsavedChangesDialogue
+                    headerText="Clone This Shop?"
+                    description={`This will create an exact copy of "${shopState.name}" with "(Clone)" appended to its name.`}
+                    changes={changes}
+                    currentShopName={shopState.name}
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                    continueButtonText="Clone Shop"
+                />
+            )}
         </>
     );
 };
@@ -50,6 +73,11 @@ const CloneShopButton = ({ onClone, shopId }) => {
 CloneShopButton.propTypes = {
     onClone: PropTypes.func.isRequired,
     shopId: PropTypes.string,
+    shopState: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+    }).isRequired,
+    hasUnsavedChanges: PropTypes.bool.isRequired,
+    changes: PropTypes.object.isRequired,
 };
 
 export default CloneShopButton;
