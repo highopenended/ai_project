@@ -2,6 +2,7 @@
     --very-light-border-color: #546e92; /* Light gray */
     --light-border-color: #324b6e; /* Light gray */
     --dark-border-color: #080e18; /* Dark gray */
+    --dark-background-color-solid: rgba(11, 20, 32, 1); /* Dark background */
     --dark-background-color: rgba(0, 0, 0, 0.2); /* Dark background */
     --light-background-color: rgba(255, 255, 255, .9); /* Light background */
     --background-secondary: #131c29; /* Example color */
