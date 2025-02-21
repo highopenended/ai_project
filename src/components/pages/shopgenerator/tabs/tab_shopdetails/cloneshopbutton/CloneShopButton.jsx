@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import ActionButton from "../../../shared/actionbutton/ActionButton";
-import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
+import UnsavedChangesDialogue from "../../../shared/unsavedchangesdialogue/UnsavedChangesDialogue";
 import "./CloneShopButton.css";
 
 /**

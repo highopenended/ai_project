@@ -1,7 +1,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import "./ResetChangesButton.css";
-import UnsavedChangesDialogue from "../../../shared/UnsavedChangesDialogue";
+import UnsavedChangesDialogue from "../../../shared/unsavedchangesdialogue/UnsavedChangesDialogue";
 
 const ResetChangesButton = ({ onReset, shopName,hasUnsavedChanges, changes }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
