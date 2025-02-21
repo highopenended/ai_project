@@ -102,53 +102,44 @@ const UnsavedChangesDialogue = ({
             const oldTags = [];
             const newTags = [];
 
+            // Only show tags that changed state
             allKeys.forEach(key => {
                 const oldState = parseInt(values.old?.[key] || 0);
                 const newState = parseInt(values.new?.[key] || 0);
 
-                oldTags.push(
-                    <div key={`old-${key}`} className="filter-tag-row">
-                        {formatFilterState(key, oldState)}
-                    </div>
-                );
-                newTags.push(
-                    <div key={`new-${key}`} className="filter-tag-row">
-                        {formatFilterState(key, newState)}
-                    </div>
-                );
+                if (oldState !== newState) {
+                    oldTags.push(
+                        <div key={`old-${key}`} className="filter-tag-row">
+                            {formatFilterState(key, oldState)}
+                        </div>
+                    );
+                    newTags.push(
+                        <div key={`new-${key}`} className="filter-tag-row">
+                            {formatFilterState(key, newState)}
+                        </div>
+                    );
+                }
             });
+
+            // If no changes, return null
+            if (oldTags.length === 0) return null;
 
             return (
                 <React.Fragment key={field}>
                     <div className="changes-field">{field}</div>
                     <div className="changes-value">
                         <div className="filter-tags-container">
-                            {oldTags}
+                            {oldTags.length > 0 ? oldTags : "No filters"}
                         </div>
                     </div>
                     <div className="changes-value changes-value-new">
                         <div className="filter-tags-container">
-                            {newTags}
+                            {newTags.length > 0 ? newTags : "No filters"}
                         </div>
                     </div>
                 </React.Fragment>
             );
         };
-
-        // Special handling for filter sections
-        if (title.includes("Filters") && changes.filters) {
-            return (
-                <div className="changes-section">
-                    <h4 className="changes-section-title">{title}</h4>
-                    <div className="changes-grid">
-                        <div className="changes-header">Field</div>
-                        <div className="changes-header">Before Changes</div>
-                        <div className="changes-header">After Changes</div>
-                        {renderFilterChange("filters", changes.filters)}
-                    </div>
-                </div>
-            );
-        }
 
         return (
             <div className="changes-section">
@@ -157,13 +148,18 @@ const UnsavedChangesDialogue = ({
                     <div className="changes-header">Field</div>
                     <div className="changes-header">Before Changes</div>
                     <div className="changes-header">After Changes</div>
-                    {Object.entries(changes).map(([field, values]) => (
-                        <React.Fragment key={field}>
-                            <div className="changes-field">{field}</div>
-                            <div className="changes-value">{formatValue(values.old)}</div>
-                            <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
-                        </React.Fragment>
-                    ))}
+                    {Object.entries(changes).map(([field, values]) => {
+                        if (field === 'filters') {
+                            return renderFilterChange(field, values);
+                        }
+                        return (
+                            <React.Fragment key={field}>
+                                <div className="changes-field">{field}</div>
+                                <div className="changes-value">{formatValue(values.old)}</div>
+                                <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
+                            </React.Fragment>
+                        );
+                    })}
                 </div>
             </div>
         );
