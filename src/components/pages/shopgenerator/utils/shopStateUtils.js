@@ -40,6 +40,9 @@ export const compareShopStates = (currentState, originalState) => {
     const changes = {
         basic: {},
         parameters: {},
+        categoryFilters: {},
+        subcategoryFilters: {},
+        traitFilters: {},
         hasInventoryChanged: false
     };
 
@@ -104,31 +107,34 @@ export const compareShopStates = (currentState, originalState) => {
         return true;
     };
 
-    if (!areFiltersEqual(currentFilterMaps.categories, new Map(Object.entries(originalFilterMaps.categories || {}))) ||
-        !areFiltersEqual(currentFilterMaps.subcategories, new Map(Object.entries(originalFilterMaps.subcategories || {}))) ||
-        !areFiltersEqual(currentFilterMaps.traits, new Map(Object.entries(originalFilterMaps.traits || {})))) {
-        
-        // Check each filter type separately
-        if (!areFiltersEqual(currentFilterMaps.categories, new Map(Object.entries(originalFilterMaps.categories || {})))) {
-            changes.parameters["Category Filters"] = {
+    // Check category filters
+    if (!areFiltersEqual(currentFilterMaps.categories, new Map(Object.entries(originalFilterMaps.categories || {})))) {
+        changes.categoryFilters = {
+            filters: {
                 old: originalFilterMaps.categories || {},
                 new: Object.fromEntries(currentFilterMaps.categories || new Map())
-            };
-        }
-        
-        if (!areFiltersEqual(currentFilterMaps.subcategories, new Map(Object.entries(originalFilterMaps.subcategories || {})))) {
-            changes.parameters["Subcategory Filters"] = {
+            }
+        };
+    }
+    
+    // Check subcategory filters
+    if (!areFiltersEqual(currentFilterMaps.subcategories, new Map(Object.entries(originalFilterMaps.subcategories || {})))) {
+        changes.subcategoryFilters = {
+            filters: {
                 old: originalFilterMaps.subcategories || {},
                 new: Object.fromEntries(currentFilterMaps.subcategories || new Map())
-            };
-        }
-        
-        if (!areFiltersEqual(currentFilterMaps.traits, new Map(Object.entries(originalFilterMaps.traits || {})))) {
-            changes.parameters["Trait Filters"] = {
+            }
+        };
+    }
+    
+    // Check trait filters
+    if (!areFiltersEqual(currentFilterMaps.traits, new Map(Object.entries(originalFilterMaps.traits || {})))) {
+        changes.traitFilters = {
+            filters: {
                 old: originalFilterMaps.traits || {},
                 new: Object.fromEntries(currentFilterMaps.traits || new Map())
-            };
-        }
+            }
+        };
     }
 
     // Check if inventory has changed
@@ -147,5 +153,8 @@ export const compareShopStates = (currentState, originalState) => {
 export const hasChanges = (changes) => {
     return Object.keys(changes.basic).length > 0 || 
            Object.keys(changes.parameters).length > 0 || 
+           Object.keys(changes.categoryFilters).length > 0 ||
+           Object.keys(changes.subcategoryFilters).length > 0 ||
+           Object.keys(changes.traitFilters).length > 0 ||
            changes.hasInventoryChanged;
 }; 

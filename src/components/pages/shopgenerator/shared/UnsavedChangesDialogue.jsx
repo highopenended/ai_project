@@ -89,7 +89,7 @@ const UnsavedChangesDialogue = ({
     };
 
     const renderChangeSection = (title, changes) => {
-        if (Object.keys(changes).length === 0) return null;
+        if (!changes || Object.keys(changes).length === 0) return null;
 
         const renderFilterChange = (field, values) => {
             // Get all unique keys from both old and new states
@@ -106,7 +106,6 @@ const UnsavedChangesDialogue = ({
                 const oldState = parseInt(values.old?.[key] || 0);
                 const newState = parseInt(values.new?.[key] || 0);
 
-                // Add tags to both columns, using ignore state as placeholder when needed
                 oldTags.push(
                     <div key={`old-${key}`} className="filter-tag-row">
                         {formatFilterState(key, oldState)}
@@ -136,22 +135,35 @@ const UnsavedChangesDialogue = ({
             );
         };
 
+        // Special handling for filter sections
+        if (title.includes("Filters") && changes.filters) {
+            return (
+                <div className="changes-section">
+                    <h4 className="changes-section-title">{title}</h4>
+                    <div className="changes-grid">
+                        <div className="changes-header">Field</div>
+                        <div className="changes-header">Before Changes</div>
+                        <div className="changes-header">After Changes</div>
+                        {renderFilterChange("filters", changes.filters)}
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div className="changes-section">
                 <h4 className="changes-section-title">{title}</h4>
                 <div className="changes-grid">
                     <div className="changes-header">Field</div>
-                    <div className="changes-header">Original</div>
-                    <div className="changes-header">New</div>
-                    {Object.entries(changes).map(([field, values]) => 
-                        field.includes("Filter") ? renderFilterChange(field, values) : (
-                            <React.Fragment key={field}>
-                                <div className="changes-field">{field}</div>
-                                <div className="changes-value">{formatValue(values.old)}</div>
-                                <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
-                            </React.Fragment>
-                        )
-                    )}
+                    <div className="changes-header">Before Changes</div>
+                    <div className="changes-header">After Changes</div>
+                    {Object.entries(changes).map(([field, values]) => (
+                        <React.Fragment key={field}>
+                            <div className="changes-field">{field}</div>
+                            <div className="changes-value">{formatValue(values.old)}</div>
+                            <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
         );
@@ -168,6 +180,9 @@ const UnsavedChangesDialogue = ({
                 <div className="unsaved-changes-content">
                     {renderChangeSection("Basic Information", changes.basic)}
                     {renderChangeSection("Parameters", changes.parameters)}
+                    {renderChangeSection("Category Filters", changes.categoryFilters)}
+                    {renderChangeSection("Subcategory Filters", changes.subcategoryFilters)}
+                    {renderChangeSection("Trait Filters", changes.traitFilters)}
                     {changes.hasInventoryChanged && (
                         <div className="changes-section">
                             <h4 className="changes-section-title">Inventory</h4>
@@ -196,6 +211,24 @@ UnsavedChangesDialogue.propTypes = {
     changes: PropTypes.shape({
         basic: PropTypes.object.isRequired,
         parameters: PropTypes.object.isRequired,
+        categoryFilters: PropTypes.shape({
+            filters: PropTypes.shape({
+                old: PropTypes.object,
+                new: PropTypes.object
+            })
+        }),
+        subcategoryFilters: PropTypes.shape({
+            filters: PropTypes.shape({
+                old: PropTypes.object,
+                new: PropTypes.object
+            })
+        }),
+        traitFilters: PropTypes.shape({
+            filters: PropTypes.shape({
+                old: PropTypes.object,
+                new: PropTypes.object
+            })
+        }),
         hasInventoryChanged: PropTypes.bool.isRequired,
     }).isRequired,
     currentShopName: PropTypes.string.isRequired,
