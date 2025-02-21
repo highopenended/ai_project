@@ -19,7 +19,7 @@ import { compareShopStates, hasChanges } from '../utils/shopStateUtils';
  * @property {Function} getChangedFields - Function to get detailed changes between current state and snapshot
  * @property {boolean} hasUnsavedChanges - Whether there are unsaved changes
  */
-export const useShopSnapshot = ({ shopState, filters, inventory }) => {
+export const useShopSnapshot = ({ shopState, filterMaps, inventory }) => {
     const [shopSnapshot, setShopSnapshot] = useState(null);
 
     const getChangedFields = useCallback(() => {
@@ -28,12 +28,12 @@ export const useShopSnapshot = ({ shopState, filters, inventory }) => {
         return compareShopStates(
             {
                 ...shopState,
-                filters: filters,
+                filterMaps: filterMaps,
                 currentStock: inventory
             },
             shopSnapshot
         );
-    }, [shopSnapshot, shopState, filters, inventory]);
+    }, [shopSnapshot, shopState, filterMaps, inventory]);
 
     const hasUnsavedChanges = useMemo(() => {
         if (!shopSnapshot && shopState) {

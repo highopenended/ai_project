@@ -169,9 +169,9 @@ export const useShopState = (initialState) => {
                     rarityDistribution: snapshot.rarityDistribution,
                 }),
                 setFilterMaps?.({
-                    categories: new Map(snapshot.filterMaps.categories),
-                    subcategories: new Map(snapshot.filterMaps.subcategories),
-                    traits: new Map(snapshot.filterMaps.traits),
+                    categories: new Map(Object.entries(snapshot.filterStorageObjects.categories)),
+                    subcategories: new Map(Object.entries(snapshot.filterStorageObjects.subcategories)),
+                    traits: new Map(Object.entries(snapshot.filterStorageObjects.traits)),
                 }),
                 setItems?.(snapshot.currentStock),
             ]);

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { generateShopInventory } from '../utils/generateShopInventory';
 import { SELECTION_STATES } from '../utils/shopGeneratorConstants';
-import { takeShopSnapshot } from '../utils/shopStateUtils';
 
 /**
  * Hook for managing shop inventory generation
@@ -15,7 +14,6 @@ import { takeShopSnapshot } from '../utils/shopStateUtils';
  * @param {Object} params.filterMaps - Current filter states for categories, subcategories, and traits
  * @param {Function} params.getFilteredArray - Function to get filtered arrays based on selection state
  * @param {Function} params.setInventory - Function to update the inventory state
- * @param {Function} params.setShopSnapshot - Function to update the shop snapshot
  * 
  * @returns {Object} Generation controls and state
  * @property {Function} generateInventory - Function to trigger inventory generation
@@ -27,7 +25,6 @@ export const useInventoryGeneration = ({
     filterMaps,
     getFilteredArray,
     setInventory,
-    setShopSnapshot
 }) => {
     const [isGenerating, setIsGenerating] = useState(false);
 
@@ -75,9 +72,6 @@ export const useInventoryGeneration = ({
 
             if (result && Array.isArray(result.items)) {
                 setInventory(result.items);
-                // Take a new snapshot with the current state
-                const newSnapshot = takeShopSnapshot(shopState, filterMaps, result.items);
-                setShopSnapshot(newSnapshot);
                 console.log("Inventory state updated with", result.items.length, "items");
             } else {
                 console.error("Invalid result from generateShopInventory:", result);

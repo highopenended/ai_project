@@ -1,11 +1,11 @@
 /**
  * Creates a complete snapshot of the current shop state
  * @param {Object} shopState - Current shop state (parameters, filters, etc)
- * @param {Object} filters - Current filter state (categories, subcategories, traits)
+ * @param {Object} filterMaps - Current filter state (categories, subcategories, traits)
  * @param {Array} items - Current inventory items
  * @returns {Object} A complete snapshot of the shop state
  */
-export const takeShopSnapshot = (shopState, filters, items) => ({
+export const takeShopSnapshot = (shopState, filterMaps, items) => ({
     // Shop details
     id: shopState.id,
     name: shopState.name,
@@ -23,9 +23,9 @@ export const takeShopSnapshot = (shopState, filters, items) => ({
     rarityDistribution: shopState.rarityDistribution,
     // Filters and inventory - store as plain objects for Firebase compatibility
     filterStorageObjects: {
-        categories: Object.fromEntries(filters.categories.entries()),
-        subcategories: Object.fromEntries(filters.subcategories.entries()),
-        traits: Object.fromEntries(filters.traits.entries()),
+        categories: Object.fromEntries(filterMaps.categories.entries()),
+        subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
+        traits: Object.fromEntries(filterMaps.traits.entries()),
     },
     currentStock: [...items],
 });
@@ -92,29 +92,31 @@ export const compareShopStates = (currentState, originalState) => {
     }
 
     // Check filters
-    const currentFilters = currentState.filterStorageObjects || {};
-    const originalFilters = originalState.filterStorageObjects || {};
+    const currentFilterMaps = currentState.filterMaps || {};
+    const originalFilterMaps = originalState.filterStorageObjects || {};
     
-    const areFiltersEqual = (filter1, filter2) => {
-        const keys1 = Object.keys(filter1 || {});
-        const keys2 = Object.keys(filter2 || {});
-        if (keys1.length !== keys2.length) return false;
-        return keys1.every(key => filter1[key] === filter2[key]);
+    const areFiltersEqual = (map1, map2) => {
+        if (!map1 || !map2) return false;
+        if (map1.size !== map2.size) return false;
+        for (const [key, value] of map1) {
+            if (map2.get(key) !== value) return false;
+        }
+        return true;
     };
 
-    if (!areFiltersEqual(currentFilters.categories, originalFilters.categories) ||
-        !areFiltersEqual(currentFilters.subcategories, originalFilters.subcategories) ||
-        !areFiltersEqual(currentFilters.traits, originalFilters.traits)) {
+    if (!areFiltersEqual(currentFilterMaps.categories, new Map(Object.entries(originalFilterMaps.categories || {}))) ||
+        !areFiltersEqual(currentFilterMaps.subcategories, new Map(Object.entries(originalFilterMaps.subcategories || {}))) ||
+        !areFiltersEqual(currentFilterMaps.traits, new Map(Object.entries(originalFilterMaps.traits || {})))) {
         changes.parameters.filters = {
             old: {
-                categories: { ...(originalFilters.categories || {}) },
-                subcategories: { ...(originalFilters.subcategories || {}) },
-                traits: { ...(originalFilters.traits || {}) }
+                categories: { ...(originalFilterMaps.categories || {}) },
+                subcategories: { ...(originalFilterMaps.subcategories || {}) },
+                traits: { ...(originalFilterMaps.traits || {}) }
             },
             new: {
-                categories: { ...(currentFilters.categories || {}) },
-                subcategories: { ...(currentFilters.subcategories || {}) },
-                traits: { ...(currentFilters.traits || {}) }
+                categories: Object.fromEntries(currentFilterMaps.categories || new Map()),
+                subcategories: Object.fromEntries(currentFilterMaps.subcategories || new Map()),
+                traits: Object.fromEntries(currentFilterMaps.traits || new Map())
             }
         };
     }
