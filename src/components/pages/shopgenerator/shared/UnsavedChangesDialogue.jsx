@@ -48,17 +48,13 @@ const UnsavedChangesDialogue = ({
                     .join(", ");
             }
 
-            // Handle filter states object
-            if ("categories" in value || "subcategories" in value || "traits" in value) {
-                return Object.entries(value)
-                    .map(([filterType, entries]) => {
-                        const formattedEntries = Array.isArray(entries)
-                            ? entries.map(([key, state]) => `${key}: ${state}`).join(", ")
-                            : "No filters";
-                        return `${filterType}: {${formattedEntries}}`;
-                    })
-                    .join("\n");
-            }
+            // Handle filter states
+            const entries = Object.entries(value);
+            if (entries.length === 0) return "No filters";
+            
+            return entries
+                .map(([key, state]) => `${key}: ${state}`)
+                .join(", ");
         }
 
         return value.toString();

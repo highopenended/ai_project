@@ -107,18 +107,28 @@ export const compareShopStates = (currentState, originalState) => {
     if (!areFiltersEqual(currentFilterMaps.categories, new Map(Object.entries(originalFilterMaps.categories || {}))) ||
         !areFiltersEqual(currentFilterMaps.subcategories, new Map(Object.entries(originalFilterMaps.subcategories || {}))) ||
         !areFiltersEqual(currentFilterMaps.traits, new Map(Object.entries(originalFilterMaps.traits || {})))) {
-        changes.parameters.filters = {
-            old: {
-                categories: { ...(originalFilterMaps.categories || {}) },
-                subcategories: { ...(originalFilterMaps.subcategories || {}) },
-                traits: { ...(originalFilterMaps.traits || {}) }
-            },
-            new: {
-                categories: Object.fromEntries(currentFilterMaps.categories || new Map()),
-                subcategories: Object.fromEntries(currentFilterMaps.subcategories || new Map()),
-                traits: Object.fromEntries(currentFilterMaps.traits || new Map())
-            }
-        };
+        
+        // Check each filter type separately
+        if (!areFiltersEqual(currentFilterMaps.categories, new Map(Object.entries(originalFilterMaps.categories || {})))) {
+            changes.parameters["Category Filters"] = {
+                old: originalFilterMaps.categories || {},
+                new: Object.fromEntries(currentFilterMaps.categories || new Map())
+            };
+        }
+        
+        if (!areFiltersEqual(currentFilterMaps.subcategories, new Map(Object.entries(originalFilterMaps.subcategories || {})))) {
+            changes.parameters["Subcategory Filters"] = {
+                old: originalFilterMaps.subcategories || {},
+                new: Object.fromEntries(currentFilterMaps.subcategories || new Map())
+            };
+        }
+        
+        if (!areFiltersEqual(currentFilterMaps.traits, new Map(Object.entries(originalFilterMaps.traits || {})))) {
+            changes.parameters["Trait Filters"] = {
+                old: originalFilterMaps.traits || {},
+                new: Object.fromEntries(currentFilterMaps.traits || new Map())
+            };
+        }
     }
 
     // Check if inventory has changed
