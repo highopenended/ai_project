@@ -210,6 +210,11 @@
     min-width: 0;
     flex: 1;
     transition: all 0.2s ease;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
 }
 
 .filter-include {
@@ -225,9 +230,9 @@
 }
 
 .filter-ignore {
-    background: rgba(128, 128, 128, 0.1);
-    border-color: #666;
-    color: #fff;
+    background: rgba(128, 128, 128, 0.05);
+    border-color: rgba(128, 128, 128, 0.2);
+    color: rgba(255, 255, 255, 0.3);
 }
 
 /* Add hover effects to match Tag.css */
@@ -240,6 +245,7 @@
 }
 
 .filter-ignore:hover {
-    background: rgba(163, 177, 255, 0.15);
-    border-color: rgba(163, 177, 255, 0.3);
+    background: rgba(163, 177, 255, 0.1);
+    border-color: rgba(163, 177, 255, 0.2);
+    color: rgba(255, 255, 255, 0.4);
 } 
