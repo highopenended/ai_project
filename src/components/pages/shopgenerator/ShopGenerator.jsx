@@ -178,6 +178,7 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
+
     // Helper function to create a tab component
     const createTab = (type, key) => {
         switch (type) {

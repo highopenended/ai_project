@@ -1,0 +1,25 @@
+.changes-outer-wrapper {
+    display: flex;
+    width: 100%;
+    padding: 0.5rem 0;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.changes-field-name {
+    flex: 0 0 30%;
+    color: var(--text-primary);
+    font-weight: 500;
+    padding: 0.25rem 0;
+}
+
+.changes-full-width-content {
+    flex: 1;
+    color: var(--text-secondary);
+    padding: 0.25rem 0;
+}
+
+/* Ensure consistent spacing between sections */
+.changes-outer-wrapper + .changes-outer-wrapper {
+    border-top: 1px solid var(--dark-border-color);
+} 

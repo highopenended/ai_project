@@ -2,12 +2,14 @@ import React from "react";
 import PropTypes from "prop-types";
 import "./UnsavedChangesDialogue.css";
 
-// Define selection states to match the constants used elsewhere
-const SELECTION_STATES = {
-    INCLUDE: 1,
-    EXCLUDE: -1,
-    IGNORE: 0
-};
+// Import our new components
+import ChangesOuterWrapper from "./components/changesouterwrapper/ChangesOuterWrapper";
+import BasicDetail from "./components/basicdetail/BasicDetail";
+import GoldAmount from "./components/goldamount/GoldAmount";
+import LevelRange from "./components/levelrange/LevelRange";
+import ItemBias from "./components/itembias/ItemBias";
+import RarityDistributions from "./components/raritydistributions/RarityDistributions";
+import FilterGroup from "./components/filtergroups/FilterGroup";
 
 const UnsavedChangesDialogue = ({
     onConfirm,
@@ -19,149 +21,158 @@ const UnsavedChangesDialogue = ({
     cancelButtonText = "Cancel",
     description,
 }) => {
-    const formatFilterState = (key, state) => {
-        const numericState = parseInt(state);
-        switch (numericState) {
-            case SELECTION_STATES.INCLUDE:
-                return <span className="filter-tag filter-include">{key}</span>;
-            case SELECTION_STATES.EXCLUDE:
-                return <span className="filter-tag filter-exclude">{key}</span>;
-            case SELECTION_STATES.IGNORE:
-                return <span className="filter-tag filter-ignore">{key}</span>;
-            default:
-                return key;
-        }
+    const renderBasicChanges = () => {
+        if (!changes.basic || Object.keys(changes.basic).length === 0) return null;
+
+        return Object.entries(changes.basic).map(([field, values]) => (
+            <ChangesOuterWrapper
+                key={field}
+                fieldName={field}
+                beforeChangeElement={<BasicDetail value={values.old} className="before-change" />}
+                afterChangeElement={<BasicDetail value={values.new} className="after-change" />}
+                changes={values}
+            />
+        ));
     };
 
-    const formatFilterObject = (obj) => {
-        if (!obj || Object.keys(obj).length === 0) return "No filters";
-        
-        return (
-            <div className="filter-tags-container">
-                {Object.entries(obj).map(([key, state], index) => (
-                    <div key={`${key}-${index}`} className="filter-tag-row">
-                        {formatFilterState(key, state)}
-                    </div>
-                ))}
-            </div>
-        );
-    };
+    const renderParameterChanges = () => {
+        if (!changes.parameters || Object.keys(changes.parameters).length === 0) return null;
 
-    const formatValue = (value) => {
-        if (value === null || value === undefined) return "N/A";
-
-        // Handle Maps (for filter states)
-        if (value instanceof Map) {
-            return formatFilterObject(Object.fromEntries(value));
-        }
-
-        // Handle arrays (for filter state entries)
-        if (Array.isArray(value)) {
-            return formatFilterObject(Object.fromEntries(value));
-        }
-
-        // Handle objects
-        if (typeof value === "object" && value !== null) {
-            // Handle bias coordinates
-            if ("x" in value && "y" in value) {
-                const varietyPercent = Math.round(value.x * 100);
-                const costPercent = Math.round(value.y * 100);
-                return (
-                    <div className="bias-value">
-                        <div>Variety: {varietyPercent}%</div>
-                        <div>Cost: {costPercent}%</div>
-                    </div>
-                );
-            }
-
-            // Handle rarity distribution
-            if (Object.keys(value).some((key) => ["Common", "Uncommon", "Rare", "Unique"].includes(key))) {
-                return Object.entries(value)
-                    .map(([key, val]) => `${key}: ${val.toFixed(2)}%`)
-                    .join(", ");
-            }
-
-            // Handle filter states
-            return formatFilterObject(value);
-        }
-
-        return value.toString();
-    };
-
-    const renderChangeSection = (title, changes) => {
-        if (!changes || Object.keys(changes).length === 0) return null;
-
-        const renderFilterChange = (field, values) => {
-            // Get all unique keys from both old and new states
-            const allKeys = new Set([
-                ...Object.keys(values.old || {}),
-                ...Object.keys(values.new || {})
-            ]);
-
-            // Create arrays of tags for both columns, maintaining order
-            const oldTags = [];
-            const newTags = [];
-
-            // Only show tags that changed state
-            allKeys.forEach(key => {
-                const oldState = parseInt(values.old?.[key] || 0);
-                const newState = parseInt(values.new?.[key] || 0);
-
-                if (oldState !== newState) {
-                    oldTags.push(
-                        <div key={`old-${key}`} className="filter-tag-row">
-                            {formatFilterState(key, oldState)}
-                        </div>
+        return Object.entries(changes.parameters).map(([field, values]) => {
+            switch (field) {
+                case 'gold':
+                    return (
+                        <ChangesOuterWrapper
+                            key={field}
+                            fieldName="Gold Amount"
+                            beforeChangeElement={<GoldAmount value={values.old} className="before-change" />}
+                            afterChangeElement={<GoldAmount value={values.new} className="after-change" />}
+                            changes={values}
+                        />
                     );
-                    newTags.push(
-                        <div key={`new-${key}`} className="filter-tag-row">
-                            {formatFilterState(key, newState)}
-                        </div>
+                case 'levelMin':
+                case 'levelMax':
+                    // Only render once for both min and max
+                    if (field === 'levelMin') {
+                        const minValues = changes.parameters.levelMin || {};
+                        const maxValues = changes.parameters.levelMax || {};
+                        return (
+                            <ChangesOuterWrapper
+                                key="levelRange"
+                                fieldName="Level Range"
+                                beforeChangeElement={
+                                    <LevelRange
+                                        min={minValues.old}
+                                        max={maxValues.old}
+                                        className="before-change"
+                                    />
+                                }
+                                afterChangeElement={
+                                    <LevelRange
+                                        min={minValues.new}
+                                        max={maxValues.new}
+                                        className="after-change"
+                                    />
+                                }
+                                changes={{ min: minValues, max: maxValues }}
+                            />
+                        );
+                    }
+                    return null;
+                case 'itemBias':
+                    return (
+                        <ChangesOuterWrapper
+                            key={field}
+                            fieldName="Item Bias"
+                            beforeChangeElement={
+                                <ItemBias
+                                    x={values.old?.x}
+                                    y={values.old?.y}
+                                    className="before-change"
+                                />
+                            }
+                            afterChangeElement={
+                                <ItemBias
+                                    x={values.new?.x}
+                                    y={values.new?.y}
+                                    className="after-change"
+                                />
+                            }
+                            changes={values}
+                        />
                     );
-                }
-            });
+                case 'rarityDistribution':
+                    return (
+                        <ChangesOuterWrapper
+                            key={field}
+                            fieldName="Rarity Distribution"
+                            beforeChangeElement={
+                                <RarityDistributions
+                                    distributions={values.old}
+                                    className="before-change"
+                                />
+                            }
+                            afterChangeElement={
+                                <RarityDistributions
+                                    distributions={values.new}
+                                    className="after-change"
+                                />
+                            }
+                            changes={values}
+                        />
+                    );
+                default:
+                    return null;
+            }
+        });
+    };
 
-            // If no changes, return null
-            if (oldTags.length === 0) return null;
+    const renderFilterChanges = () => {
+        const sections = [
+            { key: 'categoryFilters', title: 'Category Filters' },
+            { key: 'subcategoryFilters', title: 'Subcategory Filters' },
+            { key: 'traitFilters', title: 'Trait Filters' }
+        ];
+
+        return sections.map(({ key, title }) => {
+            if (!changes[key]?.filters) return null;
 
             return (
-                <React.Fragment key={field}>
-                    <div className="changes-field">{field}</div>
-                    <div className="changes-value">
-                        <div className="filter-tags-container">
-                            {oldTags.length > 0 ? oldTags : "No filters"}
-                        </div>
-                    </div>
-                    <div className="changes-value changes-value-new">
-                        <div className="filter-tags-container">
-                            {newTags.length > 0 ? newTags : "No filters"}
-                        </div>
-                    </div>
-                </React.Fragment>
+                <ChangesOuterWrapper
+                    key={key}
+                    fieldName={title}
+                    beforeChangeElement={
+                        <FilterGroup
+                            filters={changes[key].filters.old}
+                            className="before-change"
+                        />
+                    }
+                    afterChangeElement={
+                        <FilterGroup
+                            filters={changes[key].filters.new}
+                            className="after-change"
+                        />
+                    }
+                    changes={changes[key].filters}
+                />
             );
-        };
+        });
+    };
+
+    const renderInventoryChanges = () => {
+        if (!changes.hasInventoryChanged) return null;
 
         return (
-            <div className="changes-section">
-                <h4 className="changes-section-title">{title}</h4>
-                <div className="changes-grid">
-                    <div className="changes-header">Field</div>
-                    <div className="changes-header">Before Changes</div>
-                    <div className="changes-header">After Changes</div>
-                    {Object.entries(changes).map(([field, values]) => {
-                        if (field === 'filters') {
-                            return renderFilterChange(field, values);
-                        }
-                        return (
-                            <React.Fragment key={field}>
-                                <div className="changes-field">{field}</div>
-                                <div className="changes-value">{formatValue(values.old)}</div>
-                                <div className="changes-value changes-value-new">{formatValue(values.new)}</div>
-                            </React.Fragment>
-                        );
-                    })}
+            <ChangesOuterWrapper
+                fieldName="Inventory"
+                isFullWidth={true}
+                className="inventory-changes"
+                changes={{ hasChanged: true }}
+            >
+                <div className="inventory-change-message">
+                    The shop inventory has been refreshed at least once
                 </div>
-            </div>
+            </ChangesOuterWrapper>
         );
     };
 
@@ -174,19 +185,10 @@ const UnsavedChangesDialogue = ({
                     {description || `You have unsaved changes to the current shop "${currentShopName}"`}
                 </p>
                 <div className="unsaved-changes-content">
-                    {renderChangeSection("Basic Information", changes.basic)}
-                    {renderChangeSection("Parameters", changes.parameters)}
-                    {renderChangeSection("Category Filters", changes.categoryFilters)}
-                    {renderChangeSection("Subcategory Filters", changes.subcategoryFilters)}
-                    {renderChangeSection("Trait Filters", changes.traitFilters)}
-                    {changes.hasInventoryChanged && (
-                        <div className="changes-section">
-                            <h4 className="changes-section-title">Inventory</h4>
-                            <p className="inventory-change-message">
-                                The shop inventory has been refreshed at least once
-                            </p>
-                        </div>
-                    )}
+                    {renderBasicChanges()}
+                    {renderParameterChanges()}
+                    {renderFilterChanges()}
+                    {renderInventoryChanges()}
                 </div>
                 <div className="unsaved-changes-buttons">
                     <button className="unsaved-changes-button unsaved-changes-proceed" onClick={onConfirm}>

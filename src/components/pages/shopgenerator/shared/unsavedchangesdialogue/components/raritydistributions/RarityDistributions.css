@@ -1,0 +1,31 @@
+.rarity-distributions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+
+.rarity-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.rarity-name {
+    min-width: 80px;
+}
+
+.rarity-value {
+    text-align: right;
+}
+
+.rarity-distributions.before-change {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.rarity-distributions.after-change {
+    color: var(--text-primary);
+} 

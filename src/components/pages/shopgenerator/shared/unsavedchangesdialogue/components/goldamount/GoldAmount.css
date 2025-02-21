@@ -1,0 +1,14 @@
+.gold-amount {
+    font-family: monospace;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+}
+
+.gold-amount.before-change {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.gold-amount.after-change {
+    color: var(--text-primary);
+} 

@@ -1,0 +1,76 @@
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem 0;
+}
+
+.filter-tags-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.filter-tag-row {
+    display: flex;
+    align-items: center;
+    min-height: 24px;
+}
+
+.filter-tag {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+    border: 1px solid;
+    box-sizing: border-box;
+    min-width: 0;
+    flex: 1;
+    transition: all 0.2s ease;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+}
+
+.filter-include {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.filter-exclude {
+    background: rgba(244, 67, 54, 0.2);
+    border-color: #F44336;
+    color: #F44336;
+}
+
+.filter-ignore {
+    background: rgba(128, 128, 128, 0.05);
+    border-color: rgba(128, 128, 128, 0.2);
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Add hover effects */
+.filter-include:hover {
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.filter-exclude:hover {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.filter-ignore:hover {
+    background: rgba(163, 177, 255, 0.1);
+    border-color: rgba(163, 177, 255, 0.2);
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.filter-group.before-change {
+    opacity: 0.7;
+}
+
+.filter-group.after-change {
+    opacity: 1;
+} 
