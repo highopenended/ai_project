@@ -36,13 +36,37 @@ const FilterGroup = ({ filters, className = '' }) => {
     };
 
     const renderFilters = () => {
-        if (!filters || Object.keys(filters).length === 0) {
-            return 'No filters';
+        if (!filters?.filters) return 'No filters';
+
+        const { old = {}, new: newFilters = {} } = filters.filters;
+
+        // Get all unique keys from both old and new states
+        const allKeys = new Set([
+            ...Object.keys(old),
+            ...Object.keys(newFilters)
+        ]);
+
+        const changedFilters = [];
+
+        // Only show tags that changed state
+        allKeys.forEach(key => {
+            const oldState = parseInt(old[key] || 0);
+            const newState = parseInt(newFilters[key] || 0);
+
+            if (oldState !== newState) {
+                // For 'before' view, show old state
+                // For 'after' view, show new state
+                changedFilters.push([key, className.includes('before-change') ? oldState : newState]);
+            }
+        });
+
+        if (changedFilters.length === 0) {
+            return 'No changes';
         }
 
         return (
             <div className="filter-tags-container">
-                {Object.entries(filters).map(([key, state]) => formatFilterState(key, state))}
+                {changedFilters.map(([key, state]) => formatFilterState(key, state))}
             </div>
         );
     };
@@ -55,7 +79,12 @@ const FilterGroup = ({ filters, className = '' }) => {
 };
 
 FilterGroup.propTypes = {
-    filters: PropTypes.object,
+    filters: PropTypes.shape({
+        filters: PropTypes.shape({
+            old: PropTypes.object,
+            new: PropTypes.object
+        })
+    }),
     className: PropTypes.string
 };
 

@@ -143,17 +143,17 @@ const UnsavedChangesDialogue = ({
                     fieldName={title}
                     beforeChangeElement={
                         <FilterGroup
-                            filters={changes[key].filters.old}
+                            filters={changes[key]}
                             className="before-change"
                         />
                     }
                     afterChangeElement={
                         <FilterGroup
-                            filters={changes[key].filters.new}
+                            filters={changes[key]}
                             className="after-change"
                         />
                     }
-                    changes={changes[key].filters}
+                    changes={changes[key]}
                 />
             );
         });
