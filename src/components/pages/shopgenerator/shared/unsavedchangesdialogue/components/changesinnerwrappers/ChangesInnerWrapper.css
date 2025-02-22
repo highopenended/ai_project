@@ -2,7 +2,6 @@
     display: flex;
     flex: 1;
     gap: 1rem;
-    align-items: stretch;
 }
 
 .changes-before,
@@ -12,15 +11,7 @@
     align-items: center;
     min-height: 24px;
     position: relative;
-}
-
-.changes-before {
-    color: var(--text-secondary);
-    opacity: 0.7;
-}
-
-.changes-after {
-    color: var(--text-primary);
+    width: 100%;
 }
 
 /* Add a subtle divider between before and after */
@@ -32,4 +23,16 @@
     bottom: 0;
     width: 1px;
     background: var(--dark-border-color);
+}
+
+/* Default styles for before/after states that all child components should inherit */
+.before-change {
+    color: var(--text-secondary);
+    opacity: 0.7;
+    width: 100%;
+}
+
+.after-change {
+    color: var(--text-primary);
+    width: 100%;
 } 

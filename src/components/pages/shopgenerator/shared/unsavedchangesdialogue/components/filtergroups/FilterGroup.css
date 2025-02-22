@@ -1,34 +1,32 @@
 .filter-group {
     display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 0.25rem 0;
+    width: 100%;
 }
 
 .filter-tags-container {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 4px;
+    width: 100%;
 }
 
 .filter-tag-row {
     display: flex;
     align-items: center;
     min-height: 24px;
+    width: 100%;
 }
 
 .filter-tag {
+    display: flex;
     padding: 2px 8px;
     border-radius: 4px;
     font-size: 0.9em;
     font-weight: 500;
     border: 1px solid;
-    box-sizing: border-box;
-    min-width: 0;
-    flex: 1;
+    width: 100%;
     transition: all 0.2s ease;
     text-align: center;
-    display: flex;
     justify-content: center;
     align-items: center;
     cursor: default;
@@ -52,7 +50,7 @@
     color: rgba(255, 255, 255, 0.3);
 }
 
-/* Add hover effects */
+/* Add hover effects to match Tag.css */
 .filter-include:hover {
     background: rgba(76, 175, 80, 0.3);
 }
@@ -65,12 +63,4 @@
     background: rgba(163, 177, 255, 0.1);
     border-color: rgba(163, 177, 255, 0.2);
     color: rgba(255, 255, 255, 0.4);
-}
-
-.filter-group.before-change {
-    opacity: 0.7;
-}
-
-.filter-group.after-change {
-    opacity: 1;
 } 
