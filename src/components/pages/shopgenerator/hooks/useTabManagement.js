@@ -1,17 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import React from 'react';
 
+// Debug configuration - import from a shared config if needed
+const DEBUG_CONFIG = {
+    enabled: false,
+    areas: {
+        tabManagement: false
+    }
+};
+
 // Debug logger
-const DEBUG = true;
-const log = (area, message, data = '') => {
-    if (!DEBUG) return;
+const debug = (area, message, data = '') => {
+    if (!DEBUG_CONFIG.enabled || !DEBUG_CONFIG.areas[area]) return;
     const timestamp = performance.now().toFixed(2);
     console.log(`[TabManagement][${timestamp}ms] ${area}:`, message, data ? data : '');
 };
 
 // Performance tracking
 const trackPerformance = (name, startMark = null) => {
-    if (!DEBUG) return;
+    if (!DEBUG_CONFIG.enabled || !DEBUG_CONFIG.areas.tabManagement) return;
     const endMark = `${name}-end-${Date.now()}`;
     performance.mark(endMark);
     
@@ -24,9 +31,9 @@ const trackPerformance = (name, startMark = null) => {
             );
             const measurements = performance.getEntriesByName(`TabManagement - ${name}`);
             const lastMeasurement = measurements[measurements.length - 1];
-            log('Performance', `${name} operation took`, `${lastMeasurement.duration.toFixed(2)}ms`);
+            debug('Performance', `${name} operation took`, `${lastMeasurement.duration.toFixed(2)}ms`);
         } catch (e) {
-            log('Performance', `Error measuring ${name}`, e);
+            debug('Performance', `Error measuring ${name}`, e);
         }
     }
     return endMark;
@@ -94,12 +101,12 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             ...prev,
             ...updates
         }));
-        log('State', 'Updating drag state', updates);
+        debug('State', 'Updating drag state', updates);
     }, []);
 
     // Handle drag end with batched updates
     const handleDragEnd = useCallback(() => {
-        log('Action', 'Ending drag/resize operation');
+        debug('Action', 'Ending drag/resize operation');
         updateDragState({
             isResizing: false,
             draggedTab: null,
@@ -120,20 +127,20 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         performance.mark(startMark);
         
         if (groupIndex >= tabGroups.length - 1) {
-            log('Resize', 'Invalid group index', { groupIndex });
+            debug('Resize', 'Invalid group index', { groupIndex });
             return;
         }
 
         const now = Date.now();
         if (now - dragState.lastResizeTime < RESIZE_THROTTLE_MS) {
-            log('Resize', 'Throttled', { 
+            debug('Resize', 'Throttled', { 
                 timeSinceLastResize: now - dragState.lastResizeTime,
                 throttleLimit: RESIZE_THROTTLE_MS 
             });
             return;
         }
 
-        log('Resize', 'Processing resize', { 
+        debug('Resize', 'Processing resize', { 
             groupIndex, 
             newWidth,
             isActive: resizeRef.current.active,
@@ -142,7 +149,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         
         const totalWidth = getContainerWidth();
         if (!totalWidth) {
-            log('Resize', 'No container width available');
+            debug('Resize', 'No container width available');
             return;
         }
 
@@ -164,7 +171,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             const nextGroupPercent = remainingPercent - currentPercent;
 
             if (nextGroupPercent < minWidthPercent) {
-                log('Resize', 'Next group would be too small', { 
+                debug('Resize', 'Next group would be too small', { 
                     nextGroupPercent,
                     minWidthPercent
                 });
@@ -174,7 +181,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             newBasis[groupIndex] = `${currentPercent}%`;
             newBasis[groupIndex + 1] = `${nextGroupPercent}%`;
             
-            log('Resize', 'Updated basis', { 
+            debug('Resize', 'Updated basis', { 
                 current: currentPercent,
                 next: nextGroupPercent,
                 total: currentPercent + nextGroupPercent
@@ -191,7 +198,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         const currentRef = resizeRef.current;
         const effectId = Math.random().toString(36).slice(2, 11);
         
-        log('Lifecycle', `[Effect ${effectId}] Resize handler initialized`, {
+        debug('Lifecycle', `[Effect ${effectId}] Resize handler initialized`, {
             mountTime,
             handlerExists: !!currentRef.handler
         });
@@ -202,7 +209,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             const startMark = `mouseup-${effectId}-${Date.now()}`;
             performance.mark(startMark);
             
-            log('Mouse', `[Effect ${effectId}] Global mouse up`, {
+            debug('Mouse', `[Effect ${effectId}] Global mouse up`, {
                 timeSinceMount: Date.now() - mountTime
             });
             
@@ -216,7 +223,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         window.addEventListener("mouseup", handleGlobalMouseUp);
 
         return () => {
-            log('Cleanup', `[Effect ${effectId}] Removing resize handler`, {
+            debug('Cleanup', `[Effect ${effectId}] Removing resize handler`, {
                 timeActive: Date.now() - mountTime,
                 hadHandler: !!currentRef.handler
             });
@@ -232,7 +239,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
         if (!dragState.isResizing) {
             if (currentRef.active) {
-                log('State', `[Effect ${effectId}] Deactivating resize`, {
+                debug('State', `[Effect ${effectId}] Deactivating resize`, {
                     draggedTab: dragState.draggedTab?.type?.name
                 });
                 currentRef.active = false;
@@ -240,14 +247,14 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             return;
         }
         
-        log('State', `[Effect ${effectId}] Activating resize`, {
+        debug('State', `[Effect ${effectId}] Activating resize`, {
             draggedTab: dragState.draggedTab?.type?.name
         });
         currentRef.active = true;
 
         return () => {
             if (currentRef.active) {
-                log('State', `[Effect ${effectId}] Cleaning up resize state`);
+                debug('State', `[Effect ${effectId}] Cleaning up resize state`);
                 currentRef.active = false;
             }
         };
@@ -255,7 +262,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
     // Handle drag start with batched update
     const handleDragStart = useCallback((tab, tabIndex, groupIndex) => {
-        log('Action', 'Starting drag', { tabIndex, groupIndex });
+        debug('Action', 'Starting drag', { tabIndex, groupIndex });
         updateDragState({
             draggedTab: tab,
             draggedTabIndex: tabIndex,
@@ -274,7 +281,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
      * Handles moving tabs within and between groups
      */
     const handleTabMove = useCallback((newTabs, sourceGroupIndex, targetGroupIndex) => {
-        log('Action', 'Moving tab', { sourceGroupIndex, targetGroupIndex });
+        debug('Action', 'Moving tab', { sourceGroupIndex, targetGroupIndex });
 
         // Reset drag states
         updateDragState({
@@ -296,7 +303,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 const [sourceTab, dropIndex] = newTabs;
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
 
-                log('Move', 'Processing tab move', { 
+                debug('Move', 'Processing tab move', { 
                     sourceTab: sourceTab.type.name,
                     dropIndex,
                     sourceGroupSize: sourceGroup.length 
@@ -310,7 +317,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 }
 
                 if (sourceGroup.length === 0) {
-                    log('Move', 'Removing empty source group');
+                    debug('Move', 'Removing empty source group');
                     newGroups.splice(sourceGroupIndex, 1);
                     if (targetGroupIndex > sourceGroupIndex) {
                         targetGroupIndex--;
@@ -323,10 +330,10 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 const isMovingBackToOriginal = sourceGroupIndex === targetGroupIndex;
 
                 if (isMovingBackToOriginal) {
-                    log('Move', 'Moving back to original group');
+                    debug('Move', 'Moving back to original group');
                     targetGroup.splice(dropIndex, 0, sourceTab);
                 } else {
-                    log('Move', 'Creating new tab in target group');
+                    debug('Move', 'Creating new tab in target group');
                     const newTab = React.cloneElement(sourceTab, {
                         key: `${sourceTab.type.name}-${Date.now()}`,
                     });
@@ -335,11 +342,11 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
                 newGroups[targetGroupIndex] = targetGroup;
             } else {
-                log('Move', 'Reordering within same group');
+                debug('Move', 'Reordering within same group');
                 newGroups[sourceGroupIndex] = newTabs;
             }
 
-            log('Move', 'Completed tab move', { 
+            debug('Move', 'Completed tab move', { 
                 finalGroupCount: newGroups.length 
             });
             return newGroups;
@@ -350,7 +357,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
      * Handles creating new groups by splitting existing ones
      */
     const handleTabSplit = useCallback((tabInfo, sourceGroupIndex, targetPosition) => {
-        log('Action', 'Splitting tab', { sourceGroupIndex, targetPosition });
+        debug('Action', 'Splitting tab', { sourceGroupIndex, targetPosition });
 
         // Reset drag states
         updateDragState({
@@ -371,11 +378,11 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             const sourceTab = sourceGroup.find((tab) => tab.type.name === tabInfo.type);
 
             if (!sourceTab) {
-                log('Split', 'Source tab not found', tabInfo);
+                debug('Split', 'Source tab not found', tabInfo);
                 return prevGroups;
             }
 
-            log('Split', 'Processing tab split', {
+            debug('Split', 'Processing tab split', {
                 sourceTab: sourceTab.type.name,
                 sourceGroupSize: sourceGroup.length
             });
@@ -387,7 +394,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             const newGroup = [newTab];
 
             if (sourceGroup.length === 0) {
-                log('Split', 'Removing empty source group');
+                debug('Split', 'Removing empty source group');
                 newGroups.splice(sourceGroupIndex, 1);
                 if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
                     targetPosition--;
@@ -397,17 +404,17 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             }
 
             if (typeof targetPosition === "number") {
-                log('Split', 'Inserting at specific position', { targetPosition });
+                debug('Split', 'Inserting at specific position', { targetPosition });
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
-                log('Split', 'Appending to end');
+                debug('Split', 'Appending to end');
                 newGroups.push(newGroup);
             } else {
-                log('Split', 'Prepending to start');
+                debug('Split', 'Prepending to start');
                 newGroups.unshift(newGroup);
             }
 
-            log('Split', 'Completed tab split', { 
+            debug('Split', 'Completed tab split', { 
                 finalGroupCount: newGroups.length 
             });
             return newGroups;
@@ -418,21 +425,21 @@ export const useTabManagement = (initialGroups, initialWidths) => {
     useEffect(() => {
         // Early return if no change needed
         if (tabGroups.length === flexBasis.length) {
-            log('FlexBasis', 'No update needed', { 
+            debug('FlexBasis', 'No update needed', { 
                 groupCount: tabGroups.length
             });
             return;
         }
         
         const groupCount = tabGroups.length;
-        log('FlexBasis', 'Updating widths', { 
+        debug('FlexBasis', 'Updating widths', { 
             groupCount
         });
         
         const defaultWidths = Array(groupCount).fill(`${100 / groupCount}%`);
         setFlexBasis(defaultWidths);
         
-        log('FlexBasis', 'Updated widths', { newWidths: defaultWidths });
+        debug('FlexBasis', 'Updated widths', { newWidths: defaultWidths });
     }, [tabGroups, flexBasis.length]);
 
     return {
