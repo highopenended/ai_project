@@ -59,17 +59,35 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 const STORAGE_KEY = "tabGroupsState";
 
+// Constants for tab types that won't be minified
+const TAB_TYPE_IDENTIFIERS = {
+    PARAMETERS: "Tab_Parameters",
+    INVENTORY: "Tab_InventoryTable",
+    CHOOSE_SHOP: "Tab_ChooseShop",
+    SHOP_DETAILS: "Tab_ShopDetails",
+    AI_ASSISTANT: "Tab_AiAssistant"
+};
+
 const DEFAULT_TAB_STATE = {
     groups: [
         [
-            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
-            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
-            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
-            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
-            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" }
+            { type: TAB_TYPE_IDENTIFIERS.PARAMETERS, key: "Tab_Parameters-0" },
+            { type: TAB_TYPE_IDENTIFIERS.INVENTORY, key: "Tab_InventoryTable-0" },
+            { type: TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP, key: "Tab_ChooseShop-0" },
+            { type: TAB_TYPE_IDENTIFIERS.SHOP_DETAILS, key: "Tab_ShopDetails-0" },
+            { type: TAB_TYPE_IDENTIFIERS.AI_ASSISTANT, key: "Tab_AiAssistant-0" }
         ]
     ],
     widths: ["100%"]
+};
+
+// Add a mapping of valid tab types
+const TAB_TYPES = {
+    [TAB_TYPE_IDENTIFIERS.PARAMETERS]: Tab_Parameters,
+    [TAB_TYPE_IDENTIFIERS.INVENTORY]: Tab_InventoryTable,
+    [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
+    [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
+    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant
 };
 
 function ShopGenerator() {
@@ -113,23 +131,14 @@ function ShopGenerator() {
     // Helper to create a proper React element for a tab with type checking
     const createTabElement = (tabType, key) => {
         console.log('Creating tab element:', { tabType, key });
-        if (!tabType || typeof tabType !== 'string') {
-            console.warn('Invalid tab type:', tabType);
+        
+        // Validate tab type is one of our known types
+        if (!tabType || !TAB_TYPES[tabType]) {
+            console.warn('Invalid or unknown tab type:', tabType);
             return null;
         }
 
-        const TabComponent = {
-            Tab_Parameters,
-            Tab_InventoryTable,
-            Tab_ChooseShop,
-            Tab_ShopDetails,
-            Tab_AiAssistant
-        }[tabType];
-
-        if (!TabComponent) {
-            console.warn(`Unknown tab type: ${tabType}`);
-            return null;
-        }
+        const TabComponent = TAB_TYPES[tabType];
 
         // Create base props that all tabs need
         const baseProps = {
@@ -328,7 +337,7 @@ function ShopGenerator() {
         initializeState();
     }, [authLoading, itemsLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop, filterMaps, setFilterMaps]);
 
-    // Modify the tab state loading effect
+    // Modify the tab state loading effect to validate saved data
     useEffect(() => {
         console.log('📂 Loading saved tab state');
         try {
@@ -338,19 +347,57 @@ function ShopGenerator() {
                 return;
             }
 
+            console.log('Raw saved state:', savedState);
             const parsed = JSON.parse(savedState);
+            console.log('Parsed saved state:', parsed);
+
             if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
                 console.warn('Invalid saved state structure');
                 return;
             }
 
+            // Log each tab type being validated
+            parsed.groups.forEach((group, groupIndex) => {
+                group.forEach((tab, tabIndex) => {
+                    console.log(`Validating tab [${groupIndex}][${tabIndex}]:`, {
+                        type: tab.type,
+                        isValid: TAB_TYPES[tab.type] !== undefined,
+                        availableTypes: Object.keys(TAB_TYPES)
+                    });
+                });
+            });
+
+            // Validate that all tab types in saved state are valid
+            const hasValidTabs = parsed.groups.every(group =>
+                group.every(tab => {
+                    const isValid = tab.type && TAB_TYPES[tab.type];
+                    if (!isValid) {
+                        console.warn('Invalid tab found:', {
+                            tabType: tab.type,
+                            validTypes: Object.keys(TAB_TYPES)
+                        });
+                    }
+                    return isValid;
+                })
+            );
+
+            if (!hasValidTabs) {
+                console.warn('Invalid tab types in saved state, using default');
+                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                return;
+            }
+
             const config = createTabsFromConfig(parsed);
+            console.log('Created config from saved state:', config);
+            
             if (config.groups.length > 0) {
                 console.log('📂 Setting saved tab state');
                 setTabState(config);
             }
         } catch (error) {
             console.error('📂 Error loading saved state:', error);
+            // On any error, reset to default state
+            setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
         }
     }, []); // Only run once on mount
 
@@ -374,12 +421,48 @@ function ShopGenerator() {
     // Save state whenever tab groups or widths change
     useEffect(() => {
         const saveState = () => {
-            const groupsData = tabGroups.map((group) =>
-                group.map((tab) => ({
-                    type: tab.type.name,
-                    key: tab.key,
-                }))
+            console.log('Saving tab state, current groups:', tabGroups);
+
+            // Extract the original tab type identifiers before they become React elements
+            const groupsData = tabGroups.map(group =>
+                group.map(tab => {
+                    // Find the matching tab type by comparing the actual component or its display name
+                    const matchingType = Object.keys(TAB_TYPES).find(type => 
+                        TAB_TYPES[type] === tab.type || // Check direct component match
+                        TAB_TYPES[type].displayName === tab.type.displayName // Check display name match
+                    );
+
+                    if (!matchingType) {
+                        console.warn('Could not find matching tab type for:', tab);
+                    }
+
+                    return {
+                        type: matchingType || tab.type.name,
+                        key: tab.key
+                    };
+                })
             );
+
+            console.log('Processed tab data for saving:', groupsData);
+
+            // Validate all types are known identifiers
+            const hasValidTypes = groupsData.every(group =>
+                group.every(tab => {
+                    const isValid = Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type);
+                    if (!isValid) {
+                        console.warn('Invalid tab type found:', {
+                            type: tab.type,
+                            validTypes: Object.values(TAB_TYPE_IDENTIFIERS)
+                        });
+                    }
+                    return isValid;
+                })
+            );
+
+            if (!hasValidTypes) {
+                console.warn('Attempting to save invalid tab types, skipping save');
+                return;
+            }
 
             localStorage.setItem(
                 STORAGE_KEY,
