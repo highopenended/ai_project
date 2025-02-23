@@ -8,7 +8,7 @@ import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
 import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
 import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
-import itemData from "../../../../public/item-table.json";
+import itemData from "../../../../src/data/item-table.json";
 import { useSorting } from "./utils/sortingUtils";
 import { extractUniqueCategories } from "./utils/categoryUtils";
 import defaultShopData from "./utils/shopData";
