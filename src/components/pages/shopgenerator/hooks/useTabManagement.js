@@ -185,53 +185,60 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         });
     }, [tabGroups.length, dragState.lastResizeTime, getContainerWidth, updateDragState]);
 
-    // Add window-level mouse up handler for resize operations
+    // Single resize handler initialization
     useEffect(() => {
         const mountTime = Date.now();
+        const currentRef = resizeRef.current;
+        
         log('Lifecycle', 'Initializing resize handler', {
             mountTime,
-            handlerExists: !!resizeRef.current.handler
+            handlerExists: !!currentRef.handler
         });
         
         const handleGlobalMouseUp = () => {
-            if (resizeRef.current.active) {
-                const startMark = `mouseup-${Date.now()}`;
-                performance.mark(startMark);
-                
-                log('Mouse', 'Global mouse up - ending resize', {
-                    timeSinceMount: Date.now() - mountTime,
-                    isResizing: dragState.isResizing
-                });
-                
-                handleDragEnd();
-                resizeRef.current.active = false;
-                
-                trackPerformance('Mouse Up Handler', startMark);
-            }
+            if (!currentRef.active) return;
+            
+            const startMark = `mouseup-${Date.now()}`;
+            performance.mark(startMark);
+            
+            log('Mouse', 'Global mouse up - ending resize', {
+                timeSinceMount: Date.now() - mountTime
+            });
+            
+            handleDragEnd();
+            currentRef.active = false;
+            
+            trackPerformance('Mouse Up Handler', startMark);
         };
 
-        resizeRef.current.handler = handleGlobalMouseUp;
+        currentRef.handler = handleGlobalMouseUp;
         window.addEventListener("mouseup", handleGlobalMouseUp);
 
         return () => {
             log('Cleanup', 'Removing resize handler', {
                 timeActive: Date.now() - mountTime,
-                hadHandler: !!resizeRef.current.handler
+                hadHandler: !!currentRef.handler
             });
-            if (resizeRef.current.handler) {
-                window.removeEventListener("mouseup", resizeRef.current.handler);
-                resizeRef.current.handler = null;
+            window.removeEventListener("mouseup", handleGlobalMouseUp);
+            currentRef.handler = null;
+        };
+    }, [handleDragEnd]); // Only depend on stable callback
+
+    // Track resize state
+    useEffect(() => {
+        const currentRef = resizeRef.current;
+        if (!dragState.isResizing) return;
+        
+        log('State', 'Starting resize operation');
+        performance.mark('resize-start');
+        resizeRef.current.active = true;
+        
+        return () => {
+            if (currentRef.active) {
+                log('State', 'Cleaning up resize operation');
+                currentRef.active = false;
             }
         };
-    }, []);
-
-    // Update resize ref when dragState.isResizing changes
-    useEffect(() => {
-        if (dragState.isResizing) {
-            log('State', 'Starting resize operation');
-            performance.mark('resize-start');
-            resizeRef.current.active = true;
-        }
     }, [dragState.isResizing]);
 
     // Handle drag start with batched update
@@ -395,26 +402,26 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         });
     }, [updateDragState]);
 
-    // Initialize flex basis when tab groups change
+    // Initialize flex basis when group count changes
     useEffect(() => {
+        // Early return if no change needed
         if (tabGroups.length === flexBasis.length) {
             log('FlexBasis', 'No update needed', { 
-                groupCount: tabGroups.length, 
-                basisCount: flexBasis.length 
+                groupCount: tabGroups.length
             });
             return;
         }
         
+        const groupCount = tabGroups.length;
         log('FlexBasis', 'Updating widths', { 
-            groupCount: tabGroups.length, 
-            basisCount: flexBasis.length 
+            groupCount
         });
         
-        const defaultWidths = tabGroups.map(() => `${100 / tabGroups.length}%`);
+        const defaultWidths = Array(groupCount).fill(`${100 / groupCount}%`);
         setFlexBasis(defaultWidths);
         
         log('FlexBasis', 'Updated widths', { newWidths: defaultWidths });
-    }, [tabGroups.length, flexBasis.length]);
+    }, [tabGroups, flexBasis.length]);
 
     return {
         tabGroups,
