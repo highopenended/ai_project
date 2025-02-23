@@ -163,7 +163,8 @@ function ShopGenerator() {
     // Initialize shop - either from saved state or create new
     const hasInitialized = useRef(false);
     useEffect(() => {
-        const initId = Math.random().toString(36).substr(2, 9);
+        // Generate a unique initialization ID using a safer method
+        const initId = Date.now().toString(36);
         
         // Don't do anything while auth is loading
         if (authLoading) {
@@ -178,30 +179,35 @@ function ShopGenerator() {
         }
 
         console.log(`[Init ${initId}] 🚀 Starting initialization`, {
-            hasUser: !!currentUser,
-            hasShopId: !!shopState.id
+            hasUser: Boolean(currentUser),
+            hasShopId: Boolean(shopState?.id)
         });
 
         // If user is logged in, first load their shop list
-        if (currentUser && savedShops.length === 0) {
+        if (currentUser && Array.isArray(savedShops) && savedShops.length === 0) {
             console.log(`[Init ${initId}] 📋 Loading shop list for user ${currentUser.uid}`);
             handleLoadShopList();
         }
         // Only create new shop if we don't have one and aren't logged in
-        else if (!shopState.id && !currentUser) {
+        else if (!shopState?.id && !currentUser) {
             console.log(`[Init ${initId}] 🆕 Creating new shop for anonymous user`);
             handleNewShop();
         }
 
         hasInitialized.current = true;
-    }, [authLoading, currentUser, shopState.id, savedShops.length, handleLoadShopList, handleNewShop]);
+    }, [authLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop]);
 
     const handleAiAssistantChange = (newState) => {
         console.log("Ai Assistant state updated:", newState);
     };
 
-    // Helper to create a proper React element for a tab
+    // Helper to create a proper React element for a tab with type checking
     const createTabElement = (tabType, key) => {
+        if (!tabType || typeof tabType !== 'string') {
+            console.warn('Invalid tab type:', tabType);
+            return null;
+        }
+
         const TabComponent = {
             Tab_Parameters,
             Tab_InventoryTable,
@@ -215,33 +221,49 @@ function ShopGenerator() {
             return null;
         }
 
-        return React.createElement(TabComponent, {
+        const props = {
             key,
-            type: { name: tabType }
-        });
+            type: { name: tabType, minWidth: TabComponent.minWidth || 200 }
+        };
+
+        return React.createElement(TabComponent, props);
     };
 
-    // Load initial state from localStorage or use default
+    // Load initial state from localStorage with type checking
     const loadInitialState = () => {
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        let config = DEFAULT_TAB_STATE;
-
-        if (savedState) {
-            try {
-                const parsed = JSON.parse(savedState);
-                // Transform saved configuration into React elements
-                config = {
-                    groups: parsed.groups.map(group =>
-                        group.map(tab => createTabElement(tab.type, tab.key))
-                    ).filter(group => group.length > 0),
-                    widths: parsed.widths
-                };
-            } catch (error) {
-                console.error("Error loading saved tab state:", error);
+        try {
+            const savedState = localStorage.getItem(STORAGE_KEY);
+            if (!savedState) {
+                return DEFAULT_TAB_STATE;
             }
-        }
 
-        return config;
+            const parsed = JSON.parse(savedState);
+            if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
+                console.warn('Invalid saved state structure');
+                return DEFAULT_TAB_STATE;
+            }
+
+            // Transform saved configuration into React elements with validation
+            const config = {
+                groups: parsed.groups
+                    .map(group => {
+                        if (!Array.isArray(group)) return [];
+                        return group
+                            .map(tab => {
+                                if (!tab?.type || !tab?.key) return null;
+                                return createTabElement(tab.type, tab.key);
+                            })
+                            .filter(Boolean); // Remove null elements
+                    })
+                    .filter(group => group.length > 0), // Remove empty groups
+                widths: parsed.widths.map(width => typeof width === 'string' ? width : '100%')
+            };
+
+            return config.groups.length > 0 ? config : DEFAULT_TAB_STATE;
+        } catch (error) {
+            console.error("Error loading saved tab state:", error);
+            return DEFAULT_TAB_STATE;
+        }
     };
 
     const initialState = loadInitialState();
