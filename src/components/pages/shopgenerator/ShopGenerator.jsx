@@ -62,11 +62,26 @@ const STORAGE_KEY = "tabGroupsState";
 const DEFAULT_TAB_STATE = {
     groups: [
         [
-            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
-            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
-            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
-            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
-            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" },
+            React.createElement(Tab_Parameters, {
+                key: "Tab_Parameters-0",
+                type: { name: "Tab_Parameters" }
+            }),
+            React.createElement(Tab_InventoryTable, {
+                key: "Tab_InventoryTable-0",
+                type: { name: "Tab_InventoryTable" }
+            }),
+            React.createElement(Tab_ChooseShop, {
+                key: "Tab_ChooseShop-0",
+                type: { name: "Tab_ChooseShop" }
+            }),
+            React.createElement(Tab_ShopDetails, {
+                key: "Tab_ShopDetails-0",
+                type: { name: "Tab_ShopDetails" }
+            }),
+            React.createElement(Tab_AiAssistant, {
+                key: "Tab_AiAssistant-0",
+                type: { name: "Tab_AiAssistant" }
+            })
         ],
     ],
     widths: ["100%"],
@@ -185,91 +200,25 @@ function ShopGenerator() {
         console.log("Ai Assistant state updated:", newState);
     };
 
+    // Helper to create a proper React element for a tab
+    const createTabElement = (tabType, key) => {
+        const TabComponent = {
+            Tab_Parameters,
+            Tab_InventoryTable,
+            Tab_ChooseShop,
+            Tab_ShopDetails,
+            Tab_AiAssistant
+        }[tabType];
 
-    // Helper function to create a tab component
-    const createTab = (type, key) => {
-        switch (type) {
-            case "Tab_Parameters":
-                return (
-                    <Tab_Parameters
-                        key={key}
-                        type={{ name: "Tab_Parameters" }}
-                        currentGold={shopState.gold}
-                        setCurrentGold={handleGoldChange}
-                        lowestLevel={shopState.levelRange.min}
-                        setLowestLevel={handleLowestLevelChange}
-                        highestLevel={shopState.levelRange.max}
-                        setHighestLevel={handleHighestLevelChange}
-                        rarityDistribution={shopState.rarityDistribution}
-                        setRarityDistribution={handleRarityDistributionChange}
-                        itemBias={shopState.itemBias}
-                        setItemBias={handleBiasChange}
-                        categoryData={categoryData}
-                        categoryStates={filterMaps.categories}
-                        subcategoryStates={filterMaps.subcategories}
-                        traitStates={filterMaps.traits}
-                        getFilterState={getFilterState}
-                        toggleCategory={toggleCategory}
-                        toggleSubcategory={toggleSubcategory}
-                        toggleTrait={toggleTrait}
-                        clearCategorySelections={clearCategorySelections}
-                        clearSubcategorySelections={clearSubcategorySelections}
-                        clearTraitSelections={clearTraitSelections}
-                    />
-                );
-            case "Tab_InventoryTable":
-                return (
-                    <Tab_InventoryTable
-                        key={key}
-                        type={{ name: "Tab_InventoryTable" }}
-                        items={sortedItems}
-                        currentShopName={shopState.name}
-                        handleGenerateClick={handleGenerateClick}
-                        sortConfig={sortConfig}
-                        onSort={handleSort}
-                        isGenerating={isGenerating}
-                    />
-                );
-            case "Tab_ChooseShop":
-                return (
-                    <Tab_ChooseShop
-                        key={key}
-                        type={{ name: "Tab_ChooseShop" }}
-                        savedShops={savedShops}
-                        onLoadShop={handleLoadShop}
-                        onNewShop={handleNewShop}
-                        currentShopId={shopState.id}
-                    />
-                );
-            case "Tab_ShopDetails":
-                return (
-                    <Tab_ShopDetails
-                        key={key}
-                        type={{ name: "Tab_ShopDetails" }}
-                        shopState={shopState}
-                        onShopDetailsChange={handleShopDetailsChange}
-                        onSaveShop={handleSaveShop}
-                        onCloneShop={handleCloneShop}
-                        onDeleteShop={handleDeleteShop}
-                        onRevertChanges={() => handleRevertChanges(shopSnapshot, setFilterMaps, setInventory)}
-                        savedShops={savedShops}
-                        hasUnsavedChanges={hasUnsavedChanges}
-                        changes={getChangedFields()}
-                    />
-                );
-            case "Tab_AiAssistant":
-                return (
-                    <Tab_AiAssistant
-                        key={key}
-                        type={{ name: "Tab_AiAssistant" }}
-                        shopState={shopState}
-                        onAiAssistantChange={handleAiAssistantChange}
-                    />
-                );
-            default:
-                console.warn(`Unknown tab type: ${type}`);
-                return null;
+        if (!TabComponent) {
+            console.warn(`Unknown tab type: ${tabType}`);
+            return null;
         }
+
+        return React.createElement(TabComponent, {
+            key,
+            type: { name: tabType }
+        });
     };
 
     // Load initial state from localStorage or use default
@@ -277,19 +226,22 @@ function ShopGenerator() {
         const savedState = localStorage.getItem(STORAGE_KEY);
         let config = DEFAULT_TAB_STATE;
 
-        // If we have a saved state, use saved configuration
         if (savedState) {
             try {
-                config = JSON.parse(savedState);
+                const parsed = JSON.parse(savedState);
+                // Transform saved configuration into React elements
+                config = {
+                    groups: parsed.groups.map(group =>
+                        group.map(tab => createTabElement(tab.type, tab.key))
+                    ).filter(group => group.length > 0),
+                    widths: parsed.widths
+                };
             } catch (error) {
                 console.error("Error loading saved tab state:", error);
             }
         }
 
-        // Create tab components from configuration
-        const groups = config.groups.map((group) => group.map((tab) => createTab(tab.type, tab.key)));
-
-        return { groups, widths: config.widths };
+        return config;
     };
 
     const initialState = loadInitialState();
