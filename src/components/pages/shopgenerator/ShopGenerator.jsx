@@ -300,8 +300,59 @@ function ShopGenerator() {
         };
     };
 
-    // Initialize tab state with pre-computed config
-    const [tabState, setTabState] = useState(() => DEFAULT_TAB_CONFIG);
+    // Initialize tab state with pre-computed config and/or saved state
+    const [tabState, setTabState] = useState(() => {
+        try {
+            console.log('[Tab State] Loading initial tab state');
+            const savedState = localStorage.getItem(STORAGE_KEY);
+            console.log('[Tab State] Raw saved state:', savedState);
+            
+            if (!savedState) {
+                return DEFAULT_TAB_CONFIG;
+            }
+
+            const parsed = JSON.parse(savedState);
+
+            // Basic structure validation
+            if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
+                return DEFAULT_TAB_CONFIG;
+            }
+
+            // Validate group structure
+            const isValidStructure = parsed.groups.every(group =>
+                Array.isArray(group) && group.every(tab =>
+                    tab && typeof tab === 'object' && 
+                    typeof tab.type === 'string' && 
+                    typeof tab.key === 'string'
+                )
+            );
+
+            if (!isValidStructure) {
+                return DEFAULT_TAB_CONFIG;
+            }
+
+            // Validate tab types
+            const hasValidTabs = parsed.groups.every(group =>
+                group.every(tab => Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type))
+            );
+
+            if (!hasValidTabs) {
+                return DEFAULT_TAB_CONFIG;
+            }
+
+            // If we get here and have valid saved state, create tabs from it
+            const newState = createTabsFromConfig(parsed);
+            
+            if (newState.groups.length === 0) {
+                return DEFAULT_TAB_CONFIG;
+            }
+
+            return newState;
+        } catch (error) {
+            console.error('[Tab State] Error loading saved state:', error);
+            return DEFAULT_TAB_CONFIG;
+        }
+    });
 
     debug('initialization', '📊 Initial hooks loaded:', {
         authLoading,
@@ -401,81 +452,6 @@ function ShopGenerator() {
 
         initializeState();
     }, [authLoading, itemsLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop, filterMaps, setFilterMaps]);
-
-    // Modify the tab state loading effect to use pre-computed config
-    useEffect(() => {
-        console.log('[Tab State] Loading saved tab state');
-        try {
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            console.log('[Tab State] Raw saved state:', savedState);
-            if (!savedState) {
-                debug('initialization', '📂 No saved state found, using default');
-                setTabState(DEFAULT_TAB_CONFIG);
-                return;
-            }
-
-            debug('initialization', 'Raw saved state:', savedState);
-            const parsed = JSON.parse(savedState);
-            debug('initialization', 'Parsed saved state:', parsed);
-
-            // Basic structure validation
-            if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
-                debug('initialization', 'Invalid saved state structure');
-                setTabState(DEFAULT_TAB_CONFIG);
-                return;
-            }
-
-            // Validate group structure
-            const isValidStructure = parsed.groups.every(group =>
-                Array.isArray(group) && group.every(tab =>
-                    tab && typeof tab === 'object' && 
-                    typeof tab.type === 'string' && 
-                    typeof tab.key === 'string'
-                )
-            );
-
-            if (!isValidStructure) {
-                debug('initialization', 'Invalid tab structure in saved state');
-                setTabState(DEFAULT_TAB_CONFIG);
-                return;
-            }
-
-            // Validate tab types
-            const hasValidTabs = parsed.groups.every(group =>
-                group.every(tab => {
-                    const isValid = Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type);
-                    if (!isValid) {
-                        debug('initialization', 'Invalid tab type:', {
-                            type: tab.type,
-                            availableTypes: Object.values(TAB_TYPE_IDENTIFIERS)
-                        });
-                    }
-                    return isValid;
-                })
-            );
-
-            if (!hasValidTabs) {
-                debug('initialization', 'Invalid tab types in saved state, using default');
-                setTabState(DEFAULT_TAB_CONFIG);
-                return;
-            }
-
-            // If we get here and have valid saved state, create tabs from it
-            const newState = createTabsFromConfig(parsed);
-            debug('initialization', 'Created new tab state:', newState);
-
-            if (newState.groups.length > 0) {
-                debug('initialization', '📂 Setting saved tab state');
-                setTabState(newState);
-            } else {
-                debug('initialization', 'No valid groups in new state, using default');
-                setTabState(DEFAULT_TAB_CONFIG);
-            }
-        } catch (error) {
-            debug('initialization', '📂 Error loading saved state:', error);
-            setTabState(DEFAULT_TAB_CONFIG);
-        }
-    }, []); // Only run once on mount
 
     // Tab management - now using tabState instead of loadInitialState
     const {
