@@ -1,4 +1,3 @@
-import React from 'react';
 import PropTypes from 'prop-types';
 import './ChangesOuterWrapper.css';
 import ChangesInnerWrapper from '../changesinnerwrappers/ChangesInnerWrapper';
