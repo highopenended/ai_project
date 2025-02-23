@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import itemData from "../data/item-table.json";
 import { extractUniqueCategories } from "../components/pages/shopgenerator/utils/categoryUtils";
@@ -13,35 +13,39 @@ const log = (area, message, data = '') => {
 
 export function ItemDataProvider({ children }) {
     const { currentUser, loading: authLoading } = useAuth();
+    const initRef = useRef(false);
     const [state, setState] = useState({
         items: [],
         categoryData: null,
         loading: true,
-        initialized: false,
         error: null
     });
 
     // Load items after auth is ready
     useEffect(() => {
+        const initId = Math.random().toString(36).substr(2, 9);
+
         // Don't load items until auth is ready
         if (authLoading) {
-            log('Init', '⏳ Waiting for auth to complete');
+            log('Init', `[${initId}] ⏳ Waiting for auth to complete`);
             return;
         }
 
         // Skip if already initialized
-        if (state.initialized) {
-            log('Init', '✅ Already initialized');
+        if (initRef.current) {
+            log('Init', `[${initId}] 🔄 Already initialized, skipping`);
             return;
         }
 
-        log('Init', '🚀 Starting item data initialization', {
+        // Set initialization flag immediately
+        initRef.current = true;
+        log('Init', `[${initId}] 🚀 Starting item data initialization`, {
             hasUser: !!currentUser
         });
 
         try {
-            log('Loading', 'Processing item data...');
-            log('Loading', `Raw data length: ${itemData.length}`);
+            log('Loading', `[${initId}] Processing item data...`);
+            log('Loading', `[${initId}] Raw data length: ${itemData.length}`);
 
             if (!itemData || !Array.isArray(itemData)) {
                 throw new Error(`Invalid item data format: ${typeof itemData}`);
@@ -57,25 +61,23 @@ export function ItemDataProvider({ children }) {
             // Extract categories
             const categories = extractUniqueCategories(itemData);
 
-            log('Success', `✅ Processed ${formattedData.length} items`);
+            log('Success', `[${initId}] ✅ Processed ${formattedData.length} items`);
             
             setState({
                 items: formattedData,
                 categoryData: categories,
                 loading: false,
-                initialized: true,
                 error: null
             });
         } catch (error) {
-            log('Error', `❌ Failed to load items: ${error.message}`);
+            log('Error', `[${initId}] ❌ Failed to load items: ${error.message}`);
             setState(prev => ({
                 ...prev,
                 loading: false,
-                initialized: true,
                 error: error.message
             }));
         }
-    }, [authLoading, currentUser, state.initialized]);
+    }, [authLoading, currentUser]);
 
     // Debug overlay style
     const debugStyle = {
