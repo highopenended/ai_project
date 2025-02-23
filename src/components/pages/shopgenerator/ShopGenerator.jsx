@@ -93,6 +93,15 @@ const TAB_TYPE_IDENTIFIERS = {
     AI_ASSISTANT: "Tab_AiAssistant"
 };
 
+// Add a mapping of valid tab types
+const TAB_TYPES = {
+    [TAB_TYPE_IDENTIFIERS.PARAMETERS]: Tab_Parameters,
+    [TAB_TYPE_IDENTIFIERS.INVENTORY]: Tab_InventoryTable,
+    [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
+    [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
+    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant
+};
+
 const DEFAULT_TAB_STATE = {
     groups: [
         [
@@ -104,15 +113,6 @@ const DEFAULT_TAB_STATE = {
         ]
     ],
     widths: ["100%"]
-};
-
-// Add a mapping of valid tab types
-const TAB_TYPES = {
-    [TAB_TYPE_IDENTIFIERS.PARAMETERS]: Tab_Parameters,
-    [TAB_TYPE_IDENTIFIERS.INVENTORY]: Tab_InventoryTable,
-    [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
-    [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
-    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant
 };
 
 function ShopGenerator() {
@@ -249,50 +249,46 @@ function ShopGenerator() {
         return React.createElement(TabComponent, { ...baseProps, ...specificProps });
     };
 
-    // Transform configuration into React elements
+    // Pre-compute the default tab configuration
+    const DEFAULT_TAB_CONFIG = (() => {
+        const processedGroups = DEFAULT_TAB_STATE.groups.map(group => 
+            group.map(tab => createTabElement(tab.type, tab.key))
+            .filter(Boolean)
+        ).filter(group => group.length > 0);
+
+        return {
+            groups: processedGroups,
+            widths: DEFAULT_TAB_STATE.widths
+        };
+    })();
+
+    // Transform saved configuration into React elements
     const createTabsFromConfig = (config) => {
         debug('tabCreation', 'Creating tabs from config:', config);
         
-        // Ensure we have valid groups and widths
-        if (!config.groups || !Array.isArray(config.groups) || !config.widths || !Array.isArray(config.widths)) {
-            debug('tabCreation', 'Invalid config structure, using default');
-            return DEFAULT_TAB_STATE;
-        }
-
         // Process each group
         const processedGroups = config.groups.map(group => {
             if (!Array.isArray(group)) {
-                debug('tabCreation', 'Invalid group structure:', group);
                 return [];
             }
 
             return group.map(tab => {
-                // Log the tab type we're trying to create
-                debug('tabCreation', 'Processing tab:', tab);
-                
-                // Ensure we're using the correct type identifier
                 const tabType = tab.type;
                 if (!TAB_TYPES[tabType]) {
-                    debug('tabCreation', 'Unknown tab type:', tabType);
                     return null;
                 }
-                
                 return createTabElement(tabType, tab.key);
             }).filter(Boolean);
         }).filter(group => group.length > 0);
 
-        debug('tabCreation', 'Processed groups:', processedGroups);
-        
-        // If no valid groups were created, return default state
+        // If no valid groups were created, use default config
         if (processedGroups.length === 0) {
-            debug('tabCreation', 'No valid groups created, using default');
-            return DEFAULT_TAB_STATE;
+            return DEFAULT_TAB_CONFIG;
         }
 
         // Ensure we have the correct number of widths
         let widths = config.widths;
         if (widths.length !== processedGroups.length) {
-            debug('tabCreation', 'Width count mismatch, recalculating widths');
             widths = processedGroups.map((_, i) => 
                 i === processedGroups.length - 1 ? '100%' : `${100 / processedGroups.length}%`
             );
@@ -304,8 +300,8 @@ function ShopGenerator() {
         };
     };
 
-    // Initialize tab state with all required props
-    const [tabState, setTabState] = useState(() => createTabsFromConfig(DEFAULT_TAB_STATE));
+    // Initialize tab state with pre-computed config
+    const [tabState, setTabState] = useState(() => DEFAULT_TAB_CONFIG);
 
     debug('initialization', '📊 Initial hooks loaded:', {
         authLoading,
@@ -406,14 +402,15 @@ function ShopGenerator() {
         initializeState();
     }, [authLoading, itemsLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop, filterMaps, setFilterMaps]);
 
-    // Modify the tab state loading effect to validate saved data
+    // Modify the tab state loading effect to use pre-computed config
     useEffect(() => {
-        debug('initialization', '📂 Loading saved tab state');
+        console.log('[Tab State] Loading saved tab state');
         try {
             const savedState = localStorage.getItem(STORAGE_KEY);
+            console.log('[Tab State] Raw saved state:', savedState);
             if (!savedState) {
                 debug('initialization', '📂 No saved state found, using default');
-                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                setTabState(DEFAULT_TAB_CONFIG);
                 return;
             }
 
@@ -424,7 +421,7 @@ function ShopGenerator() {
             // Basic structure validation
             if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
                 debug('initialization', 'Invalid saved state structure');
-                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                setTabState(DEFAULT_TAB_CONFIG);
                 return;
             }
 
@@ -439,7 +436,7 @@ function ShopGenerator() {
 
             if (!isValidStructure) {
                 debug('initialization', 'Invalid tab structure in saved state');
-                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                setTabState(DEFAULT_TAB_CONFIG);
                 return;
             }
 
@@ -459,23 +456,11 @@ function ShopGenerator() {
 
             if (!hasValidTabs) {
                 debug('initialization', 'Invalid tab types in saved state, using default');
-                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                setTabState(DEFAULT_TAB_CONFIG);
                 return;
             }
 
-            // Validate widths
-            const hasValidWidths = parsed.widths.every(width => 
-                typeof width === 'string' && width.endsWith('%')
-            );
-
-            if (!hasValidWidths) {
-                debug('initialization', 'Invalid widths in saved state');
-                parsed.widths = parsed.groups.map((_, i) => 
-                    i === parsed.groups.length - 1 ? '100%' : `${100 / parsed.groups.length}%`
-                );
-            }
-
-            // Create new tab state from validated data
+            // If we get here and have valid saved state, create tabs from it
             const newState = createTabsFromConfig(parsed);
             debug('initialization', 'Created new tab state:', newState);
 
@@ -484,11 +469,11 @@ function ShopGenerator() {
                 setTabState(newState);
             } else {
                 debug('initialization', 'No valid groups in new state, using default');
-                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                setTabState(DEFAULT_TAB_CONFIG);
             }
         } catch (error) {
             debug('initialization', '📂 Error loading saved state:', error);
-            setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+            setTabState(DEFAULT_TAB_CONFIG);
         }
     }, []); // Only run once on mount
 
