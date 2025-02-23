@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "import-data": "node src/scripts/runImport.js import",
     "delete-data": "node src/scripts/runImport.js delete",
-    "sync-items": "node src/scripts/syncItemTable.js"
+    "sync-items": "node src/scripts/syncItemTable.js",
+    "test-prod": "vite build && vite preview"
   },
   "dependencies": {
     "cors": "^2.8.5",
