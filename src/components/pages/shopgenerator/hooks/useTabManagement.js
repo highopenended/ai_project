@@ -185,24 +185,36 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         });
     }, [tabGroups.length, dragState.lastResizeTime, getContainerWidth, updateDragState]);
 
-    // Single resize handler initialization
+    // Consolidated resize handler
     useEffect(() => {
         const mountTime = Date.now();
         const currentRef = resizeRef.current;
+        const effectId = Math.random().toString(36).substr(2, 9);
         
-        log('Lifecycle', 'Initializing resize handler', {
+        log('Lifecycle', `[Effect ${effectId}] Resize effect running`, {
             mountTime,
-            handlerExists: !!currentRef.handler
+            handlerExists: !!currentRef.handler,
+            isResizing: dragState.isResizing,
+            draggedTab: dragState.draggedTab?.type?.name
         });
+        
+        // Set resize state if needed
+        if (dragState.isResizing && !currentRef.active) {
+            log('State', `[Effect ${effectId}] Activating resize state`, {
+                timeSinceMount: Date.now() - mountTime
+            });
+            currentRef.active = true;
+        }
         
         const handleGlobalMouseUp = () => {
             if (!currentRef.active) return;
             
-            const startMark = `mouseup-${Date.now()}`;
+            const startMark = `mouseup-${effectId}-${Date.now()}`;
             performance.mark(startMark);
             
-            log('Mouse', 'Global mouse up - ending resize', {
-                timeSinceMount: Date.now() - mountTime
+            log('Mouse', `[Effect ${effectId}] Global mouse up - ending resize`, {
+                timeSinceMount: Date.now() - mountTime,
+                wasActive: currentRef.active
             });
             
             handleDragEnd();
@@ -215,31 +227,16 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         window.addEventListener("mouseup", handleGlobalMouseUp);
 
         return () => {
-            log('Cleanup', 'Removing resize handler', {
+            log('Cleanup', `[Effect ${effectId}] Cleaning up resize handler`, {
                 timeActive: Date.now() - mountTime,
-                hadHandler: !!currentRef.handler
+                hadHandler: !!currentRef.handler,
+                wasActive: currentRef.active
             });
             window.removeEventListener("mouseup", handleGlobalMouseUp);
             currentRef.handler = null;
+            currentRef.active = false;
         };
-    }, [handleDragEnd]); // Only depend on stable callback
-
-    // Track resize state
-    useEffect(() => {
-        const currentRef = resizeRef.current;
-        if (!dragState.isResizing) return;
-        
-        log('State', 'Starting resize operation');
-        performance.mark('resize-start');
-        resizeRef.current.active = true;
-        
-        return () => {
-            if (currentRef.active) {
-                log('State', 'Cleaning up resize operation');
-                currentRef.active = false;
-            }
-        };
-    }, [dragState.isResizing]);
+    }, [dragState.draggedTab?.type?.name, dragState.isResizing, handleDragEnd]); // Depend on both resize state and handler
 
     // Handle drag start with batched update
     const handleDragStart = useCallback((tab, tabIndex, groupIndex) => {
