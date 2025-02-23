@@ -62,38 +62,25 @@ const STORAGE_KEY = "tabGroupsState";
 const DEFAULT_TAB_STATE = {
     groups: [
         [
-            React.createElement(Tab_Parameters, {
-                key: "Tab_Parameters-0",
-                type: { name: "Tab_Parameters" }
-            }),
-            React.createElement(Tab_InventoryTable, {
-                key: "Tab_InventoryTable-0",
-                type: { name: "Tab_InventoryTable" }
-            }),
-            React.createElement(Tab_ChooseShop, {
-                key: "Tab_ChooseShop-0",
-                type: { name: "Tab_ChooseShop" }
-            }),
-            React.createElement(Tab_ShopDetails, {
-                key: "Tab_ShopDetails-0",
-                type: { name: "Tab_ShopDetails" }
-            }),
-            React.createElement(Tab_AiAssistant, {
-                key: "Tab_AiAssistant-0",
-                type: { name: "Tab_AiAssistant" }
-            })
-        ],
+            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
+            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
+            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
+            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
+            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" }
+        ]
     ],
-    widths: ["100%"],
+    widths: ["100%"]
 };
 
 function ShopGenerator() {
+    console.log('🔄 Component render start');
     const { currentUser, isLoading: authLoading } = useAuth();
     const { items: allItems, categoryData, loading: itemsLoading, error: itemsError } = useItemData();
     const [savedShops, setSavedShops] = useState([]);
     const [inventory, setInventory] = useState([]);
+    const [isStateReady, setIsStateReady] = useState(false);
 
-    // Filter groups state management
+    // Filter groups state management first
     const {
         filterMaps,
         setFilterMaps,
@@ -107,9 +94,6 @@ function ShopGenerator() {
         getFilteredArray,
     } = useShopFilters();
 
-    // Sorting state
-    const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
-
     // Initialize base shop state
     const {
         shopState,
@@ -122,6 +106,135 @@ function ShopGenerator() {
         handleShopDetailsChange,
         handleRevertChanges,
     } = useShopState(defaultShopData);
+
+    // Sorting state
+    const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
+
+    // Helper to create a proper React element for a tab with type checking
+    const createTabElement = (tabType, key) => {
+        console.log('Creating tab element:', { tabType, key });
+        if (!tabType || typeof tabType !== 'string') {
+            console.warn('Invalid tab type:', tabType);
+            return null;
+        }
+
+        const TabComponent = {
+            Tab_Parameters,
+            Tab_InventoryTable,
+            Tab_ChooseShop,
+            Tab_ShopDetails,
+            Tab_AiAssistant
+        }[tabType];
+
+        if (!TabComponent) {
+            console.warn(`Unknown tab type: ${tabType}`);
+            return null;
+        }
+
+        // Create base props that all tabs need
+        const baseProps = {
+            key,
+            type: { name: tabType, minWidth: TabComponent.minWidth || 200 }
+        };
+
+        // Add specific props based on tab type
+        let specificProps = {};
+        switch (tabType) {
+            case "Tab_Parameters":
+                specificProps = {
+                    currentGold: shopState.gold,
+                    setCurrentGold: handleGoldChange,
+                    lowestLevel: shopState.levelRange.min,
+                    setLowestLevel: handleLowestLevelChange,
+                    highestLevel: shopState.levelRange.max,
+                    setHighestLevel: handleHighestLevelChange,
+                    rarityDistribution: shopState.rarityDistribution,
+                    setRarityDistribution: handleRarityDistributionChange,
+                    itemBias: shopState.itemBias,
+                    setItemBias: handleBiasChange,
+                    categoryData: categoryData || {},
+                    categoryStates: filterMaps?.categories || new Map(),
+                    getFilterState: getFilterState || (() => {}),
+                    toggleCategory: toggleCategory || (() => {}),
+                    toggleSubcategory: toggleSubcategory || (() => {}),
+                    toggleTrait: toggleTrait || (() => {}),
+                    clearCategorySelections: clearCategorySelections || (() => {}),
+                    clearSubcategorySelections: clearSubcategorySelections || (() => {}),
+                    clearTraitSelections: clearTraitSelections || (() => {})
+                };
+                break;
+            case "Tab_InventoryTable":
+                specificProps = {
+                    items: sortedItems || [],
+                    sortConfig: sortConfig || [],
+                    onSort: handleSort || (() => {}),
+                    currentShopName: shopState.name || "",
+                    handleGenerateClick: () => {},
+                    isGenerating: false
+                };
+                break;
+            case "Tab_ChooseShop":
+                specificProps = {
+                    savedShops: savedShops || [],
+                    onLoadShop: () => {},
+                    onNewShop: () => {},
+                    currentShopId: shopState.id || null
+                };
+                break;
+            case "Tab_ShopDetails":
+                specificProps = {
+                    shopState: shopState || defaultShopData,
+                    onShopDetailsChange: () => {},
+                    onSaveShop: () => {},
+                    onCloneShop: () => {},
+                    onDeleteShop: () => {},
+                    onRevertChanges: () => {},
+                    savedShops: savedShops || [],
+                    hasUnsavedChanges: false,
+                    changes: { basic: {}, parameters: {}, hasInventoryChanged: false }
+                };
+                break;
+            case "Tab_AiAssistant":
+                specificProps = {
+                    currentShop: {
+                        id: shopState.id || "",
+                        name: shopState.name || "",
+                        keeperName: shopState.keeperName || "",
+                        type: shopState.type || "",
+                        location: shopState.location || "",
+                        description: shopState.description || "",
+                        keeperDescription: shopState.keeperDescription || "",
+                        dateCreated: shopState.dateCreated || new Date(),
+                        dateLastEdited: shopState.dateLastEdited || new Date()
+                    },
+                    onAiAssistantChange: () => {}
+                };
+                break;
+        }
+
+        return React.createElement(TabComponent, { ...baseProps, ...specificProps });
+    };
+
+    // Transform configuration into React elements
+    const createTabsFromConfig = (config) => {
+        return {
+            groups: config.groups.map(group => 
+                group.map(tab => createTabElement(tab.type, tab.key))
+                    .filter(Boolean)
+            ).filter(group => group.length > 0),
+            widths: config.widths
+        };
+    };
+
+    // Initialize tab state with all required props
+    const [tabState, setTabState] = useState(() => createTabsFromConfig(DEFAULT_TAB_STATE));
+
+    console.log('📊 Initial hooks loaded:', {
+        authLoading,
+        itemsLoading,
+        hasUser: !!currentUser,
+        hasItems: !!allItems
+    });
 
     // Snapshot and change tracking
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
@@ -163,112 +276,85 @@ function ShopGenerator() {
     // Initialize shop - either from saved state or create new
     const hasInitialized = useRef(false);
     useEffect(() => {
-        // Generate a unique initialization ID using a safer method
         const initId = Date.now().toString(36);
+        console.log(`[Init ${initId}] 🚀 Starting initialization check`);
         
-        // Don't do anything while auth is loading
-        if (authLoading) {
-            console.log(`[Init ${initId}] ⏳ Waiting for auth to complete`);
+        // Don't do anything while loading
+        if (authLoading || itemsLoading) {
+            console.log(`[Init ${initId}] ⏳ Still loading:`, { authLoading, itemsLoading });
             return;
         }
 
         // Prevent multiple initializations
         if (hasInitialized.current) {
-            console.log(`[Init ${initId}] 🔄 Already initialized, skipping`);
+            console.log(`[Init ${initId}] ✋ Already initialized`);
             return;
         }
 
-        console.log(`[Init ${initId}] 🚀 Starting initialization`, {
-            hasUser: Boolean(currentUser),
-            hasShopId: Boolean(shopState?.id)
-        });
+        const initializeState = async () => {
+            try {
+                console.log(`[Init ${initId}] 🔄 Starting state initialization`);
 
-        // If user is logged in, first load their shop list
-        if (currentUser && Array.isArray(savedShops) && savedShops.length === 0) {
-            console.log(`[Init ${initId}] 📋 Loading shop list for user ${currentUser.uid}`);
-            handleLoadShopList();
-        }
-        // Only create new shop if we don't have one and aren't logged in
-        else if (!shopState?.id && !currentUser) {
-            console.log(`[Init ${initId}] 🆕 Creating new shop for anonymous user`);
-            handleNewShop();
-        }
+                // Initialize filter maps if they're empty
+                if (!filterMaps?.categories) {
+                    console.log(`[Init ${initId}] 📋 Creating initial filter maps`);
+                    setFilterMaps({
+                        categories: new Map(),
+                        subcategories: new Map(),
+                        traits: new Map()
+                    });
+                }
 
-        hasInitialized.current = true;
-    }, [authLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop]);
+                // If user is logged in, first load their shop list
+                if (currentUser && !savedShops.length) {
+                    console.log(`[Init ${initId}] 📥 Loading shop list for user`);
+                    await handleLoadShopList();
+                }
+                // Only create new shop if we don't have one and aren't logged in
+                else if (!shopState?.id && !currentUser) {
+                    console.log(`[Init ${initId}] ➕ Creating new anonymous shop`);
+                    await handleNewShop();
+                }
 
-    const handleAiAssistantChange = (newState) => {
-        console.log("Ai Assistant state updated:", newState);
-    };
-
-    // Helper to create a proper React element for a tab with type checking
-    const createTabElement = (tabType, key) => {
-        if (!tabType || typeof tabType !== 'string') {
-            console.warn('Invalid tab type:', tabType);
-            return null;
-        }
-
-        const TabComponent = {
-            Tab_Parameters,
-            Tab_InventoryTable,
-            Tab_ChooseShop,
-            Tab_ShopDetails,
-            Tab_AiAssistant
-        }[tabType];
-
-        if (!TabComponent) {
-            console.warn(`Unknown tab type: ${tabType}`);
-            return null;
-        }
-
-        const props = {
-            key,
-            type: { name: tabType, minWidth: TabComponent.minWidth || 200 }
+                console.log(`[Init ${initId}] ✅ Initialization complete`);
+                hasInitialized.current = true;
+                setIsStateReady(true);
+            } catch (error) {
+                console.error(`[Init ${initId}] ❌ Initialization error:`, error);
+                hasInitialized.current = false;
+            }
         };
 
-        return React.createElement(TabComponent, props);
-    };
+        initializeState();
+    }, [authLoading, itemsLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop, filterMaps, setFilterMaps]);
 
-    // Load initial state from localStorage with type checking
-    const loadInitialState = () => {
+    // Modify the tab state loading effect
+    useEffect(() => {
+        console.log('📂 Loading saved tab state');
         try {
             const savedState = localStorage.getItem(STORAGE_KEY);
             if (!savedState) {
-                return DEFAULT_TAB_STATE;
+                console.log('📂 No saved state found, using default');
+                return;
             }
 
             const parsed = JSON.parse(savedState);
             if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
                 console.warn('Invalid saved state structure');
-                return DEFAULT_TAB_STATE;
+                return;
             }
 
-            // Transform saved configuration into React elements with validation
-            const config = {
-                groups: parsed.groups
-                    .map(group => {
-                        if (!Array.isArray(group)) return [];
-                        return group
-                            .map(tab => {
-                                if (!tab?.type || !tab?.key) return null;
-                                return createTabElement(tab.type, tab.key);
-                            })
-                            .filter(Boolean); // Remove null elements
-                    })
-                    .filter(group => group.length > 0), // Remove empty groups
-                widths: parsed.widths.map(width => typeof width === 'string' ? width : '100%')
-            };
-
-            return config.groups.length > 0 ? config : DEFAULT_TAB_STATE;
+            const config = createTabsFromConfig(parsed);
+            if (config.groups.length > 0) {
+                console.log('📂 Setting saved tab state');
+                setTabState(config);
+            }
         } catch (error) {
-            console.error("Error loading saved tab state:", error);
-            return DEFAULT_TAB_STATE;
+            console.error('📂 Error loading saved state:', error);
         }
-    };
+    }, []); // Only run once on mount
 
-    const initialState = loadInitialState();
-
-    // Tab management
+    // Tab management - now using tabState instead of loadInitialState
     const {
         tabGroups,
         flexBasis,
@@ -283,7 +369,7 @@ function ShopGenerator() {
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
-    } = useTabManagement(initialState.groups, initialState.widths);
+    } = useTabManagement(tabState.groups, tabState.widths);
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
@@ -307,15 +393,27 @@ function ShopGenerator() {
         saveState();
     }, [tabGroups, flexBasis]);
 
+    // Show loading state while initializing
+    if (!isStateReady || itemsLoading || authLoading) {
+        console.log('⏳ Showing loading state:', {
+            isStateReady,
+            itemsLoading,
+            authLoading
+        });
+        return <div>Loading...</div>;
+    }
+
     // Show error state if items failed to load
     if (itemsError) {
+        console.log('❌ Showing error state:', itemsError);
         return <div>Error loading item data: {itemsError}</div>;
     }
 
-    // Show loading state while items or auth are loading
-    if (itemsLoading || authLoading) {
-        return <div>Loading...</div>;
-    }
+    console.log('✅ Rendering main component');
+
+    const handleAiAssistantChange = (newState) => {
+        console.log("Ai Assistant state updated:", newState);
+    };
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
