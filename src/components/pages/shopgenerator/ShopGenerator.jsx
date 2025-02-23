@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
+import { useItemData } from "../../../context/itemData";
 import "./ShopGenerator.css";
 import TabContainer from "./shared/tab/TabContainer";
 import Tab_Parameters from "./tabs/tab_parameters/Tab_Parameters";
@@ -8,9 +9,7 @@ import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
 import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
 import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
-import itemData from "../../../../src/data/item-table.json";
 import { useSorting } from "./utils/sortingUtils";
-import { extractUniqueCategories } from "./utils/categoryUtils";
 import defaultShopData from "./utils/shopData";
 import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
@@ -74,11 +73,10 @@ const DEFAULT_TAB_STATE = {
 };
 
 function ShopGenerator() {
-    const { currentUser, isLoading: authLoading } = useAuth(); // Get auth context
-    const [allItems, setAllItems] = useState([]); // Master list of all possible items
-    const [categoryData] = useState(() => extractUniqueCategories(itemData)); // Initialize category data
-    const [savedShops, setSavedShops] = useState([]); // Saved shops state
-    const [inventory, setInventory] = useState([]); // Inventory state
+    const { currentUser, isLoading: authLoading } = useAuth();
+    const { items: allItems, categoryData, loading: itemsLoading, error: itemsError } = useItemData();
+    const [savedShops, setSavedShops] = useState([]);
+    const [inventory, setInventory] = useState([]);
 
     // Filter groups state management
     const {
@@ -147,26 +145,6 @@ function ShopGenerator() {
         generateInventory();
     };
 
-    // Initial data loading
-    useEffect(() => {
-        try {
-            // Format and process the imported data
-            console.log("Loading items from itemData...");
-            console.log("Raw itemData length:", itemData.length);
-
-            const formattedData = itemData.map((item) => ({
-                ...item,
-                bulk: item.bulk?.trim() === "" ? "-" : item.bulk,
-                level: item.level ? item.level : "0",
-            }));
-
-            console.log("Formatted data length:", formattedData.length);
-            setAllItems(formattedData);
-        } catch (error) {
-            console.error("Error loading items:", error);
-        }
-    }, []);
-
     // Initialize shop - either from saved state or create new
     const hasInitialized = useRef(false);
     useEffect(() => {
@@ -201,7 +179,7 @@ function ShopGenerator() {
         }
 
         hasInitialized.current = true;
-    }, [authLoading, currentUser, shopState.id, savedShops.length]);
+    }, [authLoading, currentUser, shopState.id, savedShops.length, handleLoadShopList, handleNewShop]);
 
     const handleAiAssistantChange = (newState) => {
         console.log("Ai Assistant state updated:", newState);
@@ -355,114 +333,118 @@ function ShopGenerator() {
         saveState();
     }, [tabGroups, flexBasis]);
 
+    // Show error state if items failed to load
+    if (itemsError) {
+        return <div>Error loading item data: {itemsError}</div>;
+    }
+
+    // Show loading state while items or auth are loading
+    if (itemsLoading || authLoading) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
-            {authLoading ? (
-                <div>Loading...</div>
-            ) : (
-                <>
-                    {tabGroups.map((tabs, index) => (
-                        <TabContainer
-                            key={index}
-                            groupIndex={index}
-                            tabs={tabs.map((tab) => {
-                                // Add props based on tab type
-                                switch (tab.type.name) {
-                                    case "Tab_Parameters":
-                                        return React.cloneElement(tab, {
-                                            currentGold: shopState.gold,
-                                            setCurrentGold: handleGoldChange,
-                                            lowestLevel: shopState.levelRange.min,
-                                            setLowestLevel: handleLowestLevelChange,
-                                            highestLevel: shopState.levelRange.max,
-                                            setHighestLevel: handleHighestLevelChange,
-                                            rarityDistribution: shopState.rarityDistribution,
-                                            setRarityDistribution: handleRarityDistributionChange,
-                                            itemBias: shopState.itemBias,
-                                            setItemBias: handleBiasChange,
-                                            categoryData: categoryData,
-                                            categoryStates: filterMaps.categories,
-                                            subcategoryStates: filterMaps.subcategories,
-                                            traitStates: filterMaps.traits,
-                                            getFilterState: getFilterState,
-                                            toggleCategory: toggleCategory,
-                                            toggleSubcategory: toggleSubcategory,
-                                            toggleTrait: toggleTrait,
-                                            clearCategorySelections: clearCategorySelections,
-                                            clearSubcategorySelections: clearSubcategorySelections,
-                                            clearTraitSelections: clearTraitSelections,
-                                        });
-                                    case "Tab_InventoryTable":
-                                        return React.cloneElement(tab, {
-                                            items: sortedItems,
-                                            sortConfig,
-                                            onSort: handleSort,
-                                            currentShopName: shopState.name,
-                                            handleGenerateClick,
-                                            isGenerating,
-                                        });
-                                    case "Tab_ShopDetails":
-                                        return React.cloneElement(tab, {
-                                            shopState,
-                                            onShopDetailsChange: handleShopDetailsChange,
-                                            onSaveShop: handleSaveShop,
-                                            onCloneShop: handleCloneShop,
-                                            onDeleteShop: handleDeleteShop,
-                                            onRevertChanges: () =>
-                                                handleRevertChanges(shopSnapshot, setFilterMaps, setInventory),
-                                            savedShops,
-                                            hasUnsavedChanges,
-                                            changes: getChangedFields(),
-                                        });
-                                    case "Tab_ChooseShop":
-                                        return React.cloneElement(tab, {
-                                            savedShops,
-                                            onLoadShop: handleLoadShop,
-                                            onNewShop: handleNewShop,
-                                            currentShopId: shopState.id,
-                                        });
-                                    case "Tab_AiAssistant":
-                                        return React.cloneElement(tab, {
-                                            currentShop: {
-                                                id: shopState.id,
-                                                name: shopState.name,
-                                                keeperName: shopState.keeperName,
-                                                type: shopState.type,
-                                                location: shopState.location,
-                                                description: shopState.description,
-                                                keeperDescription: shopState.keeperDescription,
-                                                dateCreated: shopState.dateCreated,
-                                                dateLastEdited: shopState.dateLastEdited,
-                                            },
-                                            onAiAssistantChange: handleAiAssistantChange,
-                                        });
-                                    default:
-                                        return tab;
-                                }
-                            })}
-                            draggedTab={draggedTab}
-                            draggedTabIndex={draggedTabIndex}
-                            sourceGroupIndex={sourceGroupIndex}
-                            dropIndicators={dropIndicators}
-                            isLastGroup={index === tabGroups.length - 1}
-                            onResize={handleResize}
-                            style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
-                            onDragStart={(tab, tabIndex) => handleDragStart(tab, tabIndex, index)}
-                            onDragEnd={handleDragEnd}
-                            onDropIndicatorChange={handleDropIndicatorChange}
-                            onTabMove={(newTabs) => {
-                                if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
-                                    handleTabMove(newTabs, sourceGroupIndex, index);
-                                } else {
-                                    handleTabMove(newTabs, index);
-                                }
-                            }}
-                            onTabClick={() => {}}
-                            onTabSplit={handleTabSplit}
-                        />
-                    ))}
-                </>
-            )}
+            {tabGroups.map((tabs, index) => (
+                <TabContainer
+                    key={index}
+                    groupIndex={index}
+                    tabs={tabs.map((tab) => {
+                        // Add props based on tab type
+                        switch (tab.type.name) {
+                            case "Tab_Parameters":
+                                return React.cloneElement(tab, {
+                                    currentGold: shopState.gold,
+                                    setCurrentGold: handleGoldChange,
+                                    lowestLevel: shopState.levelRange.min,
+                                    setLowestLevel: handleLowestLevelChange,
+                                    highestLevel: shopState.levelRange.max,
+                                    setHighestLevel: handleHighestLevelChange,
+                                    rarityDistribution: shopState.rarityDistribution,
+                                    setRarityDistribution: handleRarityDistributionChange,
+                                    itemBias: shopState.itemBias,
+                                    setItemBias: handleBiasChange,
+                                    categoryData: categoryData,
+                                    categoryStates: filterMaps.categories,
+                                    subcategoryStates: filterMaps.subcategories,
+                                    traitStates: filterMaps.traits,
+                                    getFilterState: getFilterState,
+                                    toggleCategory: toggleCategory,
+                                    toggleSubcategory: toggleSubcategory,
+                                    toggleTrait: toggleTrait,
+                                    clearCategorySelections: clearCategorySelections,
+                                    clearSubcategorySelections: clearSubcategorySelections,
+                                    clearTraitSelections: clearTraitSelections,
+                                });
+                            case "Tab_InventoryTable":
+                                return React.cloneElement(tab, {
+                                    items: sortedItems,
+                                    sortConfig,
+                                    onSort: handleSort,
+                                    currentShopName: shopState.name,
+                                    handleGenerateClick,
+                                    isGenerating,
+                                });
+                            case "Tab_ShopDetails":
+                                return React.cloneElement(tab, {
+                                    shopState,
+                                    onShopDetailsChange: handleShopDetailsChange,
+                                    onSaveShop: handleSaveShop,
+                                    onCloneShop: handleCloneShop,
+                                    onDeleteShop: handleDeleteShop,
+                                    onRevertChanges: () =>
+                                        handleRevertChanges(shopSnapshot, setFilterMaps, setInventory),
+                                    savedShops,
+                                    hasUnsavedChanges,
+                                    changes: getChangedFields(),
+                                });
+                            case "Tab_ChooseShop":
+                                return React.cloneElement(tab, {
+                                    savedShops,
+                                    onLoadShop: handleLoadShop,
+                                    onNewShop: handleNewShop,
+                                    currentShopId: shopState.id,
+                                });
+                            case "Tab_AiAssistant":
+                                return React.cloneElement(tab, {
+                                    currentShop: {
+                                        id: shopState.id,
+                                        name: shopState.name,
+                                        keeperName: shopState.keeperName,
+                                        type: shopState.type,
+                                        location: shopState.location,
+                                        description: shopState.description,
+                                        keeperDescription: shopState.keeperDescription,
+                                        dateCreated: shopState.dateCreated,
+                                        dateLastEdited: shopState.dateLastEdited,
+                                    },
+                                    onAiAssistantChange: handleAiAssistantChange,
+                                });
+                            default:
+                                return tab;
+                        }
+                    })}
+                    draggedTab={draggedTab}
+                    draggedTabIndex={draggedTabIndex}
+                    sourceGroupIndex={sourceGroupIndex}
+                    dropIndicators={dropIndicators}
+                    isLastGroup={index === tabGroups.length - 1}
+                    onResize={handleResize}
+                    style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
+                    onDragStart={(tab, tabIndex) => handleDragStart(tab, tabIndex, index)}
+                    onDragEnd={handleDragEnd}
+                    onDropIndicatorChange={handleDropIndicatorChange}
+                    onTabMove={(newTabs) => {
+                        if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
+                            handleTabMove(newTabs, sourceGroupIndex, index);
+                        } else {
+                            handleTabMove(newTabs, index);
+                        }
+                    }}
+                    onTabClick={() => {}}
+                    onTabSplit={handleTabSplit}
+                />
+            ))}
         </div>
     );
 }

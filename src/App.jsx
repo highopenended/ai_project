@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import { ItemDataProvider } from "./context/ItemDataProvider";
 import Layout from "./components/Layout.jsx";
 import Login from "./components/pages/login/Login.jsx";
 import Home from "./components/pages/home/Home.jsx";
@@ -23,35 +24,37 @@ function App() {
     return (
         <Router>
             <AuthProvider>
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={<Login />} />
-                        <Route
-                            path="home"
-                            element={
-                                <ProtectedRoute>
-                                    <HomeWrapper />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="item-list"
-                            element={
-                                <ProtectedRoute>
-                                    <ItemList />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="shopgenerator"
-                            element={
-                                <ProtectedRoute>
-                                    <ShopGenerator />
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Route>
-                </Routes>
+                <ItemDataProvider>
+                    <Routes>
+                        <Route path="/" element={<Layout />}>
+                            <Route index element={<Login />} />
+                            <Route
+                                path="home"
+                                element={
+                                    <ProtectedRoute>
+                                        <HomeWrapper />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="item-list"
+                                element={
+                                    <ProtectedRoute>
+                                        <ItemList />
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="shopgenerator"
+                                element={
+                                    <ProtectedRoute>
+                                        <ShopGenerator />
+                                    </ProtectedRoute>
+                                }
+                            />
+                        </Route>
+                    </Routes>
+                </ItemDataProvider>
             </AuthProvider>
         </Router>
     );

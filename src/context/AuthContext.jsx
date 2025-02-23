@@ -144,6 +144,7 @@ export const AuthProvider = ({ children }) => {
             </>
         );
     }
+    
 
     if (authState.error) {
         log('Error', '🚨 Error state:', authState.error);
