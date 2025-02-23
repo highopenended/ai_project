@@ -226,12 +226,56 @@ function ShopGenerator() {
 
     // Transform configuration into React elements
     const createTabsFromConfig = (config) => {
+        console.log('Creating tabs from config:', config);
+        
+        // Ensure we have valid groups and widths
+        if (!config.groups || !Array.isArray(config.groups) || !config.widths || !Array.isArray(config.widths)) {
+            console.warn('Invalid config structure, using default');
+            return DEFAULT_TAB_STATE;
+        }
+
+        // Process each group
+        const processedGroups = config.groups.map(group => {
+            if (!Array.isArray(group)) {
+                console.warn('Invalid group structure:', group);
+                return [];
+            }
+
+            return group.map(tab => {
+                // Log the tab type we're trying to create
+                console.log('Processing tab:', tab);
+                
+                // Ensure we're using the correct type identifier
+                const tabType = tab.type;
+                if (!TAB_TYPES[tabType]) {
+                    console.warn('Unknown tab type:', tabType);
+                    return null;
+                }
+                
+                return createTabElement(tabType, tab.key);
+            }).filter(Boolean);
+        }).filter(group => group.length > 0);
+
+        console.log('Processed groups:', processedGroups);
+        
+        // If no valid groups were created, return default state
+        if (processedGroups.length === 0) {
+            console.warn('No valid groups created, using default');
+            return DEFAULT_TAB_STATE;
+        }
+
+        // Ensure we have the correct number of widths
+        let widths = config.widths;
+        if (widths.length !== processedGroups.length) {
+            console.warn('Width count mismatch, recalculating widths');
+            widths = processedGroups.map((_, i) => 
+                i === processedGroups.length - 1 ? '100%' : `${100 / processedGroups.length}%`
+            );
+        }
+
         return {
-            groups: config.groups.map(group => 
-                group.map(tab => createTabElement(tab.type, tab.key))
-                    .filter(Boolean)
-            ).filter(group => group.length > 0),
-            widths: config.widths
+            groups: processedGroups,
+            widths: widths
         };
     };
 
@@ -344,6 +388,7 @@ function ShopGenerator() {
             const savedState = localStorage.getItem(STORAGE_KEY);
             if (!savedState) {
                 console.log('📂 No saved state found, using default');
+                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
                 return;
             }
 
@@ -351,30 +396,36 @@ function ShopGenerator() {
             const parsed = JSON.parse(savedState);
             console.log('Parsed saved state:', parsed);
 
+            // Basic structure validation
             if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
                 console.warn('Invalid saved state structure');
+                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
                 return;
             }
 
-            // Log each tab type being validated
-            parsed.groups.forEach((group, groupIndex) => {
-                group.forEach((tab, tabIndex) => {
-                    console.log(`Validating tab [${groupIndex}][${tabIndex}]:`, {
-                        type: tab.type,
-                        isValid: TAB_TYPES[tab.type] !== undefined,
-                        availableTypes: Object.keys(TAB_TYPES)
-                    });
-                });
-            });
+            // Validate group structure
+            const isValidStructure = parsed.groups.every(group =>
+                Array.isArray(group) && group.every(tab =>
+                    tab && typeof tab === 'object' && 
+                    typeof tab.type === 'string' && 
+                    typeof tab.key === 'string'
+                )
+            );
 
-            // Validate that all tab types in saved state are valid
+            if (!isValidStructure) {
+                console.warn('Invalid tab structure in saved state');
+                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
+                return;
+            }
+
+            // Validate tab types
             const hasValidTabs = parsed.groups.every(group =>
                 group.every(tab => {
-                    const isValid = tab.type && TAB_TYPES[tab.type];
+                    const isValid = Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type);
                     if (!isValid) {
-                        console.warn('Invalid tab found:', {
-                            tabType: tab.type,
-                            validTypes: Object.keys(TAB_TYPES)
+                        console.warn('Invalid tab type:', {
+                            type: tab.type,
+                            availableTypes: Object.values(TAB_TYPE_IDENTIFIERS)
                         });
                     }
                     return isValid;
@@ -387,16 +438,31 @@ function ShopGenerator() {
                 return;
             }
 
-            const config = createTabsFromConfig(parsed);
-            console.log('Created config from saved state:', config);
-            
-            if (config.groups.length > 0) {
+            // Validate widths
+            const hasValidWidths = parsed.widths.every(width => 
+                typeof width === 'string' && width.endsWith('%')
+            );
+
+            if (!hasValidWidths) {
+                console.warn('Invalid widths in saved state');
+                parsed.widths = parsed.groups.map((_, i) => 
+                    i === parsed.groups.length - 1 ? '100%' : `${100 / parsed.groups.length}%`
+                );
+            }
+
+            // Create new tab state from validated data
+            const newState = createTabsFromConfig(parsed);
+            console.log('Created new tab state:', newState);
+
+            if (newState.groups.length > 0) {
                 console.log('📂 Setting saved tab state');
-                setTabState(config);
+                setTabState(newState);
+            } else {
+                console.warn('No valid groups in new state, using default');
+                setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
             }
         } catch (error) {
             console.error('📂 Error loading saved state:', error);
-            // On any error, reset to default state
             setTabState(createTabsFromConfig(DEFAULT_TAB_STATE));
         }
     }, []); // Only run once on mount
@@ -416,7 +482,16 @@ function ShopGenerator() {
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
+        setTabGroups,
+        setFlexBasis,
     } = useTabManagement(tabState.groups, tabState.widths);
+
+    // Sync tabState changes to tabGroups
+    useEffect(() => {
+        console.log('Syncing tab state to groups:', tabState);
+        setTabGroups(tabState.groups);
+        setFlexBasis(tabState.widths);
+    }, [tabState]);
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
@@ -464,13 +539,13 @@ function ShopGenerator() {
                 return;
             }
 
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify({
-                    groups: groupsData,
-                    widths: flexBasis,
-                })
-            );
+            const stateToSave = {
+                groups: groupsData,
+                widths: flexBasis,
+            };
+
+            console.log('Saving state to localStorage:', stateToSave);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
         };
 
         saveState();
