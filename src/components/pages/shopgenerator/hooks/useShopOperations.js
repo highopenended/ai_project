@@ -243,22 +243,20 @@ export const useShopOperations = ({
             console.log("Starting save operation");
             const currentDate = new Date();
             
-            // Convert Map objects to a flat object structure for Firebase
-            const filterStatesForStorage = {
-                categories: Object.fromEntries(filterMaps.categories.entries()),
-                subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
-                traits: Object.fromEntries(filterMaps.traits.entries()),
-            };
-
             // Create a clean copy of shop data without the filters field
-            const { filters: _, ...cleanShopState } = shopState;
+            const cleanShopState = { ...shopState };
+            delete cleanShopState.filters;
 
             // Ensure we're not passing any Map objects to Firebase
             const savedShopData = {
                 ...cleanShopState,
                 dateLastEdited: currentDate,
                 currentStock: inventory,
-                filterStorageObjects: filterStatesForStorage,
+                filterStorageObjects: {
+                    categories: Object.fromEntries(filterMaps.categories.entries()),
+                    subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
+                    traits: Object.fromEntries(filterMaps.traits.entries()),
+                },
             };
 
             console.log("About to call saveOrUpdateShopData with:", {
