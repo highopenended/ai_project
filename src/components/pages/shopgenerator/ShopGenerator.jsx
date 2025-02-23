@@ -1,5 +1,5 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import "./ShopGenerator.css";
 import TabContainer from "./shared/tab/TabContainer";
@@ -168,11 +168,40 @@ function ShopGenerator() {
     }, []);
 
     // Initialize shop - either from saved state or create new
+    const hasInitialized = useRef(false);
     useEffect(() => {
-        if (!authLoading && !shopState.id) handleNewShop();
-        if (!authLoading && currentUser) handleLoadShopList();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authLoading, currentUser]);
+        const initId = Math.random().toString(36).substr(2, 9);
+        
+        // Don't do anything while auth is loading
+        if (authLoading) {
+            console.log(`[Init ${initId}] ⏳ Waiting for auth to complete`);
+            return;
+        }
+
+        // Prevent multiple initializations
+        if (hasInitialized.current) {
+            console.log(`[Init ${initId}] 🔄 Already initialized, skipping`);
+            return;
+        }
+
+        console.log(`[Init ${initId}] 🚀 Starting initialization`, {
+            hasUser: !!currentUser,
+            hasShopId: !!shopState.id
+        });
+
+        // If user is logged in, first load their shop list
+        if (currentUser && savedShops.length === 0) {
+            console.log(`[Init ${initId}] 📋 Loading shop list for user ${currentUser.uid}`);
+            handleLoadShopList();
+        }
+        // Only create new shop if we don't have one and aren't logged in
+        else if (!shopState.id && !currentUser) {
+            console.log(`[Init ${initId}] 🆕 Creating new shop for anonymous user`);
+            handleNewShop();
+        }
+
+        hasInitialized.current = true;
+    }, [authLoading, currentUser, shopState.id, savedShops.length]);
 
     const handleAiAssistantChange = (newState) => {
         console.log("Ai Assistant state updated:", newState);
