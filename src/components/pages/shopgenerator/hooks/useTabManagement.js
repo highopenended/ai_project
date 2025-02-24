@@ -67,7 +67,6 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
  * content rendering, and navigation logic.
  * 
  * @param {Object} defaultConfig - The default tab configuration
- * @param {string} storageKey - Key for localStorage persistence
  * @param {Function} createTabElement - Function to create a tab element with proper props
  * @returns {Object} Tab management handlers and state
  * @property {string} activeTab - Currently active tab
@@ -75,7 +74,7 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
  * @property {Object} tabContent - Content to render for current tab
  * @property {Function} handleTabChange - Handler for tab change events
  */
-export const useTabManagement = (defaultConfig, storageKey, createTabElement) => {
+export const useTabManagement = (defaultConfig, createTabElement) => {
     // Internal helper to transform saved configuration into React elements
     const createTabsFromConfig = useCallback((config) => {
         debug('tabCreation', 'Creating tabs from config:', config);
@@ -117,7 +116,7 @@ export const useTabManagement = (defaultConfig, storageKey, createTabElement) =>
     const [tabGroups, setTabGroups] = useState(() => {
         try {
             debug('initialization', 'Loading saved tab state');
-            const savedState = localStorage.getItem(storageKey);
+            const savedState = localStorage.getItem(STORAGE_KEY);
             
             if (!savedState) {
                 return defaultConfig.groups;
@@ -138,7 +137,7 @@ export const useTabManagement = (defaultConfig, storageKey, createTabElement) =>
 
     const [flexBasis, setFlexBasis] = useState(() => {
         try {
-            const savedState = localStorage.getItem(storageKey);
+            const savedState = localStorage.getItem(STORAGE_KEY);
             if (!savedState) {
                 return defaultConfig.widths;
             }
@@ -174,11 +173,11 @@ export const useTabManagement = (defaultConfig, storageKey, createTabElement) =>
                 widths: flexBasis,
             };
 
-            localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
         };
 
         saveState();
-    }, [tabGroups, flexBasis, storageKey]);
+    }, [tabGroups, flexBasis]);
 
     const [dragState, setDragState] = useState({
         isResizing: false,
