@@ -169,8 +169,6 @@ function ShopGenerator() {
     // Helper to create a proper React element for a tab with type checking
     const createTabElement = (tabType, key) => {
 
-        console.log("---------------------------------authLoading: ", authLoading);
-
         debug('tabCreation', 'Creating tab element:', { tabType, key });
         
         if(authLoading) {
@@ -260,12 +258,12 @@ function ShopGenerator() {
                 };
                 break;
             case "Tab_ShopDetails":
-                debug('tabCreation', 'Creating Shop Details tab with handlers:', {
-                    hasDetailsHandler: !!handleShopDetailsChange,
-                    hasSaveHandler: !!handleSaveShop,
-                    hasCloneHandler: !!handleCloneShop,
-                    hasDeleteHandler: !!handleDeleteShop
-                });
+                // debug('tabCreation', 'Creating Shop Details tab with handlers:', {
+                //     hasDetailsHandler: !!handleShopDetailsChange,
+                //     hasSaveHandler: !!handleSaveShop,
+                //     hasCloneHandler: !!handleCloneShop,
+                //     hasDeleteHandler: !!handleDeleteShop
+                // });
                 specificProps = {
                     shopState: shopState || defaultShopData,
                     onShopDetailsChange: handleShopDetailsChange || (() => {
