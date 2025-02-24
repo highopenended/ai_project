@@ -187,7 +187,7 @@ function ShopGenerator() {
                     setItemBias: handleBiasChange,
                     categoryData: categoryData || {},
                     categoryStates: filterMaps?.categories || new Map(),
-                    getFilterState: getFilterState || (() => {}),
+                    getFilterState: getFilterState,
                     toggleCategory: toggleCategory || (() => {}),
                     toggleSubcategory: toggleSubcategory || (() => {}),
                     toggleTrait: toggleTrait || (() => {}),

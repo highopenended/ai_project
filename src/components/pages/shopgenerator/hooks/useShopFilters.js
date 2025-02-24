@@ -67,6 +67,7 @@ const updateFilterMap = (filterMap, key, state) => {
  * @property {Function} clearTraitSelections - Clear all trait filters
  */
 export const useShopFilters = (initialFilters = null) => {
+    // Initialize filter maps with empty Maps as default
     const [filterMaps, setFilterMaps] = useState(() => 
         Object.keys(FILTER_TYPES).reduce((acc, type) => ({
             ...acc,
@@ -74,13 +75,18 @@ export const useShopFilters = (initialFilters = null) => {
         }), {})
     );
 
+    // Get filter state with default IGNORE state
     const getFilterState = useCallback((filterType, key) => {
+        if (!filterType || !key) return SELECTION_STATES.IGNORE;
         const filterMap = filterMaps[filterType];
         if (!filterMap) return SELECTION_STATES.IGNORE;
         return filterMap.get(key) || SELECTION_STATES.IGNORE;
     }, [filterMaps]);
 
+    // Update filter with validation
     const updateFilter = useCallback((filterType, key) => {
+        if (!filterType || !key || !FILTER_TYPES[filterType]) return;
+        
         const currentState = getFilterState(filterType, key);
         const nextState = toggleState(currentState);
 
@@ -90,14 +96,19 @@ export const useShopFilters = (initialFilters = null) => {
         }));
     }, [getFilterState]);
 
+    // Clear filter with validation
     const clearFilter = useCallback((filterType) => {
+        if (!filterType || !FILTER_TYPES[filterType]) return;
+        
         setFilterMaps(prev => ({
             ...prev,
             [filterType]: new Map()
         }));
     }, []);
 
+    // Get filtered array with empty array default
     const getFilteredArray = useCallback((filterType, includeState) => {
+        if (!filterType || !includeState) return [];
         const filterMap = filterMaps[filterType];
         if (!filterMap) return [];
         
@@ -106,15 +117,34 @@ export const useShopFilters = (initialFilters = null) => {
             .map(([item]) => item);
     }, [filterMaps]);
 
-    // Create toggle callbacks
-    const toggleCategory = useCallback((key) => updateFilter(FILTER_TYPES.categories, key), [updateFilter]);
-    const toggleSubcategory = useCallback((key) => updateFilter(FILTER_TYPES.subcategories, key), [updateFilter]);
-    const toggleTrait = useCallback((key) => updateFilter(FILTER_TYPES.traits, key), [updateFilter]);
+    // Create toggle callbacks with validation
+    const toggleCategory = useCallback((key) => {
+        if (!key) return;
+        updateFilter(FILTER_TYPES.categories, key);
+    }, [updateFilter]);
 
-    // Create clear callbacks
-    const clearCategorySelections = useCallback(() => clearFilter(FILTER_TYPES.categories), [clearFilter]);
-    const clearSubcategorySelections = useCallback(() => clearFilter(FILTER_TYPES.subcategories), [clearFilter]);
-    const clearTraitSelections = useCallback(() => clearFilter(FILTER_TYPES.traits), [clearFilter]);
+    const toggleSubcategory = useCallback((key) => {
+        if (!key) return;
+        updateFilter(FILTER_TYPES.subcategories, key);
+    }, [updateFilter]);
+
+    const toggleTrait = useCallback((key) => {
+        if (!key) return;
+        updateFilter(FILTER_TYPES.traits, key);
+    }, [updateFilter]);
+
+    // Create clear callbacks with validation
+    const clearCategorySelections = useCallback(() => {
+        clearFilter(FILTER_TYPES.categories);
+    }, [clearFilter]);
+
+    const clearSubcategorySelections = useCallback(() => {
+        clearFilter(FILTER_TYPES.subcategories);
+    }, [clearFilter]);
+
+    const clearTraitSelections = useCallback(() => {
+        clearFilter(FILTER_TYPES.traits);
+    }, [clearFilter]);
 
     return {
         filterMaps,
