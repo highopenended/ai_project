@@ -15,7 +15,7 @@ import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
 import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
-import { useTabManagement, STORAGE_KEY, DEFAULT_TAB_STATE } from './hooks/useTabManagement';
+import { useTabManagement } from './hooks/useTabManagement';
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 // Debug configuration
@@ -98,6 +98,20 @@ const TAB_TYPES = {
     [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
     [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
     [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant
+};
+
+// Default tab configuration
+const DEFAULT_TAB_STATE = {
+    groups: [
+        [
+            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
+            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
+            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
+            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
+            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" }
+        ]
+    ],
+    widths: ["100%"]
 };
 
 function ShopGenerator() {
@@ -264,7 +278,6 @@ function ShopGenerator() {
         handleDropIndicatorChange,
         setTabGroups,
         setFlexBasis,
-        
     } = useTabManagement(DEFAULT_TAB_CONFIG, createTabElement);
 
     // Remove the old tabState and its effects

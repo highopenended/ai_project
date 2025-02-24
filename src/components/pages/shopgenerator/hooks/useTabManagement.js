@@ -1,28 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import React from 'react';
 
+// Constants for tab state management
+export const STORAGE_KEY = "tabGroupsState";
+
 // Debug configuration - import from a shared config if needed
 const DEBUG_CONFIG = {
     enabled: false,
     areas: {
         tabManagement: false
     }
-};
-
-// Constants for tab state management
-export const STORAGE_KEY = "tabGroupsState";
-
-export const DEFAULT_TAB_STATE = {
-    groups: [
-        [
-            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
-            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
-            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
-            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
-            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" }
-        ]
-    ],
-    widths: ["100%"]
 };
 
 // Debug logger
