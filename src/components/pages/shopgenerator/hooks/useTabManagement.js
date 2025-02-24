@@ -1,6 +1,15 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import React from 'react';
 
+// Constants for tab types that won't be minified
+export const TAB_TYPE_IDENTIFIERS = {
+    PARAMETERS: "Tab_Parameters",
+    INVENTORY: "Tab_InventoryTable",
+    CHOOSE_SHOP: "Tab_ChooseShop",
+    SHOP_DETAILS: "Tab_ShopDetails",
+    AI_ASSISTANT: "Tab_AiAssistant"
+};
+
 // Debug configuration - import from a shared config if needed
 const DEBUG_CONFIG = {
     enabled: false,

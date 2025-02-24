@@ -15,7 +15,7 @@ import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
 import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
-import { useTabManagement } from "./hooks/useTabManagement";
+import { useTabManagement, TAB_TYPE_IDENTIFIERS } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 // Debug configuration
@@ -83,15 +83,6 @@ const debug = (area, message, data = '') => {
  */
 
 const STORAGE_KEY = "tabGroupsState";
-
-// Constants for tab types that won't be minified
-const TAB_TYPE_IDENTIFIERS = {
-    PARAMETERS: "Tab_Parameters",
-    INVENTORY: "Tab_InventoryTable",
-    CHOOSE_SHOP: "Tab_ChooseShop",
-    SHOP_DETAILS: "Tab_ShopDetails",
-    AI_ASSISTANT: "Tab_AiAssistant"
-};
 
 // Add a mapping of valid tab types
 const TAB_TYPES = {
