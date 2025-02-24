@@ -101,7 +101,15 @@ export const useShopState = (initialState) => {
     };
 
     const handleBiasChange = (bias) => {
-        setShopState(prev => ({ ...prev, itemBias: bias }));
+        console.log("handleBiasChange called with:", {
+            newBias: bias,
+            prevState: shopState
+        });
+        setShopState(prev => {
+            const newState = { ...prev, itemBias: bias };
+            console.log("New state after bias update:", newState);
+            return newState;
+        });
     };
 
     const handleRarityDistributionChange = (distribution) => {
@@ -110,28 +118,39 @@ export const useShopState = (initialState) => {
 
     // Shop details handlers
     const handleShopDetailsChange = (e) => {
-        console.log("handleShopDetailsChange called");
+        console.log("handleShopDetailsChange called with:", {
+            name: e.target.name,
+            value: e.target.value,
+            prevState: shopState
+        });
+        
         const { name, value } = e.target;
         setShopState(prev => {
             const newState = { ...prev };
             
             switch (name) {
                 case "shopName":
+                    console.log("Updating shop name from", newState.name, "to", value);
                     newState.name = value;
                     break;
                 case "shopKeeperName":
+                    console.log("Updating keeper name from", newState.keeperName, "to", value);
                     newState.keeperName = value;
                     break;
                 case "type":
+                    console.log("Updating type from", newState.type, "to", value);
                     newState.type = value;
                     break;
                 case "location":
+                    console.log("Updating location from", newState.location, "to", value);
                     newState.location = value;
                     break;
                 case "shopDetails":
+                    console.log("Updating description from", newState.description, "to", value);
                     newState.description = value;
                     break;
                 case "shopKeeperDetails":
+                    console.log("Updating keeper description from", newState.keeperDescription, "to", value);
                     newState.keeperDescription = value;
                     break;
                 default:
@@ -140,6 +159,7 @@ export const useShopState = (initialState) => {
             }
             
             newState.dateLastEdited = new Date();
+            console.log("Final state update:", newState);
             return newState;
         });
     };

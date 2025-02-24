@@ -81,21 +81,41 @@ export const useShopFilters = (initialFilters = null) => {
     }, [filterMaps]);
 
     const updateFilter = useCallback((filterType, key) => {
+        console.log("updateFilter called with:", {
+            filterType,
+            key,
+            currentState: getFilterState(filterType, key),
+            currentFilterMaps: filterMaps
+        });
+        
         const currentState = getFilterState(filterType, key);
         const nextState = toggleState(currentState);
 
-        setFilterMaps(prev => ({
-            ...prev,
-            [filterType]: updateFilterMap(prev[filterType], key, nextState)
-        }));
-    }, [getFilterState]);
+        setFilterMaps(prev => {
+            const newFilterMaps = {
+                ...prev,
+                [filterType]: updateFilterMap(prev[filterType], key, nextState)
+            };
+            console.log("New filter maps after update:", newFilterMaps);
+            return newFilterMaps;
+        });
+    }, [getFilterState, filterMaps]);
 
     const clearFilter = useCallback((filterType) => {
-        setFilterMaps(prev => ({
-            ...prev,
-            [filterType]: new Map()
-        }));
-    }, []);
+        console.log("clearFilter called for:", {
+            filterType,
+            currentFilterMaps: filterMaps
+        });
+        
+        setFilterMaps(prev => {
+            const newFilterMaps = {
+                ...prev,
+                [filterType]: new Map()
+            };
+            console.log("New filter maps after clear:", newFilterMaps);
+            return newFilterMaps;
+        });
+    }, [filterMaps]);
 
     const getFilteredArray = useCallback((filterType, includeState) => {
         const filterMap = filterMaps[filterType];
