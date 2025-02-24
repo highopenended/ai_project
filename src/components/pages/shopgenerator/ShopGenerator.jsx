@@ -264,6 +264,7 @@ function ShopGenerator() {
         handleDropIndicatorChange,
         setTabGroups,
         setFlexBasis,
+        
     } = useTabManagement(DEFAULT_TAB_CONFIG, createTabElement);
 
     // Remove the old tabState and its effects
