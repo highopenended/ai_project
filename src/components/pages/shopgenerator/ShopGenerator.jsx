@@ -20,12 +20,12 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 // Debug configuration
 const DEBUG_CONFIG = {
-    enabled: false, // Master debug switch
+    enabled: true, // Master debug switch
     areas: {
-        initialization: false,
-        tabManagement: false,
-        stateSync: false,
-        tabCreation: false
+        initialization: true,
+        tabManagement: true,
+        stateSync: true,
+        tabCreation: true
     }
 };
 
@@ -128,6 +128,40 @@ function ShopGenerator() {
         handleRevertChanges,
     } = useShopState(defaultShopData);
 
+    // Snapshot and change tracking
+    const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
+        shopState,
+        filterMaps,
+        inventory,
+    });
+
+    // Shop generation
+    const { generateInventory, isGenerating } = useInventoryGeneration({
+        allItems,
+        shopState,
+        filterMaps,
+        getFilteredArray,
+        setInventory,
+        setShopSnapshot,
+    });    
+    
+    // Shop operations
+    const { handleLoadShopList, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
+        useShopOperations({
+            currentUser,
+            shopState,
+            setShopState,
+            filterMaps,
+            inventory,
+            setInventory,
+            setShopSnapshot,
+            setSavedShops,
+            setFilterMaps,
+            getFilteredArray,
+            hasUnsavedChanges,
+        });
+
+
     // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
 
@@ -153,6 +187,13 @@ function ShopGenerator() {
         let specificProps = {};
         switch (tabType) {
             case "Tab_Parameters":
+                debug('tabCreation', 'Creating Parameters tab with handlers:', {
+                    hasGoldHandler: !!handleGoldChange,
+                    hasLevelHandlers: !!handleLowestLevelChange && !!handleHighestLevelChange,
+                    hasRarityHandler: !!handleRarityDistributionChange,
+                    hasBiasHandler: !!handleBiasChange,
+                    hasFilterHandlers: !!toggleCategory && !!toggleSubcategory && !!toggleTrait
+                });
                 specificProps = {
                     currentGold: shopState.gold,
                     setCurrentGold: handleGoldChange,
@@ -176,34 +217,66 @@ function ShopGenerator() {
                 };
                 break;
             case "Tab_InventoryTable":
+                debug('tabCreation', 'Creating Inventory tab with handlers:', {
+                    hasGenerateHandler: !!generateInventory,
+                    isGenerating: isGenerating,
+                    itemCount: sortedItems?.length
+                });
                 specificProps = {
                     items: sortedItems || [],
                     sortConfig: sortConfig || [],
                     onSort: handleSort || (() => {}),
                     currentShopName: shopState.name || "",
-                    handleGenerateClick: () => {},
-                    isGenerating: false
+                    handleGenerateClick: generateInventory || (() => {
+                        debug('tabCreation', 'Generate click called but no handler available');
+                    }),
+                    isGenerating: isGenerating || false
                 };
                 break;
             case "Tab_ChooseShop":
+                debug('tabCreation', 'Creating Choose Shop tab with handlers:', {
+                    hasLoadHandler: !!handleLoadShop,
+                    hasNewHandler: !!handleNewShop,
+                    shopCount: savedShops?.length
+                });
                 specificProps = {
                     savedShops: savedShops || [],
-                    onLoadShop: () => {},
-                    onNewShop: () => {},
+                    onLoadShop: handleLoadShop || (() => {
+                        debug('tabCreation', 'Load shop called but no handler available');
+                    }),
+                    onNewShop: handleNewShop || (() => {
+                        debug('tabCreation', 'New shop called but no handler available');
+                    }),
                     currentShopId: shopState.id || null
                 };
                 break;
             case "Tab_ShopDetails":
+                debug('tabCreation', 'Creating Shop Details tab with handlers:', {
+                    hasDetailsHandler: !!handleShopDetailsChange,
+                    hasSaveHandler: !!handleSaveShop,
+                    hasCloneHandler: !!handleCloneShop,
+                    hasDeleteHandler: !!handleDeleteShop
+                });
                 specificProps = {
                     shopState: shopState || defaultShopData,
-                    onShopDetailsChange: () => {},
-                    onSaveShop: () => {},
-                    onCloneShop: () => {},
-                    onDeleteShop: () => {},
-                    onRevertChanges: () => {},
+                    onShopDetailsChange: handleShopDetailsChange || (() => {
+                        debug('tabCreation', 'Shop details change called but no handler available');
+                    }),
+                    onSaveShop: handleSaveShop || (() => {
+                        debug('tabCreation', 'Save shop called but no handler available');
+                    }),
+                    onCloneShop: handleCloneShop || (() => {
+                        debug('tabCreation', 'Clone shop called but no handler available');
+                    }),
+                    onDeleteShop: handleDeleteShop || (() => {
+                        debug('tabCreation', 'Delete shop called but no handler available');
+                    }),
+                    onRevertChanges: handleRevertChanges || (() => {
+                        debug('tabCreation', 'Revert changes called but no handler available');
+                    }),
                     savedShops: savedShops || [],
-                    hasUnsavedChanges: false,
-                    changes: { basic: {}, parameters: {}, hasInventoryChanged: false }
+                    hasUnsavedChanges: hasUnsavedChanges || false,
+                    changes: getChangedFields() || { basic: {}, parameters: {}, hasInventoryChanged: false }
                 };
                 break;
             case "Tab_AiAssistant":
@@ -341,38 +414,7 @@ function ShopGenerator() {
         hasItems: !!allItems
     });
 
-    // Snapshot and change tracking
-    const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
-        shopState,
-        filterMaps,
-        inventory,
-    });
 
-    // Shop operations
-    const { handleLoadShopList, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
-        useShopOperations({
-            currentUser,
-            shopState,
-            setShopState,
-            filterMaps,
-            inventory,
-            setInventory,
-            setShopSnapshot,
-            setSavedShops,
-            setFilterMaps,
-            getFilteredArray,
-            hasUnsavedChanges,
-        });
-
-    // Shop generation
-    const { generateInventory, isGenerating } = useInventoryGeneration({
-        allItems,
-        shopState,
-        filterMaps,
-        getFilteredArray,
-        setInventory,
-        setShopSnapshot,
-    });
 
     const handleGenerateClick = () => {
         generateInventory();
