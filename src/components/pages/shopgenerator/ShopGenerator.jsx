@@ -279,7 +279,7 @@ function ShopGenerator() {
     };
 
     // Initialize tab state with pre-computed config and/or saved state
-    const [tabState, setTabState] = useState(() => {
+    const getInitialTabState = () => {
         try {
             console.log('[Tab State] Loading initial tab state');
             const savedState = localStorage.getItem(STORAGE_KEY);
@@ -330,7 +330,9 @@ function ShopGenerator() {
             console.error('[Tab State] Error loading saved state:', error);
             return DEFAULT_TAB_CONFIG;
         }
-    });
+    };
+
+    const initialTabState = getInitialTabState();
 
     debug('initialization', '📊 Initial hooks loaded:', {
         authLoading,
@@ -445,17 +447,8 @@ function ShopGenerator() {
         handleResize,
         handleDragStart,
         handleDragEnd,
-        handleDropIndicatorChange,
-        setTabGroups,
-        setFlexBasis,
-    } = useTabManagement(tabState.groups, tabState.widths);
-
-    // Sync tabState changes to tabGroups
-    useEffect(() => {
-        debug('stateSync', 'Syncing tab state to groups:', tabState);
-        setTabGroups(tabState.groups);
-        setFlexBasis(tabState.widths);
-    }, [tabState]);
+        handleDropIndicatorChange
+    } = useTabManagement(initialTabState.groups, initialTabState.widths);
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
