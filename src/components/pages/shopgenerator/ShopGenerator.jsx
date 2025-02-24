@@ -18,6 +18,7 @@ import { useShopSnapshot } from "./hooks/useShopSnapshot";
 import { useTabManagement, TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
+
 // Debug configuration
 const DEBUG_CONFIG = {
     enabled: true, // Master debug switch
@@ -95,7 +96,7 @@ const TAB_TYPES = {
 
 function ShopGenerator() {
     debug('initialization', 'Component render start');
-    const { currentUser, isLoading: authLoading } = useAuth();
+    const { currentUser, loading: authLoading } = useAuth();
     const { items: allItems, categoryData, loading: itemsLoading, error: itemsError } = useItemData();
     const [savedShops, setSavedShops] = useState([]);
     const [inventory, setInventory] = useState([]);
@@ -167,8 +168,16 @@ function ShopGenerator() {
 
     // Helper to create a proper React element for a tab with type checking
     const createTabElement = (tabType, key) => {
+
+        console.log("---------------------------------authLoading: ", authLoading);
+
         debug('tabCreation', 'Creating tab element:', { tabType, key });
         
+        if(authLoading) {
+            debug('tabCreation', 'Auth is loading, skipping tab creation');
+            return null;
+        }
+
         // Validate tab type is one of our known types
         if (!tabType || !TAB_TYPES[tabType]) {
             debug('tabCreation', 'Invalid or unknown tab type:', tabType);
