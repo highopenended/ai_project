@@ -9,6 +9,22 @@ const DEBUG_CONFIG = {
     }
 };
 
+// Constants for tab state management
+export const STORAGE_KEY = "tabGroupsState";
+
+export const DEFAULT_TAB_STATE = {
+    groups: [
+        [
+            { type: "Tab_Parameters", key: "Tab_Parameters-0" },
+            { type: "Tab_InventoryTable", key: "Tab_InventoryTable-0" },
+            { type: "Tab_ChooseShop", key: "Tab_ChooseShop-0" },
+            { type: "Tab_ShopDetails", key: "Tab_ShopDetails-0" },
+            { type: "Tab_AiAssistant", key: "Tab_AiAssistant-0" }
+        ]
+    ],
+    widths: ["100%"]
+};
+
 // Debug logger
 const debug = (area, message, data = '') => {
     if (!DEBUG_CONFIG.enabled || !DEBUG_CONFIG.areas[area]) return;
@@ -50,25 +66,120 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
  * including inventory management, shop details, and generation settings. Handles tab state,
  * content rendering, and navigation logic.
  * 
- * @param {Object} params - The parameters for tab management
- * @param {Object} params.shopState - Current shop state
- * @param {Function} params.setShopState - Function to update shop state
- * @param {Object} params.filters - Current filter states
- * @param {Array} params.inventory - Current shop inventory
- * @param {Function} params.setInventory - Function to update inventory
- * @param {Function} params.handleSort - Function to handle inventory sorting
- * @param {Object} params.sortConfig - Current sort configuration
- * @param {boolean} params.isGenerating - Whether inventory generation is in progress
- * 
+ * @param {Object} defaultConfig - The default tab configuration
+ * @param {string} storageKey - Key for localStorage persistence
+ * @param {Function} createTabElement - Function to create a tab element with proper props
  * @returns {Object} Tab management handlers and state
  * @property {string} activeTab - Currently active tab
  * @property {Function} setActiveTab - Function to change active tab
  * @property {Object} tabContent - Content to render for current tab
  * @property {Function} handleTabChange - Handler for tab change events
  */
-export const useTabManagement = (initialGroups, initialWidths) => {
-    const [tabGroups, setTabGroups] = useState(initialGroups);
-    const [flexBasis, setFlexBasis] = useState(initialWidths);
+export const useTabManagement = (defaultConfig, storageKey, createTabElement) => {
+    // Internal helper to transform saved configuration into React elements
+    const createTabsFromConfig = useCallback((config) => {
+        debug('tabCreation', 'Creating tabs from config:', config);
+        
+        // Process each group
+        const processedGroups = config.groups.map(group => {
+            if (!Array.isArray(group)) {
+                return [];
+            }
+
+            return group.map(tab => {
+                if (!tab.type) {
+                    return null;
+                }
+                return createTabElement(tab.type, tab.key);
+            }).filter(Boolean);
+        }).filter(group => group.length > 0);
+
+        // If no valid groups were created, use default config
+        if (processedGroups.length === 0) {
+            return defaultConfig;
+        }
+
+        // Ensure we have the correct number of widths
+        let widths = config.widths;
+        if (widths.length !== processedGroups.length) {
+            widths = processedGroups.map((_, i) => 
+                i === processedGroups.length - 1 ? '100%' : `${100 / processedGroups.length}%`
+            );
+        }
+
+        return {
+            groups: processedGroups,
+            widths: widths
+        };
+    }, [defaultConfig, createTabElement]);
+
+    // Load initial state from localStorage or use default
+    const [tabGroups, setTabGroups] = useState(() => {
+        try {
+            debug('initialization', 'Loading saved tab state');
+            const savedState = localStorage.getItem(storageKey);
+            
+            if (!savedState) {
+                return defaultConfig.groups;
+            }
+
+            const parsed = JSON.parse(savedState);
+            if (!parsed || !Array.isArray(parsed.groups)) {
+                return defaultConfig.groups;
+            }
+
+            const newState = createTabsFromConfig(parsed);
+            return newState.groups;
+        } catch (error) {
+            debug('initialization', 'Error loading saved state:', error);
+            return defaultConfig.groups;
+        }
+    });
+
+    const [flexBasis, setFlexBasis] = useState(() => {
+        try {
+            const savedState = localStorage.getItem(storageKey);
+            if (!savedState) {
+                return defaultConfig.widths;
+            }
+
+            const parsed = JSON.parse(savedState);
+            if (!parsed || !Array.isArray(parsed.widths)) {
+                return defaultConfig.widths;
+            }
+
+            const newState = createTabsFromConfig(parsed);
+            return newState.widths;
+        } catch (error) {
+            debug('initialization', 'Error loading flexBasis from localStorage:', error);
+            return defaultConfig.widths;
+        }
+    });
+
+    // Save state whenever tab groups or widths change
+    useEffect(() => {
+        const saveState = () => {
+            debug('stateSync', 'Saving tab state');
+            
+            // Extract the original tab type identifiers
+            const groupsData = tabGroups.map(group =>
+                group.map(tab => ({
+                    type: tab.type.name,
+                    key: tab.key
+                }))
+            );
+
+            const stateToSave = {
+                groups: groupsData,
+                widths: flexBasis,
+            };
+
+            localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+        };
+
+        saveState();
+    }, [tabGroups, flexBasis, storageKey]);
+
     const [dragState, setDragState] = useState({
         isResizing: false,
         draggedTab: null,

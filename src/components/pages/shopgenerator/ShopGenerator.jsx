@@ -15,7 +15,7 @@ import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
 import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
-import { useTabManagement } from "./hooks/useTabManagement";
+import { useTabManagement, STORAGE_KEY, DEFAULT_TAB_STATE } from './hooks/useTabManagement';
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 
 // Debug configuration
@@ -82,8 +82,6 @@ const debug = (area, message, data = '') => {
  * @component
  */
 
-const STORAGE_KEY = "tabGroupsState";
-
 // Constants for tab types that won't be minified
 const TAB_TYPE_IDENTIFIERS = {
     PARAMETERS: "Tab_Parameters",
@@ -100,19 +98,6 @@ const TAB_TYPES = {
     [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
     [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
     [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant
-};
-
-const DEFAULT_TAB_STATE = {
-    groups: [
-        [
-            { type: TAB_TYPE_IDENTIFIERS.PARAMETERS, key: "Tab_Parameters-0" },
-            { type: TAB_TYPE_IDENTIFIERS.INVENTORY, key: "Tab_InventoryTable-0" },
-            { type: TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP, key: "Tab_ChooseShop-0" },
-            { type: TAB_TYPE_IDENTIFIERS.SHOP_DETAILS, key: "Tab_ShopDetails-0" },
-            { type: TAB_TYPE_IDENTIFIERS.AI_ASSISTANT, key: "Tab_AiAssistant-0" }
-        ]
-    ],
-    widths: ["100%"]
 };
 
 function ShopGenerator() {
@@ -262,97 +247,26 @@ function ShopGenerator() {
         };
     })();
 
-    // Transform saved configuration into React elements
-    const createTabsFromConfig = (config) => {
-        debug('tabCreation', 'Creating tabs from config:', config);
-        
-        // Process each group
-        const processedGroups = config.groups.map(group => {
-            if (!Array.isArray(group)) {
-                return [];
-            }
+    // Tab management with built-in persistence
+    const {
+        tabGroups,
+        flexBasis,
+        isResizing,
+        draggedTab,
+        draggedTabIndex,
+        sourceGroupIndex,
+        dropIndicators,
+        handleTabMove,
+        handleTabSplit,
+        handleResize,
+        handleDragStart,
+        handleDragEnd,
+        handleDropIndicatorChange,
+        setTabGroups,
+        setFlexBasis,
+    } = useTabManagement(DEFAULT_TAB_CONFIG, STORAGE_KEY, createTabElement);
 
-            return group.map(tab => {
-                const tabType = tab.type;
-                if (!TAB_TYPES[tabType]) {
-                    return null;
-                }
-                return createTabElement(tabType, tab.key);
-            }).filter(Boolean);
-        }).filter(group => group.length > 0);
-
-        // If no valid groups were created, use default config
-        if (processedGroups.length === 0) {
-            return DEFAULT_TAB_CONFIG;
-        }
-
-        // Ensure we have the correct number of widths
-        let widths = config.widths;
-        if (widths.length !== processedGroups.length) {
-            widths = processedGroups.map((_, i) => 
-                i === processedGroups.length - 1 ? '100%' : `${100 / processedGroups.length}%`
-            );
-        }
-
-        return {
-            groups: processedGroups,
-            widths: widths
-        };
-    };
-
-    // Initialize tab state with pre-computed config and/or saved state
-    const [tabState, setTabState] = useState(() => {
-        try {
-            console.log('[Tab State] Loading initial tab state');
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            console.log('[Tab State] Raw saved state:', savedState);
-            
-            if (!savedState) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            const parsed = JSON.parse(savedState);
-
-            // Basic structure validation
-            if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            // Validate group structure
-            const isValidStructure = parsed.groups.every(group =>
-                Array.isArray(group) && group.every(tab =>
-                    tab && typeof tab === 'object' && 
-                    typeof tab.type === 'string' && 
-                    typeof tab.key === 'string'
-                )
-            );
-
-            if (!isValidStructure) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            // Validate tab types
-            const hasValidTabs = parsed.groups.every(group =>
-                group.every(tab => Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type))
-            );
-
-            if (!hasValidTabs) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            // If we get here and have valid saved state, create tabs from it
-            const newState = createTabsFromConfig(parsed);
-            
-            if (newState.groups.length === 0) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            return newState;
-        } catch (error) {
-            console.error('[Tab State] Error loading saved state:', error);
-            return DEFAULT_TAB_CONFIG;
-        }
-    });
+    // Remove the old tabState and its effects
 
     debug('initialization', '📊 Initial hooks loaded:', {
         authLoading,
@@ -453,88 +367,11 @@ function ShopGenerator() {
         initializeState();
     }, [authLoading, itemsLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop, filterMaps, setFilterMaps]);
 
-    // Tab management - now using tabState instead of loadInitialState
-    const {
-        tabGroups,
-        flexBasis,
-        isResizing,
-        draggedTab,
-        draggedTabIndex,
-        sourceGroupIndex,
-        dropIndicators,
-        handleTabMove,
-        handleTabSplit,
-        handleResize,
-        handleDragStart,
-        handleDragEnd,
-        handleDropIndicatorChange,
-        setTabGroups,
-        setFlexBasis,
-    } = useTabManagement(tabState.groups, tabState.widths);
-
     // Sync tabState changes to tabGroups
     useEffect(() => {
-        debug('stateSync', 'Syncing tab state to groups:', tabState);
-        setTabGroups(tabState.groups);
-        setFlexBasis(tabState.widths);
-    }, [tabState]);
-
-    // Save state whenever tab groups or widths change
-    useEffect(() => {
-        const saveState = () => {
-            debug('stateSync', 'Saving tab state, current groups:', tabGroups);
-
-            // Extract the original tab type identifiers before they become React elements
-            const groupsData = tabGroups.map(group =>
-                group.map(tab => {
-                    // Find the matching tab type by comparing the actual component or its display name
-                    const matchingType = Object.keys(TAB_TYPES).find(type => 
-                        TAB_TYPES[type] === tab.type || // Check direct component match
-                        TAB_TYPES[type].displayName === tab.type.displayName // Check display name match
-                    );
-
-                    if (!matchingType) {
-                        debug('stateSync', 'Could not find matching tab type for:', tab);
-                    }
-
-                    return {
-                        type: matchingType || tab.type.name,
-                        key: tab.key
-                    };
-                })
-            );
-
-            debug('stateSync', 'Processed tab data for saving:', groupsData);
-
-            // Validate all types are known identifiers
-            const hasValidTypes = groupsData.every(group =>
-                group.every(tab => {
-                    const isValid = Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type);
-                    if (!isValid) {
-                        debug('stateSync', 'Invalid tab type found:', {
-                            type: tab.type,
-                            validTypes: Object.values(TAB_TYPE_IDENTIFIERS)
-                        });
-                    }
-                    return isValid;
-                })
-            );
-
-            if (!hasValidTypes) {
-                debug('stateSync', 'Attempting to save invalid tab types, skipping save');
-                return;
-            }
-
-            const stateToSave = {
-                groups: groupsData,
-                widths: flexBasis,
-            };
-
-            debug('stateSync', 'Saving state to localStorage:', stateToSave);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-        };
-
-        saveState();
+        debug('stateSync', 'Syncing tab state to groups:', tabGroups);
+        setTabGroups(tabGroups);
+        setFlexBasis(flexBasis);
     }, [tabGroups, flexBasis]);
 
     // Show loading state while initializing
