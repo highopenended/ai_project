@@ -18,6 +18,7 @@ import { useTabManagement } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
 import { useTabRegistry } from './hooks/useTabRegistry';
+import { loadShopData } from "./utils/firebaseShopUtils";
 
 
 // Debug configuration
@@ -272,6 +273,16 @@ function ShopGenerator() {
                 if (currentUser && !savedShops.length) {
                     debug("initialization", `[Init ${initId}] 📥 Loading shop list for user`);
                     await handleLoadShopList();
+                    
+                    // After loading shop list, load the first shop if available
+                    const loadedShops = await loadShopData(currentUser.uid);
+                    if (loadedShops && loadedShops.length > 0) {
+                        debug("initialization", `[Init ${initId}] 📥 Loading first shop`);
+                        await handleLoadShop(loadedShops[0]);
+                    } else {
+                        debug("initialization", `[Init ${initId}] ➕ No saved shops, creating new one`);
+                        await handleNewShop();
+                    }
                 }
                 // Only create new shop if we don't have one and aren't logged in
                 else if (!shopState?.id && !currentUser) {
@@ -296,6 +307,7 @@ function ShopGenerator() {
         shopState?.id,
         savedShops,
         handleLoadShopList,
+        handleLoadShop,
         handleNewShop,
         filterMaps,
         setFilterMaps,

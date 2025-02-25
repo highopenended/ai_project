@@ -28,19 +28,18 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
         });
     };
 
-    // Check if current shop is unsaved (has ID but not in savedShops)
-    const isUnsavedNew = currentShopId && !savedShops.find(shop => shop.id === currentShopId);
+    // Only show "New Unsaved Shop" if:
+    // 1) There are no saved shops, or
+    // 2) The current shop ID starts with "shop_" (indicating it's newly created)
+    const showNewUnsavedShop = savedShops.length === 0 || 
+        (currentShopId?.startsWith('shop_') && !savedShops.find(shop => shop.id === currentShopId));
 
-
-    console.log("isUnsavedNew: ", isUnsavedNew);
-    console.log("currentShopId: ", currentShopId);
-    console.log("savedShops: ", savedShops);
     return (
         <div className="saved-shops-list-container">
             <div className="saved-shops-title">Saved Shops</div>
             <Scrollbar style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 <ul className="shop-list">
-                    {isUnsavedNew && (
+                    {showNewUnsavedShop && (
                         <li className="shop-item shop-item-current shop-item-unsaved">
                             <span className="shop-item-name">
                                 New Unsaved Shop
@@ -66,7 +65,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
                             </span>
                         </li>
                     ))}
-                    {savedShops.length === 0 && !isUnsavedNew && (
+                    {savedShops.length === 0 && !showNewUnsavedShop && (
                         <li className="shop-item" style={{ justifyContent: 'center', cursor: 'default' }}>
                             <span className="shop-item-name" style={{ opacity: 0.7 }}>
                                 No saved shops

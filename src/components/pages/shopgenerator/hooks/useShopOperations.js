@@ -247,6 +247,11 @@ export const useShopOperations = ({
             const cleanShopState = { ...shopState };
             delete cleanShopState.filters;
 
+            // Ensure we have a valid ID before saving
+            if (!cleanShopState.id || cleanShopState.id === '') {
+                cleanShopState.id = generateShopId();
+            }
+
             // Ensure we're not passing any Map objects to Firebase
             const savedShopData = {
                 ...cleanShopState,
@@ -297,8 +302,22 @@ export const useShopOperations = ({
         try {
             const userId = currentUser.uid;
             await deleteShopData(userId, shopState.id);
+            
+            // Reload the shop list
             await handleLoadShopList();
-            alert("Shop deleted successfully!");
+            
+            // Get the updated list of shops
+            const loadedShops = await loadShopData(userId);
+            
+            // If there are remaining shops, load the first one
+            if (loadedShops && loadedShops.length > 0) {
+                console.log("deletion", "Loading first available shop after deletion");
+                await handleLoadShop(loadedShops[0]);
+            } else {
+                // If no shops remain, create a new one
+                console.log("deletion", "No shops remain, creating new one");
+                await handleNewShop();
+            }
         } catch (error) {
             console.error("Error deleting shop:", error);
             alert("Error deleting shop. Please try again.");
