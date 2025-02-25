@@ -224,7 +224,6 @@ function ShopGenerator() {
 
     // Memoize the createTabElement function
     const createTabElement = useCallback((tabType, key) => {
-        debug('tabCreation', 'Creating tab element:', { tabType, key });
         
         if(authLoading) {
             debug('tabCreation', 'Auth is loading, skipping tab creation');
