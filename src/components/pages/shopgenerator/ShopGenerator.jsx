@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useItemData } from "../../../context/itemData";
@@ -8,7 +8,6 @@ import Tab_Parameters from "./tabs/tab_parameters/Tab_Parameters";
 import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
 import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
-import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import { useSorting } from "./utils/sortingUtils";
 import defaultShopData from "./utils/shopData";
 import { useShopOperations } from "./hooks/useShopOperations";
@@ -69,7 +68,6 @@ const debug = (area, message, data = '') => {
  *      - Inventory Table: View and generate inventory
  *      - Choose Shop: Load and manage saved shops
  *      - Shop Details: Edit shop information
- *      - AI Assistant: AI-powered shop assistance
  *
  * State Management:
  * - Uses custom hooks for specific features:
@@ -91,7 +89,6 @@ const TAB_TYPES = {
     [TAB_TYPE_IDENTIFIERS.INVENTORY]: Tab_InventoryTable,
     [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
     [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
-    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant
 };
 
 function ShopGenerator() {
@@ -166,9 +163,105 @@ function ShopGenerator() {
     // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
 
-    // Helper to create a proper React element for a tab with type checking
-    const createTabElement = (tabType, key) => {
+    // Memoize prop generators for each tab type
+    const getParametersTabProps = useCallback((baseProps) => ({
+        ...baseProps,
+        currentGold: shopState.gold,
+        setCurrentGold: handleGoldChange,
+        lowestLevel: shopState.levelRange.min,
+        setLowestLevel: handleLowestLevelChange,
+        highestLevel: shopState.levelRange.max,
+        setHighestLevel: handleHighestLevelChange,
+        rarityDistribution: shopState.rarityDistribution,
+        setRarityDistribution: handleRarityDistributionChange,
+        itemBias: shopState.itemBias,
+        setItemBias: handleBiasChange,
+        categoryData: categoryData || {},
+        categoryStates: filterMaps?.categories || new Map(),
+        getFilterState: getFilterState || (() => {}),
+        toggleCategory: toggleCategory || (() => {}),
+        toggleSubcategory: toggleSubcategory || (() => {}),
+        toggleTrait: toggleTrait || (() => {}),
+        clearCategorySelections: clearCategorySelections || (() => {}),
+        clearSubcategorySelections: clearSubcategorySelections || (() => {}),
+        clearTraitSelections: clearTraitSelections || (() => {})
+    }), [
+        shopState.gold,
+        shopState.levelRange.min,
+        shopState.levelRange.max,
+        shopState.rarityDistribution,
+        shopState.itemBias,
+        categoryData,
+        filterMaps?.categories,
+        handleGoldChange,
+        handleLowestLevelChange,
+        handleHighestLevelChange,
+        handleRarityDistributionChange,
+        handleBiasChange,
+        getFilterState,
+        toggleCategory,
+        toggleSubcategory,
+        toggleTrait,
+        clearCategorySelections,
+        clearSubcategorySelections,
+        clearTraitSelections
+    ]);
 
+    const getInventoryTabProps = useCallback((baseProps) => ({
+        ...baseProps,
+        items: sortedItems || [],
+        sortConfig: sortConfig || [],
+        onSort: handleSort || (() => {}),
+        currentShopName: shopState.name || "",
+        handleGenerateClick: generateInventory || (() => {}),
+        isGenerating: isGenerating || false
+    }), [
+        sortedItems,
+        sortConfig,
+        handleSort,
+        shopState.name,
+        generateInventory,
+        isGenerating
+    ]);
+
+    const getShopDetailsTabProps = useCallback((baseProps) => ({
+        ...baseProps,
+        shopState: shopState || defaultShopData,
+        onShopDetailsChange: handleShopDetailsChange || (() => {}),
+        onSaveShop: handleSaveShop || (() => {}),
+        onCloneShop: handleCloneShop || (() => {}),
+        onDeleteShop: handleDeleteShop || (() => {}),
+        onRevertChanges: handleRevertChanges || (() => {}),
+        savedShops: savedShops || [],
+        hasUnsavedChanges: hasUnsavedChanges || false,
+        changes: getChangedFields() || { basic: {}, parameters: {}, hasInventoryChanged: false }
+    }), [
+        shopState,
+        handleShopDetailsChange,
+        handleSaveShop,
+        handleCloneShop,
+        handleDeleteShop,
+        handleRevertChanges,
+        savedShops,
+        hasUnsavedChanges,
+        getChangedFields
+    ]);
+
+    const getChooseShopTabProps = useCallback((baseProps) => ({
+        ...baseProps,
+        savedShops: savedShops || [],
+        onLoadShop: handleLoadShop || (() => {}),
+        onNewShop: handleNewShop || (() => {}),
+        currentShopId: shopState.id || null
+    }), [
+        savedShops,
+        handleLoadShop,
+        handleNewShop,
+        shopState.id
+    ]);
+
+    // Memoize the createTabElement function
+    const createTabElement = useCallback((tabType, key) => {
         debug('tabCreation', 'Creating tab element:', { tabType, key });
         
         if(authLoading) {
@@ -191,121 +284,25 @@ function ShopGenerator() {
         };
 
         // Add specific props based on tab type
-        let specificProps = {};
         switch (tabType) {
             case "Tab_Parameters":
-                debug('tabCreation', 'Creating Parameters tab with handlers:', {
-                    hasGoldHandler: !!handleGoldChange,
-                    hasLevelHandlers: !!handleLowestLevelChange && !!handleHighestLevelChange,
-                    hasRarityHandler: !!handleRarityDistributionChange,
-                    hasBiasHandler: !!handleBiasChange,
-                    hasFilterHandlers: !!toggleCategory && !!toggleSubcategory && !!toggleTrait
-                });
-                specificProps = {
-                    currentGold: shopState.gold,
-                    setCurrentGold: handleGoldChange,
-                    lowestLevel: shopState.levelRange.min,
-                    setLowestLevel: handleLowestLevelChange,
-                    highestLevel: shopState.levelRange.max,
-                    setHighestLevel: handleHighestLevelChange,
-                    rarityDistribution: shopState.rarityDistribution,
-                    setRarityDistribution: handleRarityDistributionChange,
-                    itemBias: shopState.itemBias,
-                    setItemBias: handleBiasChange,
-                    categoryData: categoryData || {},
-                    categoryStates: filterMaps?.categories || new Map(),
-                    getFilterState: getFilterState || (() => {}),
-                    toggleCategory: toggleCategory || (() => {}),
-                    toggleSubcategory: toggleSubcategory || (() => {}),
-                    toggleTrait: toggleTrait || (() => {}),
-                    clearCategorySelections: clearCategorySelections || (() => {}),
-                    clearSubcategorySelections: clearSubcategorySelections || (() => {}),
-                    clearTraitSelections: clearTraitSelections || (() => {})
-                };
-                break;
+                return React.createElement(TabComponent, getParametersTabProps(baseProps));
             case "Tab_InventoryTable":
-                debug('tabCreation', 'Creating Inventory tab with handlers:', {
-                    hasGenerateHandler: !!generateInventory,
-                    isGenerating: isGenerating,
-                    itemCount: sortedItems?.length
-                });
-                specificProps = {
-                    items: sortedItems || [],
-                    sortConfig: sortConfig || [],
-                    onSort: handleSort || (() => {}),
-                    currentShopName: shopState.name || "",
-                    handleGenerateClick: generateInventory || (() => {
-                        debug('tabCreation', 'Generate click called but no handler available');
-                    }),
-                    isGenerating: isGenerating || false
-                };
-                break;
-            case "Tab_ChooseShop":
-                debug('tabCreation', 'Creating Choose Shop tab with handlers:', {
-                    hasLoadHandler: !!handleLoadShop,
-                    hasNewHandler: !!handleNewShop,
-                    shopCount: savedShops?.length
-                });
-                specificProps = {
-                    savedShops: savedShops || [],
-                    onLoadShop: handleLoadShop || (() => {
-                        debug('tabCreation', 'Load shop called but no handler available');
-                    }),
-                    onNewShop: handleNewShop || (() => {
-                        debug('tabCreation', 'New shop called but no handler available');
-                    }),
-                    currentShopId: shopState.id || null
-                };
-                break;
+                return React.createElement(TabComponent, getInventoryTabProps(baseProps));
             case "Tab_ShopDetails":
-                // debug('tabCreation', 'Creating Shop Details tab with handlers:', {
-                //     hasDetailsHandler: !!handleShopDetailsChange,
-                //     hasSaveHandler: !!handleSaveShop,
-                //     hasCloneHandler: !!handleCloneShop,
-                //     hasDeleteHandler: !!handleDeleteShop
-                // });
-                specificProps = {
-                    shopState: shopState || defaultShopData,
-                    onShopDetailsChange: handleShopDetailsChange || (() => {
-                        debug('tabCreation', 'Shop details change called but no handler available');
-                    }),
-                    onSaveShop: handleSaveShop || (() => {
-                        debug('tabCreation', 'Save shop called but no handler available');
-                    }),
-                    onCloneShop: handleCloneShop || (() => {
-                        debug('tabCreation', 'Clone shop called but no handler available');
-                    }),
-                    onDeleteShop: handleDeleteShop || (() => {
-                        debug('tabCreation', 'Delete shop called but no handler available');
-                    }),
-                    onRevertChanges: handleRevertChanges || (() => {
-                        debug('tabCreation', 'Revert changes called but no handler available');
-                    }),
-                    savedShops: savedShops || [],
-                    hasUnsavedChanges: hasUnsavedChanges || false,
-                    changes: getChangedFields() || { basic: {}, parameters: {}, hasInventoryChanged: false }
-                };
-                break;
-            case "Tab_AiAssistant":
-                specificProps = {
-                    currentShop: {
-                        id: shopState.id || "",
-                        name: shopState.name || "",
-                        keeperName: shopState.keeperName || "",
-                        type: shopState.type || "",
-                        location: shopState.location || "",
-                        description: shopState.description || "",
-                        keeperDescription: shopState.keeperDescription || "",
-                        dateCreated: shopState.dateCreated || new Date(),
-                        dateLastEdited: shopState.dateLastEdited || new Date()
-                    },
-                    onAiAssistantChange: () => {}
-                };
-                break;
+                return React.createElement(TabComponent, getShopDetailsTabProps(baseProps));
+            case "Tab_ChooseShop":
+                return React.createElement(TabComponent, getChooseShopTabProps(baseProps));
+            default:
+                return React.createElement(TabComponent, baseProps);
         }
-
-        return React.createElement(TabComponent, { ...baseProps, ...specificProps });
-    };
+    }, [
+        authLoading,
+        getParametersTabProps,
+        getInventoryTabProps,
+        getShopDetailsTabProps,
+        getChooseShopTabProps,
+    ]);
 
     // Pre-compute the default tab configuration
     const DEFAULT_TAB_CONFIG = (() => {
@@ -575,10 +572,6 @@ function ShopGenerator() {
 
     debug('initialization', '✅ Rendering main component');
 
-    const handleAiAssistantChange = (newState) => {
-        debug('initialization', "Ai Assistant state updated:", newState);
-    };
-
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>
             {tabGroups.map((tabs, index) => (
@@ -640,21 +633,6 @@ function ShopGenerator() {
                                     onLoadShop: handleLoadShop,
                                     onNewShop: handleNewShop,
                                     currentShopId: shopState.id,
-                                });
-                            case "Tab_AiAssistant":
-                                return React.cloneElement(tab, {
-                                    currentShop: {
-                                        id: shopState.id,
-                                        name: shopState.name,
-                                        keeperName: shopState.keeperName,
-                                        type: shopState.type,
-                                        location: shopState.location,
-                                        description: shopState.description,
-                                        keeperDescription: shopState.keeperDescription,
-                                        dateCreated: shopState.dateCreated,
-                                        dateLastEdited: shopState.dateLastEdited,
-                                    },
-                                    onAiAssistantChange: handleAiAssistantChange,
                                 });
                             default:
                                 return tab;
