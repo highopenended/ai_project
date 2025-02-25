@@ -14,8 +14,9 @@ import { useShopOperations } from "./hooks/useShopOperations";
 import { useShopState } from "./hooks/useShopState";
 import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
-import { useTabManagement, TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./hooks/useTabManagement";
+import { useTabManagement } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
+import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
 
 
 // Debug configuration
