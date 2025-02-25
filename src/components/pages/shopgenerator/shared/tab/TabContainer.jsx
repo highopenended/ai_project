@@ -131,8 +131,16 @@ function TabContainer({
     const handleDragStart = (e, tab, index) => {
         // Safety check for tab structure
         if (!tab || !tab.type) {
+            console.log('[DragStart] Invalid tab structure:', tab);
             return;
         }
+
+        console.log('[DragStart] Starting drag operation:', {
+            tabType: tab.type.name,
+            index,
+            groupIndex,
+            component: tab.type.component?.name || 'unknown'
+        });
 
         const tabElements = Array.from(e.currentTarget.parentElement.children);
         originalPositions.current = tabElements.map(tab => {
@@ -147,15 +155,34 @@ function TabContainer({
         
         onDragStart(tab, index);
         
-        // Set a flag to indicate we're dragging a tab
-        e.dataTransfer.setData('application/x-tab', 'true');
-        e.dataTransfer.setData('text/plain', index.toString());
-        e.dataTransfer.setData('groupIndex', groupIndex.toString());
-        e.dataTransfer.setData('tabInfo', JSON.stringify({
+        // Enhanced data transfer for production mode
+        const tabData = {
             type: tab.type.name,
             index: index,
-            key: tab.key
-        }));
+            key: tab.key,
+            groupIndex: groupIndex,
+            component: tab.type.component?.name || 'unknown',
+            minWidth: tab.type.minWidth || 200
+        };
+
+        console.log('[DragStart] Setting drag data:', tabData);
+        
+        try {
+            // Store reference globally for production mode
+            window.__lastDraggedTab = tabData;
+            
+            // Set data in multiple formats for redundancy
+            e.dataTransfer.setData('application/x-tab', 'true');
+            e.dataTransfer.setData('text/plain', index.toString());
+            e.dataTransfer.setData('groupIndex', groupIndex.toString());
+            e.dataTransfer.setData('tabInfo', JSON.stringify(tabData));
+            
+            console.log('[DragStart] Successfully set drag data');
+        } catch (err) {
+            console.warn('[DragStart] Error setting drag data:', err);
+            // Ensure global reference is set even if dataTransfer fails
+            window.__lastDraggedTab = tabData;
+        }
     };
 
     /**
@@ -266,31 +293,58 @@ function TabContainer({
 
     const handleDrop = (e) => {
         e.preventDefault();
+        console.log('[Drop] Starting drop operation');
         
-        // Check if this is a valid tab drop by verifying all required data is present
         try {
-            const sourceIndex = e.dataTransfer.getData('text/plain');
-            const sourceGroupIndex = e.dataTransfer.getData('groupIndex');
-            const tabInfoStr = e.dataTransfer.getData('tabInfo');
+            // Try to get data from dataTransfer first
+            const sourceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+            const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
+            let tabInfo = null;
             
-            // If any of these are missing, this isn't a tab drop
-            if (!sourceIndex || !sourceGroupIndex || !tabInfoStr) {
+            console.log('[Drop] Initial data from dataTransfer:', {
+                sourceIndex,
+                sourceGroupIndex,
+                types: e.dataTransfer.types
+            });
+            
+            try {
+                const tabInfoStr = e.dataTransfer.getData('tabInfo');
+                tabInfo = JSON.parse(tabInfoStr);
+                console.log('[Drop] Successfully parsed tabInfo from dataTransfer:', tabInfo);
+            } catch (parseErr) {
+                console.log('[Drop] Failed to parse tabInfo from dataTransfer:', parseErr);
+            }
+            
+            // Fallback to global reference if needed
+            if (!tabInfo && window.__lastDraggedTab) {
+                console.log('[Drop] Using fallback from global reference:', window.__lastDraggedTab);
+                tabInfo = window.__lastDraggedTab;
+            }
+            
+            // If we still don't have the required data, abort
+            if (isNaN(sourceIndex) || isNaN(sourceGroupIndex) || !tabInfo) {
+                console.warn('[Drop] Missing required drag data:', {
+                    sourceIndex,
+                    sourceGroupIndex,
+                    tabInfo,
+                    globalRef: window.__lastDraggedTab
+                });
                 return;
             }
 
-            const sourceIndexNum = parseInt(sourceIndex);
-            const sourceGroupIndexNum = parseInt(sourceGroupIndex);
-            const tabInfo = JSON.parse(tabInfoStr);
-            
-            // Additional validation of tab info
-            if (!tabInfo || !tabInfo.type) {
-                return;
-            }
-            
             const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
             const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
             const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
             const wasShowingBetweenIndicatorRight = dropIndicators.betweenGroupsRight === groupIndex;
+            
+            console.log('[Drop] Current indicators:', {
+                wasShowingLeftIndicator,
+                wasShowingRightIndicator,
+                wasShowingBetweenIndicator,
+                wasShowingBetweenIndicatorRight,
+                groupIndex,
+                sourceGroupIndex
+            });
             
             onDropIndicatorChange({
                 leftGroup: null,
@@ -300,33 +354,39 @@ function TabContainer({
             });
             
             if (wasShowingBetweenIndicator) {
-                onTabSplit(tabInfo, sourceGroupIndexNum, groupIndex);
+                console.log('[Drop] Splitting tab between groups (left)');
+                onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
             }
             else if (wasShowingBetweenIndicatorRight) {
-                onTabSplit(tabInfo, sourceGroupIndexNum, groupIndex + 1);
+                console.log('[Drop] Splitting tab between groups (right)');
+                onTabSplit(tabInfo, sourceGroupIndex, groupIndex + 1);
             }
             else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-                onTabSplit(tabInfo, sourceGroupIndexNum, wasShowingRightIndicator);
+                console.log('[Drop] Splitting tab to edge:', wasShowingRightIndicator ? 'right' : 'left');
+                onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
             }
-            else if (sourceGroupIndexNum !== groupIndex) {
+            else if (sourceGroupIndex !== groupIndex) {
+                console.log('[Drop] Moving tab between groups');
                 const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
-                onTabMove([draggedTab, targetIndex], sourceGroupIndexNum, groupIndex);
+                onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
             }
-            else if (sourceIndexNum !== dropIndex && dropIndex !== null) {
+            else if (sourceIndex !== dropIndex && dropIndex !== null) {
+                console.log('[Drop] Reordering within group');
                 const newTabs = [...tabs];
-                const [movedTab] = newTabs.splice(sourceIndexNum, 1);
+                const [movedTab] = newTabs.splice(sourceIndex, 1);
                 newTabs.splice(dropIndex, 0, movedTab);
                 onTabMove(newTabs, groupIndex);
-                if (activeTab === tabs[sourceIndexNum]) {
+                if (activeTab === tabs[sourceIndex]) {
                     setActiveTabType(movedTab.type.name);
                 }
             }
-        } catch {
-            // Silently ignore drops that aren't tabs
-            console.debug('Non-tab item dropped');
+        } catch (err) {
+            console.error('[Drop] Error handling drop:', err);
         }
 
         setDropIndex(null);
+        // Clean up global reference
+        delete window.__lastDraggedTab;
     };
 
     /**

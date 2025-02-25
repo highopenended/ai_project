@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import React from 'react';
 
 // Debug configuration - import from a shared config if needed
 const DEBUG_CONFIG = {
@@ -418,7 +417,15 @@ export const useTabManagement = (initialGroups, initialWidths) => {
      * - Check targetPosition is properly normalized
      */
     const handleTabSplit = useCallback((tabInfo, sourceGroupIndex, targetPosition) => {
-        debug('Action', 'Splitting tab', { sourceGroupIndex, targetPosition });
+        console.log('[Split] Starting split operation:', {
+            sourceGroupIndex,
+            targetPosition,
+            tabInfo: {
+                type: tabInfo.type,
+                key: tabInfo.key,
+                component: tabInfo.component
+            }
+        });
 
         // Reset drag states
         updateDragState({
@@ -436,26 +443,81 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         setTabGroups((prevGroups) => {
             const newGroups = [...prevGroups];
             const sourceGroup = [...prevGroups[sourceGroupIndex]];
-            const sourceTab = sourceGroup.find((tab) => tab.type.name === tabInfo.type);
+            
+            console.log('[Split] Finding source tab in group:', {
+                sourceGroupSize: sourceGroup.length,
+                searchType: tabInfo.type,
+                availableTypes: sourceGroup.map(tab => ({
+                    name: tab.type.name,
+                    component: tab.type.component?.name
+                }))
+            });
+
+            // Try to find the source tab using multiple methods
+            let sourceTab = null;
+
+            // 1. Try to find by exact type name match
+            sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
+
+            // 2. If not found and we have a global reference, try to find by key
+            if (!sourceTab && window.__lastDraggedTabComponent) {
+                console.log('[Split] Trying to find tab by key from global reference');
+                sourceTab = sourceGroup.find(tab => tab.key === window.__lastDraggedTabComponent.key);
+            }
+
+            // 3. If still not found, try to find by component name
+            if (!sourceTab && tabInfo.component) {
+                console.log('[Split] Trying to find tab by component name');
+                sourceTab = sourceGroup.find(tab => tab.type.component?.name === tabInfo.component);
+            }
 
             if (!sourceTab) {
-                debug('Split', 'Source tab not found', tabInfo);
+                console.warn('[Split] Source tab not found:', {
+                    searchedType: tabInfo.type,
+                    searchedComponent: tabInfo.component,
+                    availableTabs: sourceGroup.map(t => ({
+                        name: t.type.name,
+                        component: t.type.component?.name,
+                        key: t.key
+                    }))
+                });
                 return prevGroups;
             }
 
-            debug('Split', 'Processing tab split', {
-                sourceTab: sourceTab.type.name,
-                sourceGroupSize: sourceGroup.length
+            console.log('[Split] Found source tab:', {
+                tabName: sourceTab.type.name,
+                hasComponent: !!sourceTab.type.component,
+                componentName: sourceTab.type.component?.name,
+                key: sourceTab.key
             });
 
+            // Remove from source group
             sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
-            const newTab = React.cloneElement(sourceTab, {
+
+            // Create new tab object preserving all properties
+            const newTab = {
+                ...sourceTab,
                 key: `${sourceTab.type.name}-${Date.now()}`,
-            });
+                type: {
+                    ...sourceTab.type,
+                    name: sourceTab.type.name,
+                    component: sourceTab.type.component,
+                    minWidth: sourceTab.type.minWidth || 200
+                }
+            };
+
+            // Create new group with the copied tab
             const newGroup = [newTab];
 
+            console.log('[Split] Created new tab:', {
+                newTabType: newTab.type.name,
+                hasComponent: !!newTab.type.component,
+                componentName: newTab.type.component?.name,
+                key: newTab.key
+            });
+
             if (sourceGroup.length === 0) {
-                debug('Split', 'Removing empty source group');
+                console.log('[Split] Removing empty source group');
                 newGroups.splice(sourceGroupIndex, 1);
                 if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
                     targetPosition--;
@@ -464,20 +526,30 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 newGroups[sourceGroupIndex] = sourceGroup;
             }
 
+            // Insert new group at specified position
             if (typeof targetPosition === "number") {
-                debug('Split', 'Inserting at specific position', { targetPosition });
+                console.log('[Split] Inserting at specific position:', targetPosition);
                 newGroups.splice(targetPosition, 0, newGroup);
             } else if (targetPosition === true) {
-                debug('Split', 'Appending to end');
+                console.log('[Split] Appending to end');
                 newGroups.push(newGroup);
             } else {
-                debug('Split', 'Prepending to start');
+                console.log('[Split] Prepending to start');
                 newGroups.unshift(newGroup);
             }
 
-            debug('Split', 'Completed tab split', { 
-                finalGroupCount: newGroups.length 
+            console.log('[Split] Final group structure:', {
+                groupCount: newGroups.length,
+                groups: newGroups.map(g => g.map(t => ({
+                    name: t.type.name,
+                    component: t.type.component?.name,
+                    key: t.key
+                })))
             });
+
+            // Clean up global reference after successful split
+            delete window.__lastDraggedTabComponent;
+
             return newGroups;
         });
     }, [updateDragState]);
