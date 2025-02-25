@@ -320,7 +320,7 @@ function ShopGenerator() {
     debug("initialization", "Component render continued5");
 
     // Transform saved configuration into React elements
-    const createTabsFromConfig = (config) => {
+    const createTabsFromConfig = useCallback((config) => {
         debug("tabCreation", "Creating tabs from config:", config);
 
         // Process each group
@@ -357,10 +357,10 @@ function ShopGenerator() {
             groups: processedGroups,
             widths: widths,
         };
-    };
+    }, [createTabElement, getDefaultTabConfig]);
 
     // Initialize tab state with pre-computed config and/or saved state
-    const getInitialTabState = () => {
+    const getInitialTabState = useCallback(() => {
         console.log("-----------------------------------------getInitialTabState");
         try {
             debug("stateSync", "Loading initial tab state");
@@ -383,7 +383,7 @@ function ShopGenerator() {
             console.error("[Tab State] Error loading saved state:", error);
             return getDefaultTabConfig();
         }
-    };
+    }, [getDefaultTabConfig, createTabsFromConfig]);
 
     const initialTabState = getInitialTabState();
 
