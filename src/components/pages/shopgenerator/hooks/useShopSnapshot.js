@@ -41,6 +41,9 @@ export const useShopSnapshot = ({ shopState, filterMaps, inventory }) => {
             return true;
         }
         
+        console.log("hasSnapshot", !!shopSnapshot);
+        console.log("hasShopState", !!shopState);
+        
         const changes = getChangedFields();
         const hasChangeResult = hasChanges(changes);
         

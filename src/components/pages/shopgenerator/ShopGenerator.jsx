@@ -121,6 +121,7 @@ function ShopGenerator() {
         handleShopDetailsChange,
         handleRevertChanges,
     } = useShopState(defaultShopData);
+    debug("initialization", "Component render continued");
 
     // Snapshot and change tracking
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
@@ -128,6 +129,8 @@ function ShopGenerator() {
         filterMaps,
         inventory,
     });
+
+    // console.log("-----------------------------------------shopSnapshot", shopSnapshot);
 
     // Shop generation
     const { generateInventory, isGenerating } = useInventoryGeneration({
@@ -202,8 +205,9 @@ function ShopGenerator() {
             clearCategorySelections,
             clearSubcategorySelections,
             clearTraitSelections,
-        ]
+        ]   
     );
+    debug("initialization", "Component render continued2");
 
     const getInventoryTabProps = useCallback(
         (baseProps) => ({
@@ -255,9 +259,15 @@ function ShopGenerator() {
         [savedShops, handleLoadShop, handleNewShop, shopState.id]
     );
 
+    debug("initialization", "Component render continued3");
+    console.log("-----------------------------------------Followup on Shapshot", shopSnapshot);
+
+
+
     // Memoize the createTabElement function
     const createTabElement = useCallback(
         (tabType, key) => {
+            console.log("-----------------------------------------createTabElement", tabType, key);
             if (authLoading) {
                 debug("tabCreation", "Auth is loading, skipping tab creation");
                 return null;
@@ -294,8 +304,10 @@ function ShopGenerator() {
         [authLoading, getParametersTabProps, getInventoryTabProps, getShopDetailsTabProps, getChooseShopTabProps]
     );
 
+    debug("initialization", "Component render continued4");
+
     // Pre-compute the default tab configuration
-    const DEFAULT_TAB_CONFIG = (() => {
+    const getDefaultTabConfig = useCallback(() => {
         const processedGroups = DEFAULT_TAB_STATE.groups
             .map((group) => group.map((tab) => createTabElement(tab.type, tab.key)).filter(Boolean))
             .filter((group) => group.length > 0);
@@ -304,7 +316,8 @@ function ShopGenerator() {
             groups: processedGroups,
             widths: DEFAULT_TAB_STATE.widths,
         };
-    })();
+    }, [createTabElement]);
+    debug("initialization", "Component render continued5");
 
     // Transform saved configuration into React elements
     const createTabsFromConfig = (config) => {
@@ -330,7 +343,7 @@ function ShopGenerator() {
             .filter((group) => group.length > 0);
 
         // If no valid groups were created, use default config
-        if (processedGroups.length === 0) return DEFAULT_TAB_CONFIG;
+        if (processedGroups.length === 0) return getDefaultTabConfig();
 
         // Ensure we have the correct number of widths
         let widths = config.widths;
@@ -348,6 +361,7 @@ function ShopGenerator() {
 
     // Initialize tab state with pre-computed config and/or saved state
     const getInitialTabState = () => {
+        console.log("-----------------------------------------getInitialTabState");
         try {
             debug("stateSync", "Loading initial tab state");
             const savedState = localStorage.getItem(STORAGE_KEY);
@@ -355,20 +369,19 @@ function ShopGenerator() {
 
             const validState = isValidSavedState(savedState);
             if (!validState) {
-                return DEFAULT_TAB_CONFIG;
+                console.log("validState", validState);
+                return getDefaultTabConfig();
             }
 
             // If we get here and have valid saved state, create tabs from it
             const newState = createTabsFromConfig(validState);
 
-            if (newState.groups.length === 0) {
-                return DEFAULT_TAB_CONFIG;
-            }
+            console.log("newState.groups.length", newState.groups.length);
 
             return newState;
         } catch (error) {
             console.error("[Tab State] Error loading saved state:", error);
-            return DEFAULT_TAB_CONFIG;
+            return getDefaultTabConfig();
         }
     };
 
