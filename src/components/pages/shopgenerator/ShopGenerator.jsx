@@ -18,7 +18,6 @@ import { useTabManagement } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
 
-
 // Debug configuration
 const DEBUG_CONFIG = {
     enabled: true, // Master debug switch
@@ -26,22 +25,23 @@ const DEBUG_CONFIG = {
         initialization: true,
         tabManagement: true,
         stateSync: true,
-        tabCreation: true
-    }
+        tabCreation: true,
+    },
 };
 
 // Debug logger
-const debug = (area, message, data = '') => {
+const debug = (area, message, data = "") => {
     if (!DEBUG_CONFIG.enabled || !DEBUG_CONFIG.areas[area]) return;
     const timestamp = performance.now().toFixed(2);
-    const prefix = {
-        initialization: '🚀 [Init]',
-        tabManagement: '📑 [Tabs]',
-        stateSync: '🔄 [Sync]',
-        tabCreation: '🏗️ [Create]'
-    }[area] || '🔧 [Debug]';
-    
-    console.log(`${prefix} [${timestamp}ms] ${message}`, data ? data : '');
+    const prefix =
+        {
+            initialization: "🚀 [Init]",
+            tabManagement: "📑 [Tabs]",
+            stateSync: "🔄 [Sync]",
+            tabCreation: "🏗️ [Create]",
+        }[area] || "🔧 [Debug]";
+
+    console.log(`${prefix} [${timestamp}ms] ${message}`, data ? data : "");
 };
 
 const STORAGE_KEY = "tabGroupsState";
@@ -54,8 +54,41 @@ const TAB_TYPES = {
     [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
 };
 
+/**
+ * Validates if the state has a valid structure and tab types
+ * @param {string|object} state - The state to validate (either stringified or object)
+ * @returns {object|null} - The parsed/validated state if valid, null if invalid
+ */
+const isValidSavedState = (state) => {
+    if (!state) return null;
+
+    try {
+        // Parse the state if it's a string, otherwise use the state
+        const parsedState = typeof state === 'string' ? JSON.parse(state) : state;
+        return parsedState &&
+            Array.isArray(parsedState.groups) &&
+            Array.isArray(parsedState.widths) &&
+            parsedState.groups.every(
+                (group) =>
+                    Array.isArray(group) &&
+                    group.every(
+                        (tab) =>
+                            tab &&
+                            typeof tab === "object" &&
+                            typeof tab.type === "string" &&
+                            typeof tab.key === "string" &&
+                            Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type)
+                    )
+            )
+            ? parsedState
+            : null;
+    } catch {
+        return null;
+    }
+};
+
 function ShopGenerator() {
-    debug('initialization', 'Component render start');
+    debug("initialization", "Component render start");
     const { currentUser, loading: authLoading } = useAuth();
     const { items: allItems, categoryData, loading: itemsLoading, error: itemsError } = useItemData();
     const [savedShops, setSavedShops] = useState([]);
@@ -104,8 +137,8 @@ function ShopGenerator() {
         getFilteredArray,
         setInventory,
         setShopSnapshot,
-    });    
-    
+    });
+
     // Shop operations
     const { handleLoadShopList, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
         useShopOperations({
@@ -122,265 +155,231 @@ function ShopGenerator() {
             hasUnsavedChanges,
         });
 
-
     // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
 
     // Memoize prop generators for each tab type
-    const getParametersTabProps = useCallback((baseProps) => ({
-        ...baseProps,
-        currentGold: shopState.gold,
-        setCurrentGold: handleGoldChange,
-        lowestLevel: shopState.levelRange.min,
-        setLowestLevel: handleLowestLevelChange,
-        highestLevel: shopState.levelRange.max,
-        setHighestLevel: handleHighestLevelChange,
-        rarityDistribution: shopState.rarityDistribution,
-        setRarityDistribution: handleRarityDistributionChange,
-        itemBias: shopState.itemBias,
-        setItemBias: handleBiasChange,
-        categoryData: categoryData || {},
-        categoryStates: filterMaps?.categories || new Map(),
-        getFilterState: getFilterState || (() => {}),
-        toggleCategory: toggleCategory || (() => {}),
-        toggleSubcategory: toggleSubcategory || (() => {}),
-        toggleTrait: toggleTrait || (() => {}),
-        clearCategorySelections: clearCategorySelections || (() => {}),
-        clearSubcategorySelections: clearSubcategorySelections || (() => {}),
-        clearTraitSelections: clearTraitSelections || (() => {})
-    }), [
-        shopState.gold,
-        shopState.levelRange.min,
-        shopState.levelRange.max,
-        shopState.rarityDistribution,
-        shopState.itemBias,
-        categoryData,
-        filterMaps?.categories,
-        handleGoldChange,
-        handleLowestLevelChange,
-        handleHighestLevelChange,
-        handleRarityDistributionChange,
-        handleBiasChange,
-        getFilterState,
-        toggleCategory,
-        toggleSubcategory,
-        toggleTrait,
-        clearCategorySelections,
-        clearSubcategorySelections,
-        clearTraitSelections
-    ]);
+    const getParametersTabProps = useCallback(
+        (baseProps) => ({
+            ...baseProps,
+            currentGold: shopState.gold,
+            setCurrentGold: handleGoldChange,
+            lowestLevel: shopState.levelRange.min,
+            setLowestLevel: handleLowestLevelChange,
+            highestLevel: shopState.levelRange.max,
+            setHighestLevel: handleHighestLevelChange,
+            rarityDistribution: shopState.rarityDistribution,
+            setRarityDistribution: handleRarityDistributionChange,
+            itemBias: shopState.itemBias,
+            setItemBias: handleBiasChange,
+            categoryData: categoryData || {},
+            categoryStates: filterMaps?.categories || new Map(),
+            getFilterState: getFilterState || (() => {}),
+            toggleCategory: toggleCategory || (() => {}),
+            toggleSubcategory: toggleSubcategory || (() => {}),
+            toggleTrait: toggleTrait || (() => {}),
+            clearCategorySelections: clearCategorySelections || (() => {}),
+            clearSubcategorySelections: clearSubcategorySelections || (() => {}),
+            clearTraitSelections: clearTraitSelections || (() => {}),
+        }),
+        [
+            shopState.gold,
+            shopState.levelRange.min,
+            shopState.levelRange.max,
+            shopState.rarityDistribution,
+            shopState.itemBias,
+            categoryData,
+            filterMaps?.categories,
+            handleGoldChange,
+            handleLowestLevelChange,
+            handleHighestLevelChange,
+            handleRarityDistributionChange,
+            handleBiasChange,
+            getFilterState,
+            toggleCategory,
+            toggleSubcategory,
+            toggleTrait,
+            clearCategorySelections,
+            clearSubcategorySelections,
+            clearTraitSelections,
+        ]
+    );
 
-    const getInventoryTabProps = useCallback((baseProps) => ({
-        ...baseProps,
-        items: sortedItems || [],
-        sortConfig: sortConfig || [],
-        onSort: handleSort || (() => {}),
-        currentShopName: shopState.name || "",
-        handleGenerateClick: generateInventory || (() => {}),
-        isGenerating: isGenerating || false
-    }), [
-        sortedItems,
-        sortConfig,
-        handleSort,
-        shopState.name,
-        generateInventory,
-        isGenerating
-    ]);
+    const getInventoryTabProps = useCallback(
+        (baseProps) => ({
+            ...baseProps,
+            items: sortedItems || [],
+            sortConfig: sortConfig || [],
+            onSort: handleSort || (() => {}),
+            currentShopName: shopState.name || "",
+            handleGenerateClick: generateInventory || (() => {}),
+            isGenerating: isGenerating || false,
+        }),
+        [sortedItems, sortConfig, handleSort, shopState.name, generateInventory, isGenerating]
+    );
 
-    const getShopDetailsTabProps = useCallback((baseProps) => ({
-        ...baseProps,
-        shopState: shopState || defaultShopData,
-        onShopDetailsChange: handleShopDetailsChange || (() => {}),
-        onSaveShop: handleSaveShop || (() => {}),
-        onCloneShop: handleCloneShop || (() => {}),
-        onDeleteShop: handleDeleteShop || (() => {}),
-        onRevertChanges: handleRevertChanges || (() => {}),
-        savedShops: savedShops || [],
-        hasUnsavedChanges: hasUnsavedChanges || false,
-        changes: getChangedFields() || { basic: {}, parameters: {}, hasInventoryChanged: false }
-    }), [
-        shopState,
-        handleShopDetailsChange,
-        handleSaveShop,
-        handleCloneShop,
-        handleDeleteShop,
-        handleRevertChanges,
-        savedShops,
-        hasUnsavedChanges,
-        getChangedFields
-    ]);
+    const getShopDetailsTabProps = useCallback(
+        (baseProps) => ({
+            ...baseProps,
+            shopState: shopState || defaultShopData,
+            onShopDetailsChange: handleShopDetailsChange || (() => {}),
+            onSaveShop: handleSaveShop || (() => {}),
+            onCloneShop: handleCloneShop || (() => {}),
+            onDeleteShop: handleDeleteShop || (() => {}),
+            onRevertChanges: handleRevertChanges || (() => {}),
+            savedShops: savedShops || [],
+            hasUnsavedChanges: hasUnsavedChanges || false,
+            changes: getChangedFields() || { basic: {}, parameters: {}, hasInventoryChanged: false },
+        }),
+        [
+            shopState,
+            handleShopDetailsChange,
+            handleSaveShop,
+            handleCloneShop,
+            handleDeleteShop,
+            handleRevertChanges,
+            savedShops,
+            hasUnsavedChanges,
+            getChangedFields,
+        ]
+    );
 
-    const getChooseShopTabProps = useCallback((baseProps) => ({
-        ...baseProps,
-        savedShops: savedShops || [],
-        onLoadShop: handleLoadShop || (() => {}),
-        onNewShop: handleNewShop || (() => {}),
-        currentShopId: shopState.id || null
-    }), [
-        savedShops,
-        handleLoadShop,
-        handleNewShop,
-        shopState.id
-    ]);
+    const getChooseShopTabProps = useCallback(
+        (baseProps) => ({
+            ...baseProps,
+            savedShops: savedShops || [],
+            onLoadShop: handleLoadShop || (() => {}),
+            onNewShop: handleNewShop || (() => {}),
+            currentShopId: shopState.id || null,
+        }),
+        [savedShops, handleLoadShop, handleNewShop, shopState.id]
+    );
 
     // Memoize the createTabElement function
-    const createTabElement = useCallback((tabType, key) => {
-        
-        if(authLoading) {
-            debug('tabCreation', 'Auth is loading, skipping tab creation');
-            return null;
-        }
+    const createTabElement = useCallback(
+        (tabType, key) => {
+            if (authLoading) {
+                debug("tabCreation", "Auth is loading, skipping tab creation");
+                return null;
+            }
 
-        // Validate tab type is one of our known types
-        if (!tabType || !TAB_TYPES[tabType]) {
-            debug('tabCreation', 'Invalid or unknown tab type:', tabType);
-            return null;
-        }
+            // Validate tab type is one of our known types
+            if (!tabType || !TAB_TYPES[tabType]) {
+                debug("tabCreation", "Invalid or unknown tab type:", tabType);
+                return null;
+            }
 
-        const TabComponent = TAB_TYPES[tabType];
+            const TabComponent = TAB_TYPES[tabType];
 
-        // Create base props that all tabs need
-        const baseProps = {
-            key,
-            type: { name: tabType, minWidth: TabComponent.minWidth || 200 }
-        };
+            // Create base props that all tabs need
+            const baseProps = {
+                key,
+                type: { name: tabType, minWidth: TabComponent.minWidth || 200 },
+            };
 
-        // Add specific props based on tab type
-        switch (tabType) {
-            case "Tab_Parameters":
-                return React.createElement(TabComponent, getParametersTabProps(baseProps));
-            case "Tab_InventoryTable":
-                return React.createElement(TabComponent, getInventoryTabProps(baseProps));
-            case "Tab_ShopDetails":
-                return React.createElement(TabComponent, getShopDetailsTabProps(baseProps));
-            case "Tab_ChooseShop":
-                return React.createElement(TabComponent, getChooseShopTabProps(baseProps));
-            default:
-                return React.createElement(TabComponent, baseProps);
-        }
-    }, [
-        authLoading,
-        getParametersTabProps,
-        getInventoryTabProps,
-        getShopDetailsTabProps,
-        getChooseShopTabProps,
-    ]);
+            // Add specific props based on tab type
+            switch (tabType) {
+                case "Tab_Parameters":
+                    return React.createElement(TabComponent, getParametersTabProps(baseProps));
+                case "Tab_InventoryTable":
+                    return React.createElement(TabComponent, getInventoryTabProps(baseProps));
+                case "Tab_ShopDetails":
+                    return React.createElement(TabComponent, getShopDetailsTabProps(baseProps));
+                case "Tab_ChooseShop":
+                    return React.createElement(TabComponent, getChooseShopTabProps(baseProps));
+                default:
+                    return React.createElement(TabComponent, baseProps);
+            }
+        },
+        [authLoading, getParametersTabProps, getInventoryTabProps, getShopDetailsTabProps, getChooseShopTabProps]
+    );
 
     // Pre-compute the default tab configuration
     const DEFAULT_TAB_CONFIG = (() => {
-        const processedGroups = DEFAULT_TAB_STATE.groups.map(group => 
-            group.map(tab => createTabElement(tab.type, tab.key))
-            .filter(Boolean)
-        ).filter(group => group.length > 0);
+        const processedGroups = DEFAULT_TAB_STATE.groups
+            .map((group) => group.map((tab) => createTabElement(tab.type, tab.key)).filter(Boolean))
+            .filter((group) => group.length > 0);
 
         return {
             groups: processedGroups,
-            widths: DEFAULT_TAB_STATE.widths
+            widths: DEFAULT_TAB_STATE.widths,
         };
     })();
 
     // Transform saved configuration into React elements
     const createTabsFromConfig = (config) => {
-        debug('tabCreation', 'Creating tabs from config:', config);
-        
-        // Process each group
-        const processedGroups = config.groups.map(group => {
-            if (!Array.isArray(group)) {
-                return [];
-            }
+        debug("tabCreation", "Creating tabs from config:", config);
 
-            return group.map(tab => {
-                const tabType = tab.type;
-                if (!TAB_TYPES[tabType]) {
-                    return null;
+        // Process each group
+        const processedGroups = config.groups
+            .map((group) => {
+                if (!Array.isArray(group)) {
+                    return [];
                 }
-                return createTabElement(tabType, tab.key);
-            }).filter(Boolean);
-        }).filter(group => group.length > 0);
+
+                return group
+                    .map((tab) => {
+                        const tabType = tab.type;
+                        if (!TAB_TYPES[tabType]) {
+                            return null;
+                        }
+                        return createTabElement(tabType, tab.key);
+                    })
+                    .filter(Boolean);
+            })
+            .filter((group) => group.length > 0);
 
         // If no valid groups were created, use default config
-        if (processedGroups.length === 0) {
-            return DEFAULT_TAB_CONFIG;
-        }
+        if (processedGroups.length === 0) return DEFAULT_TAB_CONFIG;
 
         // Ensure we have the correct number of widths
         let widths = config.widths;
         if (widths.length !== processedGroups.length) {
-            widths = processedGroups.map((_, i) => 
-                i === processedGroups.length - 1 ? '100%' : `${100 / processedGroups.length}%`
+            widths = processedGroups.map((_, i) =>
+                i === processedGroups.length - 1 ? "100%" : `${100 / processedGroups.length}%`
             );
         }
 
         return {
             groups: processedGroups,
-            widths: widths
+            widths: widths,
         };
     };
 
     // Initialize tab state with pre-computed config and/or saved state
     const getInitialTabState = () => {
         try {
-            console.log('[Tab State] Loading initial tab state');
+            debug("stateSync", "Loading initial tab state");
             const savedState = localStorage.getItem(STORAGE_KEY);
-            console.log('[Tab State] Raw saved state:', savedState);
-            
-            if (!savedState) {
-                return DEFAULT_TAB_CONFIG;
-            }
+            debug("stateSync", "Raw saved state:", savedState);
 
-            const parsed = JSON.parse(savedState);
-
-            // Basic structure validation
-            if (!parsed || !Array.isArray(parsed.groups) || !Array.isArray(parsed.widths)) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            // Validate group structure
-            const isValidStructure = parsed.groups.every(group =>
-                Array.isArray(group) && group.every(tab =>
-                    tab && typeof tab === 'object' && 
-                    typeof tab.type === 'string' && 
-                    typeof tab.key === 'string'
-                )
-            );
-
-            if (!isValidStructure) {
-                return DEFAULT_TAB_CONFIG;
-            }
-
-            // Validate tab types
-            const hasValidTabs = parsed.groups.every(group =>
-                group.every(tab => Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type))
-            );
-
-            if (!hasValidTabs) {
+            const validState = isValidSavedState(savedState);
+            if (!validState) {
                 return DEFAULT_TAB_CONFIG;
             }
 
             // If we get here and have valid saved state, create tabs from it
-            const newState = createTabsFromConfig(parsed);
-            
+            const newState = createTabsFromConfig(validState);
+
             if (newState.groups.length === 0) {
                 return DEFAULT_TAB_CONFIG;
             }
 
             return newState;
         } catch (error) {
-            console.error('[Tab State] Error loading saved state:', error);
+            console.error("[Tab State] Error loading saved state:", error);
             return DEFAULT_TAB_CONFIG;
         }
     };
 
     const initialTabState = getInitialTabState();
 
-    debug('initialization', '📊 Initial hooks loaded:', {
+    debug("initialization", "📊 Initial hooks loaded:", {
         authLoading,
         itemsLoading,
         hasUser: !!currentUser,
-        hasItems: !!allItems
+        hasItems: !!allItems,
     });
-
-
 
     const handleGenerateClick = () => {
         generateInventory();
@@ -390,56 +389,66 @@ function ShopGenerator() {
     const hasInitialized = useRef(false);
     useEffect(() => {
         const initId = Date.now().toString(36);
-        debug('initialization', `[Init ${initId}] 🚀 Starting initialization check`);
-        
+        debug("initialization", `[Init ${initId}] 🚀 Starting initialization check`);
+
         // Don't do anything while loading
         if (authLoading || itemsLoading) {
-            debug('initialization', `[Init ${initId}] ⏳ Still loading:`, { authLoading, itemsLoading });
+            debug("initialization", `[Init ${initId}] ⏳ Still loading:`, { authLoading, itemsLoading });
             return;
         }
 
         // Prevent multiple initializations
         if (hasInitialized.current) {
-            debug('initialization', `[Init ${initId}] ✋ Already initialized`);
+            debug("initialization", `[Init ${initId}] ✋ Already initialized`);
             return;
         }
 
         const initializeState = async () => {
             try {
-                debug('initialization', `[Init ${initId}] 🔄 Starting state initialization`);
+                debug("initialization", `[Init ${initId}] 🔄 Starting state initialization`);
 
                 // Initialize filter maps if they're empty
                 if (!filterMaps?.categories) {
-                    debug('initialization', `[Init ${initId}] 📋 Creating initial filter maps`);
+                    debug("initialization", `[Init ${initId}] 📋 Creating initial filter maps`);
                     setFilterMaps({
                         categories: new Map(),
                         subcategories: new Map(),
-                        traits: new Map()
+                        traits: new Map(),
                     });
                 }
 
                 // If user is logged in, first load their shop list
                 if (currentUser && !savedShops.length) {
-                    debug('initialization', `[Init ${initId}] 📥 Loading shop list for user`);
+                    debug("initialization", `[Init ${initId}] 📥 Loading shop list for user`);
                     await handleLoadShopList();
                 }
                 // Only create new shop if we don't have one and aren't logged in
                 else if (!shopState?.id && !currentUser) {
-                    debug('initialization', `[Init ${initId}] ➕ Creating new anonymous shop`);
+                    debug("initialization", `[Init ${initId}] ➕ Creating new anonymous shop`);
                     await handleNewShop();
                 }
 
-                debug('initialization', `[Init ${initId}] ✅ Initialization complete`);
+                debug("initialization", `[Init ${initId}] ✅ Initialization complete`);
                 hasInitialized.current = true;
                 setIsStateReady(true);
             } catch (error) {
-                debug('initialization', `[Init ${initId}] ❌ Initialization error:`, error);
+                debug("initialization", `[Init ${initId}] ❌ Initialization error:`, error);
                 hasInitialized.current = false;
             }
         };
 
         initializeState();
-    }, [authLoading, itemsLoading, currentUser, shopState?.id, savedShops, handleLoadShopList, handleNewShop, filterMaps, setFilterMaps]);
+    }, [
+        authLoading,
+        itemsLoading,
+        currentUser,
+        shopState?.id,
+        savedShops,
+        handleLoadShopList,
+        handleNewShop,
+        filterMaps,
+        setFilterMaps,
+    ]);
 
     // Tab management - now using tabState instead of loadInitialState
     const {
@@ -455,62 +464,50 @@ function ShopGenerator() {
         handleResize,
         handleDragStart,
         handleDragEnd,
-        handleDropIndicatorChange
+        handleDropIndicatorChange,
     } = useTabManagement(initialTabState.groups, initialTabState.widths);
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
         const saveState = () => {
-            debug('stateSync', 'Saving tab state, current groups:', tabGroups);
+            debug("stateSync", "Saving tab state, current groups:", tabGroups);
 
             // Extract the original tab type identifiers before they become React elements
-            const groupsData = tabGroups.map(group =>
-                group.map(tab => {
+            const groupsData = tabGroups.map((group) =>
+                group.map((tab) => {
                     // Find the matching tab type by comparing the actual component or its display name
-                    const matchingType = Object.keys(TAB_TYPES).find(type => 
-                        TAB_TYPES[type] === tab.type || // Check direct component match
-                        TAB_TYPES[type].displayName === tab.type.displayName // Check display name match
+                    const matchingType = Object.keys(TAB_TYPES).find(
+                        (type) =>
+                            TAB_TYPES[type] === tab.type || // Check direct component match
+                            TAB_TYPES[type].displayName === tab.type.displayName // Check display name match
                     );
 
                     if (!matchingType) {
-                        debug('stateSync', 'Could not find matching tab type for:', tab);
+                        debug("stateSync", "Could not find matching tab type for:", tab);
                     }
 
                     return {
                         type: matchingType || tab.type.name,
-                        key: tab.key
+                        key: tab.key,
                     };
                 })
             );
-
-            debug('stateSync', 'Processed tab data for saving:', groupsData);
-
-            // Validate all types are known identifiers
-            const hasValidTypes = groupsData.every(group =>
-                group.every(tab => {
-                    const isValid = Object.values(TAB_TYPE_IDENTIFIERS).includes(tab.type);
-                    if (!isValid) {
-                        debug('stateSync', 'Invalid tab type found:', {
-                            type: tab.type,
-                            validTypes: Object.values(TAB_TYPE_IDENTIFIERS)
-                        });
-                    }
-                    return isValid;
-                })
-            );
-
-            if (!hasValidTypes) {
-                debug('stateSync', 'Attempting to save invalid tab types, skipping save');
-                return;
-            }
 
             const stateToSave = {
                 groups: groupsData,
                 widths: flexBasis,
             };
 
-            debug('stateSync', 'Saving state to localStorage:', stateToSave);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+            debug("stateSync", "Validating state before save:", stateToSave);
+            const validState = isValidSavedState(stateToSave);
+            
+            if (!validState) {
+                debug("stateSync", "Invalid state, skipping save");
+                return;
+            }
+
+            debug("stateSync", "Saving state to localStorage:", validState);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(validState));
         };
 
         saveState();
@@ -518,21 +515,21 @@ function ShopGenerator() {
 
     // Show loading state while initializing
     if (!isStateReady || itemsLoading || authLoading) {
-        debug('initialization', '⏳ Showing loading state:', {
+        debug("initialization", "⏳ Showing loading state:", {
             isStateReady,
             itemsLoading,
-            authLoading
+            authLoading,
         });
         return <div>Loading...</div>;
     }
 
     // Show error state if items failed to load
     if (itemsError) {
-        debug('initialization', '❌ Showing error state:', itemsError);
+        debug("initialization", "❌ Showing error state:", itemsError);
         return <div>Error loading item data: {itemsError}</div>;
     }
 
-    debug('initialization', '✅ Rendering main component');
+    debug("initialization", "✅ Rendering main component");
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>

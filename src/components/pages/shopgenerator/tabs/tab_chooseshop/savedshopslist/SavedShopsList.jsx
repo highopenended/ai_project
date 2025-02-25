@@ -5,7 +5,7 @@ import './SavedShopsList.css';
 
 const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
 
-    console.log("loadShop: ", loadShop);
+    // console.log("loadShop: ", loadShop);
     console.log("currentShopId: ", currentShopId);
     console.log("savedShops: ", savedShops);
 
