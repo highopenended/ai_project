@@ -43,44 +43,6 @@ const debug = (area, message, data = '') => {
     console.log(`${prefix} [${timestamp}ms] ${message}`, data ? data : '');
 };
 
-/**
- * ShopGenerator Component
- *
- * Main component for the shop generation system. Manages the overall state and coordinates
- * between different features through custom hooks.
- *
- * Features:
- * 1. Shop Management
- *    - Create, load, save, and delete shops
- *    - Track unsaved changes
- *    - Maintain shop snapshots for state restoration
- *
- * 2. Inventory Generation
- *    - Generate shop inventory based on parameters
- *    - Filter by categories, subcategories, and traits
- *    - Sort and display inventory items
- *
- * 3. Tab System
- *    - Draggable and resizable tab groups
- *    - Persistent tab layout saved to localStorage
- *    - Tab types:
- *      - Parameters: Shop generation settings
- *      - Inventory Table: View and generate inventory
- *      - Choose Shop: Load and manage saved shops
- *      - Shop Details: Edit shop information
- *
- * State Management:
- * - Uses custom hooks for specific features:
- *   - useShopState: Shop parameters and details
- *   - useShopFilters: Category and trait filtering
- *   - useShopSnapshot: Change tracking and state restoration
- *   - useShopOperations: Shop CRUD operations
- *   - useInventoryGeneration: Inventory generation logic
- *   - useTabManagement: Tab layout and interactions
- *
- * @component
- */
-
 const STORAGE_KEY = "tabGroupsState";
 
 // Add a mapping of valid tab types
