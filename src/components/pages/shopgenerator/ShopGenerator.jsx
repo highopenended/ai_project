@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useItemData } from "../../../context/itemData";
@@ -17,6 +17,8 @@ import { useShopSnapshot } from "./hooks/useShopSnapshot";
 import { useTabManagement } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
+import { useTabRegistry } from './hooks/useTabRegistry';
+
 
 // Debug configuration
 const DEBUG_CONFIG = {
@@ -87,6 +89,45 @@ const isValidSavedState = (state) => {
     }
 };
 
+// Add this outside the component
+const createInitialTabState = () => {
+    try {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        const validState = isValidSavedState(savedState);
+        if (!validState) {
+            return DEFAULT_TAB_STATE;
+        }
+        return validState;
+    } catch (error) {
+        console.error("[Tab State] Error loading saved state:", error);
+        return DEFAULT_TAB_STATE;
+    }
+};
+
+// Move tab structure creation outside the component
+const createTabElements = (tabStructure) => {
+    const processGroups = (groups) => {
+        return groups.map(group => 
+            group.map(tab => {
+                const TabComponent = TAB_TYPES[tab.type];
+                if (!TabComponent) return null;
+                
+                return {
+                    key: tab.key,
+                    type: { 
+                        name: tab.type,
+                        component: TabComponent,  // Store the actual component reference
+                        minWidth: TabComponent.minWidth || 200
+                    },
+                    Component: TabComponent
+                };
+            }).filter(Boolean)
+        ).filter(group => group.length > 0);
+    };
+
+    return processGroups(tabStructure.groups);
+};
+
 function ShopGenerator() {
     debug("initialization", "Component render start");
     const { currentUser, loading: authLoading } = useAuth();
@@ -121,7 +162,6 @@ function ShopGenerator() {
         handleShopDetailsChange,
         handleRevertChanges,
     } = useShopState(defaultShopData);
-    debug("initialization", "Component render continued");
 
     // Snapshot and change tracking
     const { shopSnapshot, setShopSnapshot, getChangedFields, hasUnsavedChanges } = useShopSnapshot({
@@ -129,8 +169,6 @@ function ShopGenerator() {
         filterMaps,
         inventory,
     });
-
-    // console.log("-----------------------------------------shopSnapshot", shopSnapshot);
 
     // Shop generation
     const { generateInventory, isGenerating } = useInventoryGeneration({
@@ -161,242 +199,42 @@ function ShopGenerator() {
     // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
 
-    // Memoize prop generators for each tab type
-    const getParametersTabProps = useCallback(
-        (baseProps) => ({
-            ...baseProps,
-            currentGold: shopState.gold,
-            setCurrentGold: handleGoldChange,
-            lowestLevel: shopState.levelRange.min,
-            setLowestLevel: handleLowestLevelChange,
-            highestLevel: shopState.levelRange.max,
-            setHighestLevel: handleHighestLevelChange,
-            rarityDistribution: shopState.rarityDistribution,
-            setRarityDistribution: handleRarityDistributionChange,
-            itemBias: shopState.itemBias,
-            setItemBias: handleBiasChange,
-            categoryData: categoryData || {},
-            categoryStates: filterMaps?.categories || new Map(),
-            getFilterState: getFilterState || (() => {}),
-            toggleCategory: toggleCategory || (() => {}),
-            toggleSubcategory: toggleSubcategory || (() => {}),
-            toggleTrait: toggleTrait || (() => {}),
-            clearCategorySelections: clearCategorySelections || (() => {}),
-            clearSubcategorySelections: clearSubcategorySelections || (() => {}),
-            clearTraitSelections: clearTraitSelections || (() => {}),
-        }),
-        [
-            shopState.gold,
-            shopState.levelRange.min,
-            shopState.levelRange.max,
-            shopState.rarityDistribution,
-            shopState.itemBias,
-            categoryData,
-            filterMaps?.categories,
-            handleGoldChange,
-            handleLowestLevelChange,
-            handleHighestLevelChange,
-            handleRarityDistributionChange,
-            handleBiasChange,
-            getFilterState,
-            toggleCategory,
-            toggleSubcategory,
-            toggleTrait,
-            clearCategorySelections,
-            clearSubcategorySelections,
-            clearTraitSelections,
-        ]   
-    );
-    debug("initialization", "Component render continued2");
-
-    const getInventoryTabProps = useCallback(
-        (baseProps) => ({
-            ...baseProps,
-            items: sortedItems || [],
-            sortConfig: sortConfig || [],
-            onSort: handleSort || (() => {}),
-            currentShopName: shopState.name || "",
-            handleGenerateClick: generateInventory || (() => {}),
-            isGenerating: isGenerating || false,
-        }),
-        [sortedItems, sortConfig, handleSort, shopState.name, generateInventory, isGenerating]
-    );
-
-    const getShopDetailsTabProps = useCallback(
-        (baseProps) => ({
-            ...baseProps,
-            shopState: shopState || defaultShopData,
-            onShopDetailsChange: handleShopDetailsChange || (() => {}),
-            onSaveShop: handleSaveShop || (() => {}),
-            onCloneShop: handleCloneShop || (() => {}),
-            onDeleteShop: handleDeleteShop || (() => {}),
-            onRevertChanges: handleRevertChanges || (() => {}),
-            savedShops: savedShops || [],
-            hasUnsavedChanges: hasUnsavedChanges || false,
-            changes: getChangedFields() || { basic: {}, parameters: {}, hasInventoryChanged: false },
-        }),
-        [
-            shopState,
-            handleShopDetailsChange,
-            handleSaveShop,
-            handleCloneShop,
-            handleDeleteShop,
-            handleRevertChanges,
-            savedShops,
-            hasUnsavedChanges,
-            getChangedFields,
-        ]
-    );
-
-    const getChooseShopTabProps = useCallback(
-        (baseProps) => ({
-            ...baseProps,
-            savedShops: savedShops || [],
-            onLoadShop: handleLoadShop || (() => {}),
-            onNewShop: handleNewShop || (() => {}),
-            currentShopId: shopState.id || null,
-        }),
-        [savedShops, handleLoadShop, handleNewShop, shopState.id]
-    );
-
-    debug("initialization", "Component render continued3");
-    console.log("-----------------------------------------Followup on Shapshot", shopSnapshot);
-
-
-
-    // Memoize the createTabElement function
-    const createTabElement = useCallback(
-        (tabType, key) => {
-            console.log("-----------------------------------------createTabElement", tabType, key);
-            if (authLoading) {
-                debug("tabCreation", "Auth is loading, skipping tab creation");
-                return null;
-            }
-
-            // Validate tab type is one of our known types
-            if (!tabType || !TAB_TYPES[tabType]) {
-                debug("tabCreation", "Invalid or unknown tab type:", tabType);
-                return null;
-            }
-
-            const TabComponent = TAB_TYPES[tabType];
-
-            // Create base props that all tabs need
-            const baseProps = {
-                key,
-                type: { name: tabType, minWidth: TabComponent.minWidth || 200 },
-            };
-
-            // Add specific props based on tab type
-            switch (tabType) {
-                case "Tab_Parameters":
-                    return React.createElement(TabComponent, getParametersTabProps(baseProps));
-                case "Tab_InventoryTable":
-                    return React.createElement(TabComponent, getInventoryTabProps(baseProps));
-                case "Tab_ShopDetails":
-                    return React.createElement(TabComponent, getShopDetailsTabProps(baseProps));
-                case "Tab_ChooseShop":
-                    return React.createElement(TabComponent, getChooseShopTabProps(baseProps));
-                default:
-                    return React.createElement(TabComponent, baseProps);
-            }
-        },
-        [authLoading, getParametersTabProps, getInventoryTabProps, getShopDetailsTabProps, getChooseShopTabProps]
-    );
-
-    debug("initialization", "Component render continued4");
-
-    // Pre-compute the default tab configuration
-    const getDefaultTabConfig = useCallback(() => {
-        const processedGroups = DEFAULT_TAB_STATE.groups
-            .map((group) => group.map((tab) => createTabElement(tab.type, tab.key)).filter(Boolean))
-            .filter((group) => group.length > 0);
-
-        return {
-            groups: processedGroups,
-            widths: DEFAULT_TAB_STATE.widths,
-        };
-    }, [createTabElement]);
-    debug("initialization", "Component render continued5");
-
-    // Transform saved configuration into React elements
-    const createTabsFromConfig = useCallback((config) => {
-        debug("tabCreation", "Creating tabs from config:", config);
-
-        // Process each group
-        const processedGroups = config.groups
-            .map((group) => {
-                if (!Array.isArray(group)) {
-                    return [];
-                }
-
-                return group
-                    .map((tab) => {
-                        const tabType = tab.type;
-                        if (!TAB_TYPES[tabType]) {
-                            return null;
-                        }
-                        return createTabElement(tabType, tab.key);
-                    })
-                    .filter(Boolean);
-            })
-            .filter((group) => group.length > 0);
-
-        // If no valid groups were created, use default config
-        if (processedGroups.length === 0) return getDefaultTabConfig();
-
-        // Ensure we have the correct number of widths
-        let widths = config.widths;
-        if (widths.length !== processedGroups.length) {
-            widths = processedGroups.map((_, i) =>
-                i === processedGroups.length - 1 ? "100%" : `${100 / processedGroups.length}%`
-            );
-        }
-
-        return {
-            groups: processedGroups,
-            widths: widths,
-        };
-    }, [createTabElement, getDefaultTabConfig]);
-
-    // Initialize tab state with pre-computed config and/or saved state
-    const getInitialTabState = useCallback(() => {
-        console.log("-----------------------------------------getInitialTabState");
-        try {
-            debug("stateSync", "Loading initial tab state");
-            const savedState = localStorage.getItem(STORAGE_KEY);
-            debug("stateSync", "Raw saved state:", savedState);
-
-            const validState = isValidSavedState(savedState);
-            if (!validState) {
-                console.log("validState", validState);
-                return getDefaultTabConfig();
-            }
-
-            // If we get here and have valid saved state, create tabs from it
-            const newState = createTabsFromConfig(validState);
-
-            console.log("newState.groups.length", newState.groups.length);
-
-            return newState;
-        } catch (error) {
-            console.error("[Tab State] Error loading saved state:", error);
-            return getDefaultTabConfig();
-        }
-    }, [getDefaultTabConfig, createTabsFromConfig]);
-
-    const initialTabState = getInitialTabState();
-
-    debug("initialization", "📊 Initial hooks loaded:", {
-        authLoading,
-        itemsLoading,
-        hasUser: !!currentUser,
-        hasItems: !!allItems,
+    // Add the tab registry before any tab-related logic
+    const tabRegistry = useTabRegistry({
+        shopState,
+        handleGoldChange,
+        handleLowestLevelChange,
+        handleHighestLevelChange,
+        handleRarityDistributionChange,
+        handleBiasChange,
+        categoryData,
+        filterMaps,
+        getFilterState,
+        toggleCategory,
+        toggleSubcategory,
+        toggleTrait,
+        clearCategorySelections,
+        clearSubcategorySelections,
+        clearTraitSelections,
+        sortedItems,
+        sortConfig,
+        handleSort,
+        generateInventory,
+        isGenerating,
+        handleShopDetailsChange,
+        handleSaveShop,
+        handleCloneShop,
+        handleDeleteShop,
+        handleRevertChanges,
+        savedShops,
+        hasUnsavedChanges,
+        getChangedFields,
+        handleLoadShop,
+        handleNewShop,
+        setFilterMaps,
+        setInventory,
+        shopSnapshot
     });
-
-    const handleGenerateClick = () => {
-        generateInventory();
-    };
 
     // Initialize shop - either from saved state or create new
     const hasInitialized = useRef(false);
@@ -463,7 +301,13 @@ function ShopGenerator() {
         setFilterMaps,
     ]);
 
-    // Tab management - now using tabState instead of loadInitialState
+    // Replace getInitialTabState with a memoized structure that never changes
+    const tabStructure = useMemo(() => createInitialTabState(), []);
+
+    // Create the tab elements with current props - this only depends on the static tab structure
+    const tabElements = useMemo(() => createTabElements(tabStructure), [tabStructure]);
+
+    // Tab management with the new structure
     const {
         tabGroups,
         flexBasis,
@@ -478,7 +322,7 @@ function ShopGenerator() {
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
-    } = useTabManagement(initialTabState.groups, initialTabState.widths);
+    } = useTabManagement(tabElements, tabStructure.widths);
 
     // Save state whenever tab groups or widths change
     useEffect(() => {
@@ -551,64 +395,18 @@ function ShopGenerator() {
                     key={index}
                     groupIndex={index}
                     tabs={tabs.map((tab) => {
-                        // Add props based on tab type
-                        switch (tab.type.name) {
-                            case "Tab_Parameters":
-                                return React.cloneElement(tab, {
-                                    currentGold: shopState.gold,
-                                    setCurrentGold: handleGoldChange,
-                                    lowestLevel: shopState.levelRange.min,
-                                    setLowestLevel: handleLowestLevelChange,
-                                    highestLevel: shopState.levelRange.max,
-                                    setHighestLevel: handleHighestLevelChange,
-                                    rarityDistribution: shopState.rarityDistribution,
-                                    setRarityDistribution: handleRarityDistributionChange,
-                                    itemBias: shopState.itemBias,
-                                    setItemBias: handleBiasChange,
-                                    categoryData: categoryData,
-                                    categoryStates: filterMaps.categories,
-                                    subcategoryStates: filterMaps.subcategories,
-                                    traitStates: filterMaps.traits,
-                                    getFilterState: getFilterState,
-                                    toggleCategory: toggleCategory,
-                                    toggleSubcategory: toggleSubcategory,
-                                    toggleTrait: toggleTrait,
-                                    clearCategorySelections: clearCategorySelections,
-                                    clearSubcategorySelections: clearSubcategorySelections,
-                                    clearTraitSelections: clearTraitSelections,
-                                });
-                            case "Tab_InventoryTable":
-                                return React.cloneElement(tab, {
-                                    items: sortedItems,
-                                    sortConfig,
-                                    onSort: handleSort,
-                                    currentShopName: shopState.name,
-                                    handleGenerateClick,
-                                    isGenerating,
-                                });
-                            case "Tab_ShopDetails":
-                                return React.cloneElement(tab, {
-                                    shopState,
-                                    onShopDetailsChange: handleShopDetailsChange,
-                                    onSaveShop: handleSaveShop,
-                                    onCloneShop: handleCloneShop,
-                                    onDeleteShop: handleDeleteShop,
-                                    onRevertChanges: () =>
-                                        handleRevertChanges(shopSnapshot, setFilterMaps, setInventory),
-                                    savedShops,
-                                    hasUnsavedChanges,
-                                    changes: getChangedFields(),
-                                });
-                            case "Tab_ChooseShop":
-                                return React.cloneElement(tab, {
-                                    savedShops,
-                                    onLoadShop: handleLoadShop,
-                                    onNewShop: handleNewShop,
-                                    currentShopId: shopState.id,
-                                });
-                            default:
-                                return tab;
-                        }
+                        const registryEntry = tabRegistry[tab.type.name];
+                        if (!registryEntry) return null;
+                        
+                        const TabComponent = tab.type.component || tab.Component;
+                        if (!TabComponent) return null;
+
+                        // Create element with memoized props from registry
+                        return React.createElement(TabComponent, {
+                            key: tab.key,
+                            type: tab.type,
+                            ...registryEntry.getProps()
+                        });
                     })}
                     draggedTab={draggedTab}
                     draggedTabIndex={draggedTabIndex}

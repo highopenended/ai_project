@@ -300,22 +300,25 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             const newGroups = [...prevGroups];
 
             if (targetGroupIndex !== undefined) {
+                // Moving between groups
                 const [sourceTab, dropIndex] = newTabs;
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
-
-                debug('Move', 'Processing tab move', { 
-                    sourceTab: sourceTab.type.name,
-                    dropIndex,
-                    sourceGroupSize: sourceGroup.length 
-                });
-
+                
+                // Find and remove the tab from source group
                 const sourceTabIndex = sourceGroup.findIndex(
-                    (tab) => tab.type.name === sourceTab.type.name && (!tab.key || tab.key === sourceTab.key)
+                    (tab) => tab.key === sourceTab.key
                 );
-                if (sourceTabIndex !== -1) {
-                    sourceGroup.splice(sourceTabIndex, 1);
+
+                if (sourceTabIndex === -1) {
+                    debug('Move', 'Source tab not found', sourceTab);
+                    return prevGroups;
                 }
 
+                // Get the actual tab object with all its properties
+                const movedTab = sourceGroup[sourceTabIndex];
+                sourceGroup.splice(sourceTabIndex, 1);
+
+                // Handle empty source group
                 if (sourceGroup.length === 0) {
                     debug('Move', 'Removing empty source group');
                     newGroups.splice(sourceGroupIndex, 1);
@@ -326,29 +329,20 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                     newGroups[sourceGroupIndex] = sourceGroup;
                 }
 
+                // Add to target group
                 const targetGroup = [...(newGroups[targetGroupIndex] || [])];
-                const isMovingBackToOriginal = sourceGroupIndex === targetGroupIndex;
-
-                if (isMovingBackToOriginal) {
-                    debug('Move', 'Moving back to original group');
-                    targetGroup.splice(dropIndex, 0, sourceTab);
-                } else {
-                    debug('Move', 'Creating new tab in target group');
-                    const newTab = React.cloneElement(sourceTab, {
-                        key: `${sourceTab.type.name}-${Date.now()}`,
-                    });
-                    targetGroup.splice(dropIndex, 0, newTab);
-                }
-
+                targetGroup.splice(dropIndex, 0, movedTab);
                 newGroups[targetGroupIndex] = targetGroup;
             } else {
-                debug('Move', 'Reordering within same group');
-                newGroups[sourceGroupIndex] = newTabs;
+                // Reordering within same group
+                newGroups[sourceGroupIndex] = newTabs.map(tab => {
+                    // Find the original tab object to preserve all properties
+                    const originalTab = prevGroups[sourceGroupIndex].find(t => t.key === tab.key);
+                    return originalTab || tab;
+                });
             }
 
-            debug('Move', 'Completed tab move', { 
-                finalGroupCount: newGroups.length 
-            });
+            debug('Move', 'Updated groups:', newGroups);
             return newGroups;
         });
     }, [updateDragState]);
