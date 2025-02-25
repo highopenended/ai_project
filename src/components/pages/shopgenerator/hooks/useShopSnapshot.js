@@ -37,22 +37,22 @@ export const useShopSnapshot = ({ shopState, filterMaps, inventory }) => {
 
     const hasUnsavedChanges = useMemo(() => {
         if (!shopSnapshot && shopState) {
-            console.log("No snapshot but has shop state - treating as unsaved new shop");
+            // console.log("No snapshot but has shop state - treating as unsaved new shop");
             return true;
         }
         
-        console.log("hasSnapshot", !!shopSnapshot);
-        console.log("hasShopState", !!shopState);
+        // console.log("hasSnapshot", !!shopSnapshot);
+        // console.log("hasShopState", !!shopState);
         
         const changes = getChangedFields();
         const hasChangeResult = hasChanges(changes);
         
-        console.log("Change detection:", {
-            hasSnapshot: !!shopSnapshot,
-            hasShopState: !!shopState,
-            changes,
-            hasChangeResult
-        });
+        // console.log("Change detection:", {
+        //     hasSnapshot: !!shopSnapshot,
+        //     hasShopState: !!shopState,
+        //     changes,
+        //     hasChangeResult
+        // });
         
         return hasChangeResult;
     }, [getChangedFields, shopSnapshot, shopState]);

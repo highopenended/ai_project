@@ -6,6 +6,7 @@ import { importShopData } from '../../../utils/shopFileUtils';
 const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData }) => {
     const handleImport = useCallback((importedData) => {
         // Strip the ID from imported data to ensure a new one is generated
+        // eslint-disable-next-line no-unused-vars
         const { id, ...dataWithoutId } = importedData;
         handleImportShop(dataWithoutId);
     }, [handleImportShop]);

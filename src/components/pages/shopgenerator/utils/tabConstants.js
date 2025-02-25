@@ -12,5 +12,5 @@ export const DEFAULT_TAB_STATE = {
         [{ type: TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP, key: "Tab_ChooseShop-0" }],
         [{ type: TAB_TYPE_IDENTIFIERS.SHOP_DETAILS, key: "Tab_ShopDetails-0" }]
     ],
-    widths: ["10%", "55%", "10%", "20%"]
+    widths: ["10%", "50%", "10%", "30%"]
 }; 

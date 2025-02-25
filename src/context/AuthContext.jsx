@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        log('Init', '🚀 Starting auth initialization');
+        // log('Init', '🚀 Starting auth initialization');
         addDebugMessage('Starting auth initialization');
         
         let isMounted = true;
@@ -50,16 +50,16 @@ export const AuthProvider = ({ children }) => {
 
         const initializeAuth = async () => {
             try {
-                log('Init', '⌛ Waiting for Firebase');
+                // log('Init', '⌛ Waiting for Firebase');
                 addDebugMessage('Waiting for Firebase');
                 await isInitialized;
                 
                 if (!isMounted) {
-                    log('Cleanup', '🛑 Unmounted during init');
+                    // log('Cleanup', '🛑 Unmounted during init');
                     return;
                 }
 
-                log('Init', '✅ Firebase ready');
+                // log('Init', '✅ Firebase ready');
                 addDebugMessage('Firebase initialized');
                 setAuthState(prev => ({ ...prev, initialized: true }));
 
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }) => {
                     (user) => {
                         if (!isMounted) return;
                         const status = user ? '👤 User logged in' : '❌ No user';
-                        log('Auth', status, user?.email);
+                        // log('Auth', status, user?.email);
                         addDebugMessage(status + (user ? `: ${user.email}` : ''));
                         
                         setAuthState(prev => ({
@@ -79,8 +79,8 @@ export const AuthProvider = ({ children }) => {
                     },
                     (error) => {
                         if (!isMounted) return;
-                        log('Error', '💥 Auth error:', error);
-                        addDebugMessage(`Error: ${error.message}`);
+                        // log('Error', '💥 Auth error:', error);
+                        // addDebugMessage(`Error: ${error.message}`);
                         
                         setAuthState(prev => ({
                             ...prev,
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
                     }
                 );
             } catch (error) {
-                log('Error', '💥 Init error:', error);
+                // log('Error', '💥 Init error:', error);
                 addDebugMessage(`Init error: ${error.message}`);
                 
                 if (isMounted) {
@@ -106,8 +106,8 @@ export const AuthProvider = ({ children }) => {
         initializeAuth();
 
         return () => {
-            log('Cleanup', '🧹 Cleaning up');
-            addDebugMessage('Cleaning up auth');
+            // log('Cleanup', '🧹 Cleaning up');
+            // addDebugMessage('Cleaning up auth');
             isMounted = false;
             if (unsubscribeAuth) {
                 unsubscribeAuth();
@@ -131,41 +131,41 @@ export const AuthProvider = ({ children }) => {
     };
 
     if (authState.loading && !authState.error) {
-        log('State', '⌛ Loading...');
+        // log('State', '⌛ Loading...');
         return (
             <>
-                <div>Loading...</div>
+                {/* <div>Loading...</div>
                 <div style={debugStyle}>
                     <div>🔄 Auth Status: Loading</div>
                     {authState.debugMessages.map((msg, i) => (
                         <div key={i}>{msg.time}: {msg.message}</div>
                     ))}
-                </div>
+                </div> */}
             </>
         );
     }
     
 
     if (authState.error) {
-        log('Error', '🚨 Error state:', authState.error);
+        // log('Error', '🚨 Error state:', authState.error);
         return (
             <>
-                <div>Authentication Error: {authState.error}</div>
+                {/* <div>Authentication Error: {authState.error}</div>
                 <div style={debugStyle}>
                     <div>❌ Auth Status: Error</div>
                     {authState.debugMessages.map((msg, i) => (
                         <div key={i}>{msg.time}: {msg.message}</div>
                     ))}
-                </div>
+                </div> */}
             </>
         );
     }
 
-    log('State', '✅ Auth ready', {
-        hasUser: !!authState.currentUser,
-        loading: authState.loading,
-        initialized: authState.initialized
-    });
+    // log('State', '✅ Auth ready', {
+    //     hasUser: !!authState.currentUser,
+    //     loading: authState.loading,
+    //     initialized: authState.initialized
+    // });
 
     return (
         <>
@@ -175,12 +175,12 @@ export const AuthProvider = ({ children }) => {
             }}>
                 {children}
             </AuthContext.Provider>
-            <div style={debugStyle}>
+            {/* <div style={debugStyle}>
                 <div>✅ Auth Status: Ready</div>
                 {authState.debugMessages.map((msg, i) => (
                     <div key={i}>{msg.time}: {msg.message}</div>
                 ))}
-            </div>
+            </div> */}
         </>
     );
 };

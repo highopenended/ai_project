@@ -23,12 +23,12 @@ import { loadShopData } from "./utils/firebaseShopUtils";
 
 // Debug configuration
 const DEBUG_CONFIG = {
-    enabled: true, // Master debug switch
+    enabled: false, // Master debug switch
     areas: {
-        initialization: true,
-        tabManagement: true,
-        stateSync: true,
-        tabCreation: true,
+        initialization: false,
+        tabManagement: false,
+        stateSync: false,
+        tabCreation: false,
     },
 };
 

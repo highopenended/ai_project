@@ -27,9 +27,34 @@ function Login() {
         const provider = new GoogleAuthProvider();
         
         try {
-            await signInWithPopup(auth, provider);
-            console.log("Google sign-in successful");
-            navigate('/home');
+            // Configure custom parameters for the Google provider
+            provider.setCustomParameters({
+                prompt: 'select_account',
+                // Handle third-party cookie restrictions
+                client_id: auth.app.options.apiKey,
+                cookie_policy: 'none'
+            });
+
+            // First try popup sign-in
+            try {
+                const result = await signInWithPopup(auth, provider);
+                // Ensure we have the necessary scopes
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                if (credential) {
+                    console.log("Google sign-in successful");
+                    navigate('/home');
+                }
+            } catch (popupError) {
+                // If popup was blocked or failed, show a user-friendly error
+                if (popupError.code === 'auth/popup-blocked' || 
+                    popupError.code === 'auth/popup-closed-by-user' ||
+                    popupError.code === 'auth/cancelled-popup-request') {
+                    setError("Popup was blocked or closed. Please ensure popups are allowed for this site.");
+                    console.warn("Popup sign-in failed:", popupError);
+                } else {
+                    throw popupError; // Re-throw other errors
+                }
+            }
         } catch (err) {
             setError("Failed to sign in with Google. Please try again.");
             console.error("Google sign-in error:", err);

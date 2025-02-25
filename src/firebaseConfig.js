@@ -19,17 +19,17 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Debug logging
-console.log('🔥 Firebase Status:', {
-    hasAuth: !!auth,
-    hasDB: !!db,
-    currentUser: auth.currentUser?.email,
-    dbType: db?.type,
-    projectId: firebaseConfig.projectId
-});
+// console.log('🔥 Firebase Status:', {
+//     hasAuth: !!auth,
+//     hasDB: !!db,
+//     currentUser: auth.currentUser?.email,
+//     dbType: db?.type,
+//     projectId: firebaseConfig.projectId
+// });
 
 const isInitialized = new Promise(resolve => {
     auth.onAuthStateChanged((user) => {
-        console.log('🔥 Auth state changed:', user?.email);
+        // console.log('🔥 Auth state changed:', user?.email);
         resolve(true);
     });
 });

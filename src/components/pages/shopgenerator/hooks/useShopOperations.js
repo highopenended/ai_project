@@ -63,13 +63,6 @@ export const useShopOperations = ({
                (typeof dateInput === "string" ? new Date(dateInput) : dateInput);
     }, []);
 
-    // Track shop parameter changes
-    useEffect(() => {
-        if (shopState.id) {
-            const newState = getCurrentShopState(shopState, filterMaps, inventory, getFilteredArray);
-            console.log("Updated shop state:", newState);
-        }
-    }, [shopState, filterMaps, inventory, getFilteredArray]);
 
     /**
      * Create a new shop with default values

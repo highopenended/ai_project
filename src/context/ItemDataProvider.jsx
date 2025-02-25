@@ -8,7 +8,7 @@ import { useAuth } from './AuthContext';
 // Simple debug logger
 const log = (area, message, data = '') => {
     const prefix = '📦 [Items]';
-    console.log(`${prefix} [${area}] ${message}`, data);
+    // console.log(`${prefix} [${area}] ${message}`, data);
 };
 
 export function ItemDataProvider({ children }) {
@@ -123,10 +123,10 @@ export function ItemDataProvider({ children }) {
             <ItemDataContext.Provider value={state}>
                 {children}
             </ItemDataContext.Provider>
-            <div style={debugStyle}>
+            {/* <div style={debugStyle}>
                 <div>✅ Items loaded: {state.items.length}</div>
                 <div>Categories: {state.categoryData ? Object.keys(state.categoryData).length : 0}</div>
-            </div>
+            </div> */}
         </>
     );
 }
