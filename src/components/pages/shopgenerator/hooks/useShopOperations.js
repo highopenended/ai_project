@@ -160,6 +160,7 @@ export const useShopOperations = ({
 
             // Create base state with defaults
             const baseState = {
+                // For imported shops (no ID) or explicit new shops, generate a new ID
                 id: shop.id || generateShopId(),
                 name: shop.name || "Unnamed Shop",
                 keeperName: shop.keeperName || "Unknown",
@@ -167,8 +168,8 @@ export const useShopOperations = ({
                 location: shop.location || "Unknown Location",
                 description: shop.description || "No details available",
                 keeperDescription: shop.keeperDescription || "No details available",
-                dateCreated: formatDate(shop.dateCreated),
-                dateLastEdited: formatDate(shop.dateLastEdited),
+                dateCreated: shop.id ? formatDate(shop.dateCreated) : new Date(), // New date for imported shops
+                dateLastEdited: shop.id ? formatDate(shop.dateLastEdited) : new Date(), // New date for imported shops
                 gold: parameters.gold || shop.gold || 1000,
                 levelRange: {
                     min: parameters.levelLow || shop.levelRange?.min || 0,

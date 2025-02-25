@@ -4,24 +4,26 @@ import { useCallback } from 'react';
 import { importShopData } from '../../../utils/shopFileUtils';
 
 const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData }) => {
+    const handleImport = useCallback((importedData) => {
+        // Strip the ID from imported data to ensure a new one is generated
+        const { id, ...dataWithoutId } = importedData;
+        handleImportShop(dataWithoutId);
+    }, [handleImportShop]);
+
     const handleFileChange = useCallback((event) => {
         const file = event.target.files[0];
         if (file) {
-            importShopData(file, (importedData) => {
-                handleImportShop(importedData);
-            });
+            importShopData(file, handleImport);
         }
-    }, [handleImportShop]);
+    }, [handleImport]);
 
     const handleDrop = useCallback((event) => {
         event.preventDefault();
         const file = event.dataTransfer.files[0];
         if (file) {
-            importShopData(file, (importedData) => {
-                handleImportShop(importedData);
-            });
+            importShopData(file, handleImport);
         }
-    }, [handleImportShop]);
+    }, [handleImport]);
 
     const handleDragOver = useCallback((event) => {
         event.preventDefault();
