@@ -142,6 +142,9 @@ function TabContainer({
             component: tab.type.component?.name || 'unknown'
         });
 
+        // Store the complete tab reference for production mode
+        window.__lastDraggedTabComponent = tab;
+
         const tabElements = Array.from(e.currentTarget.parentElement.children);
         originalPositions.current = tabElements.map(tab => {
             const rect = tab.getBoundingClientRect();
@@ -157,31 +160,22 @@ function TabContainer({
         
         // Enhanced data transfer for production mode
         const tabData = {
-            type: tab.type.name,
+            type: tab.type,  // Store the complete type object
             index: index,
             key: tab.key,
-            groupIndex: groupIndex,
-            component: tab.type.component?.name || 'unknown',
-            minWidth: tab.type.minWidth || 200
+            groupIndex: groupIndex
         };
 
         console.log('[DragStart] Setting drag data:', tabData);
         
         try {
-            // Store reference globally for production mode
-            window.__lastDraggedTab = tabData;
-            
             // Set data in multiple formats for redundancy
             e.dataTransfer.setData('application/x-tab', 'true');
             e.dataTransfer.setData('text/plain', index.toString());
             e.dataTransfer.setData('groupIndex', groupIndex.toString());
             e.dataTransfer.setData('tabInfo', JSON.stringify(tabData));
-            
-            console.log('[DragStart] Successfully set drag data');
         } catch (err) {
             console.warn('[DragStart] Error setting drag data:', err);
-            // Ensure global reference is set even if dataTransfer fails
-            window.__lastDraggedTab = tabData;
         }
     };
 
