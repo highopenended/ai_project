@@ -142,19 +142,32 @@ const useChooseShopRegistry = (props) => {
         savedShops,
         handleLoadShop,
         handleNewShop,
-        shopState
+        shopState,
+        filterMaps,
+        inventory
     } = props;
 
     return useMemo(() => ({
         savedShops,
         onLoadShop: handleLoadShop,
         onNewShop: handleNewShop,
-        currentShopId: shopState.id
+        currentShopId: shopState.id,
+        currentShopData: {
+            ...shopState,
+            currentStock: inventory,
+            filterStorageObjects: {
+                categories: Object.fromEntries(filterMaps.categories.entries()),
+                subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
+                traits: Object.fromEntries(filterMaps.traits.entries()),
+            }
+        }
     }), [
         savedShops,
         handleLoadShop,
         handleNewShop,
-        shopState.id
+        shopState,
+        filterMaps,
+        inventory
     ]);
 };
 

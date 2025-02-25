@@ -4,6 +4,15 @@ import { useCallback } from 'react';
 import { importShopData } from '../../../utils/shopFileUtils';
 
 const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData }) => {
+    const handleFileChange = useCallback((event) => {
+        const file = event.target.files[0];
+        if (file) {
+            importShopData(file, (importedData) => {
+                handleImportShop(importedData);
+            });
+        }
+    }, [handleImportShop]);
+
     const handleDrop = useCallback((event) => {
         event.preventDefault();
         const file = event.dataTransfer.files[0];
@@ -39,7 +48,7 @@ const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData
                     id="file-input"
                     type="file" 
                     accept=".shop"
-                    onChange={handleImportShop}
+                    onChange={handleFileChange}
                     aria-label="Import Shop"
                     className="file-input"
                 />

@@ -3,6 +3,7 @@ import "./Tab_ChooseShop.css";
 import NewShopButton from "./newshopbutton/NewShopButton";
 import SavedShopsList from "./savedshopslist/SavedShopsList";
 import ImportExport from "./importexport/ImportExport";
+import { exportShopData } from "../../utils/shopFileUtils";
 
 /**
  * Tab_ChooseShop Component
@@ -12,12 +13,16 @@ import ImportExport from "./importexport/ImportExport";
  * - Loading saved shops
  * - Importing/Exporting shop data
  */
-function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId }) {
+function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId, currentShopData }) {
     return (
         <div className="tab-choose-shop">
             <NewShopButton handleNewShop={onNewShop} />
             <SavedShopsList savedShops={savedShops} loadShop={onLoadShop} currentShopId={currentShopId} />
-            <ImportExport handleImportShop={() => {}} handleExportShop={() => {}} shopData={{}} />
+            <ImportExport 
+                handleImportShop={onLoadShop} 
+                handleExportShop={exportShopData} 
+                shopData={currentShopData} 
+            />
         </div>
     );
 }
@@ -27,6 +32,7 @@ Tab_ChooseShop.propTypes = {
     onLoadShop: PropTypes.func.isRequired,
     onNewShop: PropTypes.func.isRequired,
     currentShopId: PropTypes.string,
+    currentShopData: PropTypes.object.isRequired,
 };
 
 Tab_ChooseShop.displayName = "Choose Shop";
