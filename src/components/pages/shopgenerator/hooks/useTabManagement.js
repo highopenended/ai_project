@@ -44,6 +44,40 @@ const MIN_WIDTH_PX = 200;
 const RESIZE_THROTTLE_MS = 16; // ~60fps
 
 /**
+ * Tab Management System Documentation
+ * 
+ * Architecture Overview:
+ * The tab management system is built on three core principles:
+ * 1. Separation of Layout and State: Tab structure/positioning is independent of component state
+ * 2. Reference Preservation: Component references and state are maintained during all operations
+ * 3. Memoized Updates: Changes to one tab don't trigger re-renders of other tabs
+ * 
+ * Key Concepts:
+ * - Tab Structure: The physical arrangement of tabs in groups
+ * - Tab Registry: Memoized storage of tab props and state
+ * - Component References: Original React components for each tab
+ * 
+ * Data Flow:
+ * 1. Tab Structure Changes (move/split) -> Update Layout
+ * 2. Tab State Changes -> Update Registry -> Propagate to Specific Tab
+ * 3. Tab Props -> Memoized by Registry -> Passed to Components
+ * 
+ * @typedef {Object} Tab
+ * @property {string} key - Unique identifier for the tab
+ * @property {Object} type - Tab type information
+ * @property {string} type.name - Identifier matching TAB_TYPE_IDENTIFIERS
+ * @property {React.ComponentType} type.component - The actual React component
+ * @property {number} type.minWidth - Minimum width in pixels
+ * 
+ * @typedef {Object} DragState
+ * @property {boolean} isResizing - Whether a resize operation is in progress
+ * @property {Tab|null} draggedTab - Currently dragged tab
+ * @property {number|null} draggedTabIndex - Index of dragged tab
+ * @property {number|null} sourceGroupIndex - Group index of drag source
+ * @property {Object} dropIndicators - Visual indicators for drag operations
+ */
+
+/**
  * Hook for managing tab navigation and content in the shop generator
  * 
  * Provides functionality for switching between different views (tabs) of the shop generator,
@@ -278,7 +312,21 @@ export const useTabManagement = (initialGroups, initialWidths) => {
     }, [dragState.dropIndicators, updateDragState]);
 
     /**
-     * Handles moving tabs within and between groups
+     * Handles moving tabs within and between groups while preserving component state
+     * 
+     * @param {Array<Tab>|[Tab, number]} newTabs - Either array of tabs (reorder) or [sourceTab, targetIndex] (move)
+     * @param {number} sourceGroupIndex - Index of the source group
+     * @param {number} [targetGroupIndex] - Index of target group (if moving between groups)
+     * 
+     * Key Behaviors:
+     * 1. Within Group: Preserves original tab objects while reordering
+     * 2. Between Groups: Moves complete tab object with all properties
+     * 3. Empty Groups: Removes source group if it becomes empty
+     * 
+     * State Preservation:
+     * - Uses tab.key for reliable identification
+     * - Maintains original component references
+     * - Preserves memoized props from registry
      */
     const handleTabMove = useCallback((newTabs, sourceGroupIndex, targetGroupIndex) => {
         debug('Action', 'Moving tab', { sourceGroupIndex, targetGroupIndex });
@@ -348,7 +396,26 @@ export const useTabManagement = (initialGroups, initialWidths) => {
     }, [updateDragState]);
 
     /**
-     * Handles creating new groups by splitting existing ones
+     * Creates a new group by splitting a tab from an existing group
+     * 
+     * @param {Object} tabInfo - Information about the tab to split
+     * @param {number} sourceGroupIndex - Index of the group to split from
+     * @param {boolean|number} targetPosition - Where to insert new group
+     * 
+     * Split Behaviors:
+     * 1. true: Append new group at end
+     * 2. false: Prepend new group at start
+     * 3. number: Insert at specific position
+     * 
+     * State Handling:
+     * - Preserves complete tab object with all properties
+     * - Maintains component references and state
+     * - Updates group structure without affecting other tabs
+     * 
+     * Note for Production Mode:
+     * - Ensure tabInfo contains complete component reference
+     * - Verify tab.type includes both name and component
+     * - Check targetPosition is properly normalized
      */
     const handleTabSplit = useCallback((tabInfo, sourceGroupIndex, targetPosition) => {
         debug('Action', 'Splitting tab', { sourceGroupIndex, targetPosition });
