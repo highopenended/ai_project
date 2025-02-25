@@ -4,6 +4,12 @@ import Scrollbar from '../../../shared/scrollbar/Scrollbar';
 import './SavedShopsList.css';
 
 const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
+
+    console.log("loadShop: ", loadShop);
+    console.log("currentShopId: ", currentShopId);
+    console.log("savedShops: ", savedShops);
+
+
     const formatDate = (date) => {
         if (!date) return '';
         
@@ -25,6 +31,10 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
     // Check if current shop is unsaved (has ID but not in savedShops)
     const isUnsavedNew = currentShopId && !savedShops.find(shop => shop.id === currentShopId);
 
+
+    console.log("isUnsavedNew: ", isUnsavedNew);
+    console.log("currentShopId: ", currentShopId);
+    console.log("savedShops: ", savedShops);
     return (
         <div className="saved-shops-list-container">
             <div className="saved-shops-title">Saved Shops</div>
