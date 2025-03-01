@@ -14,7 +14,8 @@
     "test-prod": "vite build && vite preview",
     "test": "jest --verbose",
     "test:watch": "jest --watch --verbose",
-    "test:coverage": "jest --coverage --verbose"
+    "test:coverage": "jest --coverage --verbose",
+    "test:summary": "node src/tests/run-tests.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
