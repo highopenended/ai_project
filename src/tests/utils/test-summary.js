@@ -22,6 +22,11 @@ export function setupTestSummary() {
   // Collect test results
   const testResults = [];
 
+  // ANSI color codes
+  const GREEN = '\x1b[32m';
+  const RED = '\x1b[31m';
+  const RESET = '\x1b[0m';
+
   // Override test function to collect results
   const originalTest = global.test;
   global.test = (name, fn) => {
@@ -62,28 +67,14 @@ export function setupTestSummary() {
   afterAll(() => {
     console.error = originalConsoleError;
     
-    // Print a clean summary of test results
-    console.log("\n=== TEST SUMMARY ===");
-    
-    // Count passed and failed tests
-    const passed = testResults.filter(r => r.passed).length;
-    const failed = testResults.filter(r => !r.passed).length;
-    const total = testResults.length;
-    const totalDuration = testResults.reduce((sum, test) => sum + test.duration, 0);
-    
-    // Print test results
+    // Use process.stdout.write directly to avoid stack trace
+    // Print test results in a simple format
     testResults.forEach(result => {
-      const icon = result.passed ? "✅" : "❌";
+      const color = result.passed ? GREEN : RED;
+      const icon = result.passed ? "✓" : "✗";
       const duration = result.duration.toFixed(0);
-      console.log(`${icon} ${result.name} (${duration}ms)`);
+      process.stdout.write(`${color}${icon}${RESET} ${result.name} (${duration}ms)\n`);
     });
-    
-    // Print summary statistics
-    console.log("\nResults: " + 
-      (passed === total ? "✅ ALL TESTS PASSED" : `✅ ${passed} passed, ❌ ${failed} failed`) + 
-      ` (${total} total)`);
-    console.log(`Total time: ${totalDuration.toFixed(0)}ms`);
-    console.log("===================\n");
     
     // Restore original test function
     global.test = originalTest;

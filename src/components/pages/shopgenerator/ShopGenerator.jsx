@@ -290,7 +290,7 @@ function ShopGenerator() {
                     await handleNewShop();
                 }
 
-                debug("initialization", `[Init ${initId}] ✅ Initialization complete`);
+                debug("initialization", `[Init ${initId}] √ Initialization complete`);
                 hasInitialized.current = true;
                 setIsStateReady(true);
             } catch (error) {
@@ -398,7 +398,7 @@ function ShopGenerator() {
         return <div>Error loading item data: {itemsError}</div>;
     }
 
-    debug("initialization", "✅ Rendering main component");
+    debug("initialization", "√ Rendering main component");
 
     return (
         <div className={`shop-generator ${isResizing ? "resizing" : ""}`}>

@@ -1,7 +1,11 @@
-/* global jest, describe, beforeEach, test, expect */
+/* global describe, beforeEach, test, expect */
 import React from 'react';
 import { render, screen } from "@testing-library/react";
 import '@testing-library/jest-dom';
+import { setupTestSummary } from "../../../utils/test-summary";
+
+// Setup test summary
+setupTestSummary();
 
 // Create a simple mock component for testing
 const MockLoginComponent = () => {

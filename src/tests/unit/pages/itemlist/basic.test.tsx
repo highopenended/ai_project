@@ -1,8 +1,13 @@
+/* global jest, describe, test, expect */
 import React from 'react';
 import { render } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ItemList from '../../../../components/pages/itemlist/ItemList';
 import { AuthProvider } from '../../../../context/AuthContext';
+import { setupTestSummary } from "../../../utils/test-summary";
+
+// Setup test summary
+setupTestSummary();
 
 // Mock the item data
 jest.mock('../../../../data/item-table.json', () => [
@@ -59,8 +64,7 @@ jest.mock('../../../../firebaseConfig', () => ({
 }));
 
 describe('ItemList Component', () => {
-  // ✅ Component renders without crashing
-  test('✅ Component renders without crashing - should render the ItemList component without errors', () => {
+  test('Component renders without crashing', () => {
     expect(() => render(
       <AuthProvider>
         <ItemList />

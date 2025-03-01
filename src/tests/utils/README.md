@@ -34,10 +34,10 @@ setupTestSummary();
 
 ```
 === TEST SUMMARY ===
-✅ Component renders without crashing (66ms)
-✅ should render login form elements correctly (27ms)
+✓ Component renders without crashing (66ms)
+✓ should render login form elements correctly (27ms)
 
-Results: ✅ ALL TESTS PASSED (2 total)
+Results: ✓ ALL TESTS PASSED (2 total)
 Total time: 93ms
 ===================
 ```
@@ -77,30 +77,30 @@ The authentication test suite verifies user login, signup, and logout functional
 Located in `src/tests/unit/pages/login/user-interaction.test.jsx`
 
 ##### Form Validation
-- ✅ Should validate email format
-- ✅ Should require password field
-- ✅ Should disable submit button when fields are empty
+- ✓ Should validate email format
+- ✓ Should require password field
+- ✓ Should disable submit button when fields are empty
 
 ##### Email/Password Login
-- ✅ Should call signInWithEmailAndPassword with correct credentials
-- ✅ Should navigate to home on successful login
-- ✅ Should display error message on failed login
+- ✓ Should call signInWithEmailAndPassword with correct credentials
+- ✓ Should navigate to home on successful login
+- ✓ Should display error message on failed login
 
 ##### Google Authentication
-- ✅ Should call signInWithPopup with Google provider
-- ✅ Should navigate to home on successful Google login
-- ✅ Should display error message on failed Google login
+- ✓ Should call signInWithPopup with Google provider
+- ✓ Should navigate to home on successful Google login
+- ✓ Should display error message on failed Google login
 
 ##### Account Creation
-- ✅ Should toggle between login and signup modes
-- ✅ Should call createUserWithEmailAndPassword with correct credentials
-- ✅ Should navigate to home on successful account creation
-- ✅ Should display error message on failed account creation
+- ✓ Should toggle between login and signup modes
+- ✓ Should call createUserWithEmailAndPassword with correct credentials
+- ✓ Should navigate to home on successful account creation
+- ✓ Should display error message on failed account creation
 
 ##### Logout Functionality
-- ✅ Should call signOut when logout is triggered
-- ✅ Should navigate to login page after logout
-- ✅ Should clear user context after logout
+- ✓ Should call signOut when logout is triggered
+- ✓ Should navigate to login page after logout
+- ✓ Should clear user context after logout
 
 ## Best Practices
 

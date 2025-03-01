@@ -85,6 +85,10 @@ Authentication tests cover:
 - Navigation after authentication
 - Logout functionality
 
+Our authentication tests are implemented in:
+- `src/tests/unit/pages/login/user-interaction.test.jsx` - Comprehensive tests for all login functionality
+- `src/tests/unit/pages/login/basic.test.jsx` - Basic rendering test with a mock component
+
 For testing components that use Firebase authentication:
 1. Mock Firebase auth functions using Jest
 2. Create a mock version of the component for isolated testing
@@ -98,15 +102,47 @@ Example of mocking Firebase auth:
 const mockSignInWithEmailAndPassword = jest.fn();
 const mockCreateUserWithEmailAndPassword = jest.fn();
 const mockSignInWithPopup = jest.fn();
+const mockSignOut = jest.fn();
+const mockNavigate = jest.fn();
 
+// Mock react-router-dom's useNavigate
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate
+}));
+
+// Mock Firebase auth
 jest.mock("firebase/auth", () => ({
   getAuth: jest.fn(() => ({ currentUser: null })),
-  signInWithEmailAndPassword: mockSignInWithEmailAndPassword,
-  createUserWithEmailAndPassword: mockCreateUserWithEmailAndPassword,
+  signInWithEmailAndPassword: (...args) => mockSignInWithEmailAndPassword(...args),
+  createUserWithEmailAndPassword: (...args) => mockCreateUserWithEmailAndPassword(...args),
   GoogleAuthProvider: jest.fn().mockImplementation(() => ({})),
-  signInWithPopup: mockSignInWithPopup
+  signInWithPopup: (...args) => mockSignInWithPopup(...args),
+  signOut: (...args) => mockSignOut(...args)
 }));
 ```
+
+### Test Summary Feature
+
+Our tests use a custom test summary utility (`src/tests/utils/test-summary.js`) that provides:
+- Clear, formatted output of test results
+- Timing information for each test
+- Overall test suite summary
+- Suppression of unnecessary console output during tests
+
+Example test summary output:
+```
+=== TEST SUMMARY ===
+√ should render login form elements correctly (331ms)
+√ should validate email format (71ms)
+√ should require password field (71ms)
+...
+Results: √ ALL TESTS PASSED (16 total)
+Total time: 1154ms
+===================
+```
+
+This makes it easier to identify which tests are passing or failing and how long each test takes to run.
 
 ### Mock Component Approach
 

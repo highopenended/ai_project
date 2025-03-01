@@ -16,7 +16,7 @@ function syncFiles() {
         // Write to root directory
         writeFileSync(ROOT_JSON_PATH, formattedJson);
         
-        console.log('✅ Successfully synced item-table.json files!');
+        console.log('✓ Successfully synced item-table.json files!');
         console.log(`📊 Total items: ${items.length}`);
     } catch (error) {
         console.error('❌ Error syncing files:', error.message);

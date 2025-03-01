@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
                     return;
                 }
 
-                // log('Init', '✅ Firebase ready');
+                // log('Init', '√ Firebase ready');
                 addDebugMessage('Firebase initialized');
                 setAuthState(prev => ({ ...prev, initialized: true }));
 
@@ -161,12 +161,6 @@ export const AuthProvider = ({ children }) => {
         );
     }
 
-    // log('State', '✅ Auth ready', {
-    //     hasUser: !!authState.currentUser,
-    //     loading: authState.loading,
-    //     initialized: authState.initialized
-    // });
-
     return (
         <>
             <AuthContext.Provider value={{
@@ -176,7 +170,7 @@ export const AuthProvider = ({ children }) => {
                 {children}
             </AuthContext.Provider>
             {/* <div style={debugStyle}>
-                <div>✅ Auth Status: Ready</div>
+                <div>√ Auth Status: Ready</div>
                 {authState.debugMessages.map((msg, i) => (
                     <div key={i}>{msg.time}: {msg.message}</div>
                 ))}

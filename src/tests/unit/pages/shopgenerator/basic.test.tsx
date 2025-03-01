@@ -1,9 +1,14 @@
+/* global jest, describe, test, expect */
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import ShopGenerator from '../../../../components/pages/shopgenerator/ShopGenerator';
 import { AuthProvider } from '../../../../context/AuthContext';
 import { ItemDataProvider } from '../../../../context/ItemDataProvider';
+import { setupTestSummary } from "../../../utils/test-summary";
+
+// Setup test summary
+setupTestSummary();
 
 // Mock Firebase modules
 jest.mock('firebase/app', () => ({
@@ -43,16 +48,8 @@ jest.mock('../../../../firebaseConfig', () => ({
   isInitialized: Promise.resolve(true)
 }));
 
-describe('Initial Test Setup', () => {
-  // ✅ Basic sanity check
-  test('✅ Basic sanity check - should pass this sanity check', () => {
-    expect(true).toBe(true);
-  });
-});
-
 describe('ShopGenerator Component', () => {
-  // ✅ Component renders without crashing
-  test('✅ Component renders without crashing - should render the ShopGenerator component without errors', async () => {
+  test('Component renders without crashing', async () => {
     let renderResult;
     
     // Use act to handle all state updates

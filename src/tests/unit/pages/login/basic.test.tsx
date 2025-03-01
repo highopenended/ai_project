@@ -42,8 +42,8 @@ jest.mock('../../../../firebaseConfig', () => ({
 }));
 
 describe('Login Component', () => {
-  // ✅ Component renders without crashing
-  test('✅ Component renders without crashing - should render the Login component without errors', () => {
+  // √ Component renders without crashing
+  test('√ Component renders without crashing - should render the Login component without errors', () => {
     expect(() => render(
       <BrowserRouter>
         <AuthProvider>

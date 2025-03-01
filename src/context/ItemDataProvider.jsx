@@ -61,7 +61,7 @@ export function ItemDataProvider({ children }) {
             // Extract categories
             const categories = extractUniqueCategories(itemData);
 
-            log('Success', `[${initId}] ✅ Processed ${formattedData.length} items`);
+            log('Success', `[${initId}] ✓ Processed ${formattedData.length} items`);
             
             setState({
                 items: formattedData,
@@ -124,7 +124,7 @@ export function ItemDataProvider({ children }) {
                 {children}
             </ItemDataContext.Provider>
             {/* <div style={debugStyle}>
-                <div>✅ Items loaded: {state.items.length}</div>
+                <div>✓ Items loaded: {state.items.length}</div>
                 <div>Categories: {state.categoryData ? Object.keys(state.categoryData).length : 0}</div>
             </div> */}
         </>

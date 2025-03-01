@@ -1,13 +1,14 @@
-/* eslint-disable no-undef */
-/* eslint-disable react/jsx-uses-react */
-/* eslint-disable react/react-in-jsx-scope */
-// eslint-disable-next-line no-unused-vars
+/* global jest, describe, test, expect */
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Home from '../../../../components/pages/home/Home.jsx';
 import { AuthProvider } from '../../../../context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
+import { setupTestSummary } from "../../../utils/test-summary";
+
+// Setup test summary
+setupTestSummary();
 
 // Mock Firebase modules
 jest.mock('firebase/app', () => ({
@@ -59,15 +60,14 @@ jest.mock('../../../../lib/firebase/chatHistory', () => ({
 }));
 
 describe('Home Component', () => {
-  // ✅ Component renders without crashing
-  test('✅ Component renders without crashing - should render the Home component without errors', async () => {
+  test('Component renders without crashing', async () => {
     // Create mock initial messages array
     const mockInitialMessages = [];
-    let renderResult;
     
-    // Use act to handle all state updates
+    // This test simply verifies that the component renders without throwing an error
     await act(async () => {
-      renderResult = render(
+      // If this render call doesn't throw an error, the test passes
+      render(
         <BrowserRouter>
           <AuthProvider>
             <Home initialMessages={mockInitialMessages} conversationId={null} />
@@ -76,9 +76,10 @@ describe('Home Component', () => {
       );
       
       // Wait for any pending state updates
-      await new Promise(resolve => setTimeout(resolve, 0));
+      await new Promise(resolve => setTimeout(resolve, 100));
     });
     
-    expect(renderResult).toBeDefined();
+    // If we get here, the component rendered without crashing
+    expect(true).toBe(true);
   });
 }); 
