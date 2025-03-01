@@ -1,9 +1,12 @@
+/* eslint-disable no-undef */
+/* eslint-disable react/jsx-uses-react */
+/* eslint-disable react/react-in-jsx-scope */
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ShopGenerator from '../../../../components/pages/shopgenerator/ShopGenerator';
+import Home from '../../../../components/pages/home/Home.jsx';
 import { AuthProvider } from '../../../../context/AuthContext';
-import { ItemDataProvider } from '../../../../context/ItemDataProvider';
+import { BrowserRouter } from 'react-router-dom';
 
 // Mock Firebase modules
 jest.mock('firebase/app', () => ({
@@ -27,7 +30,12 @@ jest.mock('firebase/auth', () => {
 });
 
 jest.mock('firebase/firestore', () => ({
-  getFirestore: jest.fn()
+  getFirestore: jest.fn(),
+  collection: jest.fn(),
+  doc: jest.fn(),
+  setDoc: jest.fn(),
+  updateDoc: jest.fn(),
+  serverTimestamp: jest.fn()
 }));
 
 // Mock the firebaseConfig module
@@ -43,26 +51,27 @@ jest.mock('../../../../firebaseConfig', () => ({
   isInitialized: Promise.resolve(true)
 }));
 
-describe('Initial Test Setup', () => {
-  // ✅ Basic sanity check
-  test('✅ Basic sanity check - should pass this sanity check', () => {
-    expect(true).toBe(true);
-  });
-});
+// Mock the lib/firebase/chatHistory module
+jest.mock('../../../../lib/firebase/chatHistory', () => ({
+  saveConversation: jest.fn().mockResolvedValue('mock-conversation-id'),
+  updateConversation: jest.fn().mockResolvedValue(true)
+}));
 
-describe('ShopGenerator Component', () => {
+describe('Home Component', () => {
   // ✅ Component renders without crashing
-  test('✅ Component renders without crashing - should render the ShopGenerator component without errors', async () => {
+  test('✅ Component renders without crashing - should render the Home component without errors', async () => {
+    // Create mock initial messages array
+    const mockInitialMessages = [];
     let renderResult;
     
     // Use act to handle all state updates
     await act(async () => {
       renderResult = render(
-        <AuthProvider>
-          <ItemDataProvider>
-            <ShopGenerator />
-          </ItemDataProvider>
-        </AuthProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <Home initialMessages={mockInitialMessages} conversationId={null} />
+          </AuthProvider>
+        </BrowserRouter>
       );
       
       // Wait for any pending state updates

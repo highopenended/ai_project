@@ -12,9 +12,9 @@
     "delete-data": "node src/scripts/runImport.js delete",
     "sync-items": "node src/scripts/syncItemTable.js",
     "test-prod": "vite build && vite preview",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test": "jest --verbose",
+    "test:watch": "jest --watch --verbose",
+    "test:coverage": "jest --coverage --verbose"
   },
   "dependencies": {
     "cors": "^2.8.5",
