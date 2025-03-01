@@ -66,6 +66,42 @@ describe("MyComponent Tests", () => {
 });
 ```
 
+## Test Suites
+
+### Authentication Tests
+
+The authentication test suite verifies user login, signup, and logout functionality.
+
+#### Login Component Tests
+
+Located in `src/tests/unit/pages/login/user-interaction.test.jsx`
+
+##### Form Validation
+- ✅ Should validate email format
+- ✅ Should require password field
+- ✅ Should disable submit button when fields are empty
+
+##### Email/Password Login
+- ✅ Should call signInWithEmailAndPassword with correct credentials
+- ✅ Should navigate to home on successful login
+- ✅ Should display error message on failed login
+
+##### Google Authentication
+- ✅ Should call signInWithPopup with Google provider
+- ✅ Should navigate to home on successful Google login
+- ✅ Should display error message on failed Google login
+
+##### Account Creation
+- ✅ Should toggle between login and signup modes
+- ✅ Should call createUserWithEmailAndPassword with correct credentials
+- ✅ Should navigate to home on successful account creation
+- ✅ Should display error message on failed account creation
+
+##### Logout Functionality
+- ✅ Should call signOut when logout is triggered
+- ✅ Should navigate to login page after logout
+- ✅ Should clear user context after logout
+
 ## Best Practices
 
 - Use the test summary utility in all test files for consistent output
