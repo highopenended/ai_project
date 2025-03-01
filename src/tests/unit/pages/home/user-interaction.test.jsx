@@ -1,12 +1,12 @@
-/* eslint-disable no-undef */
-/* eslint-disable react/jsx-uses-react */
-/* eslint-disable react/react-in-jsx-scope */
+/* global jest, describe, beforeEach, test */
+
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Home from '../../../../components/pages/home/Home.jsx';
 import { AuthProvider } from '../../../../context/AuthContext';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 
 // Capture console.error to debug issues
 const originalConsoleError = console.error;
@@ -105,12 +105,12 @@ describe('Home Component User Interactions', () => {
     });
     
     // Debug: log the rendered HTML
-    console.log('Rendered HTML:', document.body.innerHTML);
+    // console.log('Rendered HTML:', document.body.innerHTML);
     
     // Debug: log all available elements by role
-    console.log('Available elements by role:');
-    console.log('Buttons:', screen.queryAllByRole('button').map(b => b.textContent));
-    console.log('Textareas:', screen.queryAllByRole('textbox').map(t => t.placeholder));
+    // console.log('Available elements by role:');
+    // console.log('Buttons:', screen.queryAllByRole('button').map(b => b.textContent));
+    // console.log('Textareas:', screen.queryAllByRole('textbox').map(t => t.placeholder));
     
     // Debug: check if there are any elements with placeholder text
     const allElements = document.querySelectorAll('*');

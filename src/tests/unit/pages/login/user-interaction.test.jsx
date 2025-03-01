@@ -1,5 +1,6 @@
 /* global jest, describe, beforeEach, test, expect */
 // React import is needed for JSX syntax even if not directly referenced
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
 import { render, act } from "@testing-library/react";
 import '@testing-library/jest-dom';

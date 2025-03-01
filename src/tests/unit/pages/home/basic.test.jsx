@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 /* eslint-disable react/jsx-uses-react */
 /* eslint-disable react/react-in-jsx-scope */
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
 import { render, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
