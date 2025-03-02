@@ -21,6 +21,9 @@ const isSummaryMode = process.env.TEST_SUMMARY_MODE === 'true';
 // Global registry to track which tests have been reported
 const reportedTests = new Set();
 
+let totalSuites = 0;
+let totalTests = 0;
+
 /**
  * Sets up test summary functionality for the current test file
  */
@@ -35,13 +38,14 @@ export function setupTestSummary() {
   const testResults = [];
 
   // ANSI color codes
-  const GREEN = '\x1b[32m';
+  const GREEN = '\u001b[32m';
   const RED = '\x1b[31m';
-  const RESET = '\x1b[0m';
+  const RESET = '\u001b[0m';
 
   // Override test function to collect results
   const originalTest = global.test;
   global.test = (name, fn) => {
+    totalTests++;
     // Create a unique identifier for this test
     const testId = `${filePath}:${name}`;
     
@@ -90,6 +94,7 @@ export function setupTestSummary() {
   });
 
   afterAll(() => {
+    totalSuites++;
     console.error = originalConsoleError;
     
     // Only output results in summary mode
@@ -105,11 +110,11 @@ export function setupTestSummary() {
         // Mark this test as reported
         reportedTests.add(result.id);
         
-        const color = result.passed ? GREEN : RED;
-        const icon = result.passed ? "✓" : "✗";
+        const icon = result.passed ? `${GREEN}✓${RESET}` : `${RED}✗${RESET}`;
         const duration = result.duration.toFixed(0);
-        process.stdout.write(`${color}${icon}${RESET} ${result.name} (${duration}ms)\n`);
+        process.stdout.write(`${icon} ${result.name} (${duration}ms)\n`);
       });
+      process.stdout.write(`\n${GREEN}${totalSuites} suites passed, ${totalTests} tests passed${RESET}\n`);
     }
     
     // Restore original test function

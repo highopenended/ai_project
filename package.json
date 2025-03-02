@@ -12,7 +12,7 @@
     "delete-data": "node src/scripts/runImport.js delete",
     "sync-items": "node src/scripts/syncItemTable.js",
     "test-prod": "vite build && vite preview",
-    "test": "jest --config=jest.quiet.config.cjs",
+    "test": "jest && npm run test:summary",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:summary": "cross-env TEST_SUMMARY_MODE=true jest"
