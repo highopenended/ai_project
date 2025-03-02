@@ -15,10 +15,22 @@
  * 3. Write your tests as usual. The summary will be displayed after all tests are complete.
  */
 
+// Check if we're running in summary mode (via test:summary script)
+const isSummaryMode = process.env.TEST_SUMMARY_MODE === 'true';
+
+// Global registry to track which tests have been reported
+const reportedTests = new Set();
+
 /**
  * Sets up test summary functionality for the current test file
  */
 export function setupTestSummary() {
+  // Get the current file path from the stack trace to use as a prefix for test names
+  const stackTrace = new Error().stack;
+  const callerLine = stackTrace.split('\n')[2];
+  const callerFile = callerLine.match(/\((.+?):\d+:\d+\)/) || callerLine.match(/at (.+?):\d+:\d+/);
+  const filePath = callerFile ? callerFile[1] : 'unknown';
+  
   // Collect test results
   const testResults = [];
 
@@ -30,24 +42,37 @@ export function setupTestSummary() {
   // Override test function to collect results
   const originalTest = global.test;
   global.test = (name, fn) => {
+    // Create a unique identifier for this test
+    const testId = `${filePath}:${name}`;
+    
     return originalTest(name, async (...args) => {
       const startTime = performance.now();
       try {
         await fn(...args);
         const endTime = performance.now();
-        testResults.push({ 
-          name, 
-          passed: true,
-          duration: endTime - startTime 
-        });
+        
+        // Only collect results in summary mode
+        if (isSummaryMode) {
+          testResults.push({ 
+            id: testId,
+            name, 
+            passed: true,
+            duration: endTime - startTime 
+          });
+        }
       } catch (error) {
         const endTime = performance.now();
-        testResults.push({ 
-          name, 
-          passed: false, 
-          error,
-          duration: endTime - startTime 
-        });
+        
+        // Only collect results in summary mode
+        if (isSummaryMode) {
+          testResults.push({ 
+            id: testId,
+            name, 
+            passed: false, 
+            error,
+            duration: endTime - startTime 
+          });
+        }
         throw error;
       }
     });
@@ -67,14 +92,25 @@ export function setupTestSummary() {
   afterAll(() => {
     console.error = originalConsoleError;
     
-    // Use process.stdout.write directly to avoid stack trace
-    // Print test results in a simple format
-    testResults.forEach(result => {
-      const color = result.passed ? GREEN : RED;
-      const icon = result.passed ? "✓" : "✗";
-      const duration = result.duration.toFixed(0);
-      process.stdout.write(`${color}${icon}${RESET} ${result.name} (${duration}ms)\n`);
-    });
+    // Only output results in summary mode
+    if (isSummaryMode) {
+      // Use process.stdout.write directly to avoid stack trace
+      // Print test results in a simple format, but only for tests not already reported
+      testResults.forEach(result => {
+        // Skip if this test has already been reported
+        if (reportedTests.has(result.id)) {
+          return;
+        }
+        
+        // Mark this test as reported
+        reportedTests.add(result.id);
+        
+        const color = result.passed ? GREEN : RED;
+        const icon = result.passed ? "✓" : "✗";
+        const duration = result.duration.toFixed(0);
+        process.stdout.write(`${color}${icon}${RESET} ${result.name} (${duration}ms)\n`);
+      });
+    }
     
     // Restore original test function
     global.test = originalTest;

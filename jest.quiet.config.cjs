@@ -1,3 +1,6 @@
+/**
+ * Jest configuration for quiet test output
+ */
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/src/tests/setup/test-setup.ts'],
@@ -18,8 +21,6 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/tests/**/*',
   ],
-  reporters: process.env.TEST_SUMMARY_MODE === 'true' ? ['<rootDir>/src/tests/utils/silent-reporter.cjs'] : ['default'],
-  verbose: false,
-  watch: false,
-  notify: false,
+  // Use a custom reporter to suppress output
+  reporters: ['<rootDir>/src/tests/utils/quiet-reporter.cjs'],
 }; 

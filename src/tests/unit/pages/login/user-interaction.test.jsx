@@ -187,7 +187,7 @@ describe("Login Component User Interactions", () => {
     await renderLoginComponent();
 
     // Debug: log the rendered HTML
-    console.log("Rendered HTML:", document.body.innerHTML);
+    // console.log("Rendered HTML:", document.body.innerHTML);
     
     // Verify essential form elements are present
     expect(screen.getByLabelText(/Email Address/i)).toBeInTheDocument();

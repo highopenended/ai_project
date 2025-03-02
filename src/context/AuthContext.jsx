@@ -1,4 +1,5 @@
 // src/context/AuthContext.js
+// eslint-disable-next-line no-unused-vars
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, isInitialized } from "../firebaseConfig";
@@ -115,20 +116,7 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
-    // Debug overlay style
-    const debugStyle = {
-        position: 'fixed',
-        bottom: '10px',
-        right: '10px',
-        background: 'rgba(0,0,0,0.8)',
-        color: 'white',
-        padding: '10px',
-        borderRadius: '5px',
-        fontSize: '12px',
-        fontFamily: 'monospace',
-        zIndex: 9999,
-        maxWidth: '300px'
-    };
+
 
     if (authState.loading && !authState.error) {
         // log('State', '⌛ Loading...');
