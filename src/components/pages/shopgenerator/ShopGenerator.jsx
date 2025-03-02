@@ -8,6 +8,7 @@ import Tab_Parameters from "./tabs/tab_parameters/Tab_Parameters";
 import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
 import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
 import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
+import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import { useSorting } from "./utils/sortingUtils";
 import defaultShopData from "./utils/shopData";
 import { useShopOperations } from "./hooks/useShopOperations";
@@ -19,7 +20,6 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
 import { useTabRegistry } from './hooks/useTabRegistry';
 import { loadShopData } from "./utils/firebaseShopUtils";
-
 
 // Debug configuration
 const DEBUG_CONFIG = {
@@ -55,6 +55,7 @@ const TAB_TYPES = {
     [TAB_TYPE_IDENTIFIERS.INVENTORY]: Tab_InventoryTable,
     [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
     [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
+    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant,
 };
 
 /**
@@ -93,6 +94,7 @@ const isValidSavedState = (state) => {
 // Add this outside the component
 const createInitialTabState = () => {
     try {
+        localStorage.clear();
         const savedState = localStorage.getItem(STORAGE_KEY);
         const validState = isValidSavedState(savedState);
         if (!validState) {

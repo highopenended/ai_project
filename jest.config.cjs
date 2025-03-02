@@ -18,7 +18,7 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/tests/**/*',
   ],
-  reporters: process.env.TEST_SUMMARY_MODE === 'true' ? ['<rootDir>/src/tests/utils/silent-reporter.cjs'] : ['default'],
+  reporters: process.env.TEST_SUMMARY_MODE === 'true' ? ['<rootDir>/src/tests/utils/quiet-reporter.cjs'] : ['default'],
   verbose: false,
   watch: false,
   notify: false,

@@ -171,12 +171,18 @@ const useChooseShopRegistry = (props) => {
     ]);
 };
 
+const useAiAssistantRegistry = () => {
+    // For now, we'll return an empty object since the AI Assistant tab is simple
+    return useMemo(() => ({}), []);
+};
+
 export const useTabRegistry = (props) => {
     // Create separate registries for each tab type
     const parametersProps = useParametersRegistry(props);
     const inventoryProps = useInventoryRegistry(props);
     const shopDetailsProps = useShopDetailsRegistry(props);
     const chooseShopProps = useChooseShopRegistry(props);
+    const aiAssistantProps = useAiAssistantRegistry();
 
     // Return a stable reference to the registry mapping
     return useMemo(() => ({
@@ -191,6 +197,9 @@ export const useTabRegistry = (props) => {
         },
         [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: {
             getProps: () => chooseShopProps
+        },
+        [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: {
+            getProps: () => aiAssistantProps
         }
-    }), [parametersProps, inventoryProps, shopDetailsProps, chooseShopProps]);
+    }), [parametersProps, inventoryProps, shopDetailsProps, chooseShopProps, aiAssistantProps]);
 }; 
