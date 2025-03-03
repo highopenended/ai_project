@@ -94,7 +94,7 @@ const isValidSavedState = (state) => {
 // Add this outside the component
 const createInitialTabState = () => {
     try {
-        // localStorage.clear();
+        localStorage.clear();
         const savedState = localStorage.getItem(STORAGE_KEY);
         const validState = isValidSavedState(savedState);
         if (!validState) {

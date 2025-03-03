@@ -43,48 +43,48 @@ export const AI_PROMPTS = {
 Follow these rules strictly:
 1) Focus exclusively on the current shop and its context
 2) Consider all previous conversation history for this shop
-3) Respect user-selected values as absolute truth
-4) Provide suggestions that logically complement existing values
+3) Feel free to suggest improvements for any field, even if the user has already set a value
+4) Provide suggestions that logically enhance the shop's theme and coherence
 5) Format responses in a parseable structure
 6) Consider the world of Golarion and its lore
 7) Never mention "Pathfinder 2e" explicitly`,
 
-    fillGapsTemplate: `Based on the following user-selected values:
+    fillGapsTemplate: `Based on the following shop values:
 {userValues}
 
 And considering our previous conversation:
 {conversationHistory}
 
-Please suggest logical values for the unselected fields. Format your response exactly as follows:
+Please suggest logical values or improvements for ALL fields. Don't hesitate to suggest changes to existing values if they would make the shop more coherent or interesting. Format your response exactly as follows:
 {
-    "reasoning": "Brief explanation of your choices...",
+    "reasoning": "Brief explanation of your choices and suggested improvements...",
     "suggestions": {
-        "shopName": "string or null if user-selected",
-        "shopType": "string or null if user-selected",
-        "keeperName": "string or null if user-selected",
-        "location": "string or null if user-selected",
-        "description": "string or null if user-selected",
-        "keeperDescription": "string or null if user-selected",
+        "shopName": "string with suggested name",
+        "shopType": "string with suggested type",
+        "keeperName": "string with suggested keeper name",
+        "location": "string with suggested location",
+        "description": "string with suggested description",
+        "keeperDescription": "string with suggested keeper description",
         "parameters": {
-            "gold": "number or null if user-selected",
+            "gold": "number for suggested gold amount",
             "levelRange": {
-                "min": "number or null if user-selected",
-                "max": "number or null if user-selected"
+                "min": "number for suggested minimum level",
+                "max": "number for suggested maximum level"
             },
             "itemBias": {
-                "x": "number or null if user-selected",
-                "y": "number or null if user-selected"
+                "x": "number for suggested x bias",
+                "y": "number for suggested y bias"
             },
             "rarityDistribution": {
-                "Common": "number or null if user-selected",
-                "Uncommon": "number or null if user-selected",
-                "Rare": "number or null if user-selected",
-                "Unique": "number or null if user-selected"
+                "Common": "number for suggested common percentage",
+                "Uncommon": "number for suggested uncommon percentage",
+                "Rare": "number for suggested rare percentage",
+                "Unique": "number for suggested unique percentage"
             }
         },
         "categories": {
-            "included": ["array of category names or null if user-selected"],
-            "excluded": ["array of category names or null if user-selected"]
+            "included": ["array of category names to include"],
+            "excluded": ["array of category names to exclude"]
         }
     }
 }`
