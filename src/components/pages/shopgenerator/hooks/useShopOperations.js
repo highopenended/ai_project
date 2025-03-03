@@ -26,7 +26,6 @@ const generateShopId = () => `shop_${Date.now()}_${Math.random().toString(36).su
  * @param {Function} params.setShopSnapshot - Function to update shop snapshot
  * @param {Function} params.setSavedShops - Function to update list of saved shops
  * @param {Function} params.setFilterMaps - Function to update filter states
- * @param {Function} params.getFilteredArray - Function to get filtered arrays
  * @param {boolean} params.hasUnsavedChanges - Whether there are unsaved changes
  * 
  * @returns {Object} Shop operation handlers
@@ -46,9 +45,7 @@ export const useShopOperations = ({
     setSavedShops,
     setFilterMaps,
     setInventory,
-    getFilteredArray,
     hasUnsavedChanges,
-    
 }) => {
     // Helper function to create a new shop snapshot
     const createShopSnapshot = useCallback((shopData, filterData, stockData) => {
@@ -149,6 +146,7 @@ export const useShopOperations = ({
                 parameters = {},
                 filterStorageObjects = {},
                 currentStock = [],
+                aiConversations = []
             } = shop;
 
             // Create base state with defaults
@@ -161,8 +159,8 @@ export const useShopOperations = ({
                 location: shop.location || "Unknown Location",
                 description: shop.description || "No details available",
                 keeperDescription: shop.keeperDescription || "No details available",
-                dateCreated: shop.id ? formatDate(shop.dateCreated) : new Date(), // New date for imported shops
-                dateLastEdited: shop.id ? formatDate(shop.dateLastEdited) : new Date(), // New date for imported shops
+                dateCreated: shop.id ? formatDate(shop.dateCreated) : new Date(),
+                dateLastEdited: shop.id ? formatDate(shop.dateLastEdited) : new Date(),
                 gold: parameters.gold || shop.gold || 1000,
                 levelRange: {
                     min: parameters.levelLow || shop.levelRange?.min || 0,
@@ -174,7 +172,8 @@ export const useShopOperations = ({
                     Uncommon: 4.5,
                     Rare: 0.49,
                     Unique: 0.01,
-                }
+                },
+                aiConversations
             };
 
             // Create filter maps from stored states
@@ -256,6 +255,7 @@ export const useShopOperations = ({
                     subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
                     traits: Object.fromEntries(filterMaps.traits.entries()),
                 },
+                aiConversations: cleanShopState.aiConversations || []
             };
 
             console.log("About to call saveOrUpdateShopData with:", {
@@ -270,7 +270,8 @@ export const useShopOperations = ({
             const updatedState = {
                 ...shopState,
                 id: savedShopId,
-                dateLastEdited: currentDate
+                dateLastEdited: currentDate,
+                aiConversations: cleanShopState.aiConversations || []
             };
 
             console.log("Updating local state after save");

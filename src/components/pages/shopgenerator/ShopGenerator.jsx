@@ -205,6 +205,7 @@ function ShopGenerator() {
     // Add the tab registry before any tab-related logic
     const tabRegistry = useTabRegistry({
         shopState,
+        setShopState,
         handleGoldChange,
         handleLowestLevelChange,
         handleHighestLevelChange,

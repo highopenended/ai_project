@@ -41,7 +41,11 @@ const shopData = {
   // Current inventory
   // Note: For performance reasons, this is maintained in a separate state during normal operation
   // and only synced during save/load/reset operations
-  currentStock: []
+  currentStock: [],
+
+  // AI Assistant conversations
+  // Stores the chat history between the user and AI for this specific shop
+  aiConversations: []
 };
 
 export default shopData; 

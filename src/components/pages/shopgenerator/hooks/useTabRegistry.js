@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { TAB_TYPE_IDENTIFIERS } from '../utils/tabConstants';
 
 // Separate registries for each tab type to prevent cross-contamination of state
@@ -175,11 +175,25 @@ const useAiAssistantRegistry = (props) => {
     const {
         shopState,
         filterMaps,
-        inventory = []
+        inventory = [],
+        setShopState
     } = props || {};
 
+    // Create a function to update AI conversations
+    const onAiConversationUpdate = useCallback((messages) => {
+        if (setShopState && shopState) {
+            setShopState(prevState => ({
+                ...prevState,
+                aiConversations: messages
+            }));
+        }
+    }, [setShopState, shopState]);
+
     return useMemo(() => ({
-        shopState: shopState || {},
+        shopState: {
+            ...(shopState || {}),
+            onAiConversationUpdate
+        },
         filterMaps: filterMaps || {
             categories: new Map(),
             subcategories: new Map(),
@@ -189,7 +203,8 @@ const useAiAssistantRegistry = (props) => {
     }), [
         shopState,
         filterMaps,
-        inventory
+        inventory,
+        onAiConversationUpdate
     ]);
 };
 

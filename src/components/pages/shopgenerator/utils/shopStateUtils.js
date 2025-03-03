@@ -28,6 +28,8 @@ export const takeShopSnapshot = (shopState, filterMaps, items) => ({
         traits: Object.fromEntries(filterMaps.traits.entries()),
     },
     currentStock: [...items],
+    // AI conversations
+    aiConversations: shopState.aiConversations || []
 });
 
 /**
