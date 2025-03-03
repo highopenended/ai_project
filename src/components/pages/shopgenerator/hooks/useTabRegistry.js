@@ -171,9 +171,26 @@ const useChooseShopRegistry = (props) => {
     ]);
 };
 
-const useAiAssistantRegistry = () => {
-    // For now, we'll return an empty object since the AI Assistant tab is simple
-    return useMemo(() => ({}), []);
+const useAiAssistantRegistry = (props) => {
+    const {
+        shopState,
+        filterMaps,
+        inventory = []
+    } = props || {};
+
+    return useMemo(() => ({
+        shopState: shopState || {},
+        filterMaps: filterMaps || {
+            categories: new Map(),
+            subcategories: new Map(),
+            traits: new Map()
+        },
+        inventory: inventory || []
+    }), [
+        shopState,
+        filterMaps,
+        inventory
+    ]);
 };
 
 export const useTabRegistry = (props) => {
@@ -182,7 +199,7 @@ export const useTabRegistry = (props) => {
     const inventoryProps = useInventoryRegistry(props);
     const shopDetailsProps = useShopDetailsRegistry(props);
     const chooseShopProps = useChooseShopRegistry(props);
-    const aiAssistantProps = useAiAssistantRegistry();
+    const aiAssistantProps = useAiAssistantRegistry(props);
 
     // Return a stable reference to the registry mapping
     return useMemo(() => ({
