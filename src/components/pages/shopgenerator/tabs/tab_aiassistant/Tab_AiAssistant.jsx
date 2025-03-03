@@ -61,8 +61,8 @@ function Tab_AiAssistant({
             itemBias: shopState?.itemBias || {},
             rarityDistribution: shopState?.rarityDistribution || {},
             
-            // Inventory summary
-            inventoryCount: inventory?.length || 0,
+            // Inventory summary (Ignore Inventory for the foreseeable future)
+            // inventoryCount: inventory?.length || 0,
             
             // Shop ID for reference
             id: shopState?.id || ''
