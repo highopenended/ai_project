@@ -1,19 +1,19 @@
-import { useState, useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import './ImprovementDialog.css';
-import { DEFAULT_FIELD_VALUES } from '../../../utils/aiConstants';
+import { useState, useEffect, useCallback } from "react";
+import PropTypes from "prop-types";
+import "./ImprovementDialog.css";
+import { DEFAULT_FIELD_VALUES } from "../../../utils/aiConstants";
 
 /**
- * Dialog component that allows users to select which fields to preserve when requesting AI improvements
+ * Dialog component for selecting which fields to preserve when requesting AI improvements
  */
 const ImprovementDialog = ({ 
     isOpen, 
     onClose, 
-    onConfirm, 
     shopState, 
-    filterMaps
+    filterMaps, 
+    onConfirm
 }) => {
-    // State to track which fields should be preserved (not changed by AI)
+    // State for tracking which fields to preserve
     const [preservedFields, setPreservedFields] = useState({
         // Shop details
         name: true,
@@ -25,9 +25,9 @@ const ImprovementDialog = ({
         
         // Shop parameters
         gold: true,
-        levelRange: true, // Combined level range into a single field
-        rarityDistribution: true, // Combined rarity distribution into a single field
-        itemBias: true, // Combined item bias into a single field
+        levelRange: true,
+        itemBias: true,
+        rarityDistribution: true,
         
         // Filter selections
         filterCategories: true,
@@ -35,59 +35,33 @@ const ImprovementDialog = ({
         filterTraits: true
     });
     
-    // State for "remember preferences" option
-    const [rememberPreferences, setRememberPreferences] = useState(
-        localStorage.getItem('aiImprovementPreferences') === 'true'
-    );
-    
-    // Initialize preserved fields based on which fields have non-default values
+    // Initialize preserved fields based on saved preferences or default values
     useEffect(() => {
-        if (!isOpen) return;
-        
-        // Helper to check if a value is different from default
-        const isCustomValue = (value, defaultValue) => {
-            if (value === undefined || value === null) return false;
-            if (typeof value === 'object' && typeof defaultValue === 'object') {
-                return JSON.stringify(value) !== JSON.stringify(defaultValue);
-            }
-            return value !== defaultValue;
-        };
-        
-        // Get saved preferences if available
-        const savedPreferences = localStorage.getItem('aiImprovementPreferences') === 'true' 
-            ? JSON.parse(localStorage.getItem('aiPreservedFields') || '{}')
-            : null;
-            
-        if (savedPreferences) {
-            setPreservedFields(savedPreferences);
-            return;
+        if (isOpen) {
+            // Auto-check fields that have non-default values
+            setPreservedFields({
+                name: shopState?.name !== DEFAULT_FIELD_VALUES.shopName,
+                type: shopState?.type !== DEFAULT_FIELD_VALUES.type,
+                keeperName: shopState?.keeperName !== DEFAULT_FIELD_VALUES.keeperName,
+                location: shopState?.location !== DEFAULT_FIELD_VALUES.location,
+                description: shopState?.description !== DEFAULT_FIELD_VALUES.description,
+                keeperDescription: shopState?.keeperDescription !== DEFAULT_FIELD_VALUES.keeperDescription,
+                
+                gold: shopState?.gold > 0,
+                levelRange: shopState?.levelRange?.min > 0 || shopState?.levelRange?.max > 0,
+                itemBias: shopState?.itemBias?.x !== DEFAULT_FIELD_VALUES.itemBias.x || 
+                          shopState?.itemBias?.y !== DEFAULT_FIELD_VALUES.itemBias.y,
+                
+                rarityDistribution: shopState?.rarityDistribution?.Common !== DEFAULT_FIELD_VALUES.rarityDistribution.Common ||
+                                   shopState?.rarityDistribution?.Uncommon !== DEFAULT_FIELD_VALUES.rarityDistribution.Uncommon ||
+                                   shopState?.rarityDistribution?.Rare !== DEFAULT_FIELD_VALUES.rarityDistribution.Rare ||
+                                   shopState?.rarityDistribution?.Unique !== DEFAULT_FIELD_VALUES.rarityDistribution.Unique,
+                
+                filterCategories: filterMaps?.categories.size > 0,
+                filterSubcategories: filterMaps?.subcategories.size > 0,
+                filterTraits: filterMaps?.traits.size > 0
+            });
         }
-        
-        // Otherwise, set based on custom vs default values
-        setPreservedFields({
-            // Shop details
-            name: isCustomValue(shopState.name, DEFAULT_FIELD_VALUES.shopName),
-            type: isCustomValue(shopState.type, DEFAULT_FIELD_VALUES.type),
-            keeperName: isCustomValue(shopState.keeperName, DEFAULT_FIELD_VALUES.keeperName),
-            location: isCustomValue(shopState.location, DEFAULT_FIELD_VALUES.location),
-            description: isCustomValue(shopState.description, DEFAULT_FIELD_VALUES.description),
-            keeperDescription: isCustomValue(shopState.keeperDescription, DEFAULT_FIELD_VALUES.keeperDescription),
-            
-            // Shop parameters
-            gold: shopState.gold > 0,
-            levelRange: shopState.levelRange?.min > 0 || shopState.levelRange?.max > 0,
-            rarityDistribution: isCustomValue(shopState.rarityDistribution?.Common, DEFAULT_FIELD_VALUES.rarityDistribution.Common) ||
-                isCustomValue(shopState.rarityDistribution?.Uncommon, DEFAULT_FIELD_VALUES.rarityDistribution.Uncommon) ||
-                isCustomValue(shopState.rarityDistribution?.Rare, DEFAULT_FIELD_VALUES.rarityDistribution.Rare) ||
-                isCustomValue(shopState.rarityDistribution?.Unique, DEFAULT_FIELD_VALUES.rarityDistribution.Unique),
-            itemBias: isCustomValue(shopState.itemBias?.x, DEFAULT_FIELD_VALUES.itemBias.x) ||
-                isCustomValue(shopState.itemBias?.y, DEFAULT_FIELD_VALUES.itemBias.y),
-            
-            // Filter selections
-            filterCategories: filterMaps.categories.size > 0,
-            filterSubcategories: filterMaps.subcategories.size > 0,
-            filterTraits: filterMaps.traits.size > 0
-        });
     }, [isOpen, shopState, filterMaps]);
     
     // Handle checkbox changes
@@ -98,41 +72,51 @@ const ImprovementDialog = ({
         }));
     };
     
-    // Handle section select/deselect all
-    const handleSectionAction = (section, value) => {
+    // Select all fields in a section
+    const selectAllInSection = (section) => {
         const newPreservedFields = { ...preservedFields };
         
-        switch (section) {
-            case 'details':
-                newPreservedFields.name = value;
-                newPreservedFields.type = value;
-                newPreservedFields.keeperName = value;
-                newPreservedFields.location = value;
-                newPreservedFields.description = value;
-                newPreservedFields.keeperDescription = value;
-                break;
-                
-            case 'parameters':
-                newPreservedFields.gold = value;
-                newPreservedFields.levelRange = value;
-                newPreservedFields.rarityDistribution = value;
-                newPreservedFields.itemBias = value;
-                break;
-                
-            case 'filters':
-                newPreservedFields.filterCategories = value;
-                newPreservedFields.filterSubcategories = value;
-                newPreservedFields.filterTraits = value;
-                break;
-                
-            case 'all':
-                Object.keys(newPreservedFields).forEach(key => {
-                    newPreservedFields[key] = value;
-                });
-                break;
-                
-            default:
-                break;
+        if (section === 'details') {
+            newPreservedFields.name = true;
+            newPreservedFields.type = true;
+            newPreservedFields.keeperName = true;
+            newPreservedFields.location = true;
+            newPreservedFields.description = true;
+            newPreservedFields.keeperDescription = true;
+        } else if (section === 'parameters') {
+            newPreservedFields.gold = true;
+            newPreservedFields.levelRange = true;
+            newPreservedFields.itemBias = true;
+            newPreservedFields.rarityDistribution = true;
+        } else if (section === 'filters') {
+            newPreservedFields.filterCategories = true;
+            newPreservedFields.filterSubcategories = true;
+            newPreservedFields.filterTraits = true;
+        }
+        
+        setPreservedFields(newPreservedFields);
+    };
+    
+    // Deselect all fields in a section
+    const deselectAllInSection = (section) => {
+        const newPreservedFields = { ...preservedFields };
+        
+        if (section === 'details') {
+            newPreservedFields.name = false;
+            newPreservedFields.type = false;
+            newPreservedFields.keeperName = false;
+            newPreservedFields.location = false;
+            newPreservedFields.description = false;
+            newPreservedFields.keeperDescription = false;
+        } else if (section === 'parameters') {
+            newPreservedFields.gold = false;
+            newPreservedFields.levelRange = false;
+            newPreservedFields.itemBias = false;
+            newPreservedFields.rarityDistribution = false;
+        } else if (section === 'filters') {
+            newPreservedFields.filterCategories = false;
+            newPreservedFields.filterSubcategories = false;
+            newPreservedFields.filterTraits = false;
         }
         
         setPreservedFields(newPreservedFields);
@@ -140,355 +124,394 @@ const ImprovementDialog = ({
     
     // Handle dialog confirmation
     const handleConfirm = useCallback(() => {
-        // Save preferences if requested
-        if (rememberPreferences) {
-            localStorage.setItem('aiImprovementPreferences', 'true');
-            localStorage.setItem('aiPreservedFields', JSON.stringify(preservedFields));
-        } else {
-            localStorage.removeItem('aiImprovementPreferences');
-            localStorage.removeItem('aiPreservedFields');
-        }
-        
-        // Create a compatibility object for the onConfirm callback
-        // This ensures backward compatibility with code expecting the old field structure
-        const compatibilityFields = {
-            ...preservedFields,
-            // Expand the combined fields back to individual fields
-            levelRangeMin: preservedFields.levelRange,
-            levelRangeMax: preservedFields.levelRange,
-            itemBiasX: preservedFields.itemBias,
-            itemBiasY: preservedFields.itemBias,
-            rarityCommon: preservedFields.rarityDistribution,
-            rarityUncommon: preservedFields.rarityDistribution,
-            rarityRare: preservedFields.rarityDistribution,
-            rarityUnique: preservedFields.rarityDistribution,
-        };
-        
-        // Call the onConfirm callback with the compatibility fields
-        onConfirm(compatibilityFields);
-    }, [preservedFields, rememberPreferences, onConfirm]);
+        onConfirm(preservedFields);
+        onClose();
+    }, [preservedFields, onConfirm, onClose]);
     
-    // Helper to determine if a value is custom or default
-    const isCustomValue = (value, defaultValue) => {
-        if (value === undefined || value === null) return false;
-        if (typeof value === 'object' && typeof defaultValue === 'object') {
-            return JSON.stringify(value) !== JSON.stringify(defaultValue);
-        }
-        return value !== defaultValue;
+    // Format value display
+    const formatValue = (value, defaultValue) => {
+        if (value === undefined || value === null) return "Not set";
+        if (typeof value === 'object') return JSON.stringify(value);
+        if (value === defaultValue) return value.toString();
+        return value.toString();
     };
     
-    // Format filter counts for display
-    const getFilterCounts = (filterMap) => {
-        const included = Array.from(filterMap.entries()).filter(([, state]) => state === 1).length;
-        const excluded = Array.from(filterMap.entries()).filter(([, state]) => state === -1).length;
-        return { included, excluded };
+    // Format gold with commas and "gp" suffix
+    const formatGold = (gold) => {
+        const goldValue = gold || 0;
+        return `${goldValue.toLocaleString()} gp`;
     };
     
-    // If dialog is not open, don't render anything
+    // Format level range display with spaces
+    const formatLevelRange = () => {
+        const min = shopState?.levelRange?.min || 0;
+        const max = shopState?.levelRange?.max || 0;
+        return `${min} - ${max}`;
+    };
+    
+    // Format item bias display as Variety and Cost percentages
+    const formatItemBias = () => {
+        // Check if itemBias exists in shopState, otherwise use default values
+        // Explicitly check for 0 values to avoid treating them as falsey
+        const x = (shopState?.itemBias?.x !== undefined && shopState?.itemBias?.x !== null) 
+            ? shopState.itemBias.x 
+            : DEFAULT_FIELD_VALUES.itemBias.x;
+            
+        const y = (shopState?.itemBias?.y !== undefined && shopState?.itemBias?.y !== null) 
+            ? shopState.itemBias.y 
+            : DEFAULT_FIELD_VALUES.itemBias.y;
+        
+        // Convert to percentages (assuming x and y are between 0 and 1)
+        const varietyPercent = Math.round(x * 100);
+        const costPercent = Math.round(y * 100);
+        
+        return (
+            <span style={{ whiteSpace: 'nowrap' }}>
+                <span className="bias-label">Variety:</span> <span className="bias-value">{varietyPercent}%</span>
+                <span style={{ display: 'inline-block', width: '8px' }}></span>
+                <span className="bias-label">Cost:</span> <span className="bias-value">{costPercent}%</span>
+            </span>
+        );
+    };
+    
+    // Format rarity distribution display with colored percentages
+    const formatRarityDistribution = () => {
+        const common = shopState?.rarityDistribution?.Common || DEFAULT_FIELD_VALUES.rarityDistribution.Common;
+        const uncommon = shopState?.rarityDistribution?.Uncommon || DEFAULT_FIELD_VALUES.rarityDistribution.Uncommon;
+        const rare = shopState?.rarityDistribution?.Rare || DEFAULT_FIELD_VALUES.rarityDistribution.Rare;
+        const unique = shopState?.rarityDistribution?.Unique || DEFAULT_FIELD_VALUES.rarityDistribution.Unique;
+        
+        return (
+            <span>
+                <span className="rarity-common">{common}%</span>
+                <span className="rarity-separator"></span>
+                <span className="rarity-uncommon">{uncommon}%</span>
+                <span className="rarity-separator"></span>
+                <span className="rarity-rare">{rare}%</span>
+                <span className="rarity-separator"></span>
+                <span className="rarity-unique">{unique}%</span>
+            </span>
+        );
+    };
+    
+    // Get filter count
+    const getFilterCount = (filterMap) => {
+        return filterMap ? filterMap.size : 0;
+    };
+    
     if (!isOpen) return null;
-    
-    // Get filter counts
-    const categoryCounts = getFilterCounts(filterMaps.categories);
-    const subcategoryCounts = getFilterCounts(filterMaps.subcategories);
-    const traitCounts = getFilterCounts(filterMaps.traits);
     
     return (
         <div className="improvement-dialog-overlay" onClick={onClose}>
-            <div className="improvement-dialog" onClick={e => e.stopPropagation()}>
+            <div className="improvement-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="improvement-dialog-header">
-                    <h2>Choose your Truths</h2>
-                    <button className="improvement-dialog-close" onClick={onClose}>&times;</button>
+                    <h2>Select Fields to Preserve</h2>
+                    <button className="improvement-dialog-close" onClick={onClose}>×</button>
                 </div>
                 
                 <div className="improvement-dialog-description">
-                    <p>Select which aspects of your shop you want to preserve. The oracle will treat checked items as fixed and only suggest improvements for unchecked items.</p>
+                    Check the boxes for fields you want to preserve. The AI will treat these as absolute truth and only suggest improvements for unchecked fields.
                 </div>
                 
-                <div className="improvement-dialog-content">
+                <div className="improvement-dialog-sections">
                     {/* Shop Details Section */}
-                    <div className="field-section">
-                        <div className="field-section-header">
-                            <h3 className="field-section-title">Shop Details</h3>
-                            <div className="field-section-actions">
-                                <button onClick={() => handleSectionAction('details', true)}>Select All</button>
-                                <button onClick={() => handleSectionAction('details', false)}>Deselect All</button>
+                    <div className="improvement-dialog-section">
+                        <div className="section-header">
+                            <h3 className="section-title">Shop Details</h3>
+                            <div className="section-actions">
+                                <button 
+                                    className="section-action-button" 
+                                    onClick={() => selectAllInSection('details')}
+                                >
+                                    Select All
+                                </button>
+                                <button 
+                                    className="section-action-button" 
+                                    onClick={() => deselectAllInSection('details')}
+                                >
+                                    Deselect All
+                                </button>
                             </div>
                         </div>
                         
-                        <div className="field-list">
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-name"
-                                    className="field-checkbox"
-                                    checked={preservedFields.name}
-                                    onChange={() => handleCheckboxChange('name')}
+                        <div className="field-list single-column">
+                            <div 
+                                className="field-item" 
+                                onClick={() => handleCheckboxChange('name')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="name" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.name} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-name" className="field-label">
-                                    Shop Name
-                                    <span className={`field-value ${isCustomValue(shopState.name, DEFAULT_FIELD_VALUES.shopName) ? 'custom-value' : 'default-value'}`}>
-                                        {shopState.name || DEFAULT_FIELD_VALUES.shopName}
-                                    </span>
-                                </label>
+                                <label htmlFor="name" className="field-label">Shop Name</label>
+                                <span className="field-value">
+                                    {formatValue(shopState?.name, DEFAULT_FIELD_VALUES.shopName)}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-type"
-                                    className="field-checkbox"
-                                    checked={preservedFields.type}
-                                    onChange={() => handleCheckboxChange('type')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('type')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="type" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.type} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-type" className="field-label">
-                                    Shop Type
-                                    <span className={`field-value ${isCustomValue(shopState.type, DEFAULT_FIELD_VALUES.type) ? 'custom-value' : 'default-value'}`}>
-                                        {shopState.type || DEFAULT_FIELD_VALUES.type}
-                                    </span>
-                                </label>
+                                <label htmlFor="type" className="field-label">Shop Type</label>
+                                <span className="field-value">
+                                    {formatValue(shopState?.type, DEFAULT_FIELD_VALUES.type)}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-keeper"
-                                    className="field-checkbox"
-                                    checked={preservedFields.keeperName}
-                                    onChange={() => handleCheckboxChange('keeperName')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('keeperName')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="keeperName" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.keeperName} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-keeper" className="field-label">
-                                    Keeper Name
-                                    <span className={`field-value ${isCustomValue(shopState.keeperName, DEFAULT_FIELD_VALUES.keeperName) ? 'custom-value' : 'default-value'}`}>
-                                        {shopState.keeperName || DEFAULT_FIELD_VALUES.keeperName}
-                                    </span>
-                                </label>
+                                <label htmlFor="keeperName" className="field-label">Keeper Name</label>
+                                <span className="field-value">
+                                    {formatValue(shopState?.keeperName, DEFAULT_FIELD_VALUES.keeperName)}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-location"
-                                    className="field-checkbox"
-                                    checked={preservedFields.location}
-                                    onChange={() => handleCheckboxChange('location')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('location')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="location" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.location} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-location" className="field-label">
-                                    Location
-                                    <span className={`field-value ${isCustomValue(shopState.location, DEFAULT_FIELD_VALUES.location) ? 'custom-value' : 'default-value'}`}>
-                                        {shopState.location || DEFAULT_FIELD_VALUES.location}
-                                    </span>
-                                </label>
+                                <label htmlFor="location" className="field-label">Location</label>
+                                <span className="field-value">
+                                    {formatValue(shopState?.location, DEFAULT_FIELD_VALUES.location)}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-description"
-                                    className="field-checkbox"
-                                    checked={preservedFields.description}
-                                    onChange={() => handleCheckboxChange('description')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('description')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="description" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.description} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-description" className="field-label">
-                                    Description
-                                    <span className={`field-value ${isCustomValue(shopState.description, DEFAULT_FIELD_VALUES.description) ? 'custom-value' : 'default-value'}`}>
-                                        {(shopState.description || DEFAULT_FIELD_VALUES.description).substring(0, 20)}...
-                                    </span>
-                                </label>
+                                <label htmlFor="description" className="field-label">Description</label>
+                                <span className="field-value">
+                                    {formatValue(shopState?.description?.substring(0, 60) + (shopState?.description?.length > 60 ? '...' : ''), DEFAULT_FIELD_VALUES.description)}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-keeper-description"
-                                    className="field-checkbox"
-                                    checked={preservedFields.keeperDescription}
-                                    onChange={() => handleCheckboxChange('keeperDescription')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('keeperDescription')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="keeperDescription" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.keeperDescription} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-keeper-description" className="field-label">
-                                    Keeper Description
-                                    <span className={`field-value ${isCustomValue(shopState.keeperDescription, DEFAULT_FIELD_VALUES.keeperDescription) ? 'custom-value' : 'default-value'}`}>
-                                        {(shopState.keeperDescription || DEFAULT_FIELD_VALUES.keeperDescription).substring(0, 20)}...
-                                    </span>
-                                </label>
+                                <label htmlFor="keeperDescription" className="field-label">Keeper Description</label>
+                                <span className="field-value">
+                                    {formatValue(shopState?.keeperDescription?.substring(0, 60) + (shopState?.keeperDescription?.length > 60 ? '...' : ''), DEFAULT_FIELD_VALUES.keeperDescription)}
+                                </span>
                             </div>
                         </div>
                     </div>
                     
                     {/* Shop Parameters Section */}
-                    <div className="field-section">
-                        <div className="field-section-header">
-                            <h3 className="field-section-title">Shop Parameters</h3>
-                            <div className="field-section-actions">
-                                <button onClick={() => handleSectionAction('parameters', true)}>Select All</button>
-                                <button onClick={() => handleSectionAction('parameters', false)}>Deselect All</button>
+                    <div className="improvement-dialog-section">
+                        <div className="section-header">
+                            <h3 className="section-title">Shop Parameters</h3>
+                            <div className="section-actions">
+                                <button 
+                                    className="section-action-button" 
+                                    onClick={() => selectAllInSection('parameters')}
+                                >
+                                    Select All
+                                </button>
+                                <button 
+                                    className="section-action-button" 
+                                    onClick={() => deselectAllInSection('parameters')}
+                                >
+                                    Deselect All
+                                </button>
                             </div>
                         </div>
                         
-                        <div className="field-list">
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-gold"
-                                    className="field-checkbox"
-                                    checked={preservedFields.gold}
-                                    onChange={() => handleCheckboxChange('gold')}
+                        <div className="field-list single-column">
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('gold')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="gold" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.gold} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-gold" className="field-label">
-                                    Gold Amount
-                                    <span className={`field-value ${shopState.gold > 0 ? 'custom-value' : 'default-value'}`}>
-                                        {shopState.gold || 0}
-                                    </span>
-                                </label>
+                                <label htmlFor="gold" className="field-label">Gold</label>
+                                <span className="field-value">
+                                    {formatGold(shopState?.gold)}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-level-range"
-                                    className="field-checkbox"
-                                    checked={preservedFields.levelRange}
-                                    onChange={() => handleCheckboxChange('levelRange')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('levelRange')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="levelRange" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.levelRange} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-level-range" className="field-label">
-                                    Level Range
-                                    <span className={`field-value ${shopState.levelRange?.min > 0 || shopState.levelRange?.max > 0 ? 'custom-value' : 'default-value'}`}>
-                                        {shopState.levelRange?.min || 0} - {shopState.levelRange?.max || 0}
-                                    </span>
-                                </label>
+                                <label htmlFor="levelRange" className="field-label">Level Range</label>
+                                <span className="field-value">
+                                    {formatLevelRange()}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-rarity-distribution"
-                                    className="field-checkbox"
-                                    checked={preservedFields.rarityDistribution}
-                                    onChange={() => handleCheckboxChange('rarityDistribution')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('itemBias')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="itemBias" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.itemBias} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-rarity-distribution" className="field-label">
-                                    Rarity Distribution
-                                    <span className={`field-value ${
-                                        isCustomValue(shopState.rarityDistribution?.Common, DEFAULT_FIELD_VALUES.rarityDistribution.Common) ||
-                                        isCustomValue(shopState.rarityDistribution?.Uncommon, DEFAULT_FIELD_VALUES.rarityDistribution.Uncommon) ||
-                                        isCustomValue(shopState.rarityDistribution?.Rare, DEFAULT_FIELD_VALUES.rarityDistribution.Rare) ||
-                                        isCustomValue(shopState.rarityDistribution?.Unique, DEFAULT_FIELD_VALUES.rarityDistribution.Unique)
-                                            ? 'custom-value' : 'default-value'
-                                    }`}>
-                                        Custom
-                                    </span>
-                                </label>
+                                <label htmlFor="itemBias" className="field-label">Item Bias</label>
+                                <span className="field-value">
+                                    {formatItemBias()}
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-item-bias"
-                                    className="field-checkbox"
-                                    checked={preservedFields.itemBias}
-                                    onChange={() => handleCheckboxChange('itemBias')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('rarityDistribution')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="rarityDistribution" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.rarityDistribution} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-item-bias" className="field-label">
-                                    Item Bias
-                                    <span className={`field-value ${
-                                        isCustomValue(shopState.itemBias?.x, DEFAULT_FIELD_VALUES.itemBias.x) ||
-                                        isCustomValue(shopState.itemBias?.y, DEFAULT_FIELD_VALUES.itemBias.y)
-                                            ? 'custom-value' : 'default-value'
-                                    }`}>
-                                        {shopState.itemBias?.x?.toFixed(2) || DEFAULT_FIELD_VALUES.itemBias.x}, 
-                                        {shopState.itemBias?.y?.toFixed(2) || DEFAULT_FIELD_VALUES.itemBias.y}
-                                    </span>
-                                </label>
+                                <label htmlFor="rarityDistribution" className="field-label">Rarity Distribution</label>
+                                <span className="field-value">
+                                    {formatRarityDistribution()}
+                                </span>
                             </div>
                         </div>
                     </div>
                     
                     {/* Filter Selections Section */}
-                    <div className="field-section">
-                        <div className="field-section-header">
-                            <h3 className="field-section-title">Filter Selections</h3>
-                            <div className="field-section-actions">
-                                <button onClick={() => handleSectionAction('filters', true)}>Select All</button>
-                                <button onClick={() => handleSectionAction('filters', false)}>Deselect All</button>
+                    <div className="improvement-dialog-section">
+                        <div className="section-header">
+                            <h3 className="section-title">Filter Selections</h3>
+                            <div className="section-actions">
+                                <button 
+                                    className="section-action-button" 
+                                    onClick={() => selectAllInSection('filters')}
+                                >
+                                    Select All
+                                </button>
+                                <button 
+                                    className="section-action-button" 
+                                    onClick={() => deselectAllInSection('filters')}
+                                >
+                                    Deselect All
+                                </button>
                             </div>
                         </div>
                         
-                        <div className="field-list">
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-categories"
-                                    className="field-checkbox"
-                                    checked={preservedFields.filterCategories}
-                                    onChange={() => handleCheckboxChange('filterCategories')}
+                        <div className="field-list single-column">
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('filterCategories')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="filterCategories" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.filterCategories} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-categories" className="field-label">
-                                    Categories
-                                    <div className="filter-summary">
-                                        <strong>{categoryCounts.included}</strong> included, 
-                                        <strong> {categoryCounts.excluded}</strong> excluded
-                                    </div>
-                                </label>
+                                <label htmlFor="filterCategories" className="field-label">Categories</label>
+                                <span className="field-value">
+                                    {getFilterCount(filterMaps?.categories)} selected
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-subcategories"
-                                    className="field-checkbox"
-                                    checked={preservedFields.filterSubcategories}
-                                    onChange={() => handleCheckboxChange('filterSubcategories')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('filterSubcategories')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="filterSubcategories" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.filterSubcategories} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-subcategories" className="field-label">
-                                    Subcategories
-                                    <div className="filter-summary">
-                                        <strong>{subcategoryCounts.included}</strong> included, 
-                                        <strong> {subcategoryCounts.excluded}</strong> excluded
-                                    </div>
-                                </label>
+                                <label htmlFor="filterSubcategories" className="field-label">Subcategories</label>
+                                <span className="field-value">
+                                    {getFilterCount(filterMaps?.subcategories)} selected
+                                </span>
                             </div>
                             
-                            <div className="field-item">
-                                <input
-                                    type="checkbox"
-                                    id="field-traits"
-                                    className="field-checkbox"
-                                    checked={preservedFields.filterTraits}
-                                    onChange={() => handleCheckboxChange('filterTraits')}
+                            <div 
+                                className="field-item"
+                                onClick={() => handleCheckboxChange('filterTraits')}
+                            >
+                                <input 
+                                    type="checkbox" 
+                                    id="filterTraits" 
+                                    className="field-checkbox" 
+                                    checked={preservedFields.filterTraits} 
+                                    onChange={() => {}} // Empty handler since parent div handles the click
                                 />
-                                <label htmlFor="field-traits" className="field-label">
-                                    Traits
-                                    <div className="filter-summary">
-                                        <strong>{traitCounts.included}</strong> included, 
-                                        <strong> {traitCounts.excluded}</strong> excluded
-                                    </div>
-                                </label>
+                                <label htmlFor="filterTraits" className="field-label">Traits</label>
+                                <span className="field-value">
+                                    {getFilterCount(filterMaps?.traits)} selected
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div className="improvement-dialog-footer">
-                    <div className="remember-preferences">
-                        <input
-                            type="checkbox"
-                            id="remember-preferences"
-                            className="field-checkbox"
-                            checked={rememberPreferences}
-                            onChange={() => setRememberPreferences(!rememberPreferences)}
-                        />
-                        <label htmlFor="remember-preferences" className="field-label">
-                            Remember my preferences
-                        </label>
-                    </div>
-                    
-                    <div className="improvement-dialog-actions">
-                        <button className="btn-cancel" onClick={onClose}>
-                            Cancel
-                        </button>
-                        <button className="btn-confirm" onClick={handleConfirm}>
-                            Confirm
-                        </button>
-                    </div>
+                <div className="improvement-dialog-actions">
+                    <button className="dialog-button cancel-button" onClick={onClose}>
+                        Cancel
+                    </button>
+                    <button className="dialog-button confirm-button" onClick={handleConfirm}>
+                        Get Suggestions
+                    </button>
                 </div>
             </div>
         </div>
@@ -498,13 +521,9 @@ const ImprovementDialog = ({
 ImprovementDialog.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    onConfirm: PropTypes.func.isRequired,
-    shopState: PropTypes.object.isRequired,
-    filterMaps: PropTypes.shape({
-        categories: PropTypes.instanceOf(Map).isRequired,
-        subcategories: PropTypes.instanceOf(Map).isRequired,
-        traits: PropTypes.instanceOf(Map).isRequired
-    }).isRequired
+    shopState: PropTypes.object,
+    filterMaps: PropTypes.object,
+    onConfirm: PropTypes.func.isRequired
 };
 
 export default ImprovementDialog; 

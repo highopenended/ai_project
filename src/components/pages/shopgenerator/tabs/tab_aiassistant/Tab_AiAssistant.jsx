@@ -19,12 +19,24 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
     const [error, setError] = useState(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [preservedFields, setPreservedFields] = useState({});
+    const [savedPreferences, setSavedPreferences] = useState(null);
 
     // Update messages when shopState.aiConversations changes
     useEffect(() => {
         setMessages(shopState.aiConversations || []);
     }, [shopState.aiConversations]);
+
+    // Load saved preferences from localStorage on component mount
+    useEffect(() => {
+        try {
+            const savedPrefs = localStorage.getItem('aiAssistantPreferences');
+            if (savedPrefs) {
+                setSavedPreferences(JSON.parse(savedPrefs));
+            }
+        } catch (err) {
+            console.error("Error loading saved preferences:", err);
+        }
+    }, []);
 
     // Function to update parent component with new messages
     const updateParentState = useCallback(
@@ -158,10 +170,37 @@ Filter Selections:
   * Excluded: ${formatList(filterSelections.traits.excluded)}`;
     };
 
-    // Format preserved fields for AI prompt
+    // Function to handle opening the improvement dialog
+    const handleOpenDialog = useCallback(() => {
+        setIsDialogOpen(true);
+    }, []);
+
+    // Function to handle dialog confirmation
+    const handleDialogConfirm = useCallback((selectedFields, rememberPreferences) => {
+        if (rememberPreferences) {
+            setSavedPreferences(selectedFields);
+            // Save to localStorage for persistence
+            try {
+                localStorage.setItem('aiAssistantPreferences', JSON.stringify(selectedFields));
+            } catch (err) {
+                console.error("Error saving preferences:", err);
+            }
+        } else if (savedPreferences) {
+            // If user unchecked "remember preferences", clear saved preferences
+            setSavedPreferences(null);
+            try {
+                localStorage.removeItem('aiAssistantPreferences');
+            } catch (err) {
+                console.error("Error removing preferences:", err);
+            }
+        }
+        analyzeShopWithPreservedFields(selectedFields);
+    }, [savedPreferences]);
+
+    // Function to format preserved fields for AI prompt
     const formatPreservedFields = useCallback((fields) => {
-        if (!fields || Object.keys(fields).length === 0) return "";
-        
+        if (!fields) return "";
+
         const preservedList = [];
         
         // Shop details
@@ -174,35 +213,30 @@ Filter Selections:
         
         // Shop parameters
         if (fields.gold) preservedList.push("Gold Amount");
-        if (fields.levelRangeMin) preservedList.push("Minimum Level");
-        if (fields.levelRangeMax) preservedList.push("Maximum Level");
-        if (fields.itemBiasX) preservedList.push("Item Bias X");
-        if (fields.itemBiasY) preservedList.push("Item Bias Y");
-        
-        // Rarity distribution
-        if (fields.rarityCommon) preservedList.push("Common Rarity %");
-        if (fields.rarityUncommon) preservedList.push("Uncommon Rarity %");
-        if (fields.rarityRare) preservedList.push("Rare Rarity %");
-        if (fields.rarityUnique) preservedList.push("Unique Rarity %");
+        if (fields.levelRange) preservedList.push("Level Range");
+        if (fields.itemBias) preservedList.push("Item Bias");
+        if (fields.rarityDistribution) preservedList.push("Rarity Distribution");
         
         // Filter selections
         if (fields.filterCategories) preservedList.push("Category Filters");
         if (fields.filterSubcategories) preservedList.push("Subcategory Filters");
         if (fields.filterTraits) preservedList.push("Trait Filters");
         
-        if (preservedList.length === 0) return "";
+        if (preservedList.length === 0) {
+            return "No fields are being preserved. Feel free to suggest improvements for all aspects of the shop.";
+        }
         
         return `
 Preserved Fields (DO NOT CHANGE THESE):
-${preservedList.map(field => `- ${field}`).join("\n")}
+${preservedList.map(field => `- ${field}`).join('\n')}
 
-Please only suggest improvements for fields not listed above.`;
+Please respect these preserved fields as absolute truth and only suggest improvements for other aspects of the shop.`;
     }, []);
 
-    // Perform the actual analysis with preserved fields
-    const performAnalysis = useCallback(async (fields) => {
-        if (!currentUser) return;
-        
+    // Function to analyze shop with preserved fields
+    const analyzeShopWithPreservedFields = useCallback(async (fields) => {
+        if (!currentUser || isLoading || isAnalyzing) return;
+
         setIsAnalyzing(true);
         try {
             // Create user message for analysis request
@@ -239,15 +273,19 @@ Shop Parameters:
 - Gold: ${shopSnapshot.gold}
 - Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}
 - Inventory Count: ${shopSnapshot.inventoryCount} items
-${formatFilterSelections(shopSnapshot.filterSelections)}
-${formatPreservedFields(fields)}`;
+${formatFilterSelections(shopSnapshot.filterSelections)}`;
+
+            // Format preserved fields
+            const preservedFieldsText = formatPreservedFields(fields);
 
             // Use the baseContext and fillGapsTemplate from AI_PROMPTS
             const analysisPrompt = `${AI_PROMPTS.baseContext}
 
 ${AI_PROMPTS.fillGapsTemplate.replace("{userValues}", userValues).replace("{conversationHistory}", conversationHistory)}
 
-Please format your response with clear headings using **bold text** for section titles and numbered lists for suggestions. Remember to respect the preserved fields and only suggest changes for non-preserved fields.`;
+${preservedFieldsText}
+
+Please format your response with clear headings using **bold text** for section titles and numbered lists for suggestions.`;
 
             // Get AI response from Firebase function
             const response = await fetch("https://us-central1-project-dm-helper.cloudfunctions.net/chat", {
@@ -277,27 +315,12 @@ Please format your response with clear headings using **bold text** for section 
         } finally {
             setIsAnalyzing(false);
         }
-    }, [currentUser, isAnalyzing, messages, createShopSnapshot, updateParentState, formatFilterSelections, formatPreservedFields]);
+    }, [currentUser, isLoading, isAnalyzing, messages, createShopSnapshot, updateParentState, formatFilterSelections, formatPreservedFields]);
 
-    // Handle dialog confirmation
-    const handleDialogConfirm = useCallback((fields) => {
-        setPreservedFields(fields);
-        setIsDialogOpen(false);
-        
-        // Proceed with analysis
-        performAnalysis(fields);
-    }, [performAnalysis]);
-
-    // Show dialog when "Suggest Improvements" is clicked
-    const showImprovementDialog = useCallback(() => {
-        if (!currentUser || isLoading || isAnalyzing) return;
-        setIsDialogOpen(true);
-    }, [currentUser, isLoading, isAnalyzing]);
-
-    const analyzeShopState = useCallback(async () => {
-        if (!currentUser || isLoading || isAnalyzing) return;
-        showImprovementDialog();
-    }, [currentUser, isLoading, isAnalyzing, showImprovementDialog]);
+    // Replace the old analyzeShopState function with a function that opens the dialog
+    const analyzeShopState = useCallback(() => {
+        handleOpenDialog();
+    }, [handleOpenDialog]);
 
     const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
@@ -340,8 +363,10 @@ Shop Parameters:
 - Gold: ${shopSnapshot.gold}
 - Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}
 - Inventory Count: ${shopSnapshot.inventoryCount} items
-${formatFilterSelections(shopSnapshot.filterSelections)}
-${formatPreservedFields(preservedFields)}`;
+${formatFilterSelections(shopSnapshot.filterSelections)}`;
+
+            // Format preserved fields if available
+            const preservedFieldsText = savedPreferences ? formatPreservedFields(savedPreferences) : "";
 
             // Use the baseContext from AI_PROMPTS
             const contextualQuestion = `${AI_PROMPTS.baseContext}
@@ -354,7 +379,9 @@ ${conversationHistory}
 
 Current question: ${input}
 
-Feel free to suggest improvements for any aspect of the shop that isn't marked as preserved. Format your response with clear headings using **bold text** for section titles and bullet points for lists.`;
+${preservedFieldsText}
+
+Format your response with clear headings using **bold text** for section titles and bullet points for lists.`;
 
             // Get AI response from Firebase function
             const response = await fetch("https://us-central1-project-dm-helper.cloudfunctions.net/chat", {
@@ -384,7 +411,7 @@ Feel free to suggest improvements for any aspect of the shop that isn't marked a
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, isLoading, input, messages, createShopSnapshot, updateParentState, formatFilterSelections, formatPreservedFields, preservedFields]);
+    }, [currentUser, isLoading, input, messages, createShopSnapshot, updateParentState, formatFilterSelections, savedPreferences, formatPreservedFields]);
 
     if (error) {
         return (
@@ -424,7 +451,8 @@ Feel free to suggest improvements for any aspect of the shop that isn't marked a
                     {messages.length === 0 ? (
                         <div className="ai-assistant-empty">
                             <p>
-                                No conversation yet. Ask a question or use &quot;Suggest Improvements&quot; to get started.
+                                No conversation yet. Ask a question or use &quot;Suggest Improvements&quot; to get
+                                started.
                             </p>
                         </div>
                     ) : (
@@ -459,9 +487,10 @@ Feel free to suggest improvements for any aspect of the shop that isn't marked a
             <ImprovementDialog
                 isOpen={isDialogOpen}
                 onClose={() => setIsDialogOpen(false)}
-                onConfirm={handleDialogConfirm}
                 shopState={shopState}
                 filterMaps={filterMaps}
+                onConfirm={handleDialogConfirm}
+                savedPreferences={savedPreferences}
             />
         </div>
     );
