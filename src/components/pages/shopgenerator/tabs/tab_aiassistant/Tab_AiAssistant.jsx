@@ -2,7 +2,12 @@ import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useAuth } from '../../../../../context/AuthContext';
 import './Tab_AiAssistant.css';
-import { AI_PROMPTS } from '../../utils/aiConstants';
+import { 
+    AI_PROMPTS, 
+    LEVEL_MARKERS, 
+    NORMAL_RARITY_DISTRIBUTION, 
+    NORMAL_GOLD_PER_LEVEL 
+} from '../../utils/aiConstants';
 
 const defaultFilterMaps = {
     categories: new Map(),
@@ -109,6 +114,250 @@ function Tab_AiAssistant({
             .trim();
     };
 
+    // Process AI response to format JSON and filter out null values
+    const processAIResponse = (response) => {
+        try {
+            // Log the original response for debugging
+            console.log('Original AI Response:', { originalResponse: response });
+            
+            // Try to extract JSON from the response
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) return response;
+            
+            const jsonStr = jsonMatch[0];
+            const data = JSON.parse(jsonStr);
+            
+            // If there's no suggestions, return the original response
+            if (!data.suggestions) return response;
+            
+            // Extract reasoning - preserve the full text
+            const reasoning = data.reasoning || "Based on the shop details, I've suggested the following improvements:";
+            
+            // Filter out null values from suggestions
+            const suggestions = data.suggestions;
+            const filteredSuggestions = {};
+            
+            // Process basic fields
+            const basicFields = ['shopName', 'shopType', 'keeperName', 'location', 'description', 'keeperDescription'];
+            basicFields.forEach(field => {
+                if (suggestions[field] !== null && suggestions[field] !== undefined) {
+                    filteredSuggestions[field] = suggestions[field];
+                }
+            });
+            
+            // Process parameters if they exist
+            if (suggestions.parameters) {
+                const params = {};
+                
+                // Gold
+                if (suggestions.parameters.gold !== null && suggestions.parameters.gold !== undefined) {
+                    params.gold = suggestions.parameters.gold;
+                }
+                
+                // Level Range
+                if (suggestions.parameters.levelRange) {
+                    const levelRange = {};
+                    if (suggestions.parameters.levelRange.min !== null && suggestions.parameters.levelRange.min !== undefined) {
+                        levelRange.min = suggestions.parameters.levelRange.min;
+                    }
+                    if (suggestions.parameters.levelRange.max !== null && suggestions.parameters.levelRange.max !== undefined) {
+                        levelRange.max = suggestions.parameters.levelRange.max;
+                    }
+                    if (Object.keys(levelRange).length > 0) {
+                        params.levelRange = levelRange;
+                    }
+                }
+                
+                // Item Bias
+                if (suggestions.parameters.itemBias) {
+                    const itemBias = {};
+                    if (suggestions.parameters.itemBias.x !== null && suggestions.parameters.itemBias.x !== undefined) {
+                        itemBias.variety = suggestions.parameters.itemBias.x;
+                    }
+                    if (suggestions.parameters.itemBias.y !== null && suggestions.parameters.itemBias.y !== undefined) {
+                        itemBias.cost = suggestions.parameters.itemBias.y;
+                    }
+                    if (Object.keys(itemBias).length > 0) {
+                        params.itemBias = itemBias;
+                    }
+                }
+                
+                // Rarity Distribution - if any rarity is included, include all four
+                if (suggestions.parameters.rarityDistribution) {
+                    const rarities = {};
+                    const rarityKeys = ['Common', 'Uncommon', 'Rare', 'Unique'];
+                    let hasAnyRarity = false;
+                    
+                    // Check if any rarity is specified
+                    rarityKeys.forEach(key => {
+                        if (suggestions.parameters.rarityDistribution[key] !== null && 
+                            suggestions.parameters.rarityDistribution[key] !== undefined) {
+                            hasAnyRarity = true;
+                        }
+                    });
+                    
+                    // If any rarity is specified, include all four
+                    if (hasAnyRarity) {
+                        rarityKeys.forEach(key => {
+                            // Use the suggested value or the default from NORMAL_RARITY_DISTRIBUTION
+                            rarities[key] = suggestions.parameters.rarityDistribution[key] !== null && 
+                                suggestions.parameters.rarityDistribution[key] !== undefined
+                                ? suggestions.parameters.rarityDistribution[key]
+                                : NORMAL_RARITY_DISTRIBUTION[key];
+                        });
+                        
+                        // Normalize to ensure they sum to 100
+                        const sum = Object.values(rarities).reduce((a, b) => a + b, 0);
+                        if (sum !== 100) {
+                            const factor = 100 / sum;
+                            rarityKeys.forEach(key => {
+                                rarities[key] = Math.round((rarities[key] * factor) * 100) / 100;
+                            });
+                        }
+                        
+                        params.rarityDistribution = rarities;
+                    }
+                }
+                
+                if (Object.keys(params).length > 0) {
+                    filteredSuggestions.parameters = params;
+                }
+            }
+            
+            // Process categories if they exist - only include valid categories
+            if (suggestions.categories) {
+                const categories = {};
+                
+                // Only include valid categories that match the ones in the UI
+                if (Array.isArray(suggestions.categories.included) && suggestions.categories.included.length > 0) {
+                    // We don't have access to the actual category list here, so we'll just pass them through
+                    // The UI will filter out invalid ones
+                    categories.included = suggestions.categories.included;
+                }
+                
+                if (Array.isArray(suggestions.categories.excluded) && suggestions.categories.excluded.length > 0) {
+                    categories.excluded = suggestions.categories.excluded;
+                }
+                
+                if (Object.keys(categories).length > 0) {
+                    filteredSuggestions.categories = categories;
+                }
+            }
+            
+            // If no suggestions remain after filtering, return a message
+            if (Object.keys(filteredSuggestions).length === 0) {
+                return "Your shop looks good! I don't have any specific suggestions for improvement.";
+            }
+            
+            // Format the filtered suggestions as a readable message
+            let formattedResponse = `**Suggestions**\n\n`;
+            
+            // Add basic fields
+            const fieldLabels = {
+                shopName: 'Shop Name',
+                shopType: 'Shop Type',
+                keeperName: 'Keeper Name',
+                location: 'Location',
+                description: 'Description',
+                keeperDescription: 'Keeper Description'
+            };
+            
+            Object.keys(filteredSuggestions).forEach(key => {
+                if (key === 'parameters' || key === 'categories' || key === 'reasoning') return;
+                formattedResponse += `- **${fieldLabels[key]}**: ${filteredSuggestions[key]}\n`;
+            });
+            
+            // Add parameters
+            if (filteredSuggestions.parameters) {
+                formattedResponse += '\n**Parameters**\n';
+                
+                if (filteredSuggestions.parameters.gold !== undefined) {
+                    formattedResponse += `- **Gold**: ${filteredSuggestions.parameters.gold}\n`;
+                }
+                
+                if (filteredSuggestions.parameters.levelRange) {
+                    const lr = filteredSuggestions.parameters.levelRange;
+                    if (lr.min !== undefined && lr.max !== undefined) {
+                        formattedResponse += `- **Level Range**: ${lr.min}-${lr.max}\n`;
+                    } else if (lr.min !== undefined) {
+                        formattedResponse += `- **Min Level**: ${lr.min}\n`;
+                    } else if (lr.max !== undefined) {
+                        formattedResponse += `- **Max Level**: ${lr.max}\n`;
+                    }
+                }
+                
+                if (filteredSuggestions.parameters.itemBias) {
+                    const bias = filteredSuggestions.parameters.itemBias;
+                    if (bias.variety !== undefined || bias.cost !== undefined) {
+                        formattedResponse += `- **Item Bias**:\n`;
+                        if (bias.variety !== undefined) {
+                            const varietyPercent = Math.round(bias.variety * 100);
+                            formattedResponse += `  - Variety: ${varietyPercent}%\n`;
+                        }
+                        if (bias.cost !== undefined) {
+                            const costPercent = Math.round(bias.cost * 100);
+                            formattedResponse += `  - Cost: ${costPercent}%\n`;
+                        }
+                    }
+                }
+                
+                if (filteredSuggestions.parameters.rarityDistribution) {
+                    formattedResponse += `- **Rarity Distribution**:\n`;
+                    // Display all four rarities in a compact format
+                    formattedResponse += `  - Common: ${filteredSuggestions.parameters.rarityDistribution.Common}%, `;
+                    formattedResponse += `Uncommon: ${filteredSuggestions.parameters.rarityDistribution.Uncommon}%, `;
+                    formattedResponse += `Rare: ${filteredSuggestions.parameters.rarityDistribution.Rare}%, `;
+                    formattedResponse += `Unique: ${filteredSuggestions.parameters.rarityDistribution.Unique}%\n`;
+                }
+            }
+            
+            // Add categories
+            if (filteredSuggestions.categories) {
+                formattedResponse += '\n**Categories**\n';
+                
+                if (filteredSuggestions.categories.included) {
+                    formattedResponse += `- **Include**: ${filteredSuggestions.categories.included.join(', ')}\n`;
+                }
+                
+                if (filteredSuggestions.categories.excluded) {
+                    formattedResponse += `- **Exclude**: ${filteredSuggestions.categories.excluded.join(', ')}\n`;
+                }
+            }
+            
+            // Add reasoning at the bottom - preserve the full text
+            // Check if the reasoning is from the original response or from the JSON
+            let fullReasoning = reasoning;
+            
+            // If we have the original response, try to extract the full reasoning text
+            // This handles cases where the JSON parsing might have truncated the reasoning
+            if (response) {
+                // Look for text outside the JSON that might contain the full reasoning
+                const beforeJson = response.substring(0, response.indexOf('{'));
+                const afterJson = response.substring(response.indexOf('}') + 1);
+                
+                // If there's substantial text before or after the JSON, it might contain the reasoning
+                if (beforeJson.length > 50) {
+                    fullReasoning = beforeJson.trim();
+                } else if (afterJson.length > 50) {
+                    fullReasoning = afterJson.trim();
+                }
+                
+                // If the original response contains "reasoning" outside the JSON, try to extract it
+                const reasoningMatch = response.match(/reasoning[:\s]+([\s\S]+?)(?=\n\n|\{|$)/i);
+                if (reasoningMatch && reasoningMatch[1] && reasoningMatch[1].length > fullReasoning.length) {
+                    fullReasoning = reasoningMatch[1].trim();
+                }
+            }
+            
+            formattedResponse += `\n**Reasoning**\n${fullReasoning}`;
+            
+            return formattedResponse;
+        } catch (error) {
+            console.error('Error processing AI response:', error);
+            return response; // Return original response if there's an error
+        }
+    };
+
     const analyzeShopState = useCallback(async () => {
         if (!currentUser || isLoading || isAnalyzing) return;
 
@@ -146,11 +395,19 @@ Shop Details:
 
 Shop Parameters:
 - Gold: ${shopSnapshot.gold}
-- Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}
-- Inventory Count: ${shopSnapshot.inventoryCount} items`;
+- Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}`;
+
+            // Add reference information
+            const referenceInfo = `
+Reference Information:
+- Level Categories: ${LEVEL_MARKERS.map(m => `${m.label} (${m.threshold}+)`).join(', ')}
+- Normal Gold Per Level: ${NORMAL_GOLD_PER_LEVEL[0]}-${NORMAL_GOLD_PER_LEVEL[NORMAL_GOLD_PER_LEVEL.length-1]} gold
+- Standard Rarity Distribution: Common ${NORMAL_RARITY_DISTRIBUTION.Common}%, Uncommon ${NORMAL_RARITY_DISTRIBUTION.Uncommon}%, Rare ${NORMAL_RARITY_DISTRIBUTION.Rare}%, Unique ${NORMAL_RARITY_DISTRIBUTION.Unique}%`;
 
             // Use the baseContext and fillGapsTemplate from AI_PROMPTS
             const analysisPrompt = `${AI_PROMPTS.baseContext}
+
+${referenceInfo}
 
 ${AI_PROMPTS.fillGapsTemplate.replace('{userValues}', userValues).replace('{conversationHistory}', conversationHistory)}
 
@@ -167,10 +424,13 @@ Please format your response with clear headings using **bold text** for section 
 
             const data = await response.json();
             
+            // Process the AI response to format it better
+            const processedResponse = processAIResponse(data.answer);
+            
             // Create AI response message
             const assistantMessage = {
                 role: 'assistant',
-                content: data.answer,
+                content: processedResponse,
                 timestamp: Date.now()
             };
 
@@ -225,11 +485,19 @@ Shop Details:
 
 Shop Parameters:
 - Gold: ${shopSnapshot.gold}
-- Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}
-- Inventory Count: ${shopSnapshot.inventoryCount} items`;
+- Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}`;
+
+            // Add reference information
+            const referenceInfo = `
+Reference Information:
+- Level Categories: ${LEVEL_MARKERS.map(m => `${m.label} (${m.threshold}+)`).join(', ')}
+- Normal Gold Per Level: ${NORMAL_GOLD_PER_LEVEL[0]}-${NORMAL_GOLD_PER_LEVEL[NORMAL_GOLD_PER_LEVEL.length-1]} gold
+- Standard Rarity Distribution: Common ${NORMAL_RARITY_DISTRIBUTION.Common}%, Uncommon ${NORMAL_RARITY_DISTRIBUTION.Uncommon}%, Rare ${NORMAL_RARITY_DISTRIBUTION.Rare}%, Unique ${NORMAL_RARITY_DISTRIBUTION.Unique}%`;
 
             // Use the baseContext from AI_PROMPTS
             const contextualQuestion = `${AI_PROMPTS.baseContext}
+
+${referenceInfo}
 
 Based on the following shop details:
 ${userValues}
@@ -252,10 +520,16 @@ Format your response with clear headings using **bold text** for section titles 
 
             const data = await response.json();
             
+            // Process the AI response if it contains JSON
+            let processedResponse = data.answer;
+            if (data.answer.includes('{') && data.answer.includes('}')) {
+                processedResponse = processAIResponse(data.answer);
+            }
+            
             // Create AI response message
             const assistantMessage = {
                 role: 'assistant',
-                content: data.answer,
+                content: processedResponse,
                 timestamp: Date.now()
             };
 
