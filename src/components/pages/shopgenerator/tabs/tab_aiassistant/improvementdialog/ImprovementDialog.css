@@ -141,6 +141,11 @@
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     cursor: pointer;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .field-item:hover {
@@ -178,6 +183,16 @@
     border-color: var(--button-hover-background);
 }
 
+.field-checkbox:checked + .field-label + .field-value .oracle-suggestion {
+    animation: 
+        cloudPuff 0.3s ease-out,
+        shimmer 4s linear infinite reverse;
+}
+
+.field-checkbox:not(:checked) + .field-label + .field-value .oracle-suggestion {
+    display: none;
+}
+
 .field-label {
     font-size: 0.9rem;
     font-weight: 600;
@@ -203,6 +218,10 @@
     background-color: transparent;
     opacity: 0.85;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .field-value .rarity-separator {
@@ -355,25 +374,60 @@
     }
 }
 
-/* Oracle suggestion shimmer effect */
+/* Cloud puff animation keyframes */
+@keyframes cloudPuff {
+    0% {
+        opacity: 0;
+        filter: blur(10px);
+        transform: scale(0.8);
+    }
+    20% {
+        opacity: 0.6;
+        filter: blur(5px);
+        transform: scale(1.1);
+    }
+    40% {
+        opacity: 0.8;
+        filter: blur(3px);
+        transform: scale(0.95);
+    }
+    70% {
+        opacity: 1;
+        filter: blur(1px);
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+    }
+}
+
 .oracle-suggestion {
     background: linear-gradient(
-        120deg,
-        #7b2cbf 0%,
-        #9d4edd 20%,
-        #c77dff 40%,
-        #e0aaff 60%,
-        #9d4edd 80%,
-        #7b2cbf 100%
+        -120deg,
+        #c5def7 0%,
+        #64cbff 20%,
+        #e9d5ff 40%,
+        #99a0ff 60%,
+        #64cbff 80%,
+        #c5def7 100%
     );
     background-size: 200% auto;
     color: transparent;
     -webkit-background-clip: text;
     background-clip: text;
-    animation: shimmer 3s linear infinite;
+    animation: 
+        shimmer 4s linear infinite reverse;
     font-weight: 600;
+    font-style: italic;
     letter-spacing: 0.03em;
-    text-shadow: 0 0 8px rgba(157, 78, 221, 0.3);
+    text-shadow: 0 0 8px rgba(102, 204, 255, 0.3);
+    transform-origin: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 @keyframes shimmer {
