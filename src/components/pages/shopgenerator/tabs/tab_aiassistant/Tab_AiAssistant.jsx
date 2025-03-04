@@ -14,7 +14,7 @@ const defaultFilterMaps = {
     traits: new Map(),
 };
 
-function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inventory = [] }) {
+function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
     const { currentUser } = useAuth();
     const { categoryData } = useItemData();
     const [messages, setMessages] = useState(shopState.aiConversations || []);
@@ -57,24 +57,18 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
                 .map(([item]) => item);
         };
 
-        // Get included and excluded items for each filter type
+        // Get included and excluded items for categories only
         const filterSelections = {
             categories: {
                 included: getFilteredItems(filterMaps.categories, 1),
                 excluded: getFilteredItems(filterMaps.categories, -1),
-            },
-            subcategories: {
-                included: getFilteredItems(filterMaps.subcategories, 1),
-                excluded: getFilteredItems(filterMaps.subcategories, -1),
-            },
-            traits: {
-                included: getFilteredItems(filterMaps.traits, 1),
-                excluded: getFilteredItems(filterMaps.traits, -1),
-            },
+            }
         };
 
-        // Extract available filter options
-        const availableFilters = extractAvailableFilterOptions(categoryData, traitList);
+        // Extract available filter options (categories only)
+        const availableFilters = {
+            categories: extractAvailableFilterOptions(categoryData, traitList).categories
+        };
 
         return {
             // Shop details
@@ -91,9 +85,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
             itemBias: shopState?.itemBias || {},
             rarityDistribution: shopState?.rarityDistribution || {},
 
-            // Inventory summary (Ignore for now)
-            // inventoryCount: inventory?.length || 0,
-
             // Filter selections
             filterSelections,
 
@@ -103,7 +94,7 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
             // Shop ID for reference
             id: shopState?.id || "",
         };
-    }, [shopState, inventory, filterMaps, categoryData]);
+    }, [shopState, filterMaps, categoryData]);
 
     // Format message content with markdown-like syntax
     const formatContent = (text, role) => {
@@ -420,7 +411,6 @@ Tab_AiAssistant.propTypes = {
         subcategories: PropTypes.instanceOf(Map),
         traits: PropTypes.instanceOf(Map),
     }),
-    inventory: PropTypes.array,
 };
 
 Tab_AiAssistant.displayName = "The Oracle";

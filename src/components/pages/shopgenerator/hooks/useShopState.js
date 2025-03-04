@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { SELECTION_STATES } from '../utils/shopGeneratorConstants';
+import defaultShopData from '../utils/shopData';
 
 /**
  * Helper function to get current shop state including parameters, details, and filterMaps
@@ -64,21 +65,21 @@ export const getCurrentShopState = (shopState, filterMaps, items, getFilteredArr
 export const useShopState = (initialState) => {
     const [shopState, setShopState] = useState({
         // Shop parameters
-        gold: initialState.gold,
-        levelRange: initialState.levelRange,
-        itemBias: initialState.itemBias,
-        rarityDistribution: initialState.rarityDistribution,
+        gold: initialState.gold || defaultShopData.gold,
+        levelRange: initialState.levelRange || defaultShopData.levelRange,
+        itemBias: initialState.itemBias || defaultShopData.itemBias,
+        rarityDistribution: initialState.rarityDistribution || defaultShopData.rarityDistribution,
         
         // Shop details
-        id: initialState.id || "",
-        name: initialState.name || "Unnamed Shop",
-        keeperName: initialState.keeperName || "Unknown",
-        type: initialState.type || "General Store",
-        location: initialState.location || "Unknown Location",
-        description: initialState.description || "No details available",
-        keeperDescription: initialState.keeperDescription || "No details available",
-        dateCreated: initialState.dateCreated || new Date(),
-        dateLastEdited: initialState.dateLastEdited || new Date(),
+        id: initialState.id || defaultShopData.id,
+        name: initialState.name || defaultShopData.name,
+        keeperName: initialState.keeperName || defaultShopData.keeperName,
+        type: initialState.type || defaultShopData.type,
+        location: initialState.location || defaultShopData.location,
+        description: initialState.description || defaultShopData.description,
+        keeperDescription: initialState.keeperDescription || defaultShopData.keeperDescription,
+        dateCreated: initialState.dateCreated || defaultShopData.dateCreated,
+        dateLastEdited: initialState.dateLastEdited || defaultShopData.dateLastEdited,
     });
 
     // Parameter handlers

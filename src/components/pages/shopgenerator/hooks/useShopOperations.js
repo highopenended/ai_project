@@ -1,7 +1,6 @@
-import { useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
 import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/firebaseShopUtils";
 import { takeShopSnapshot } from "../utils/shopStateUtils";
-import { getCurrentShopState } from "./useShopState";
 import defaultShopData from "../utils/shopData";
 
 /**
@@ -41,10 +40,10 @@ export const useShopOperations = ({
     setShopState,
     filterMaps,
     inventory,
+    setInventory,
     setShopSnapshot,
     setSavedShops,
     setFilterMaps,
-    setInventory,
     hasUnsavedChanges,
 }) => {
     // Helper function to create a new shop snapshot
@@ -59,7 +58,6 @@ export const useShopOperations = ({
         return dateInput?.toDate?.() || 
                (typeof dateInput === "string" ? new Date(dateInput) : dateInput);
     }, []);
-
 
     /**
      * Create a new shop with default values
@@ -153,26 +151,21 @@ export const useShopOperations = ({
             const baseState = {
                 // For imported shops (no ID) or explicit new shops, generate a new ID
                 id: shop.id || generateShopId(),
-                name: shop.name || "Unnamed Shop",
-                keeperName: shop.keeperName || "Unknown",
-                type: shop.type || "General Store",
-                location: shop.location || "Unknown Location",
-                description: shop.description || "No details available",
-                keeperDescription: shop.keeperDescription || "No details available",
+                name: shop.name || defaultShopData.name,
+                keeperName: shop.keeperName || defaultShopData.keeperName,
+                type: shop.type || defaultShopData.type,
+                location: shop.location || defaultShopData.location,
+                description: shop.description || defaultShopData.description,
+                keeperDescription: shop.keeperDescription || defaultShopData.keeperDescription,
                 dateCreated: shop.id ? formatDate(shop.dateCreated) : new Date(),
                 dateLastEdited: shop.id ? formatDate(shop.dateLastEdited) : new Date(),
-                gold: parameters.gold || shop.gold || 1000,
+                gold: parameters.gold || shop.gold || defaultShopData.gold,
                 levelRange: {
-                    min: parameters.levelLow || shop.levelRange?.min || 0,
-                    max: parameters.levelHigh || shop.levelRange?.max || 10,
+                    min: parameters.levelLow || shop.levelRange?.min || defaultShopData.levelRange.min,
+                    max: parameters.levelHigh || shop.levelRange?.max || defaultShopData.levelRange.max,
                 },
-                itemBias: parameters.itemBias || shop.itemBias || { x: 0.5, y: 0.5 },
-                rarityDistribution: parameters.rarityDistribution || shop.rarityDistribution || {
-                    Common: 95.0,
-                    Uncommon: 4.5,
-                    Rare: 0.49,
-                    Unique: 0.01,
-                },
+                itemBias: parameters.itemBias || shop.itemBias || defaultShopData.itemBias,
+                rarityDistribution: parameters.rarityDistribution || shop.rarityDistribution || defaultShopData.rarityDistribution,
                 aiConversations
             };
 
