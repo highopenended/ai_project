@@ -21,8 +21,8 @@ import { generateFormatSpecification } from "./aiResponseFormatter";
  * @returns {string} Complete AI prompt
  */
 export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversationHistory) => {
-    // Format all shop fields
-    const promptPiece_shopData = generatePrompt_shopFields(shopSnapshot);
+    // Format all shop fields (Not used at this time)
+    // const promptPiece_shopData = generatePrompt_shopFields(shopSnapshot);
 
     // Analyze shop data against reference values
     const promptPiece_shopAnalysis = generatePrompt_shopAnalysis(shopSnapshot);
@@ -37,7 +37,7 @@ export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversati
     const formatSpec = generateFormatSpecification(promptText_unpreservedFields);
 
     // Add filter constraints instructions
-    const filterConstraintsText = generateFilterConstraintsText(shopSnapshot);
+    const filterConstraintsText = promptPiece_filterContraints(shopSnapshot);
 
     // Current shop values:
     // ${promptPiece_shopData}
@@ -74,7 +74,7 @@ export const generateChatPrompt = (shopSnapshot, conversationHistory, userQuesti
     const promptPiece_shopAnalysis = generatePrompt_shopAnalysis(shopSnapshot);
 
     // Add filter constraints instructions
-    const filterConstraintsText = generateFilterConstraintsText(shopSnapshot);
+    const filterConstraintsText = promptPiece_filterContraints(shopSnapshot);
 
     return `${AI_RULES}
 
@@ -100,7 +100,7 @@ Format your response with clear headings using **bold text** for section titles 
  * @param {Object} shopSnapshot - Current shop data snapshot
  * @returns {string} Filter constraints text
  */
-const generateFilterConstraintsText = (shopSnapshot) => {
+const promptPiece_filterContraints = (shopSnapshot) => {
     if (!shopSnapshot.availableFilters) return "";
 
     return `IMPORTANT FILTER CONSTRAINTS:

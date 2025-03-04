@@ -5,7 +5,7 @@
  * for AI prompts, creating clear sections for preserved and non-preserved fields.
  */
 
-import defaultShopData from './shopData';
+import defaultShopData from '../shopData';
 import { formatItemBias } from './aiPromptGen_shopFields';
 import { formatRarityDistribution } from './aiPromptGen_shopFields';
 

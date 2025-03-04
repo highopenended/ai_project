@@ -4,7 +4,7 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { useItemData } from "../../../../../context/itemData";
 import "./Tab_AiAssistant.css";
 import ImprovementDialog from "./improvementdialog/ImprovementDialog";
-import { generateAnalysisPrompt, generateChatPrompt } from "../../utils/aiPromptGenerator";
+import { generateAnalysisPrompt, generateChatPrompt } from "../../utils/aipromptgenerator/aiPromptGenerator";
 import { extractAvailableFilterOptions } from "../../utils/filterGroupUtils";
 import traitList from "../../../../../data/trait-list.json";
 
