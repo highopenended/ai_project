@@ -108,7 +108,7 @@
     border-radius: 0.5rem;
     min-height: 100px;
     max-height: calc(100% - 150px);
-    margin-bottom: 0.5rem;
+    margin-top: 0;
 }
 
 .ai-assistant-empty {
@@ -214,10 +214,9 @@
     border: 1px solid var(--light-border-color);
     border-radius: 0.5rem;
     flex-shrink: 0;
-    position: relative;
-    bottom: 0;
     width: 100%;
     box-sizing: border-box;
+    margin-bottom: 0.5rem;
 }
 
 .ai-assistant-input input {

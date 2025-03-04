@@ -335,6 +335,18 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
                         Clear Chat
                     </button>
                 </div>
+                <form onSubmit={handleSubmit} className="ai-assistant-input">
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Ask the Oracle about your shop..."
+                        disabled={isLoading || isAnalyzing}
+                    />
+                    <button type="submit" disabled={isLoading || isAnalyzing || !input.trim()}>
+                        Send
+                    </button>
+                </form>
                 <div className="ai-assistant-messages">
                     {(isLoading || isAnalyzing) && (
                         <div className="ai-assistant-loading">
@@ -362,28 +374,16 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
                         ))
                     )}
                 </div>
-                <form onSubmit={handleSubmit} className="ai-assistant-input">
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Ask the Oracle about your shop..."
-                        disabled={isLoading || isAnalyzing}
-                    />
-                    <button type="submit" disabled={isLoading || isAnalyzing || !input.trim()}>
-                        Send
-                    </button>
-                </form>
+                
+                {/* Improvement Dialog */}
+                <ImprovementDialog
+                    isOpen={isDialogOpen}
+                    onClose={() => setIsDialogOpen(false)}
+                    shopState={shopState}
+                    filterMaps={filterMaps}
+                    onConfirm={handleDialogConfirm}
+                />
             </div>
-            
-            {/* Improvement Dialog */}
-            <ImprovementDialog
-                isOpen={isDialogOpen}
-                onClose={() => setIsDialogOpen(false)}
-                shopState={shopState}
-                filterMaps={filterMaps}
-                onConfirm={handleDialogConfirm}
-            />
         </div>
     );
 }
