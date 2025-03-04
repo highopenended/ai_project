@@ -11,7 +11,7 @@
  * @param {Object} shopSnapshot - Current shop data snapshot
  * @returns {string} Formatted shop fields text
  */
-export const formatShopFields = (shopSnapshot) => {
+export const generatePrompt_shopFields = (shopSnapshot) => {
   return `Shop Details:
 - Name: "${shopSnapshot.name || ''}"
 - Type: "${shopSnapshot.type || ''}"

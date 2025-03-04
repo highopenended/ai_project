@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./ImprovementDialog.css";
 import defaultShopData from "../../../utils/shopData";
-import { isNonDefaultValue } from "../../../utils/aiPreservedFieldsManager";
+import { isNonDefaultValue } from "../../../utils/aiPromptGen_preservedFields";
 
 const FIELD_SECTIONS = {
     BASIC: "basic",

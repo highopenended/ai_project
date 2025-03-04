@@ -9,9 +9,10 @@
 import { 
   AI_RULES
 } from './aiConstants';
-import { formatShopFields } from './aiFieldFormatter';
-import { analyzeShopData } from './aiShopAnalyzer';
-import { formatPreservedFields } from './aiPreservedFieldsManager';
+import { generatePrompt_shopFields } from './aiPromptGen_shopFields';
+import { generatePrompt_shopAnalysis } from './aiPromptGen_shopAnalysis';
+import { generatePrompt_preservedFields } from './aiPromptGen_preservedFields';
+import { generateFormatSpecification } from './aiResponseFormatter';
 
 /**
  * Generates a complete AI prompt for shop analysis with preserved fields
@@ -23,13 +24,16 @@ import { formatPreservedFields } from './aiPreservedFieldsManager';
  */
 export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversationHistory) => {
   // Format all shop fields
-  const formattedShopData = formatShopFields(shopSnapshot);
+  const promptPiece_shopData = generatePrompt_shopFields(shopSnapshot);
   
   // Analyze shop data against reference values
-  const shopAnalysis = analyzeShopData(shopSnapshot);
+  const promptPiece_shopAnalysis = generatePrompt_shopAnalysis(shopSnapshot);
   
-  // Format preserved fields
-  const preservedFieldsText = formatPreservedFields(preservedFields, shopSnapshot);
+  // Format preserved fields and get fields to improve
+  const { promptText_preservedFields, promptText_unpreservedFields } = generatePrompt_preservedFields(preservedFields, shopSnapshot);
+  
+  // Generate format specification for the response
+  const formatSpec = generateFormatSpecification(promptText_unpreservedFields);
   
   // Add filter constraints instructions
   const filterConstraintsText = generateFilterConstraintsText(shopSnapshot);
@@ -38,19 +42,19 @@ export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversati
   return `${AI_RULES}
 
 Current shop values:
-${formattedShopData}
+${promptPiece_shopData}
 
 Shop Analysis:
-${shopAnalysis}
+${promptPiece_shopAnalysis}
 
 Previous conversation history:
 ${conversationHistory}
 
-${preservedFieldsText}
+${promptText_preservedFields}
 
 ${filterConstraintsText}
 
-Please format your response with clear headings using **bold text** for section titles and numbered lists for suggestions.`;
+${formatSpec}`;
 };
 
 /**
@@ -63,10 +67,10 @@ Please format your response with clear headings using **bold text** for section 
  */
 export const generateChatPrompt = (shopSnapshot, conversationHistory, userQuestion) => {
   // Format all shop fields
-  const formattedShopData = formatShopFields(shopSnapshot);
+  const promptPiece_shopData = generatePrompt_shopFields(shopSnapshot);
   
   // Analyze shop data against reference values
-  const shopAnalysis = analyzeShopData(shopSnapshot);
+  const promptPiece_shopAnalysis = generatePrompt_shopAnalysis(shopSnapshot);
   
   // Add filter constraints instructions
   const filterConstraintsText = generateFilterConstraintsText(shopSnapshot);
@@ -74,10 +78,10 @@ export const generateChatPrompt = (shopSnapshot, conversationHistory, userQuesti
   return `${AI_RULES}
 
 Current shop values:
-${formattedShopData}
+${promptPiece_shopData}
 
 Shop Analysis:
-${shopAnalysis}
+${promptPiece_shopAnalysis}
 
 ${filterConstraintsText}
 
@@ -88,6 +92,7 @@ Current question: ${userQuestion}
 
 Format your response with clear headings using **bold text** for section titles and bullet points for lists.`;
 };
+
 
 /**
  * Generates text explaining filter constraints

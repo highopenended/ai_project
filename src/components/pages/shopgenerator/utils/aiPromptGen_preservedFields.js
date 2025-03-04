@@ -6,8 +6,8 @@
  */
 
 import defaultShopData from './shopData';
-import { formatItemBias } from './aiFieldFormatter';
-import { formatRarityDistribution } from './aiFieldFormatter';
+import { formatItemBias } from './aiPromptGen_shopFields';
+import { formatRarityDistribution } from './aiPromptGen_shopFields';
 
 /**
  * Field definitions with labels and value formatters
@@ -99,17 +99,22 @@ const FIELD_DEFINITIONS = {
  * 
  * @param {Object} preservedFields - Fields marked as preserved by the user
  * @param {Object} shopSnapshot - Current shop data snapshot
- * @returns {string} Formatted preserved fields text
+ * @returns {Object} Object containing formatted text and fields to improve
  */
-export const formatPreservedFields = (preservedFields, shopSnapshot) => {
-  if (!preservedFields) return "";
+export const generatePrompt_preservedFields = (preservedFields, shopSnapshot) => {
+  if (!preservedFields) {
+    return {
+      promptText_preservedFields: "",
+      promptText_unpreservedFields: []
+    };
+  }
   
   const { preservedList, nonPreservedList } = categorizeFields(preservedFields, shopSnapshot);
   
-  let result = "";
+  let promptText_preservedFields = "";
   
   if (preservedList.length > 0) {
-    result += `
+    promptText_preservedFields += `
 PRESERVED FIELDS (DO NOT CHANGE THESE):
 ${preservedList.map(field => `- ${field.label}: ${field.value}`).join('\n')}
 
@@ -117,7 +122,7 @@ These preserved fields should be treated as absolute truth and should not be mod
   }
   
   if (nonPreservedList.length > 0) {
-    result += `
+    promptText_preservedFields += `
 
 FIELDS TO IMPROVE (PLEASE SUGGEST CHANGES FOR THESE):
 ${nonPreservedList.map(field => `- ${field.label}`).join('\n')}
@@ -125,7 +130,10 @@ ${nonPreservedList.map(field => `- ${field.label}`).join('\n')}
 Please focus your suggestions on improving these specific fields.`;
   }
   
-  return result;
+  return {
+    promptText_preservedFields,
+    promptText_unpreservedFields: nonPreservedList.map(field => field.key)
+  };
 };
 
 /**
