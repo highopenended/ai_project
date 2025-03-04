@@ -1,9 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import { useAuth } from "../../../../../context/AuthContext";
+import { useItemData } from "../../../../../context/itemData";
 import "./Tab_AiAssistant.css";
-import { AI_RULES } from "../../utils/aiConstants";
 import ImprovementDialog from "./improvementdialog/ImprovementDialog";
+import { generateAnalysisPrompt, generateChatPrompt } from "../../utils/aiPromptGenerator";
+import { extractAvailableFilterOptions } from "../../utils/categoryUtils";
+import traitList from "../../../../../data/trait-list.json";
 
 const defaultFilterMaps = {
     categories: new Map(),
@@ -13,6 +16,7 @@ const defaultFilterMaps = {
 
 function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inventory = [] }) {
     const { currentUser } = useAuth();
+    const { categoryData } = useItemData();
     const [messages, setMessages] = useState(shopState.aiConversations || []);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -69,6 +73,9 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
             },
         };
 
+        // Extract available filter options
+        const availableFilters = extractAvailableFilterOptions(categoryData, traitList);
+
         return {
             // Shop details
             name: shopState?.name || "",
@@ -90,10 +97,13 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
             // Filter selections
             filterSelections,
 
+            // Available filter options
+            availableFilters,
+
             // Shop ID for reference
             id: shopState?.id || "",
         };
-    }, [shopState, inventory, filterMaps]);
+    }, [shopState, inventory, filterMaps, categoryData]);
 
     // Format message content with markdown-like syntax
     const formatContent = (text, role) => {
@@ -140,101 +150,9 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps, inven
         );
     };
 
-    // Format filter selections for AI prompt
-    const formatFilterSelections = (filterSelections) => {
-        const formatList = (items) => (items.length > 0 ? items.join(", ") : "None");
-
-        return `
-Filter Selections:
-- Categories:
-  * Included: ${formatList(filterSelections.categories.included)}
-  * Excluded: ${formatList(filterSelections.categories.excluded)}
-- Subcategories:
-  * Included: ${formatList(filterSelections.subcategories.included)}
-  * Excluded: ${formatList(filterSelections.subcategories.excluded)}
-- Traits:
-  * Included: ${formatList(filterSelections.traits.included)}
-  * Excluded: ${formatList(filterSelections.traits.excluded)}`;
-    };
-
     // Function to handle opening the improvement dialog
     const handleOpenDialog = useCallback(() => {
         setIsDialogOpen(true);
-    }, []);
-
-    // Function to format preserved fields for AI prompt
-    const formatPreservedFields = useCallback((fields) => {
-        if (!fields) return "";
-
-        const preservedList = [];
-        const nonPreservedList = [];
-        
-        // Shop details
-        if (fields.name) preservedList.push("Shop Name");
-        else nonPreservedList.push("Shop Name");
-        
-        if (fields.type) preservedList.push("Shop Type");
-        else nonPreservedList.push("Shop Type");
-        
-        if (fields.keeperName) preservedList.push("Keeper Name");
-        else nonPreservedList.push("Keeper Name");
-        
-        if (fields.location) preservedList.push("Location");
-        else nonPreservedList.push("Location");
-        
-        if (fields.description) preservedList.push("Shop Description");
-        else nonPreservedList.push("Shop Description");
-        
-        if (fields.keeperDescription) preservedList.push("Keeper Description");
-        else nonPreservedList.push("Keeper Description");
-        
-        // Shop parameters
-        if (fields.gold) preservedList.push("Gold Amount");
-        else nonPreservedList.push("Gold Amount");
-        
-        if (fields.levelRange) preservedList.push("Level Range");
-        else nonPreservedList.push("Level Range");
-        
-        if (fields.itemBias) preservedList.push("Item Bias");
-        else nonPreservedList.push("Item Bias");
-        
-        if (fields.rarityDistribution) preservedList.push("Rarity Distribution");
-        else nonPreservedList.push("Rarity Distribution");
-        
-        // Filter selections
-        if (fields.filterCategories) preservedList.push("Category Filters");
-        else nonPreservedList.push("Category Filters");
-        
-        if (fields.filterSubcategories) preservedList.push("Subcategory Filters");
-        else nonPreservedList.push("Subcategory Filters");
-        
-        if (fields.filterTraits) preservedList.push("Trait Filters");
-        else nonPreservedList.push("Trait Filters");
-        
-        if (preservedList.length === 0) {
-            return "No fields are being preserved. Feel free to suggest improvements for all aspects of the shop.";
-        }
-        
-        let result = "";
-        
-        if (preservedList.length > 0) {
-            result += `
-PRESERVED FIELDS (DO NOT CHANGE THESE):
-${preservedList.map(field => `- ${field}`).join('\n')}
-
-These preserved fields should be treated as absolute truth and should not be modified in your suggestions.`;
-        }
-        
-        if (nonPreservedList.length > 0) {
-            result += `
-
-FIELDS TO IMPROVE (PLEASE SUGGEST CHANGES FOR THESE):
-${nonPreservedList.map(field => `- ${field}`).join('\n')}
-
-Please focus your suggestions on improving these specific fields.`;
-        }
-        
-        return result;
     }, []);
 
     // Function to analyze shop with preserved fields
@@ -265,45 +183,12 @@ Please focus your suggestions on improving these specific fields.`;
                 .map((m) => `${m.role === "user" ? "Human" : "Assistant"}: ${m.content}`)
                 .join("\n");
 
-            // Format the analysis request with shop context
-            const userValues = `
-Shop Details:
-- Name: "${shopSnapshot.name}"
-- Type: "${shopSnapshot.type}"
-- Keeper: "${shopSnapshot.keeperName}"
-- Location: "${shopSnapshot.location}"
-- Description: "${shopSnapshot.description}"
-- Keeper Description: "${shopSnapshot.keeperDescription}"
-
-Shop Parameters:
-- Gold: ${shopSnapshot.gold}
-- Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}
-${formatFilterSelections(shopSnapshot.filterSelections)}`;
-
-            // Format preserved fields
-            const preservedFieldsText = formatPreservedFields(fields);
-            
-            console.log("Formatted preserved fields text:", preservedFieldsText);
-
-            const analysisPrompt = `You are a professional Dungeon Master assisting with shop generation in the world of Golarion.
-Follow these rules strictly:
-1) Focus exclusively on the current shop and its context
-2) Consider all previous conversation history for this shop
-3) ONLY suggest improvements for fields that are NOT in the preserved list
-4) Treat preserved fields as absolute truth - DO NOT suggest changes to these
-5) Format responses in a parseable structure
-6) Consider the world of Golarion and its lore
-7) Never mention "Pathfinder 2e" explicitly
-
-Current shop values:
-${userValues}
-
-Previous conversation history:
-${conversationHistory}
-
-${preservedFieldsText}
-
-Please format your response with clear headings using **bold text** for section titles and numbered lists for suggestions.`;
+            // Generate the analysis prompt using the utility function
+            const analysisPrompt = generateAnalysisPrompt(
+                shopSnapshot,
+                fields,
+                conversationHistory
+            );
 
             // Log the final prompt being sent to the AI
             console.log("FINAL AI PROMPT:");
@@ -339,7 +224,7 @@ Please format your response with clear headings using **bold text** for section 
         } finally {
             setIsAnalyzing(false);
         }
-    }, [currentUser, isLoading, isAnalyzing, messages, createShopSnapshot, updateParentState, formatFilterSelections, formatPreservedFields]);
+    }, [currentUser, isLoading, isAnalyzing, messages, createShopSnapshot, updateParentState]);
 
     // Function to handle dialog confirmation
     const handleDialogConfirm = useCallback((selectedFields) => {
@@ -378,33 +263,12 @@ Please format your response with clear headings using **bold text** for section 
                 .map((m) => `${m.role === "user" ? "Human" : "Assistant"}: ${m.content}`)
                 .join("\n");
 
-            // Format the question with shop context
-            const userValues = `
-Shop Details:
-- Name: "${shopSnapshot.name}"
-- Type: "${shopSnapshot.type}"
-- Keeper: "${shopSnapshot.keeperName}"
-- Location: "${shopSnapshot.location}"
-- Description: "${shopSnapshot.description}"
-- Keeper Description: "${shopSnapshot.keeperDescription}"
-
-Shop Parameters:
-- Gold: ${shopSnapshot.gold}
-- Level Range: ${shopSnapshot.levelRange.min}-${shopSnapshot.levelRange.max}
-- Inventory Count: ${shopSnapshot.inventoryCount} items
-${formatFilterSelections(shopSnapshot.filterSelections)}`;
-
-            const contextualQuestion = `${AI_RULES}
-
-Based on the following shop details:
-${userValues}
-
-And considering our previous conversation:
-${conversationHistory}
-
-Current question: ${input}
-
-Format your response with clear headings using **bold text** for section titles and bullet points for lists.`;
+            // Generate the chat prompt using the utility function
+            const contextualQuestion = generateChatPrompt(
+                shopSnapshot,
+                conversationHistory,
+                input
+            );
 
             // Log the final prompt being sent to the AI
             console.log("FINAL CHAT PROMPT:");
@@ -440,7 +304,7 @@ Format your response with clear headings using **bold text** for section titles 
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, isLoading, input, messages, createShopSnapshot, updateParentState, formatFilterSelections]);
+    }, [currentUser, isLoading, input, messages, createShopSnapshot, updateParentState]);
 
     if (error) {
         return (

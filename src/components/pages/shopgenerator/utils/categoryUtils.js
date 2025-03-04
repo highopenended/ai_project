@@ -32,4 +32,40 @@ export function extractUniqueCategories(items) {
     });
 
     return result;
+}
+
+/**
+ * Extracts available filter options for AI prompts
+ * @param {Object} categoryData - Category data from extractUniqueCategories
+ * @param {Array} traitList - List of traits from trait-list.json
+ * @returns {Object} Object containing available categories, subcategories, and traits
+ */
+export function extractAvailableFilterOptions(categoryData, traitList) {
+    if (!categoryData || !categoryData.categories) {
+        return {
+            categories: [],
+            subcategories: [],
+            traits: []
+        };
+    }
+
+    // Extract categories
+    const categories = Object.keys(categoryData.categories).sort();
+
+    // Extract all subcategories
+    const subcategories = new Set();
+    Object.values(categoryData.categories).forEach(category => {
+        category.subcategories.forEach(subcategory => {
+            subcategories.add(subcategory);
+        });
+    });
+
+    // Extract traits
+    const traits = traitList ? traitList.map(trait => trait.Trait).sort() : [];
+
+    return {
+        categories,
+        subcategories: Array.from(subcategories).sort(),
+        traits
+    };
 } 

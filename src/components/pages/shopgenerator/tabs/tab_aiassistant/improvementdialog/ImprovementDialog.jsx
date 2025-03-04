@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import "./ImprovementDialog.css";
-import { DEFAULT_FIELD_VALUES } from "../../../utils/aiConstants";
+import defaultShopData from "../../../utils/shopData";
 
 /**
  * Dialog component for selecting which fields to preserve when requesting AI improvements
@@ -40,22 +40,24 @@ const ImprovementDialog = ({
         if (isOpen) {
             // Auto-check fields that have non-default values
             setPreservedFields({
-                name: shopState?.name !== DEFAULT_FIELD_VALUES.shopName,
-                type: shopState?.type !== DEFAULT_FIELD_VALUES.type,
-                keeperName: shopState?.keeperName !== DEFAULT_FIELD_VALUES.keeperName,
-                location: shopState?.location !== DEFAULT_FIELD_VALUES.location,
-                description: shopState?.description !== DEFAULT_FIELD_VALUES.description,
-                keeperDescription: shopState?.keeperDescription !== DEFAULT_FIELD_VALUES.keeperDescription,
+                name: shopState?.name !== defaultShopData.name,
+                type: shopState?.type !== defaultShopData.type,
+                keeperName: shopState?.keeperName !== defaultShopData.keeperName,
+                location: shopState?.location !== defaultShopData.location,
+                description: shopState?.description !== defaultShopData.description,
+                keeperDescription: shopState?.keeperDescription !== defaultShopData.keeperDescription,
                 
-                gold: shopState?.gold > 0,
-                levelRange: shopState?.levelRange?.min > 0 || shopState?.levelRange?.max > 0,
-                itemBias: shopState?.itemBias?.x !== DEFAULT_FIELD_VALUES.itemBias.x || 
-                          shopState?.itemBias?.y !== DEFAULT_FIELD_VALUES.itemBias.y,
+                gold: shopState?.gold > 0 && shopState?.gold !== defaultShopData.gold,
+                levelRange: (shopState?.levelRange?.min !== defaultShopData.levelRange.min || 
+                            shopState?.levelRange?.max !== defaultShopData.levelRange.max),
                 
-                rarityDistribution: shopState?.rarityDistribution?.Common !== DEFAULT_FIELD_VALUES.rarityDistribution.Common ||
-                                   shopState?.rarityDistribution?.Uncommon !== DEFAULT_FIELD_VALUES.rarityDistribution.Uncommon ||
-                                   shopState?.rarityDistribution?.Rare !== DEFAULT_FIELD_VALUES.rarityDistribution.Rare ||
-                                   shopState?.rarityDistribution?.Unique !== DEFAULT_FIELD_VALUES.rarityDistribution.Unique,
+                itemBias: shopState?.itemBias?.x !== defaultShopData.itemBias.x || 
+                          shopState?.itemBias?.y !== defaultShopData.itemBias.y,
+                
+                rarityDistribution: shopState?.rarityDistribution?.Common !== defaultShopData.rarityDistribution.Common ||
+                                   shopState?.rarityDistribution?.Uncommon !== defaultShopData.rarityDistribution.Uncommon ||
+                                   shopState?.rarityDistribution?.Rare !== defaultShopData.rarityDistribution.Rare ||
+                                   shopState?.rarityDistribution?.Unique !== defaultShopData.rarityDistribution.Unique,
                 
                 filterCategories: filterMaps?.categories.size > 0,
                 filterSubcategories: filterMaps?.subcategories.size > 0,
@@ -155,11 +157,11 @@ const ImprovementDialog = ({
         // Explicitly check for 0 values to avoid treating them as falsey
         const x = (shopState?.itemBias?.x !== undefined && shopState?.itemBias?.x !== null) 
             ? shopState.itemBias.x 
-            : DEFAULT_FIELD_VALUES.itemBias.x;
+            : defaultShopData.itemBias.x;
             
         const y = (shopState?.itemBias?.y !== undefined && shopState?.itemBias?.y !== null) 
             ? shopState.itemBias.y 
-            : DEFAULT_FIELD_VALUES.itemBias.y;
+            : defaultShopData.itemBias.y;
         
         // Convert to percentages (assuming x and y are between 0 and 1)
         const varietyPercent = Math.round(x * 100);
@@ -176,10 +178,10 @@ const ImprovementDialog = ({
     
     // Format rarity distribution display with colored percentages
     const formatRarityDistribution = () => {
-        const common = shopState?.rarityDistribution?.Common || DEFAULT_FIELD_VALUES.rarityDistribution.Common;
-        const uncommon = shopState?.rarityDistribution?.Uncommon || DEFAULT_FIELD_VALUES.rarityDistribution.Uncommon;
-        const rare = shopState?.rarityDistribution?.Rare || DEFAULT_FIELD_VALUES.rarityDistribution.Rare;
-        const unique = shopState?.rarityDistribution?.Unique || DEFAULT_FIELD_VALUES.rarityDistribution.Unique;
+        const common = shopState?.rarityDistribution?.Common || defaultShopData.rarityDistribution.Common;
+        const uncommon = shopState?.rarityDistribution?.Uncommon || defaultShopData.rarityDistribution.Uncommon;
+        const rare = shopState?.rarityDistribution?.Rare || defaultShopData.rarityDistribution.Rare;
+        const unique = shopState?.rarityDistribution?.Unique || defaultShopData.rarityDistribution.Unique;
         
         return (
             <span>
@@ -248,7 +250,7 @@ const ImprovementDialog = ({
                                 />
                                 <label htmlFor="name" className="field-label">Shop Name</label>
                                 <span className="field-value">
-                                    {formatValue(shopState?.name, DEFAULT_FIELD_VALUES.shopName)}
+                                    {formatValue(shopState?.name, defaultShopData.name)}
                                 </span>
                             </div>
                             
@@ -265,7 +267,7 @@ const ImprovementDialog = ({
                                 />
                                 <label htmlFor="type" className="field-label">Shop Type</label>
                                 <span className="field-value">
-                                    {formatValue(shopState?.type, DEFAULT_FIELD_VALUES.type)}
+                                    {formatValue(shopState?.type, defaultShopData.type)}
                                 </span>
                             </div>
                             
@@ -282,7 +284,7 @@ const ImprovementDialog = ({
                                 />
                                 <label htmlFor="keeperName" className="field-label">Keeper Name</label>
                                 <span className="field-value">
-                                    {formatValue(shopState?.keeperName, DEFAULT_FIELD_VALUES.keeperName)}
+                                    {formatValue(shopState?.keeperName, defaultShopData.keeperName)}
                                 </span>
                             </div>
                             
@@ -299,7 +301,7 @@ const ImprovementDialog = ({
                                 />
                                 <label htmlFor="location" className="field-label">Location</label>
                                 <span className="field-value">
-                                    {formatValue(shopState?.location, DEFAULT_FIELD_VALUES.location)}
+                                    {formatValue(shopState?.location, defaultShopData.location)}
                                 </span>
                             </div>
                             
@@ -316,7 +318,7 @@ const ImprovementDialog = ({
                                 />
                                 <label htmlFor="description" className="field-label">Description</label>
                                 <span className="field-value">
-                                    {formatValue(shopState?.description?.substring(0, 60) + (shopState?.description?.length > 60 ? '...' : ''), DEFAULT_FIELD_VALUES.description)}
+                                    {formatValue(shopState?.description?.substring(0, 60) + (shopState?.description?.length > 60 ? '...' : ''), defaultShopData.description)}
                                 </span>
                             </div>
                             
@@ -333,7 +335,7 @@ const ImprovementDialog = ({
                                 />
                                 <label htmlFor="keeperDescription" className="field-label">Keeper Description</label>
                                 <span className="field-value">
-                                    {formatValue(shopState?.keeperDescription?.substring(0, 60) + (shopState?.keeperDescription?.length > 60 ? '...' : ''), DEFAULT_FIELD_VALUES.keeperDescription)}
+                                    {formatValue(shopState?.keeperDescription?.substring(0, 60) + (shopState?.keeperDescription?.length > 60 ? '...' : ''), defaultShopData.keeperDescription)}
                                 </span>
                             </div>
                         </div>
