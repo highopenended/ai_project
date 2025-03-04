@@ -38,8 +38,7 @@ export const NORMAL_GOLD_PER_LEVEL = Array(20).fill(0)
 /**
  * AI prompt templates for different operations
  */
-export const AI_PROMPTS = {
-    baseContext: `You are a professional Dungeon Master assisting with shop generation in the world of Golarion.
+export const AI_RULES = `You are a professional Dungeon Master assisting with shop generation in the world of Golarion.
 Follow these rules strictly:
 1) Focus exclusively on the current shop and its context
 2) Consider all previous conversation history for this shop
@@ -47,59 +46,5 @@ Follow these rules strictly:
 4) Provide suggestions that logically enhance the shop's theme and coherence
 5) Format responses in a parseable structure
 6) Consider the world of Golarion and its lore
-7) Never mention "Pathfinder 2e" explicitly`,
-
-    fillGapsTemplate: `Based on the following shop values:
-{userValues}
-
-And considering our previous conversation:
-{conversationHistory}
-
-Please suggest logical values or improvements for ALL fields. Don't hesitate to suggest changes to existing values if they would make the shop more coherent or interesting. Format your response exactly as follows:
-{
-    "reasoning": "Brief explanation of your choices and suggested improvements...",
-    "suggestions": {
-        "shopName": "string with suggested name",
-        "shopType": "string with suggested type",
-        "keeperName": "string with suggested keeper name",
-        "location": "string with suggested location",
-        "description": "string with suggested description",
-        "keeperDescription": "string with suggested keeper description",
-        "parameters": {
-            "gold": "number for suggested gold amount",
-            "levelRange": {
-                "min": "number for suggested minimum level",
-                "max": "number for suggested maximum level"
-            },
-            "itemBias": {
-                "x": "number for suggested x bias",
-                "y": "number for suggested y bias"
-            },
-            "rarityDistribution": {
-                "Common": "number for suggested common percentage",
-                "Uncommon": "number for suggested uncommon percentage",
-                "Rare": "number for suggested rare percentage",
-                "Unique": "number for suggested unique percentage"
-            }
-        },
-        "categories": {
-            "included": ["array of category names to include"],
-            "excluded": ["array of category names to exclude"]
-        }
-    }
-}`
-};
-
-/**
- * Default field values used to determine if a value has been intentionally set by the user
- */
-export const DEFAULT_FIELD_VALUES = {
-    shopName: "Unnamed Shop",
-    keeperName: "Unknown",
-    type: "General Store",
-    location: "Unknown Location",
-    description: "No details available",
-    keeperDescription: "No details available",
-    itemBias: { x: 0.5, y: 0.5 },
-    rarityDistribution: NORMAL_RARITY_DISTRIBUTION
-}; 
+7) Never mention "Pathfinder 2e" explicitly`
+;

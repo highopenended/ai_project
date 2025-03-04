@@ -220,7 +220,7 @@
 
 .field-value .bias-label {
     font-weight: 600;
-    color: #49588d;
+    color: var(--text-primary);
     display: inline-block;
 }
 

@@ -94,7 +94,7 @@ const isValidSavedState = (state) => {
 // Add this outside the component
 const createInitialTabState = () => {
     try {
-        localStorage.clear();
+        // localStorage.clear();
         const savedState = localStorage.getItem(STORAGE_KEY);
         const validState = isValidSavedState(savedState);
         if (!validState) {
@@ -120,7 +120,8 @@ const createTabElements = (tabStructure) => {
                     type: { 
                         name: tab.type,
                         component: TabComponent,  // Store the actual component reference
-                        minWidth: TabComponent.minWidth || 200
+                        minWidth: TabComponent.minWidth || 200,
+                        displayName: TabComponent.displayName  // Add the displayName property
                     },
                     Component: TabComponent
                 };
