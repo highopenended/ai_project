@@ -93,7 +93,7 @@ const ImprovementDialog = ({
                         }
                         break;
                     case FIELD_SECTIONS.FILTERS:
-                        if (["categories"].includes(field)) {
+                        if (["filterCategories"].includes(field)) {
                             newSet.add(field);
                         }
                         break;
@@ -119,7 +119,7 @@ const ImprovementDialog = ({
                         }
                         break;
                     case FIELD_SECTIONS.FILTERS:
-                        if (["categories"].includes(field)) {
+                        if (["filterCategories"].includes(field)) {
                             newSet.delete(field);
                         }
                         break;
@@ -296,12 +296,12 @@ const ImprovementDialog = ({
                             </div>
                         </div>
                         <div className="field-list single-column">
-                            <div className="field-item" onClick={() => handleCheckboxChange("categories")}>
+                            <div className="field-item" onClick={() => handleCheckboxChange("filterCategories")}>
                                 <input
                                     type="checkbox"
                                     className="field-checkbox"
-                                    checked={selectedFields.has("categories")}
-                                    onChange={() => handleCheckboxChange("categories")}
+                                    checked={selectedFields.has("filterCategories")}
+                                    onChange={() => handleCheckboxChange("filterCategories")}
                                 />
                                 <span className="field-label">Categories</span>
                                 {(() => {

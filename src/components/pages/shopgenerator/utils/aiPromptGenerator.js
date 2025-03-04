@@ -99,7 +99,7 @@ const generateFilterConstraintsText = (shopSnapshot) => {
   if (!shopSnapshot.availableFilters) return "";
   
   return `IMPORTANT FILTER CONSTRAINTS:
-When suggesting changes to filter selections (categories, subcategories, or traits), you MUST ONLY suggest options from the available lists provided above. Do not suggest any categories, subcategories, or traits that are not in these lists.
+When suggesting changes to category filters, you MUST ONLY suggest options from the available categories list provided above. Do not suggest any categories that are not in this list.
 
-If the user asks about adding specific categories, subcategories, or traits, verify they exist in the available options before suggesting them. If they don't exist in the available options, politely inform the user that those options are not available and suggest alternatives from the valid lists.`;
+If the user asks about adding specific categories, verify they exist in the available options before suggesting them. If they don't exist in the available options, politely inform the user that those options are not available and suggest alternatives from the valid list.`;
 }; 

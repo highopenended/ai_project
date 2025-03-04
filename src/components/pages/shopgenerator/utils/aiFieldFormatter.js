@@ -76,19 +76,11 @@ export const formatFilterSelections = (filterSelections, availableFilters = {}) 
   if (availableFilters) {
     availableOptionsText = `
 Available Filter Options:
-- Categories: ${formatList(availableFilters.categories || [])}
-- Subcategories: ${formatList(availableFilters.subcategories || [])}
-- Traits: ${formatList(availableFilters.traits || [])}`;
+- Categories: ${formatList(availableFilters.categories || [])}`;
   }
 
   return `Filter Selections:
 - Categories:
   * Included: ${formatList(filterSelections?.categories?.included)}
-  * Excluded: ${formatList(filterSelections?.categories?.excluded)}
-- Subcategories:
-  * Included: ${formatList(filterSelections?.subcategories?.included)}
-  * Excluded: ${formatList(filterSelections?.subcategories?.excluded)}
-- Traits:
-  * Included: ${formatList(filterSelections?.traits?.included)}
-  * Excluded: ${formatList(filterSelections?.traits?.excluded)}${availableOptionsText}`;
+  * Excluded: ${formatList(filterSelections?.categories?.excluded)}${availableOptionsText}`;
 }; 

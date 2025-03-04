@@ -91,45 +91,6 @@ const FIELD_DEFINITIONS = {
       
       return [included, excluded].filter(Boolean).join("; ") + availableOptions || "None";
     }
-  },
-  filterSubcategories: { 
-    label: "Subcategory Filters", 
-    defaultValue: {},
-    getValue: (snapshot) => snapshot.filterSelections?.subcategories,
-    formatValue: (value, snapshot) => {
-      if (!value) return "None";
-      
-      const included = value.included?.length ? `Included: ${value.included.join(", ")}` : "";
-      const excluded = value.excluded?.length ? `Excluded: ${value.excluded.join(", ")}` : "";
-      
-      // Add available options if present
-      let availableOptions = "";
-      if (snapshot?.availableFilters?.subcategories?.length > 0) {
-        availableOptions = `\n  * Available Options: ${snapshot.availableFilters.subcategories.join(", ")}`;
-      }
-      
-      return [included, excluded].filter(Boolean).join("; ") + availableOptions || "None";
-    }
-  },
-  filterTraits: { 
-    label: "Trait Filters", 
-    defaultValue: {},
-    getValue: (snapshot) => snapshot.filterSelections?.traits,
-    formatValue: (value, snapshot) => {
-      if (!value) return "None";
-      
-      const included = value.included?.length ? `Included: ${value.included.join(", ")}` : "";
-      const excluded = value.excluded?.length ? `Excluded: ${value.excluded.join(", ")}` : "";
-      
-      // Add available options if present
-      let availableOptions = "";
-      if (snapshot?.availableFilters?.traits?.length > 0) {
-        // For traits, which can be numerous, just mention the count
-        availableOptions = `\n  * Available Options: ${snapshot.availableFilters.traits.length} valid traits`;
-      }
-      
-      return [included, excluded].filter(Boolean).join("; ") + availableOptions || "None";
-    }
   }
 };
 

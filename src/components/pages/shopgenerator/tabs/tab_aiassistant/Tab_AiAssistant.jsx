@@ -219,8 +219,9 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
 
     // Function to handle dialog confirmation
     const handleDialogConfirm = useCallback((selectedFields) => {
+        setIsDialogOpen(false); // Close the dialog first
         analyzeShopWithPreservedFields(selectedFields);
-    }, []);
+    }, [analyzeShopWithPreservedFields]);
 
     // Replace the old analyzeShopState function with a function that opens the dialog
     const analyzeShopState = useCallback(() => {

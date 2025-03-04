@@ -192,34 +192,6 @@ export const analyzeFilterSelections = (filterSelections, availableFilters = {})
     }
   }
   
-  // Analyze subcategories
-  if (filterSelections.subcategories?.included?.length > 0 || filterSelections.subcategories?.excluded?.length > 0) {
-    const includedCount = filterSelections.subcategories?.included?.length || 0;
-    const excludedCount = filterSelections.subcategories?.excluded?.length || 0;
-    
-    if (includedCount > 0) {
-      analysis.push(`Shop specializes in ${includedCount} specific subcategories`);
-    }
-    
-    if (excludedCount > 0) {
-      analysis.push(`Shop excludes ${excludedCount} subcategories`);
-    }
-  }
-  
-  // Analyze traits
-  if (filterSelections.traits?.included?.length > 0 || filterSelections.traits?.excluded?.length > 0) {
-    const includedCount = filterSelections.traits?.included?.length || 0;
-    const excludedCount = filterSelections.traits?.excluded?.length || 0;
-    
-    if (includedCount > 0) {
-      analysis.push(`Shop focuses on items with ${includedCount} specific traits`);
-    }
-    
-    if (excludedCount > 0) {
-      analysis.push(`Shop avoids items with ${excludedCount} specific traits`);
-    }
-  }
-  
   return analysis.length > 0 
     ? analysis.join(". ") + "."
     : "No specific filter selections applied.";
