@@ -46,14 +46,14 @@ const ImprovementDialog = ({
         if (isOpen) {
             const initialFields = new Set();
             
-            // Add fields that have non-default values
+            // Add fields that HAVE default values (need improvement)
             Object.keys(FIELD_DEFINITIONS).forEach(field => {
                 if (field === 'categories') {
-                    if (filterMaps.categories.size > 0) {
+                    if (filterMaps.categories.size === 0) {
                         initialFields.add(field);
                     }
                 } else {
-                    if (isNonDefaultValue(field, shopState[field])) {
+                    if (!isNonDefaultValue(field, shopState[field])) {
                         initialFields.add(field);
                     }
                 }
@@ -197,12 +197,12 @@ const ImprovementDialog = ({
         <div className="improvement-dialog-overlay" onClick={onClose}>
             <div className="improvement-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="improvement-dialog-header">
-                    <h2>Preserve Fields</h2>
+                    <h2>Fields to Improve</h2>
                     <button className="improvement-dialog-close" onClick={onClose}>×</button>
                 </div>
                 
                 <div className="improvement-dialog-description">
-                    Select the fields you want to preserve. The AI will not suggest changes for selected fields.
+                    Select the fields you want the AI to suggest improvements for. Unselected fields will be treated as absolute truth and preserved.
                 </div>
                 
                 <div className="improvement-dialog-sections">
@@ -224,7 +224,11 @@ const ImprovementDialog = ({
                                             type="checkbox"
                                             className="field-checkbox"
                                             checked={selectedFields.has(field)}
-                                            onChange={() => handleCheckboxChange(field)}
+                                            onChange={() => {}}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleCheckboxChange(field);
+                                            }}
                                         />
                                         <span className="field-label">{label}</span>
                                         <span className="field-value">{shopState[field]}</span>
@@ -248,7 +252,11 @@ const ImprovementDialog = ({
                                     type="checkbox"
                                     className="field-checkbox"
                                     checked={selectedFields.has("gold")}
-                                    onChange={() => handleCheckboxChange("gold")}
+                                    onChange={() => {}}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckboxChange("gold");
+                                    }}
                                 />
                                 <span className="field-label">Gold</span>
                                 {formatGold(shopState.gold)}
@@ -258,7 +266,11 @@ const ImprovementDialog = ({
                                     type="checkbox"
                                     className="field-checkbox"
                                     checked={selectedFields.has("levelRange")}
-                                    onChange={() => handleCheckboxChange("levelRange")}
+                                    onChange={() => {}}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckboxChange("levelRange");
+                                    }}
                                 />
                                 <span className="field-label">Level Range</span>
                                 {formatLevelRange()}
@@ -268,7 +280,11 @@ const ImprovementDialog = ({
                                     type="checkbox"
                                     className="field-checkbox"
                                     checked={selectedFields.has("itemBias")}
-                                    onChange={() => handleCheckboxChange("itemBias")}
+                                    onChange={() => {}}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckboxChange("itemBias");
+                                    }}
                                 />
                                 <span className="field-label">Item Bias</span>
                                 {formatItemBias()}
@@ -278,7 +294,11 @@ const ImprovementDialog = ({
                                     type="checkbox"
                                     className="field-checkbox"
                                     checked={selectedFields.has("rarityDistribution")}
-                                    onChange={() => handleCheckboxChange("rarityDistribution")}
+                                    onChange={() => {}}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckboxChange("rarityDistribution");
+                                    }}
                                 />
                                 <span className="field-label">Rarity Distribution</span>
                                 {formatRarityDistribution()}
@@ -301,7 +321,11 @@ const ImprovementDialog = ({
                                     type="checkbox"
                                     className="field-checkbox"
                                     checked={selectedFields.has("filterCategories")}
-                                    onChange={() => handleCheckboxChange("filterCategories")}
+                                    onChange={() => {}}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCheckboxChange("filterCategories");
+                                    }}
                                 />
                                 <span className="field-label">Categories</span>
                                 {(() => {
@@ -325,8 +349,9 @@ const ImprovementDialog = ({
                         className="dialog-button confirm-button"
                         onClick={() => {
                             const preservedFieldsObj = {};
-                            selectedFields.forEach(field => {
-                                preservedFieldsObj[field] = true;
+                            // Invert the logic: fields NOT in selectedFields should be preserved
+                            Object.keys(FIELD_DEFINITIONS).forEach(field => {
+                                preservedFieldsObj[field] = !selectedFields.has(field);
                             });
                             onConfirm(preservedFieldsObj);
                         }}
