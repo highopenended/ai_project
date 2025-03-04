@@ -205,7 +205,11 @@ const ImprovementDialog = ({
                                             }}
                                         />
                                         <span className="field-label">{label}</span>
-                                        <span className="field-value">{shopState[field]}</span>
+                                        <span className="field-value">
+                                            {selectedFields.has(field) ? (
+                                                <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                            ) : shopState[field]}
+                                        </span>
                                     </div>
                                 ))}
                         </div>
@@ -233,7 +237,13 @@ const ImprovementDialog = ({
                                     }}
                                 />
                                 <span className="field-label">Gold</span>
-                                {formatGold(shopState.gold)}
+                                {selectedFields.has("gold") ? (
+                                    <span className="field-value">
+                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                    </span>
+                                ) : (
+                                    formatGold(shopState.gold)
+                                )}
                             </div>
                             <div className="field-item" onClick={() => handleCheckboxChange("levelRange")}>
                                 <input
@@ -247,7 +257,13 @@ const ImprovementDialog = ({
                                     }}
                                 />
                                 <span className="field-label">Level Range</span>
-                                {formatLevelRange()}
+                                {selectedFields.has("levelRange") ? (
+                                    <span className="field-value">
+                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                    </span>
+                                ) : (
+                                    formatLevelRange()
+                                )}
                             </div>
                             <div className="field-item" onClick={() => handleCheckboxChange("itemBias")}>
                                 <input
@@ -261,7 +277,13 @@ const ImprovementDialog = ({
                                     }}
                                 />
                                 <span className="field-label">Item Bias</span>
-                                {formatItemBias()}
+                                {selectedFields.has("itemBias") ? (
+                                    <span className="field-value">
+                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                    </span>
+                                ) : (
+                                    formatItemBias()
+                                )}
                             </div>
                             <div className="field-item" onClick={() => handleCheckboxChange("rarityDistribution")}>
                                 <input
@@ -275,7 +297,13 @@ const ImprovementDialog = ({
                                     }}
                                 />
                                 <span className="field-label">Rarity Distribution</span>
-                                {formatRarityDistribution()}
+                                {selectedFields.has("rarityDistribution") ? (
+                                    <span className="field-value">
+                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                    </span>
+                                ) : (
+                                    formatRarityDistribution()
+                                )}
                             </div>
                         </div>
                     </div>
@@ -302,14 +330,20 @@ const ImprovementDialog = ({
                                     }}
                                 />
                                 <span className="field-label">Categories</span>
-                                {(() => {
-                                    const { included, excluded } = getFilterCount(filterMaps.categories);
-                                    return (
-                                        <span className="field-value">
-                                            {included} included, {excluded} excluded
-                                        </span>
-                                    );
-                                })()}
+                                {selectedFields.has("filterCategories") ? (
+                                    <span className="field-value">
+                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                    </span>
+                                ) : (
+                                    (() => {
+                                        const { included, excluded } = getFilterCount(filterMaps.categories);
+                                        return (
+                                            <span className="field-value">
+                                                {included} included, {excluded} excluded
+                                            </span>
+                                        );
+                                    })()
+                                )}
                             </div>
                         </div>
                     </div>
