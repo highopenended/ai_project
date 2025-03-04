@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./ImprovementDialog.css";
 import defaultShopData from "../../../utils/shopData";
-import { isNonDefaultValue } from "../../../utils/aiPromptGen_preservedFields";
 
 const FIELD_SECTIONS = {
     BASIC: "basic",
@@ -26,7 +25,7 @@ const FIELD_DEFINITIONS = {
     rarityDistribution: { label: "Rarity Distribution", defaultValue: defaultShopData.rarityDistribution },
 
     // Filter Fields
-    categories: { label: "Categories", defaultValue: {} }
+    filterCategories: { label: "Categories", defaultValue: {} }
 };
 
 /**
@@ -44,24 +43,10 @@ const ImprovementDialog = ({
     // Reset selected fields when dialog opens
     useEffect(() => {
         if (isOpen) {
-            const initialFields = new Set();
-            
-            // Add fields that HAVE default values (need improvement)
-            Object.keys(FIELD_DEFINITIONS).forEach(field => {
-                if (field === 'categories') {
-                    if (filterMaps.categories.size === 0) {
-                        initialFields.add(field);
-                    }
-                } else {
-                    if (!isNonDefaultValue(field, shopState[field])) {
-                        initialFields.add(field);
-                    }
-                }
-            });
-            
-            setSelectedFields(initialFields);
+            // Start with empty set - all fields unchecked
+            setSelectedFields(new Set());
         }
-    }, [isOpen, shopState, filterMaps]);
+    }, [isOpen]);
     
     if (!isOpen) return null;
     
@@ -131,13 +116,13 @@ const ImprovementDialog = ({
     
     const formatGold = (gold) => {
         return (
-            <span className="custom-value">{gold} gp</span>
+            <span className="field-value">{gold.toLocaleString()} gp</span>
         );
     };
     
     const formatLevelRange = () => {
         return (
-            <span className="custom-value">
+            <span className="field-value">
                 {shopState.levelRange.min} - {shopState.levelRange.max}
             </span>
         );
@@ -145,25 +130,14 @@ const ImprovementDialog = ({
     
     const formatItemBias = () => {
         const { x, y } = shopState.itemBias;
-        let biasText = [];
-
-        if (x < 0.4) biasText.push("Consumable");
-        else if (x > 0.6) biasText.push("Permanent");
-
-        if (y < 0.4) biasText.push("Mundane");
-        else if (y > 0.6) biasText.push("Magical");
-
-        if (biasText.length === 0) biasText.push("Balanced");
-
         return (
             <span className="field-value">
                 <span className="bias-value">
-                    <span className="bias-label">X:</span> {x.toFixed(2)}
+                    <span className="bias-label">Variety:</span> {Math.round(x * 100)}%
                 </span>
                 <span className="bias-value">
-                    <span className="bias-label">Y:</span> {y.toFixed(2)}
+                    <span className="bias-label">Cost:</span> {Math.round(y * 100)}%
                 </span>
-                ({biasText.join("/")})
             </span>
         );
     };
@@ -342,9 +316,6 @@ const ImprovementDialog = ({
                 </div>
                 
                 <div className="improvement-dialog-actions">
-                    <button className="dialog-button cancel-button" onClick={onClose}>
-                        Cancel
-                    </button>
                     <button
                         className="dialog-button confirm-button"
                         onClick={() => {
@@ -358,6 +329,9 @@ const ImprovementDialog = ({
                         disabled={selectedFields.size === 0}
                     >
                         Analyze
+                    </button>
+                    <button className="dialog-button cancel-button" onClick={onClose}>
+                        Cancel
                     </button>
                 </div>
             </div>
