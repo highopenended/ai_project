@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import itemData from "../data/item-table.json";
-import { extractUniqueCategories } from "../components/pages/shopgenerator/utils/categoryUtils";
+import { extractUniqueCategories } from "../components/pages/shopgenerator/utils/filterGroupUtils";
 import { ItemDataContext } from './itemData';
 import { useAuth } from './AuthContext';
 

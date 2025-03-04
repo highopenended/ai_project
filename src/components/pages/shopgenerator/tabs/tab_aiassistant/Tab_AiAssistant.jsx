@@ -5,7 +5,7 @@ import { useItemData } from "../../../../../context/itemData";
 import "./Tab_AiAssistant.css";
 import ImprovementDialog from "./improvementdialog/ImprovementDialog";
 import { generateAnalysisPrompt, generateChatPrompt } from "../../utils/aiPromptGenerator";
-import { extractAvailableFilterOptions } from "../../utils/categoryUtils";
+import { extractAvailableFilterOptions } from "../../utils/filterGroupUtils";
 import traitList from "../../../../../data/trait-list.json";
 
 const defaultFilterMaps = {

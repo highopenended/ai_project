@@ -4,19 +4,13 @@ import Section from "../../../shared/section/Section";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
+import { getFilteredCategories } from "../../../utils/filterGroupUtils";
 
 function CategoryFilter({ categoryData, getFilterState, toggleCategory, clearCategorySelections }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
-    const filteredCategories = Object.entries(categoryData.categories)
-        .filter(([category]) =>
-            category.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([category]) => ({
-            name: category
-        }));
+    const filteredCategories = getFilteredCategories(categoryData, searchTerm);
 
     return (
         <Section

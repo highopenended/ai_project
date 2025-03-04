@@ -5,19 +5,13 @@ import traitList from "../../../../../../../src/data/trait-list.json";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
 import TagContainer from "../../../shared/TagContainer";
+import { getFilteredTraits } from "../../../utils/filterGroupUtils";
 
 function TraitFilter({ getFilterState, toggleTrait, clearTraitSelections }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
 
-    const filteredTraits = traitList
-        .filter(({ Trait }) =>
-            Trait.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .sort((a, b) => a.Trait.localeCompare(b.Trait))
-        .map(({ Trait }) => ({
-            name: Trait
-        }));
+    const filteredTraits = getFilteredTraits(traitList, searchTerm);
 
     return (
         <Section title="Traits"
