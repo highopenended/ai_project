@@ -6,8 +6,8 @@
  */
 
 import defaultShopData from '../shopData';
-import { formatItemBias } from './aiPromptGen_shopFields';
-import { formatRarityDistribution } from './aiPromptGen_shopFields';
+import { formatItemBias } from './promptPiece_shopFields';
+import { formatRarityDistribution } from './promptPiece_shopFields';
 
 /**
  * Field definitions with labels and value formatters
@@ -101,20 +101,20 @@ const FIELD_DEFINITIONS = {
  * @param {Object} shopSnapshot - Current shop data snapshot
  * @returns {Object} Object containing formatted text and fields to improve
  */
-export const generatePrompt_preservedFields = (preservedFields, shopSnapshot) => {
+export const getPiece_preservedFields = (preservedFields, shopSnapshot) => {
   if (!preservedFields) {
     return {
-      promptText_preservedFields: "",
-      promptText_unpreservedFields: []
+      promptPiece_preservedFields: "",
+      promptPiece_unpreservedFields: []
     };
   }
   
   const { preservedList, nonPreservedList } = categorizeFields(preservedFields, shopSnapshot);
   
-  let promptText_preservedFields = "";
+  let promptPiece_preservedFields = "";
   
   if (preservedList.length > 0) {
-    promptText_preservedFields += `
+    promptPiece_preservedFields += `
 PRESERVED FIELDS (DO NOT CHANGE THESE):
 ${preservedList.map(field => `- ${field.label}: ${field.value}`).join('\n')}
 
@@ -122,7 +122,7 @@ These preserved fields should be treated as absolute truth and should not be mod
   }
   
   if (nonPreservedList.length > 0) {
-    promptText_preservedFields += `
+    promptPiece_preservedFields += `
 
 FIELDS TO IMPROVE (PLEASE SUGGEST CHANGES FOR THESE):
 ${nonPreservedList.map(field => `- ${field.label}`).join('\n')}
@@ -131,8 +131,8 @@ Please focus your suggestions on improving these specific fields.`;
   }
   
   return {
-    promptText_preservedFields,
-    promptText_unpreservedFields: nonPreservedList.map(field => field.key)
+    promptPiece_preservedFields,
+    promptPiece_unpreservedFields: nonPreservedList.map(field => field.key)
   };
 };
 

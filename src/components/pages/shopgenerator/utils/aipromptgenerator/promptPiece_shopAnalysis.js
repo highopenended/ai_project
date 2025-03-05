@@ -13,7 +13,7 @@ import { LEVEL_MARKERS, NORMAL_RARITY_DISTRIBUTION, NORMAL_GOLD_PER_LEVEL } from
  * @param {Object} shopSnapshot - Current shop data snapshot
  * @returns {string} Formatted shop analysis text
  */
-export const generatePrompt_shopAnalysis = (shopSnapshot) => {
+export const getPiece_shopAnalysis = (shopSnapshot) => {
     return `Gold Analysis: ${analyzeShopGold(shopSnapshot.gold, shopSnapshot.levelRange)}
 Level Analysis: ${analyzeShopLevel(shopSnapshot.levelRange)}
 Rarity Analysis: ${analyzeRarityDistribution(shopSnapshot.rarityDistribution)}

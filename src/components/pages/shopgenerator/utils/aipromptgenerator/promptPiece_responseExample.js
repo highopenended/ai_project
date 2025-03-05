@@ -8,11 +8,11 @@
 
 /**
  * Generates the format specification part of the prompt based on fields to improve
- * @param {Array} promptText_unpreservedFields - List of fields that need suggestions
+ * @param {Array} promptPiece_unpreservedFields - List of fields that need suggestions
  * @returns {string} Format specification text for the prompt
  */
-export const generateFormatSpecification = (promptText_unpreservedFields) => {
-    const fieldSpecs = promptText_unpreservedFields.map(field => {
+export const getPiece_responseExample = (promptPiece_unpreservedFields) => {
+    const fieldSpecs = promptPiece_unpreservedFields.map(field => {
         const spec = getFieldSpecification(field);
         return `  "${field}": ${spec.description} (${spec.type})`;
     }).join('\n');
