@@ -189,10 +189,18 @@ const useAiAssistantRegistry = (props) => {
         }
     }, [setShopState, shopState]);
 
+    // Create a function to update shop state
+    const onShopUpdate = useCallback((updatedShopState) => {
+        if (setShopState) {
+            setShopState(updatedShopState);
+        }
+    }, [setShopState]);
+
     return useMemo(() => ({
         shopState: {
             ...(shopState || {}),
-            onAiConversationUpdate
+            onAiConversationUpdate,
+            onShopUpdate
         },
         filterMaps: filterMaps || {
             categories: new Map(),
@@ -204,7 +212,8 @@ const useAiAssistantRegistry = (props) => {
         shopState,
         filterMaps,
         inventory,
-        onAiConversationUpdate
+        onAiConversationUpdate,
+        onShopUpdate
     ]);
 };
 

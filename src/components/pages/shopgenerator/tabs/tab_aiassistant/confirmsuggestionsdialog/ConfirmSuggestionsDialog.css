@@ -1,0 +1,171 @@
+.confirm-suggestions-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.confirm-suggestions-dialog {
+    background-color: #1e2430;
+    border-radius: 8px;
+    width: 500px;
+    max-width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.confirm-suggestions-dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #2d3748;
+}
+
+.confirm-suggestions-dialog-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #e2e8f0;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-button:hover {
+    color: #e2e8f0;
+}
+
+.confirm-suggestions-dialog-content {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.changes-summary {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #2d3748;
+}
+
+.changes-summary p {
+    margin: 0;
+    color: #cbd5e0;
+    line-height: 1.5;
+}
+
+.changes-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.change-item {
+    padding: 10px;
+    border-radius: 4px;
+    background-color: #2d3748;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    user-select: none;
+}
+
+.change-item:hover {
+    background-color: #3a4a61;
+}
+
+.change-item.disabled {
+    opacity: 0.7;
+}
+
+.change-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.change-checkbox-container {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.change-checkbox-container input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    accent-color: #4a6da7;
+}
+
+.change-label {
+    font-weight: 600;
+    color: #a0aec0;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.change-value {
+    color: #e2e8f0;
+    font-size: 14px;
+    user-select: none;
+}
+
+.confirm-suggestions-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid #2d3748;
+}
+
+.cancel-button {
+    background-color: transparent;
+    border: 1px solid #4a5568;
+    color: #a0aec0;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.cancel-button:hover {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+.confirm-button {
+    background-color: #4a6da7;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.confirm-button:hover {
+    background-color: #3a5a8f;
+}
+
+/* Remove the old checkbox styles that are no longer needed */
+.change-checkbox {
+    display: none;
+} 

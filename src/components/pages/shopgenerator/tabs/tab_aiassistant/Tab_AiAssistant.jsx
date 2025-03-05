@@ -4,6 +4,7 @@ import { useAuth } from "../../../../../context/AuthContext";
 import { useItemData } from "../../../../../context/itemData";
 import "./Tab_AiAssistant.css";
 import ImprovementDialog from "./improvementdialog/ImprovementDialog";
+import ConfirmSuggestionsButton from "./confirmsuggestionsbutton/ConfirmSuggestionsButton";
 import { generateAnalysisPrompt, generateChatPrompt } from "../../utils/aipromptgenerator/aiPromptGenerator";
 import { formatContent } from "../../utils/aipromptgenerator/contentFormatter";
 import { extractAvailableFilterOptions } from "../../utils/filterGroupUtils";
@@ -97,6 +98,49 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         updateParentState(emptyMessages);
     }, [isLoading, isAnalyzing, updateParentState]);
 
+    // Function to apply suggested changes to the shop
+    const handleApplySuggestions = useCallback((suggestedChanges) => {
+        // Create a copy of the current shop state
+        const updatedShopState = { ...shopState };
+
+        // Apply gold changes if present
+        if (suggestedChanges.gold !== undefined) {
+            updatedShopState.gold = suggestedChanges.gold;
+        }
+
+        // Apply level range changes if present
+        if (suggestedChanges.levelRange) {
+            updatedShopState.levelRange = {
+                min: suggestedChanges.levelRange.min,
+                max: suggestedChanges.levelRange.max
+            };
+        }
+
+        // Apply item bias changes if present
+        if (suggestedChanges.itemBias) {
+            updatedShopState.itemBias = { ...suggestedChanges.itemBias };
+        }
+
+        // Apply rarity distribution changes if present
+        if (suggestedChanges.rarityDistribution) {
+            updatedShopState.rarityDistribution = { ...suggestedChanges.rarityDistribution };
+        }
+
+        // Try to update the shop state through the provided function
+        if (shopState && typeof shopState.onShopUpdate === "function") {
+            shopState.onShopUpdate(updatedShopState);
+        } else {
+            // Fallback: Dispatch a custom event with the updated state
+            const event = new CustomEvent('shop:update-requested', { 
+                detail: { updatedShopState } 
+            });
+            window.dispatchEvent(event);
+            
+            // Show a notification to the user
+            alert("Changes have been prepared but couldn't be applied automatically. Please manually update your shop parameters.");
+        }
+    }, [shopState]);
+
     // Function to analyze shop with preserved fields
     const analyzeShopWithPreservedFields = useCallback(async (fields) => {
         if (!currentUser || isLoading || isAnalyzing) return;
@@ -166,11 +210,27 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                 throw new Error('Invalid response from API: Missing answer');
             }
 
-            // Create AI response message
+            // Parse the JSON response if it exists
+            let suggestedChanges = null;
+            try {
+                // Look for JSON object in the response
+                const jsonMatch = data.answer.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    const jsonStr = jsonMatch[0];
+                    suggestedChanges = JSON.parse(jsonStr);
+                    console.log("Parsed suggested changes:", suggestedChanges);
+                }
+            } catch (parseErr) {
+                console.error("Error parsing suggested changes:", parseErr);
+            }
+
+            // Create AI response message with suggestion flag and data
             const assistantMessage = {
                 role: "assistant",
                 content: data.answer,
                 timestamp: Date.now(),
+                isSuggestion: true,
+                suggestedChanges: suggestedChanges
             };
             console.log("AI RESPONSE:");
             console.log("--------------------------------");
@@ -360,6 +420,12 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                                     className="message-content"
                                     dangerouslySetInnerHTML={{ __html: formatContent(message.content, message.role) }}
                                 />
+                                {message.isSuggestion && message.suggestedChanges && (
+                                    <ConfirmSuggestionsButton 
+                                        suggestedChanges={message.suggestedChanges}
+                                        onApply={handleApplySuggestions}
+                                    />
+                                )}
                             </div>
                         ))
                     )}
@@ -401,9 +467,12 @@ Tab_AiAssistant.propTypes = {
                 role: PropTypes.oneOf(["user", "assistant"]).isRequired,
                 content: PropTypes.string.isRequired,
                 timestamp: PropTypes.number.isRequired,
+                isSuggestion: PropTypes.bool,
+                suggestedChanges: PropTypes.object,
             })
         ),
         onAiConversationUpdate: PropTypes.func,
+        onShopUpdate: PropTypes.func,
     }),
     filterMaps: PropTypes.shape({
         categories: PropTypes.instanceOf(Map),
