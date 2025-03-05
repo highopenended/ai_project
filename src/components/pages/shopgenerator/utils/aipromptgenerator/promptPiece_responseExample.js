@@ -78,7 +78,7 @@ const getFieldSpecification = (field) => {
             description: 'Suggested level range with minimum and maximum values'
         },
         itemBias: {
-            type: 'object: { x: number, y: number }',
+            type: 'object: { Variety: number, Cost: number }',
             description: 'Suggested item bias values (between 0 and 1)'
         },
         rarityDistribution: {
@@ -155,7 +155,7 @@ const validateField = (field, value) => {
                 max: typeof value.max === 'number' ? value.max : parseFloat(value.max)
             };
             
-        case 'object: { x: number, y: number }':
+        case 'object: { Variety: number, Cost: number }':
             if (typeof value !== 'object' || value === null) throw new Error(`Invalid ${field} format`);
             return {
                 x: typeof value.x === 'number' ? value.x : parseFloat(value.x),

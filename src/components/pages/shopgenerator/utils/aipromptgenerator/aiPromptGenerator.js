@@ -7,7 +7,7 @@
  */
 
 import { AI_RULES } from "./aiConstants";
-import { getPiece_shopFields } from "./promptPiece_shopFields";
+// import { getPiece_shopFields } from "./promptPiece_shopFields"; (Not used at this time, keep commented out)
 import { getPiece_shopAnalysis } from "./promptPiece_shopAnalysis";
 import { getPiece_preservedFields } from "./promptPiece_preservedFields";
 import { getPiece_responseExample } from "./promptPiece_responseExample";
@@ -22,8 +22,6 @@ import { getPiece_filterContraints } from "./promptPiece_filterOptions";
  * @returns {string} Complete AI prompt
  */
 export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversationHistory) => {
-    // Format all shop fields (Not used at this time)
-    // const promptPiece_shopData = getPiece_shopFields(shopSnapshot);
 
     // Analyze shop data against reference values
     const promptPiece_shopAnalysis = getPiece_shopAnalysis(shopSnapshot);
@@ -41,8 +39,8 @@ export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversati
     const promptPiece_filterConstraints = getPiece_filterContraints(shopSnapshot);
 
     // Construct the complete prompt
-    const finalPrompt = `${AI_RULES}
-Shop Analysis:
+    const finalPrompt = `
+${AI_RULES}
 
 ${promptPiece_shopAnalysis}
 
@@ -53,8 +51,18 @@ ${promptPiece_filterConstraints}
 ${promptPiece_responseExample}
 
 Previous conversation history:
-${conversationHistory}`
+${conversationHistory}
 
+
+Analysis-Specific Rules:
+
+1) Keep your responses very concise and to the point.
+2) The user only see the parts after "Previous conversation history:", so anything before that should be treated as YOUR observations, not something the user said.
+3) For the analyses, you should definitely mention it in your reasoning if they are a relatively extreme case (Judge this by percentage, words like "very", etc.)
+4) Only offer one suggestion per 'FIELD TO IMPROVE'
+
+
+`
     // Return the final prompt
     return finalPrompt;
 };
@@ -68,30 +76,28 @@ ${conversationHistory}`
  * @returns {string} Complete chat prompt
  */
 export const generateChatPrompt = (shopSnapshot, conversationHistory, userQuestion) => {
-    // Format all shop fields
-    const promptPiece_shopData = getPiece_shopFields(shopSnapshot);
 
-    // Analyze shop data against reference values (Is the shop wealthy or poor? Is the rarity distribution balanced? Are the item biases normal or extreme?)
-    const promptPiece_shopAnalysis = getPiece_shopAnalysis(shopSnapshot);
-
-    // Add filter constraints instructions (Only use THESE category names, don't just make them up)
-    const promptPiece_filterConstraints = getPiece_filterContraints(shopSnapshot);
-
-    return `${AI_RULES}
+// Construct the complete prompt
+const finalPrompt = `
+${AI_RULES}
 
 Current shop values:
-${promptPiece_shopData}
-
-Shop Analysis:
-${promptPiece_shopAnalysis}
-
-Filter Constraints:
-${promptPiece_filterConstraints}
 
 Previous conversation history:
 ${conversationHistory}
 
 Current question: ${userQuestion}
 
+
+Conversation Specific Rules:
+1) Keep your responses very concise and to the point.
+2) You know how to keep the conversation on track and not get off topic.
+3) Your goal is to generate information that will be immediately applicable to the shop so that the DM can better describe it to the players.
+
+
+
+
 Format your response with clear headings using **bold text** for section titles and bullet points for lists.`;
+    // Return the final prompt
+    return finalPrompt;
 };
