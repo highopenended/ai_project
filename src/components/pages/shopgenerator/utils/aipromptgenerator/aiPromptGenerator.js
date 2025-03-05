@@ -13,6 +13,7 @@ import { getPiece_preservedFields } from "./promptPiece_preservedFields";
 import { getPiece_responseExample } from "./promptPiece_responseExample";
 import { getPiece_filterContraints } from "./promptPiece_filterOptions";
 
+
 /**
  * Generates a complete AI prompt for shop analysis with preserved fields
  *
@@ -23,8 +24,9 @@ import { getPiece_filterContraints } from "./promptPiece_filterOptions";
  */
 export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversationHistory) => {
 
+
     // Analyze shop data against reference values
-    const promptPiece_shopAnalysis = getPiece_shopAnalysis(shopSnapshot);
+    const promptPiece_shopAnalysis = getPiece_shopAnalysis(shopSnapshot, preservedFields);
 
     // Format preserved fields and get fields to improve
     const { promptPiece_preservedFields, promptPiece_unpreservedFields } = getPiece_preservedFields(

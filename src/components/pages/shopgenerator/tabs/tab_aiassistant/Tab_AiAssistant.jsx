@@ -147,13 +147,21 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                 }),
             });
 
+            // Enhanced error handling
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
 
             // Validate response data
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
-            }
-
             if (!data || !data.answer) {
                 throw new Error('Invalid response from API: Missing answer');
             }
@@ -246,13 +254,21 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                 }),
             });
 
+            // Enhanced error handling
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    errorText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
 
             // Validate response data
-            if (!response.ok) {
-                throw new Error(`API request failed with status ${response.status}`);
-            }
-
             if (!data || !data.answer) {
                 throw new Error('Invalid response from API: Missing answer');
             }
