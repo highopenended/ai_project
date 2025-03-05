@@ -362,6 +362,7 @@ const ImprovementDialog = ({
                             onConfirm(preservedFieldsObj);
                         }}
                         disabled={selectedFields.size === 0}
+                        data-tooltip={selectedFields.size === 0 ? "Select at least one field for the Oracle to consider" : null}
                     >
                         Analyze
                     </button>

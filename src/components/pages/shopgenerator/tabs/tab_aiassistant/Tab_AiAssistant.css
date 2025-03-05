@@ -46,6 +46,7 @@
     font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.2s ease;
+    position: relative;
 }
 
 .analyze-button:hover:not(:disabled) {
@@ -64,6 +65,32 @@
     opacity: var(--button-disabled-opacity);
     cursor: not-allowed;
     transform: none;
+}
+
+/* Tooltip styles */
+.analyze-button[data-tooltip]:before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 5px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.analyze-button[data-tooltip]:hover:before {
+    opacity: 1;
+    visibility: visible;
 }
 
 .clear-button {

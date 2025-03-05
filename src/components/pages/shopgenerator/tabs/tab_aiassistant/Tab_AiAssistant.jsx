@@ -315,7 +315,12 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         <div className="ai-assistant-container">
             <div className="ai-assistant-content">
                 <div className="ai-assistant-actions">
-                    <button className="analyze-button" onClick={analyzeShopState} disabled={isAnalyzing || isLoading}>
+                    <button 
+                        className="analyze-button" 
+                        onClick={analyzeShopState} 
+                        disabled={isAnalyzing || isLoading}
+                        data-tooltip="Click to select fields for the Oracle to consider"
+                    >
                         {isAnalyzing ? "Analyzing..." : "Suggest Improvements"}
                     </button>
                     <button
