@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./ImprovementDialog.css";
 import defaultShopData from "../../../utils/shopData";
@@ -28,6 +28,7 @@ const FIELD_DEFINITIONS = {
     filterCategories: { label: "Categories", defaultValue: {} }
 };
 
+const ORACLE_SUGGESTION_TEXT = "The Oracle will offer suggestions...";
 /**
  * Dialog component for selecting which fields to preserve when requesting AI improvements
  */
@@ -171,7 +172,7 @@ const ImprovementDialog = ({
         <div className="improvement-dialog-overlay" onClick={onClose}>
             <div className="improvement-dialog" onClick={(e) => e.stopPropagation()}>
                 <div className="improvement-dialog-header">
-                    <h2>Fields to Improve</h2>
+                    <h2>Consult the Oracle</h2>
                     <button className="improvement-dialog-close" onClick={onClose}>×</button>
                 </div>
                 
@@ -207,7 +208,7 @@ const ImprovementDialog = ({
                                         <span className="field-label">{label}</span>
                                         <span className="field-value">
                                             {selectedFields.has(field) ? (
-                                                <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                                <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
                                             ) : shopState[field]}
                                         </span>
                                     </div>
@@ -239,7 +240,7 @@ const ImprovementDialog = ({
                                 <span className="field-label">Gold</span>
                                 {selectedFields.has("gold") ? (
                                     <span className="field-value">
-                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
                                     </span>
                                 ) : (
                                     formatGold(shopState.gold)
@@ -259,7 +260,7 @@ const ImprovementDialog = ({
                                 <span className="field-label">Level Range</span>
                                 {selectedFields.has("levelRange") ? (
                                     <span className="field-value">
-                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
                                     </span>
                                 ) : (
                                     formatLevelRange()
@@ -279,7 +280,7 @@ const ImprovementDialog = ({
                                 <span className="field-label">Item Bias</span>
                                 {selectedFields.has("itemBias") ? (
                                     <span className="field-value">
-                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
                                     </span>
                                 ) : (
                                     formatItemBias()
@@ -299,7 +300,7 @@ const ImprovementDialog = ({
                                 <span className="field-label">Rarity Distribution</span>
                                 {selectedFields.has("rarityDistribution") ? (
                                     <span className="field-value">
-                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
                                     </span>
                                 ) : (
                                     formatRarityDistribution()
@@ -332,7 +333,7 @@ const ImprovementDialog = ({
                                 <span className="field-label">Categories</span>
                                 {selectedFields.has("filterCategories") ? (
                                     <span className="field-value">
-                                        <span className="oracle-suggestion">The Oracle will offer suggestions...</span>
+                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
                                     </span>
                                 ) : (
                                     (() => {
