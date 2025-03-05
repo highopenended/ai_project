@@ -41,12 +41,8 @@ export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversati
     const promptPiece_filterConstraints = getPiece_filterContraints(shopSnapshot);
 
     // Construct the complete prompt
-    return `${AI_RULES}
-
+    const finalPrompt = `${AI_RULES}
 Shop Analysis:
-
-Previous conversation history:
-${conversationHistory}
 
 ${promptPiece_shopAnalysis}
 
@@ -54,7 +50,13 @@ ${promptPiece_preservedFields}
 
 ${promptPiece_filterConstraints}
 
-${promptPiece_responseExample}`;
+${promptPiece_responseExample}
+
+Previous conversation history:
+${conversationHistory}`
+
+    // Return the final prompt
+    return finalPrompt;
 };
 
 /**
@@ -83,6 +85,7 @@ ${promptPiece_shopData}
 Shop Analysis:
 ${promptPiece_shopAnalysis}
 
+Filter Constraints:
 ${promptPiece_filterConstraints}
 
 Previous conversation history:
