@@ -14,7 +14,15 @@ import { LEVEL_MARKERS, NORMAL_RARITY_DISTRIBUTION, NORMAL_GOLD_PER_LEVEL } from
  * @returns {string} Formatted shop analysis text
  */
 export const getPiece_shopAnalysis = (shopSnapshot) => {
-    return `Gold Analysis: ${analyzeShopGold(shopSnapshot.gold, shopSnapshot.levelRange)}
+
+    
+    return `
+Average Gold per Level: 1000gp/level (Average out the level range to get the average)   
+Normal Rarity Distribution: ${NORMAL_RARITY_DISTRIBUTION}
+Normal Item Bias: 50% Variety, 50% Cost (Higher cost = more expensive items, usually a fancier shop, Variety = less specialized.)
+
+
+Gold Analysis: ${analyzeShopGold(shopSnapshot.gold, shopSnapshot.levelRange)}
 Level Analysis: ${analyzeShopLevel(shopSnapshot.levelRange)}
 Rarity Analysis: ${analyzeRarityDistribution(shopSnapshot.rarityDistribution)}
 Item Bias Analysis: ${analyzeItemBias(shopSnapshot.itemBias)}

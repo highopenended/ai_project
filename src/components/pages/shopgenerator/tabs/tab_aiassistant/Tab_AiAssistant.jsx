@@ -149,6 +149,15 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
 
             const data = await response.json();
 
+            // Validate response data
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            if (!data || !data.answer) {
+                throw new Error('Invalid response from API: Missing answer');
+            }
+
             // Create AI response message
             const assistantMessage = {
                 role: "assistant",
@@ -238,6 +247,15 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             });
 
             const data = await response.json();
+
+            // Validate response data
+            if (!response.ok) {
+                throw new Error(`API request failed with status ${response.status}`);
+            }
+
+            if (!data || !data.answer) {
+                throw new Error('Invalid response from API: Missing answer');
+            }
 
             // Create AI response message
             const assistantMessage = {

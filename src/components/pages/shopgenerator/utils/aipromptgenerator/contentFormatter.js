@@ -7,6 +7,9 @@
  * @returns {string} HTML formatted string
  */
 export const formatContent = (text, role) => {
+    // Return empty string for undefined/null content
+    if (!text) return '';
+
     if (role === "user") return text;
 
     return (
