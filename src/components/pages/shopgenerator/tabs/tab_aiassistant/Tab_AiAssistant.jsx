@@ -14,6 +14,54 @@ const defaultFilterMaps = {
     traits: new Map(),
 };
 
+// Helper function to create shop snapshot
+export const createShopSnapshot = (shopState, filterMaps, categoryData, preservedFields = null) => {
+    // Extract filter information from filterMaps
+    const getFilteredItems = (filterMap, state) => {
+        return Array.from(filterMap.entries())
+            .filter(([, filterState]) => filterState === state)
+            .map(([item]) => item);
+    };
+
+    // Get included and excluded items for categories only
+    const filterSelections = {
+        categories: {
+            included: getFilteredItems(filterMaps.categories, 1),
+            excluded: getFilteredItems(filterMaps.categories, -1),
+        }
+    };
+
+    // Extract available filter options (categories only) if category filter is not preserved
+    const availableFilters = preservedFields && !preservedFields.filterCategories ? {
+        categories: extractAvailableFilterOptions(categoryData, traitList).categories
+    } : {};
+
+    return {
+        // Shop details
+        name: shopState?.name || "",
+        keeperName: shopState?.keeperName || "",
+        type: shopState?.type || "",
+        location: shopState?.location || "",
+        description: shopState?.description || "",
+        keeperDescription: shopState?.keeperDescription || "",
+
+        // Shop parameters
+        gold: shopState?.gold || 0,
+        levelRange: shopState?.levelRange || { min: 0, max: 0 },
+        itemBias: shopState?.itemBias || {},
+        rarityDistribution: shopState?.rarityDistribution || {},
+
+        // Filter selections
+        filterSelections,
+
+        // Available filter options
+        availableFilters,
+
+        // Shop ID for reference
+        id: shopState?.id || "",
+    };
+};
+
 function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
     const { currentUser } = useAuth();
     const { categoryData } = useItemData();
@@ -48,53 +96,76 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         updateParentState(emptyMessages);
     }, [isLoading, isAnalyzing, updateParentState]);
 
-    // Create shop state snapshot for context
-    const createShopSnapshot = useCallback(() => {
-        // Extract filter information from filterMaps
-        const getFilteredItems = (filterMap, state) => {
-            return Array.from(filterMap.entries())
-                .filter(([, filterState]) => filterState === state)
-                .map(([item]) => item);
-        };
+    // Function to analyze shop with preserved fields
+    const analyzeShopWithPreservedFields = useCallback(async (fields) => {
+        if (!currentUser || isLoading || isAnalyzing) return;
 
-        // Get included and excluded items for categories only
-        const filterSelections = {
-            categories: {
-                included: getFilteredItems(filterMaps.categories, 1),
-                excluded: getFilteredItems(filterMaps.categories, -1),
-            }
-        };
+        setIsAnalyzing(true);
+        try {
+            console.log("Fields passed to analyzeShopWithPreservedFields:", fields);
+            
+            // Create user message for analysis request
+            const userMessage = {
+                role: "user",
+                content: "Please analyze my shop and suggest improvements for the fields I haven't marked as preserved.",
+                timestamp: Date.now(),
+            };
 
-        // Extract available filter options (categories only)
-        const availableFilters = {
-            categories: extractAvailableFilterOptions(categoryData, traitList).categories
-        };
+            // Update messages immediately with user input
+            const updatedMessages = [...messages, userMessage];
+            setMessages(updatedMessages);
+            updateParentState(updatedMessages);
 
-        return {
-            // Shop details
-            name: shopState?.name || "",
-            keeperName: shopState?.keeperName || "",
-            type: shopState?.type || "",
-            location: shopState?.location || "",
-            description: shopState?.description || "",
-            keeperDescription: shopState?.keeperDescription || "",
+            // Get shop snapshot
+            const shopSnapshot = createShopSnapshot(shopState, filterMaps, categoryData, fields);
 
-            // Shop parameters
-            gold: shopState?.gold || 0,
-            levelRange: shopState?.levelRange || { min: 0, max: 0 },
-            itemBias: shopState?.itemBias || {},
-            rarityDistribution: shopState?.rarityDistribution || {},
+            // Get conversation history
+            const conversationHistory = messages
+                .map((m) => `${m.role === "user" ? "Human" : "Assistant"}: ${m.content}`)
+                .join("\n");
 
-            // Filter selections
-            filterSelections,
+            // Generate the analysis prompt using the utility function
+            const analysisPrompt = generateAnalysisPrompt(
+                shopSnapshot,
+                fields,
+                conversationHistory
+            );
 
-            // Available filter options
-            availableFilters,
+            // Log the final prompt being sent to the AI
+            console.log("FINAL AI PROMPT:");
+            console.log("--------------------------------");
+            console.log(analysisPrompt);
+            console.log("________________________________");
 
-            // Shop ID for reference
-            id: shopState?.id || "",
-        };
-    }, [shopState, filterMaps, categoryData]);
+            // Get AI response from Firebase function
+            const response = await fetch("https://us-central1-project-dm-helper.cloudfunctions.net/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    question: analysisPrompt,
+                }),
+            });
+
+            const data = await response.json();
+
+            // Create AI response message
+            const assistantMessage = {
+                role: "assistant",
+                content: data.answer,
+                timestamp: Date.now(),
+            };
+
+            // Update messages with AI response
+            const finalMessages = [...updatedMessages, assistantMessage];
+            setMessages(finalMessages);
+            updateParentState(finalMessages);
+        } catch (err) {
+            console.error("Error analyzing shop:", err);
+            setError(err);
+        } finally {
+            setIsAnalyzing(false);
+        }
+    }, [currentUser, isLoading, isAnalyzing, messages, shopState, filterMaps, categoryData, updateParentState]);
 
     // Format message content with markdown-like syntax
     const formatContent = (text, role) => {
@@ -146,77 +217,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         setIsDialogOpen(true);
     }, []);
 
-    // Function to analyze shop with preserved fields
-    const analyzeShopWithPreservedFields = useCallback(async (fields) => {
-        if (!currentUser || isLoading || isAnalyzing) return;
-
-        setIsAnalyzing(true);
-        try {
-            console.log("Fields passed to analyzeShopWithPreservedFields:", fields);
-            
-            // Create user message for analysis request
-            const userMessage = {
-                role: "user",
-                content: "Please analyze my shop and suggest improvements for the fields I haven't marked as preserved.",
-                timestamp: Date.now(),
-            };
-
-            // Update messages immediately with user input
-            const updatedMessages = [...messages, userMessage];
-            setMessages(updatedMessages);
-            updateParentState(updatedMessages);
-
-            // Get shop snapshot
-            const shopSnapshot = createShopSnapshot();
-
-            // Get conversation history
-            const conversationHistory = messages
-                .map((m) => `${m.role === "user" ? "Human" : "Assistant"}: ${m.content}`)
-                .join("\n");
-
-            // Generate the analysis prompt using the utility function
-            const analysisPrompt = generateAnalysisPrompt(
-                shopSnapshot,
-                fields,
-                conversationHistory
-            );
-
-            // Log the final prompt being sent to the AI
-            console.log("FINAL AI PROMPT:");
-            console.log("--------------------------------");
-            console.log(analysisPrompt);
-            console.log("________________________________");
-
-            // Get AI response from Firebase function
-            const response = await fetch("https://us-central1-project-dm-helper.cloudfunctions.net/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    question: analysisPrompt,
-                }),
-            });
-
-            const data = await response.json();
-
-            // Create AI response message
-            const assistantMessage = {
-                role: "assistant",
-                content: data.answer,
-                timestamp: Date.now(),
-            };
-
-            // Update messages with AI response
-            const finalMessages = [...updatedMessages, assistantMessage];
-            setMessages(finalMessages);
-            updateParentState(finalMessages);
-        } catch (err) {
-            console.error("Error analyzing shop:", err);
-            setError(err);
-        } finally {
-            setIsAnalyzing(false);
-        }
-    }, [currentUser, isLoading, isAnalyzing, messages, createShopSnapshot, updateParentState]);
-
     // Function to handle dialog confirmation
     const handleDialogConfirm = useCallback((selectedFields) => {
         setIsDialogOpen(false); // Close the dialog first
@@ -248,7 +248,7 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             setInput("");
 
             // Get shop snapshot
-            const shopSnapshot = createShopSnapshot();
+            const shopSnapshot = createShopSnapshot(shopState, filterMaps, categoryData);
 
             // Get conversation history
             const conversationHistory = messages
@@ -296,7 +296,7 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         } finally {
             setIsLoading(false);
         }
-    }, [currentUser, isLoading, input, messages, createShopSnapshot, updateParentState]);
+    }, [currentUser, isLoading, input, messages, shopState, filterMaps, categoryData, updateParentState]);
 
     if (error) {
         return (
@@ -314,7 +314,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
     return (
         <div className="ai-assistant-container">
             <div className="ai-assistant-content">
-                <h2>Oracle Assistant</h2>
                 <div className="ai-assistant-actions">
                     <button className="analyze-button" onClick={analyzeShopState} disabled={isAnalyzing || isLoading}>
                         {isAnalyzing ? "Analyzing..." : "Suggest Improvements"}
