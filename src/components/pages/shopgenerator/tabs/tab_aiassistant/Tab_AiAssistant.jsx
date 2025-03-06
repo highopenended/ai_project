@@ -103,6 +103,31 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         // Create a copy of the current shop state
         const updatedShopState = { ...shopState };
 
+        // Apply shop details changes if present
+        if (suggestedChanges.name !== undefined) {
+            updatedShopState.name = suggestedChanges.name;
+        }
+        
+        if (suggestedChanges.keeperName !== undefined) {
+            updatedShopState.keeperName = suggestedChanges.keeperName;
+        }
+        
+        if (suggestedChanges.type !== undefined) {
+            updatedShopState.type = suggestedChanges.type;
+        }
+        
+        if (suggestedChanges.location !== undefined) {
+            updatedShopState.location = suggestedChanges.location;
+        }
+        
+        if (suggestedChanges.description !== undefined) {
+            updatedShopState.description = suggestedChanges.description;
+        }
+        
+        if (suggestedChanges.keeperDescription !== undefined) {
+            updatedShopState.keeperDescription = suggestedChanges.keeperDescription;
+        }
+
         // Apply gold changes if present
         if (suggestedChanges.gold !== undefined) {
             updatedShopState.gold = suggestedChanges.gold;
@@ -118,7 +143,34 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
 
         // Apply item bias changes if present
         if (suggestedChanges.itemBias) {
-            updatedShopState.itemBias = { ...suggestedChanges.itemBias };
+            console.log("Applying item bias changes:", suggestedChanges.itemBias);
+            
+            // Make sure we're preserving the correct structure with x and y properties
+            if (typeof suggestedChanges.itemBias === 'object') {
+                // Handle direct x/y format
+                if ('x' in suggestedChanges.itemBias && 'y' in suggestedChanges.itemBias) {
+                    updatedShopState.itemBias = {
+                        x: parseFloat(suggestedChanges.itemBias.x),
+                        y: parseFloat(suggestedChanges.itemBias.y)
+                    };
+                } 
+                // Handle Variety/Cost format
+                else if ('Variety' in suggestedChanges.itemBias || 'variety' in suggestedChanges.itemBias ||
+                        'Cost' in suggestedChanges.itemBias || 'cost' in suggestedChanges.itemBias) {
+                    
+                    const variety = suggestedChanges.itemBias.Variety || 
+                                   suggestedChanges.itemBias.variety || 0.5;
+                    const cost = suggestedChanges.itemBias.Cost || 
+                                suggestedChanges.itemBias.cost || 0.5;
+                    
+                    updatedShopState.itemBias = {
+                        x: parseFloat(variety),
+                        y: parseFloat(cost)
+                    };
+                }
+            }
+            // Log the updated item bias for debugging
+            console.log("Updated item bias:", updatedShopState.itemBias);
         }
 
         // Apply rarity distribution changes if present
@@ -219,6 +271,42 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                     const jsonStr = jsonMatch[0];
                     suggestedChanges = JSON.parse(jsonStr);
                     console.log("Parsed suggested changes:", suggestedChanges);
+                    
+                    // Handle item bias format conversion if needed
+                    if (suggestedChanges.itemBias) {
+                        // If itemBias is provided as Variety/Cost format in the response
+                        if (typeof suggestedChanges.itemBias === 'object') {
+                            // If it has Variety/Cost properties instead of x/y
+                            if ('Variety' in suggestedChanges.itemBias || 'variety' in suggestedChanges.itemBias || 
+                                'Cost' in suggestedChanges.itemBias || 'cost' in suggestedChanges.itemBias) {
+                                
+                                const variety = suggestedChanges.itemBias.Variety || 
+                                               suggestedChanges.itemBias.variety || 0.5;
+                                const cost = suggestedChanges.itemBias.Cost || 
+                                            suggestedChanges.itemBias.cost || 0.5;
+                                
+                                // Convert to x/y format
+                                suggestedChanges.itemBias = {
+                                    x: parseFloat(variety),
+                                    y: parseFloat(cost)
+                                };
+                            }
+                        } else if (typeof suggestedChanges.itemBias === 'string') {
+                            // Handle string format like "Variety: 0.7, Cost: 0.3"
+                            const varietyMatch = suggestedChanges.itemBias.match(/Variety:\s*([\d.]+)/i);
+                            const costMatch = suggestedChanges.itemBias.match(/Cost:\s*([\d.]+)/i);
+                            
+                            if (varietyMatch || costMatch) {
+                                const variety = varietyMatch ? parseFloat(varietyMatch[1]) : 0.5;
+                                const cost = costMatch ? parseFloat(costMatch[1]) : 0.5;
+                                
+                                suggestedChanges.itemBias = {
+                                    x: variety,
+                                    y: cost
+                                };
+                            }
+                        }
+                    }
                 }
             } catch (parseErr) {
                 console.error("Error parsing suggested changes:", parseErr);

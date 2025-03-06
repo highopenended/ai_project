@@ -13,10 +13,19 @@ import './ConfirmSuggestionsDialog.css';
 const ConfirmSuggestionsDialog = ({ isOpen, onClose, onConfirm, suggestedChanges }) => {
     // Define available change types
     const changeTypes = [
-        { key: 'gold', label: 'Gold' },
-        { key: 'levelRange', label: 'Level Range' },
-        { key: 'itemBias', label: 'Item Bias' },
-        { key: 'rarityDistribution', label: 'Rarity Distribution' }
+        // Shop details
+        { key: 'name', label: 'Shop Name', section: 'details' },
+        { key: 'keeperName', label: 'Shopkeeper Name', section: 'details' },
+        { key: 'type', label: 'Shop Type', section: 'details' },
+        { key: 'location', label: 'Location', section: 'details' },
+        { key: 'description', label: 'Shop Description', section: 'details' },
+        { key: 'keeperDescription', label: 'Keeper Description', section: 'details' },
+        
+        // Shop parameters
+        { key: 'gold', label: 'Gold', section: 'parameters' },
+        { key: 'levelRange', label: 'Level Range', section: 'parameters' },
+        { key: 'itemBias', label: 'Item Bias', section: 'parameters' },
+        { key: 'rarityDistribution', label: 'Rarity Distribution', section: 'parameters' }
     ];
 
     // Initialize selected changes - all checked by default if they exist in suggestedChanges
@@ -59,38 +68,118 @@ const ConfirmSuggestionsDialog = ({ isOpen, onClose, onConfirm, suggestedChanges
 
     // Format level range display
     const formatLevelRange = (levelRange) => {
-        if (!levelRange) return 'No change';
-        return `Level ${levelRange.min} - ${levelRange.max}`;
+        if (!levelRange || typeof levelRange !== 'object') return 'No change';
+        
+        // Safely access min and max properties
+        const min = 'min' in levelRange && typeof levelRange.min === 'number' ? levelRange.min : 0;
+        const max = 'max' in levelRange && typeof levelRange.max === 'number' ? levelRange.max : 0;
+        
+        return `Level ${min} - ${max}`;
     };
 
     // Format item bias display
     const formatItemBias = (itemBias) => {
         if (!itemBias) return 'No change';
         
-        return Object.entries(itemBias)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join(', ');
+        // Log the item bias for debugging
+        console.log("Formatting item bias:", itemBias);
+        
+        // Safely access x and y properties with fallbacks
+        let x, y;
+        
+        if (typeof itemBias === 'object') {
+            // Handle direct x/y format
+            if ('x' in itemBias && 'y' in itemBias) {
+                x = itemBias.x;
+                y = itemBias.y;
+            } 
+            // Handle Variety/Cost format
+            else if ('Variety' in itemBias || 'variety' in itemBias ||
+                    'Cost' in itemBias || 'cost' in itemBias) {
+                x = itemBias.Variety || itemBias.variety || 0.5;
+                y = itemBias.Cost || itemBias.cost || 0.5;
+            } else {
+                x = 0.5;
+                y = 0.5;
+            }
+        } else {
+            x = 0.5;
+            y = 0.5;
+        }
+        
+        // Item bias is stored as x and y coordinates
+        // x represents Variety (0 = Specialized, 1 = Varied)
+        // y represents Cost (0 = Expensive, 1 = Cheap)
+        const variety = typeof x === 'number' ? x.toFixed(1) : parseFloat(x).toFixed(1);
+        const cost = typeof y === 'number' ? y.toFixed(1) : parseFloat(y).toFixed(1);
+        
+        return `Variety: ${variety}, Cost: ${cost}`;
     };
 
     // Format rarity distribution display
     const formatRarityDistribution = (rarityDistribution) => {
-        if (!rarityDistribution) return 'No change';
+        if (!rarityDistribution || typeof rarityDistribution !== 'object') {
+            return 'No change';
+        }
         
-        return Object.entries(rarityDistribution)
-            .map(([rarity, percentage]) => `${rarity}: ${percentage}%`)
-            .join(', ');
+        try {
+            return Object.entries(rarityDistribution)
+                .map(([rarity, percentage]) => `${rarity}: ${percentage}%`)
+                .join(', ');
+        } catch (error) {
+            console.error('Error formatting rarity distribution:', error);
+            return 'Invalid format';
+        }
+    };
+
+    // Format text fields (name, descriptions, etc.)
+    const formatTextField = (text) => {
+        if (!text) return 'No change';
+        return text.length > 50 ? `${text.substring(0, 50)}...` : text;
     };
 
     // Get formatter function for a specific change type
     const getFormatter = (key) => {
         const formatters = {
+            // Shop details
+            name: formatTextField,
+            keeperName: formatTextField,
+            type: formatTextField,
+            location: formatTextField,
+            description: formatTextField,
+            keeperDescription: formatTextField,
+            
+            // Shop parameters
             gold: formatGold,
             levelRange: formatLevelRange,
             itemBias: formatItemBias,
             rarityDistribution: formatRarityDistribution
         };
-        return formatters[key] || (() => 'Unknown format');
+        
+        // Return the formatter or a safe fallback
+        const formatter = formatters[key] || (() => 'Unknown format');
+        
+        // Wrap in try/catch to prevent crashes
+        return (value) => {
+            try {
+                return formatter(value);
+            } catch (error) {
+                console.error(`Error formatting ${key}:`, error);
+                return 'Error formatting value';
+            }
+        };
     };
+
+    // Group changes by section
+    const detailChanges = changeTypes
+        .filter(({ section, key }) => section === 'details' && suggestedChanges[key] !== undefined);
+    
+    const parameterChanges = changeTypes
+        .filter(({ section, key }) => section === 'parameters' && suggestedChanges[key] !== undefined);
+
+    // Check if we have any changes in each section
+    const hasDetailChanges = detailChanges.length > 0;
+    const hasParameterChanges = parameterChanges.length > 0;
 
     return (
         <div className="confirm-suggestions-dialog-overlay">
@@ -106,43 +195,93 @@ const ConfirmSuggestionsDialog = ({ isOpen, onClose, onConfirm, suggestedChanges
                     </div>
                     
                     <div className="changes-details">
-                        {changeTypes.map(({ key, label }) => (
-                            suggestedChanges[key] !== undefined && (
-                                <div 
-                                    className={`change-item ${!selectedChanges[key] ? 'disabled' : ''}`} 
-                                    key={key}
-                                    onClick={() => handleCheckboxChange(key)}
-                                >
-                                    <div className="change-row">
-                                        <div className="change-checkbox-container">
-                                            <input
-                                                type="checkbox"
-                                                id={`checkbox-${key}`}
-                                                checked={selectedChanges[key]}
-                                                onChange={() => handleCheckboxChange(key)}
-                                                onClick={(e) => e.stopPropagation()}
-                                            />
-                                            <label 
-                                                htmlFor={`checkbox-${key}`} 
-                                                className="change-label"
-                                                onClick={(e) => e.stopPropagation()}
-                                            >
-                                                {label}:
-                                            </label>
+                        {hasDetailChanges && (
+                            <div className="changes-section">
+                                <h3 className="section-title">Shop Details</h3>
+                                {detailChanges.map(({ key, label }) => (
+                                    <div 
+                                        className={`change-item ${!selectedChanges[key] ? 'disabled' : ''}`} 
+                                        key={key}
+                                        onClick={() => handleCheckboxChange(key)}
+                                    >
+                                        <div className="change-row">
+                                            <div className="change-checkbox-container">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`checkbox-${key}`}
+                                                    checked={selectedChanges[key]}
+                                                    onChange={() => handleCheckboxChange(key)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                                <label 
+                                                    htmlFor={`checkbox-${key}`} 
+                                                    className="change-label"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {label}:
+                                                </label>
+                                            </div>
+                                            <span className="change-value">
+                                                {getFormatter(key)(suggestedChanges[key])}
+                                            </span>
                                         </div>
-                                        <span className="change-value">
-                                            {getFormatter(key)(suggestedChanges[key])}
-                                        </span>
                                     </div>
-                                </div>
-                            )
-                        ))}
+                                ))}
+                            </div>
+                        )}
+                        
+                        {hasParameterChanges && (
+                            <div className="changes-section">
+                                <h3 className="section-title">Shop Parameters</h3>
+                                {parameterChanges.map(({ key, label }) => (
+                                    <div 
+                                        className={`change-item ${!selectedChanges[key] ? 'disabled' : ''}`} 
+                                        key={key}
+                                        onClick={() => handleCheckboxChange(key)}
+                                    >
+                                        <div className="change-row">
+                                            <div className="change-checkbox-container">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`checkbox-${key}`}
+                                                    checked={selectedChanges[key]}
+                                                    onChange={() => handleCheckboxChange(key)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                />
+                                                <label 
+                                                    htmlFor={`checkbox-${key}`} 
+                                                    className="change-label"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    {label}:
+                                                </label>
+                                            </div>
+                                            <span className="change-value">
+                                                {getFormatter(key)(suggestedChanges[key])}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        
+                        {!hasDetailChanges && !hasParameterChanges && (
+                            <div className="no-changes">
+                                <p>No changes to apply.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
                 
                 <div className="confirm-suggestions-dialog-actions">
                     <button className="cancel-button" onClick={onClose}>Cancel</button>
-                    <button className="confirm-button" onClick={handleConfirm}>Apply Selected Changes</button>
+                    <button 
+                        className="confirm-button" 
+                        onClick={handleConfirm}
+                        disabled={!hasDetailChanges && !hasParameterChanges}
+                    >
+                        Apply Selected Changes
+                    </button>
                 </div>
             </div>
         </div>
@@ -155,12 +294,23 @@ ConfirmSuggestionsDialog.propTypes = {
     onConfirm: PropTypes.func.isRequired,
     suggestedChanges: PropTypes.shape({
         suggestionsSummary: PropTypes.string,
+        // Shop details
+        name: PropTypes.string,
+        keeperName: PropTypes.string,
+        type: PropTypes.string,
+        location: PropTypes.string,
+        description: PropTypes.string,
+        keeperDescription: PropTypes.string,
+        // Shop parameters
         gold: PropTypes.number,
         levelRange: PropTypes.shape({
             min: PropTypes.number,
             max: PropTypes.number
         }),
-        itemBias: PropTypes.object,
+        itemBias: PropTypes.shape({
+            x: PropTypes.number,
+            y: PropTypes.number
+        }),
         rarityDistribution: PropTypes.object
     }).isRequired
 };

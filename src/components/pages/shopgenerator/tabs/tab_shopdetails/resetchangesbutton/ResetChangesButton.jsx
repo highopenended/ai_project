@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import "./ResetChangesButton.css";
 import UnsavedChangesDialogue from "../../../shared/unsavedchangesdialogue/UnsavedChangesDialogue";
 
-const ResetChangesButton = ({ onReset, shopName,hasUnsavedChanges, changes }) => {
+const ResetChangesButton = ({ onReset, shopName, hasUnsavedChanges, changes }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {

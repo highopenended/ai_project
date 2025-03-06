@@ -27,9 +27,7 @@ export const takeShopSnapshot = (shopState, filterMaps, items) => ({
         subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
         traits: Object.fromEntries(filterMaps.traits.entries()),
     },
-    currentStock: [...items],
-    // AI conversations
-    aiConversations: shopState.aiConversations || []
+    currentStock: [...items]
 });
 
 /**

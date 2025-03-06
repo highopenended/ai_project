@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/firebaseShopUtils";
 import { takeShopSnapshot } from "../utils/shopStateUtils";
 import defaultShopData from "../utils/shopData";
+import { serializeShopData, deserializeAiConversations } from '../utils/serializationUtils';
 
 /**
  * Helper function to generate a unique shop ID
@@ -135,56 +136,46 @@ export const useShopOperations = ({
     };
 
     /**
-     * Load a specific shop's data
+     * Load a shop from the saved shops list
      */
     const handleLoadShop = async (shop) => {
+        console.log("Loading shop:", shop);
         try {
-            // Extract parameters with fallbacks
-            const {
-                parameters = {},
-                filterStorageObjects = {},
-                currentStock = [],
-                aiConversations = []
-            } = shop;
-
-            // Create base state with defaults
-            const baseState = {
-                // For imported shops (no ID) or explicit new shops, generate a new ID
-                id: shop.id || generateShopId(),
+            // Create a new shop state from the loaded shop
+            const newShopState = {
+                id: shop.id,
                 name: shop.name || defaultShopData.name,
                 keeperName: shop.keeperName || defaultShopData.keeperName,
                 type: shop.type || defaultShopData.type,
                 location: shop.location || defaultShopData.location,
                 description: shop.description || defaultShopData.description,
                 keeperDescription: shop.keeperDescription || defaultShopData.keeperDescription,
-                dateCreated: shop.id ? formatDate(shop.dateCreated) : new Date(),
-                dateLastEdited: shop.id ? formatDate(shop.dateLastEdited) : new Date(),
-                gold: parameters.gold || shop.gold || defaultShopData.gold,
-                levelRange: {
-                    min: parameters.levelLow || shop.levelRange?.min || defaultShopData.levelRange.min,
-                    max: parameters.levelHigh || shop.levelRange?.max || defaultShopData.levelRange.max,
-                },
-                itemBias: parameters.itemBias || shop.itemBias || defaultShopData.itemBias,
-                rarityDistribution: parameters.rarityDistribution || shop.rarityDistribution || defaultShopData.rarityDistribution,
-                aiConversations
+                dateCreated: shop.dateCreated || new Date(),
+                dateLastEdited: shop.dateLastEdited || new Date(),
+                gold: shop.gold || defaultShopData.gold,
+                levelRange: shop.levelRange || defaultShopData.levelRange,
+                itemBias: shop.itemBias || defaultShopData.itemBias,
+                rarityDistribution: shop.rarityDistribution || defaultShopData.rarityDistribution,
+                // Deserialize AI conversations to ensure proper structure
+                aiConversations: deserializeAiConversations(shop.aiConversations || [])
             };
 
             // Create filter maps from stored states
             const newFilters = {
-                categories: new Map(Object.entries(filterStorageObjects.categories || {})),
-                subcategories: new Map(Object.entries(filterStorageObjects.subcategories || {})),
-                traits: new Map(Object.entries(filterStorageObjects.traits || {}))
+                categories: new Map(Object.entries(shop.filterStorageObjects?.categories || {})),
+                subcategories: new Map(Object.entries(shop.filterStorageObjects?.subcategories || {})),
+                traits: new Map(Object.entries(shop.filterStorageObjects?.traits || {}))
             };
 
             // Update all state variables
             await Promise.all([
-                setShopState(baseState),
+                setShopState(newShopState),
                 setFilterMaps(newFilters),
-                setInventory(currentStock)
+                setInventory(shop.currentStock || [])
             ]);
 
             // Create new snapshot
-            createShopSnapshot(baseState, newFilters, currentStock);
+            createShopSnapshot(newShopState, newFilters, shop.currentStock || []);
         } catch (error) {
             console.error("Error loading shop:", error);
             alert("Error loading shop. Please try again.");
@@ -227,29 +218,14 @@ export const useShopOperations = ({
 
         try {
             console.log("Starting save operation");
-            const currentDate = new Date();
             
-            // Create a clean copy of shop data without the filters field
-            const cleanShopState = { ...shopState };
-            delete cleanShopState.filters;
-
+            // Use the serialization utility to create a clean, serializable copy of the shop data
+            const savedShopData = serializeShopData(shopState, filterMaps, inventory);
+            
             // Ensure we have a valid ID before saving
-            if (!cleanShopState.id || cleanShopState.id === '') {
-                cleanShopState.id = generateShopId();
+            if (!savedShopData.id || savedShopData.id === '') {
+                savedShopData.id = generateShopId();
             }
-
-            // Ensure we're not passing any Map objects to Firebase
-            const savedShopData = {
-                ...cleanShopState,
-                dateLastEdited: currentDate,
-                currentStock: inventory,
-                filterStorageObjects: {
-                    categories: Object.fromEntries(filterMaps.categories.entries()),
-                    subcategories: Object.fromEntries(filterMaps.subcategories.entries()),
-                    traits: Object.fromEntries(filterMaps.traits.entries()),
-                },
-                aiConversations: cleanShopState.aiConversations || []
-            };
 
             console.log("About to call saveOrUpdateShopData with:", {
                 userId: currentUser.uid,
@@ -263,8 +239,7 @@ export const useShopOperations = ({
             const updatedState = {
                 ...shopState,
                 id: savedShopId,
-                dateLastEdited: currentDate,
-                aiConversations: cleanShopState.aiConversations || []
+                dateLastEdited: savedShopData.dateLastEdited
             };
 
             console.log("Updating local state after save");
