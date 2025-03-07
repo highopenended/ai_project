@@ -96,8 +96,16 @@ Tab_ShopDetails.propTypes = {
         location: PropTypes.string.isRequired,
         description: PropTypes.string.isRequired,
         keeperDescription: PropTypes.string.isRequired,
-        dateCreated: PropTypes.instanceOf(Date).isRequired,
-        dateLastEdited: PropTypes.instanceOf(Date).isRequired,
+        dateCreated: PropTypes.oneOfType([
+            PropTypes.instanceOf(Date),
+            PropTypes.object, // For Firestore Timestamp objects
+            PropTypes.string  // For date strings
+        ]).isRequired,
+        dateLastEdited: PropTypes.oneOfType([
+            PropTypes.instanceOf(Date),
+            PropTypes.object, // For Firestore Timestamp objects
+            PropTypes.string  // For date strings
+        ]).isRequired,
         gold: PropTypes.number,
         levelRange: PropTypes.shape({
             min: PropTypes.number,

@@ -71,12 +71,7 @@ export const serializeAiConversations = (messages) => {
  * @returns {Array} - Deserialized messages ready for use in the application
  */
 export const deserializeAiConversations = (serializedMessages) => {
-  if (!serializedMessages || !Array.isArray(serializedMessages)) {
-    console.log("deserializeAiConversations: No messages to deserialize");
-    return [];
-  }
-
-  console.log("deserializeAiConversations: Deserializing", serializedMessages.length, "messages");
+  if (!serializedMessages || !Array.isArray(serializedMessages))  return [];
   
   const deserializedMessages = serializedMessages.map(message => {
     // Create a base deserialized message with common properties
@@ -88,7 +83,6 @@ export const deserializeAiConversations = (serializedMessages) => {
 
     // If this is a suggestion message, include the suggestion flag and suggested changes
     if (message.isSuggestion) {
-      console.log("deserializeAiConversations: Deserializing suggestion message");
       deserializedMessage.isSuggestion = true;
       deserializedMessage.suggestedChanges = message.suggestedChanges;
     }
@@ -96,7 +90,6 @@ export const deserializeAiConversations = (serializedMessages) => {
     return deserializedMessage;
   });
   
-  console.log("deserializeAiConversations: Deserialization complete");
   return deserializedMessages;
 };
 

@@ -3,6 +3,7 @@ import { collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/fi
 
 // Function to save or update shop data in Firebase
 export async function saveOrUpdateShopData(userId, shopData) {
+  console.log('Saving or updating shop data for user:', userId);
   try {
     const shopsRef = collection(db, `users/${userId}/shops`);
     if (shopData.id) {
@@ -23,6 +24,7 @@ export async function saveOrUpdateShopData(userId, shopData) {
 
 // Function to load shop data from Firebase
 export async function loadShopData(userId) {
+  console.log('Loading shop data for user:', userId);
   try {
     const shopsRef = collection(db, `users/${userId}/shops`);
     const querySnapshot = await getDocs(shopsRef);

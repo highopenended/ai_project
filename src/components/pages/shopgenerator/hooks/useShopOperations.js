@@ -56,8 +56,14 @@ export const useShopOperations = ({
     // Helper function to format dates from various sources
     const formatDate = useCallback((dateInput) => {
         if (!dateInput) return new Date();
-        return dateInput?.toDate?.() || 
-               (typeof dateInput === "string" ? new Date(dateInput) : dateInput);
+        
+        // Handle Firestore Timestamp objects
+        if (dateInput && typeof dateInput.toDate === 'function') {
+            return dateInput.toDate();
+        }
+        
+        // Handle string dates or already Date objects
+        return typeof dateInput === "string" ? new Date(dateInput) : dateInput;
     }, []);
 
     /**
@@ -150,8 +156,8 @@ export const useShopOperations = ({
                 location: shop.location || defaultShopData.location,
                 description: shop.description || defaultShopData.description,
                 keeperDescription: shop.keeperDescription || defaultShopData.keeperDescription,
-                dateCreated: shop.dateCreated || new Date(),
-                dateLastEdited: shop.dateLastEdited || new Date(),
+                dateCreated: formatDate(shop.dateCreated) || new Date(),
+                dateLastEdited: formatDate(shop.dateLastEdited) || new Date(),
                 gold: shop.gold || defaultShopData.gold,
                 levelRange: shop.levelRange || defaultShopData.levelRange,
                 itemBias: shop.itemBias || defaultShopData.itemBias,

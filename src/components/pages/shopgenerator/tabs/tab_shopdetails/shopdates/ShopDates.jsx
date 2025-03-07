@@ -7,7 +7,16 @@ const ShopDates = ({
 }) => {
     const formatDate = (date) => {
         if (!date) return 'N/A';
+        
+        // Handle Firestore Timestamp objects
+        if (date && typeof date.toDate === 'function') {
+            date = date.toDate();
+        }
+        
+        // Convert to Date object if it's a string or timestamp
         const d = date instanceof Date ? date : new Date(date);
+        
+        // Check if the date is valid
         if (isNaN(d.getTime())) return 'N/A';
         
         return d.toLocaleString('en-US', {
@@ -34,8 +43,16 @@ const ShopDates = ({
 };
 
 ShopDates.propTypes = {
-    dateCreated: PropTypes.instanceOf(Date),
-    dateLastEdited: PropTypes.instanceOf(Date)
+    dateCreated: PropTypes.oneOfType([
+        PropTypes.instanceOf(Date),
+        PropTypes.object, // For Firestore Timestamp objects
+        PropTypes.string  // For date strings
+    ]),
+    dateLastEdited: PropTypes.oneOfType([
+        PropTypes.instanceOf(Date),
+        PropTypes.object, // For Firestore Timestamp objects
+        PropTypes.string  // For date strings
+    ])
 };
 
 export default ShopDates; 
