@@ -9,6 +9,8 @@ function GoldInput({ setCurrentGold, currentGold }) {
     const [displayValue, setDisplayValue] = useState("");
 
     const formatNumber = (value) => {
+
+        // If the value is not a number or is 0, return an empty string
         if (!value && value !== 0) return "";
 
         // Convert to string and split into whole and decimal parts
@@ -73,6 +75,9 @@ function GoldInput({ setCurrentGold, currentGold }) {
             e.preventDefault();
         }
     };
+    const handleFocus = (e) => {
+        e.target.select();
+    };
 
     return (
         <Section>
@@ -80,6 +85,7 @@ function GoldInput({ setCurrentGold, currentGold }) {
                 <input
                     type="text"
                     value={displayValue}
+                    onFocus={handleFocus}
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
