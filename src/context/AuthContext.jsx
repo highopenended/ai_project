@@ -3,10 +3,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, isInitialized } from "../firebaseConfig";
+import { clearShopCache } from "../components/pages/shopgenerator/utils/shopCacheUtils";
 
 const AuthContext = createContext();
 
 // Simple debug logger
+/* Commented out to fix linter warning
 const log = (area, message, data = '') => {
     const prefix = '🔐 [Auth]';
     performance.mark(`${area}-start`);
@@ -17,6 +19,7 @@ const log = (area, message, data = '') => {
     performance.mark(`${area}-end`);
     performance.measure(`Auth ${area}`, `${area}-start`, `${area}-end`);
 };
+*/
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
@@ -48,6 +51,7 @@ export const AuthProvider = ({ children }) => {
         
         let isMounted = true;
         let unsubscribeAuth = null;
+        let previousUser = null;
 
         const initializeAuth = async () => {
             try {
@@ -70,6 +74,15 @@ export const AuthProvider = ({ children }) => {
                         const status = user ? '👤 User logged in' : '❌ No user';
                         // log('Auth', status, user?.email);
                         addDebugMessage(status + (user ? `: ${user.email}` : ''));
+                        
+                        // Check if user logged out
+                        if (previousUser && !user) {
+                            console.log('User logged out, clearing shop cache');
+                            clearShopCache(previousUser.uid);
+                        }
+                        
+                        // Update previous user reference
+                        previousUser = user;
                         
                         setAuthState(prev => ({
                             ...prev,

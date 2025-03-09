@@ -19,6 +19,7 @@ import { useTabManagement } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
 import { useTabRegistry } from './hooks/useTabRegistry';
+import { shouldRefreshCache, setLastRefreshTimestamp, clearShopCache } from './utils/shopCacheUtils';
 
 // Debug configuration
 const DEBUG_CONFIG = {
@@ -138,6 +139,7 @@ function ShopGenerator() {
     const [savedShops, setSavedShops] = useState([]);
     const [inventory, setInventory] = useState([]);
     const [isStateReady, setIsStateReady] = useState(false);
+    const previousUser = useRef(null);
 
     // Filter groups state management first
     const {
@@ -314,6 +316,48 @@ function ShopGenerator() {
         filterMaps,
         setFilterMaps,
     ]);
+
+    // Handle login-triggered refresh with cooldown
+    useEffect(() => {
+        // Skip if still loading or no user
+        if (authLoading || !currentUser) {
+            previousUser.current = null;
+            return;
+        }
+
+        // Skip if same user (not a login event)
+        if (previousUser.current === currentUser.uid) {
+            return;
+        }
+
+        const refreshOnLogin = async () => {
+            try {
+                console.log('User logged in, checking if refresh needed');
+                
+                // Clear cache on user change (different user logged in)
+                if (previousUser.current && previousUser.current !== currentUser.uid) {
+                    console.log('Different user logged in, clearing previous cache');
+                    clearShopCache(previousUser.current);
+                }
+                
+                // Check cooldown before refreshing
+                if (shouldRefreshCache(currentUser.uid, 60)) {
+                    console.log('Refreshing shop list after login');
+                    await handleLoadShopList();
+                    setLastRefreshTimestamp(currentUser.uid);
+                } else {
+                    console.log('Skipping refresh due to cooldown');
+                }
+                
+                // Update previous user reference
+                previousUser.current = currentUser.uid;
+            } catch (error) {
+                console.error('Error refreshing after login:', error);
+            }
+        };
+
+        refreshOnLogin();
+    }, [currentUser, authLoading, handleLoadShopList]);
 
     // Replace getInitialTabState with a memoized structure that never changes
     const tabStructure = useMemo(() => createInitialTabState(), []);

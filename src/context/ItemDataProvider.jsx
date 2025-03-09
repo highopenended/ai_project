@@ -5,11 +5,6 @@ import { extractUniqueCategories } from "../components/pages/shopgenerator/utils
 import { ItemDataContext } from './itemData';
 import { useAuth } from './AuthContext';
 
-// Simple debug logger
-const log = (area, message, data = '') => {
-    const prefix = '📦 [Items]';
-    // console.log(`${prefix} [${area}] ${message}`, data);
-};
 
 export function ItemDataProvider({ children }) {
     const { currentUser, loading: authLoading } = useAuth();
@@ -27,25 +22,18 @@ export function ItemDataProvider({ children }) {
 
         // Don't load items until auth is ready
         if (authLoading) {
-            log('Init', `[${initId}] ⏳ Waiting for auth to complete`);
             return;
         }
 
         // Skip if already initialized
         if (initRef.current) {
-            log('Init', `[${initId}] 🔄 Already initialized, skipping`);
             return;
         }
 
         // Set initialization flag immediately
         initRef.current = true;
-        log('Init', `[${initId}] 🚀 Starting item data initialization`, {
-            hasUser: !!currentUser
-        });
 
         try {
-            log('Loading', `[${initId}] Processing item data...`);
-            log('Loading', `[${initId}] Raw data length: ${itemData.length}`);
 
             if (!itemData || !Array.isArray(itemData)) {
                 throw new Error(`Invalid item data format: ${typeof itemData}`);
@@ -61,7 +49,6 @@ export function ItemDataProvider({ children }) {
             // Extract categories
             const categories = extractUniqueCategories(itemData);
 
-            log('Success', `[${initId}] ✓ Processed ${formattedData.length} items`);
             
             setState({
                 items: formattedData,
@@ -70,7 +57,6 @@ export function ItemDataProvider({ children }) {
                 error: null
             });
         } catch (error) {
-            log('Error', `[${initId}] ❌ Failed to load items: ${error.message}`);
             setState(prev => ({
                 ...prev,
                 loading: false,

@@ -3,6 +3,7 @@ import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/fir
 import { takeShopSnapshot } from "../utils/shopStateUtils";
 import defaultShopData from "../utils/shopData";
 import { serializeShopData, deserializeAiConversations } from '../utils/serializationUtils';
+import { useShopCache } from './useShopCache';
 
 /**
  * Helper function to generate a unique shop ID
@@ -47,6 +48,16 @@ export const useShopOperations = ({
     setFilterMaps,
     hasUnsavedChanges,
 }) => {
+    // Initialize shop cache
+    const {
+        cachedShops,
+        updateCache,
+        updateShopCache,
+        removeFromCache,
+        isRefreshNeeded,
+        markAsRefreshed
+    } = useShopCache(currentUser?.uid);
+
     // Helper function to create a new shop snapshot
     const createShopSnapshot = useCallback((shopData, filterData, stockData) => {
         const snapshot = takeShopSnapshot(shopData, filterData, stockData);
@@ -120,12 +131,22 @@ export const useShopOperations = ({
 
     /**
      * Load all shops for the current user
+     * Uses cache when available, falls back to Firebase
      */
     const handleLoadShopList = async () => {
         if (!currentUser) return;
         
         try {
             const userId = currentUser.uid;
+            
+            // Check if we need to refresh from Firebase
+            if (cachedShops && !isRefreshNeeded()) {
+                console.log('Using cached shop list');
+                setSavedShops(cachedShops);
+                return;
+            }
+            
+            console.log('Loading shop list from Firebase');
             const loadedShops = await loadShopData(userId);
             
             const formattedShops = loadedShops.map((shop) => ({
@@ -134,10 +155,20 @@ export const useShopOperations = ({
                 dateLastEdited: formatDate(shop.dateLastEdited),
             }));
 
+            // Update state and cache
             setSavedShops(formattedShops);
+            updateCache(formattedShops);
+            markAsRefreshed();
         } catch (error) {
             console.error("Error loading shops:", error);
-            alert("Error loading shops. Please try again.");
+            
+            // If Firebase fails but we have cached data, use that
+            if (cachedShops) {
+                console.log('Firebase load failed, using cached data');
+                setSavedShops(cachedShops);
+            } else {
+                alert("Error loading shops. Please try again.");
+            }
         }
     };
 
@@ -206,6 +237,7 @@ export const useShopOperations = ({
 
     /**
      * Save the current shop
+     * Saves to Firebase first, then updates cache on success
      */
     const handleSaveShop = async () => {
         console.log("handleSaveShop called - Starting save process", {
@@ -238,10 +270,12 @@ export const useShopOperations = ({
                 savedShopData
             });
 
+            // Save to Firebase first
             const savedShopId = await saveOrUpdateShopData(currentUser.uid, savedShopData);
             
             console.log("Shop saved successfully", { savedShopId });
 
+            // Update local state
             const updatedState = {
                 ...shopState,
                 id: savedShopId,
@@ -251,7 +285,36 @@ export const useShopOperations = ({
             console.log("Updating local state after save");
             setShopState(updatedState);
             createShopSnapshot(updatedState, filterMaps, inventory);
-            await handleLoadShopList();
+            
+            // Update the shop in cache or add it if it's new
+            const updatedShop = {
+                ...savedShopData,
+                id: savedShopId
+            };
+            
+            // Get current cached shops
+            if (cachedShops) {
+                const shopExists = cachedShops.some(shop => shop.id === savedShopId);
+                
+                if (shopExists) {
+                    // Update existing shop in cache
+                    updateShopCache(updatedShop);
+                } else {
+                    // Add new shop to cache
+                    updateCache([...cachedShops, updatedShop]);
+                }
+                
+                // Update the savedShops state with the cached data
+                setSavedShops(
+                    shopExists 
+                        ? cachedShops.map(shop => shop.id === savedShopId ? updatedShop : shop)
+                        : [...cachedShops, updatedShop]
+                );
+            } else {
+                // If no cache exists yet, load from Firebase
+                await handleLoadShopList();
+            }
+            
             console.log("Save process completed successfully");
         } catch (error) {
             console.error("Error saving shop:", error);
@@ -261,6 +324,7 @@ export const useShopOperations = ({
 
     /**
      * Delete the current shop
+     * Deletes from Firebase first, then updates cache on success
      */
     const handleDeleteShop = async () => {
         if (!currentUser || !shopState.id) {
@@ -270,21 +334,26 @@ export const useShopOperations = ({
 
         try {
             const userId = currentUser.uid;
-            await deleteShopData(userId, shopState.id);
+            const shopId = shopState.id;
             
-            // Reload the shop list
-            await handleLoadShopList();
+            // Delete from Firebase first
+            await deleteShopData(userId, shopId);
+            console.log("Shop deleted from Firebase with ID:", shopId);
             
-            // Get the updated list of shops
-            const loadedShops = await loadShopData(userId);
+            // Remove from cache
+            removeFromCache(shopId);
+            
+            // Update savedShops state
+            const updatedShops = cachedShops ? cachedShops.filter(shop => shop.id !== shopId) : [];
+            setSavedShops(updatedShops);
             
             // If there are remaining shops, load the first one
-            if (loadedShops && loadedShops.length > 0) {
-                console.log("deletion", "Loading first available shop after deletion");
-                await handleLoadShop(loadedShops[0]);
+            if (updatedShops.length > 0) {
+                console.log("Loading first available shop after deletion");
+                await handleLoadShop(updatedShops[0]);
             } else {
                 // If no shops remain, create a new one
-                console.log("deletion", "No shops remain, creating new one");
+                console.log("No shops remain, creating new one");
                 await handleNewShop();
             }
         } catch (error) {

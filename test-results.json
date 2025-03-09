@@ -1,0 +1,4 @@
+
+> ai_project@0.0.0 test
+> jest && npm run test:summary --json
+

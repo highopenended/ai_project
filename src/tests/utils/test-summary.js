@@ -23,6 +23,7 @@ const reportedTests = new Set();
 
 let totalSuites = 0;
 let totalTests = 0;
+let failedTests = 0;
 
 /**
  * Sets up test summary functionality for the current test file
@@ -65,6 +66,7 @@ export function setupTestSummary() {
           });
         }
       } catch (error) {
+        failedTests++;
         const endTime = performance.now();
         
         // Only collect results in summary mode
@@ -114,7 +116,14 @@ export function setupTestSummary() {
         const duration = result.duration.toFixed(0);
         process.stdout.write(`${icon} ${result.name} (${duration}ms)\n`);
       });
-      process.stdout.write(`\n${GREEN}${totalSuites} suites passed, ${totalTests} tests passed${RESET}\n`);
+      
+      // Report the correct test status
+      const passedTests = totalTests - failedTests;
+      if (failedTests > 0) {
+        process.stdout.write(`\n${RED}${totalSuites} suites, ${passedTests} tests passed, ${failedTests} tests failed${RESET}\n`);
+      } else {
+        process.stdout.write(`\n${GREEN}${totalSuites} suites passed, ${totalTests} tests passed${RESET}\n`);
+      }
     }
     
     // Restore original test function

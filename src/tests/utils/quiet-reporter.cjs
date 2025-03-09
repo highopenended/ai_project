@@ -14,7 +14,7 @@ class ConsolidatedReporter {
   constructor(globalConfig, options) {
     this._globalConfig = globalConfig;
     this._options = options;
-    this._isQuietMode = process.env.QUIET_MODE === 'true';
+    this._isQuietMode = process.env.TEST_SUMMARY_MODE === 'true';
   }
 
   onRunStart() {

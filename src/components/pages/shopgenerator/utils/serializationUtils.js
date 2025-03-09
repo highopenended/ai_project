@@ -13,11 +13,9 @@
  */
 export const serializeAiConversations = (messages) => {
   if (!messages || !Array.isArray(messages)) {
-    console.log("serializeAiConversations: No messages to serialize");
     return [];
   }
 
-  console.log("serializeAiConversations: Serializing", messages.length, "messages");
   
   const serializedMessages = messages.map(message => {
     // Create a base serialized message with common properties
@@ -29,7 +27,6 @@ export const serializeAiConversations = (messages) => {
 
     // If this is a suggestion message, include the suggestion flag and clean the suggested changes
     if (message.isSuggestion) {
-      console.log("serializeAiConversations: Serializing suggestion message");
       serializedMessage.isSuggestion = true;
       
       // Only include serializable data from suggestedChanges
@@ -58,7 +55,6 @@ export const serializeAiConversations = (messages) => {
     return serializedMessage;
   });
   
-  console.log("serializeAiConversations: Serialization complete");
   return serializedMessages;
 };
 
@@ -135,6 +131,7 @@ export const serializeShopData = (shopState, filterMaps, inventory) => {
     // AI conversations - serialize to remove any function references
     aiConversations: serializeAiConversations(shopState.aiConversations || [])
   };
+
 
   return serializedShopData;
 }; 
