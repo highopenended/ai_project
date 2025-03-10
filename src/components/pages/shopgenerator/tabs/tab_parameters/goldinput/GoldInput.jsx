@@ -8,29 +8,39 @@ import Section from "../../../shared/section/Section";
 function GoldInput({ setCurrentGold, currentGold }) {
     const [displayValue, setDisplayValue] = useState("");
 
-    const formatNumber = (value) => {
+    // Update display value when currentGold prop changes
+    useEffect(() => {
+        setDisplayValue(formatNumber(currentGold ?? 0));
+    }, [currentGold]);
 
+    // Format the number to have commas and no decimals
+    const formatNumber = (value) => {
         // If the value is not a number or is 0, return an empty string
         if (!value && value !== 0) return "";
 
-        // Convert to string and split into whole and decimal parts
-        const parts = value.toString().split(".");
-        const whole = parts[0];
-
-        // Remove existing commas and format with new ones
-        const formattedWhole = whole.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-        // Limit decimal to 2 places if it exists
-        const formattedDecimal = parts.length > 1 ? "." + parts[1].slice(0, 2) : "";
-
-        return formattedWhole + formattedDecimal;
+        const strValue = value.toString();
+        const formattedValue = strValue.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        return formattedValue;
     };
 
-    // Update display value when currentGold prop changes
-    useEffect(() => {
-        setDisplayValue(formatNumber(currentGold ?? 5000));
-    }, [currentGold]);
+    // Handle focus event to select the input text
+    const handleFocus = (e) => {
+        e.target.select();
+    };
 
+    // Handle key down event to prevent invalid characters
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.target.blur();
+        } else if (
+            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", ","].includes(e.key) &&
+            !/^\d$/.test(e.key)
+        ) {
+            e.preventDefault();
+        }
+    };
+
+    // Handle change event to update the display value and currentGold
     const handleChange = (e) => {
         const inputVal = e.target.value;
 
@@ -45,39 +55,28 @@ function GoldInput({ setCurrentGold, currentGold }) {
 
         // Pass the numeric value to parent (without commas)
         const numericValue = parseFloat(inputVal.replace(/,/g, ""));
-        if (!isNaN(numericValue)) {
-            setCurrentGold(numericValue);
-        }
+        if (!isNaN(numericValue)) setCurrentGold(numericValue);
     };
 
+    // Handle blur event to save the input value
     const handleBlur = () => {
+        // If the display value is empty, set it to 0 and currentGold to 0
         if (!displayValue) {
-            const defaultValue = 5000;
-            setDisplayValue(formatNumber(defaultValue));
-            setCurrentGold(defaultValue);
-            return;
+            setDisplayValue(0);
+            setCurrentGold(0);
+        } else {
+            // Parse the numeric value from the display value
+            const numericValue = parseFloat(displayValue.replace(/,/g, ""));
+            if (!isNaN(numericValue)) {
+                setDisplayValue(formatNumber(numericValue));
+                setCurrentGold(numericValue);
+            } else {
+                setDisplayValue(0);
+                setCurrentGold(0);
+            }
         }
+    };
 
-        const numericValue = parseFloat(displayValue.replace(/,/g, ""));
-        if (!isNaN(numericValue)) {
-            setDisplayValue(formatNumber(numericValue));
-            setCurrentGold(numericValue);
-        }
-    };
-
-    const handleKeyDown = (e) => {
-        if (e.key === "Enter") {
-            e.target.blur();
-        } else if (
-            !["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", ".", ","].includes(e.key) &&
-            !/^\d$/.test(e.key)
-        ) {
-            e.preventDefault();
-        }
-    };
-    const handleFocus = (e) => {
-        e.target.select();
-    };
 
     return (
         <Section>
