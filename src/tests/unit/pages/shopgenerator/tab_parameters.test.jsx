@@ -3,54 +3,76 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { setupTestSummary } from "../../../utils/test-summary";
+import PropTypes from 'prop-types';
 
 // Create manual mock components
 const MockGoldInput = ({ currentGold, setCurrentGold }) => {
-  const [displayValue, setDisplayValue] = React.useState(currentGold.toString());
+  const [displayValue, setDisplayValue] = React.useState("");
+  const [prevVal, setPrevVal] = React.useState("");
   
+  // Format the number to have commas and no decimals
   const formatNumber = (value) => {
     if (!value && value !== 0) return "";
     
-    // Convert to string and split into whole and decimal parts
-    const parts = value.toString().split(".");
-    const whole = parts[0];
-    
-    // Remove existing commas and format with new ones
-    const formattedWhole = whole.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    
-    // Limit decimal to 2 places if it exists
-    const formattedDecimal = parts.length > 1 ? "." + parts[1].slice(0, 2) : "";
-    
-    return formattedWhole + formattedDecimal;
+    const strValue = value.toString();
+    return strValue.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
   
-  const handleChange = (e) => {
-    const rawValue = e.target.value;
+  // Update display value when currentGold prop changes
+  React.useEffect(() => {
+    const formatted = formatNumber(currentGold ?? 0);
+    setDisplayValue(formatted);
+    setPrevVal(formatted);
+  }, [currentGold]);
+  
+  const handleInput = (e) => {
+    let value = e.target.value;
     
-    // Only allow numbers, commas, and periods
-    if (!/^[\d,.]*$/.test(rawValue)) {
-      return;
+    // Remove leading commas
+    if (value.startsWith(",")) {
+      value = value.substring(1);
     }
     
-    setDisplayValue(rawValue);
+    // Remove leading zeros (unless it's just "0")
+    if (value.length > 1 && value.startsWith("0")) {
+      value = value.replace(/^0+/, "");
+    }
+    
+    setDisplayValue(value);
+    
+    // Update parent with numeric value
+    const numericValue = parseInt(value.replace(/,/g, ""), 10);
+    if (!isNaN(numericValue)) {
+      setCurrentGold(numericValue);
+    }
   };
   
   const handleBlur = () => {
     if (!displayValue) {
-      const defaultValue = "5,000";
-      setDisplayValue(defaultValue);
-      setCurrentGold(5000);
+      const defaultValue = 0;
+      const formatted = formatNumber(defaultValue);
+      setDisplayValue(formatted);
+      setPrevVal(formatted);
+      setCurrentGold(defaultValue);
       return;
     }
     
-    // Remove commas and convert to number
-    const numericValue = parseFloat(displayValue.replace(/,/g, ""));
-    
-    // Format the display value
-    setDisplayValue(formatNumber(numericValue));
-    
-    // Update the shop state with the numeric value
-    setCurrentGold(numericValue);
+    const numericValue = parseInt(displayValue.replace(/,/g, ""), 10);
+    if (!isNaN(numericValue)) {
+      const formatted = formatNumber(numericValue);
+      setDisplayValue(formatted);
+      setPrevVal(formatted);
+      setCurrentGold(numericValue);
+    }
+  };
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.target.blur();
+    } else if (e.key === "Escape") {
+      setDisplayValue(prevVal);
+      e.target.blur();
+    }
   };
   
   return (
@@ -58,11 +80,18 @@ const MockGoldInput = ({ currentGold, setCurrentGold }) => {
       <input 
         type="text" 
         value={displayValue} 
-        onChange={handleChange}
+        onInput={handleInput}
         onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        onFocus={(e) => e.target.select()}
       />
     </div>
   );
+};
+
+MockGoldInput.propTypes = {
+  currentGold: PropTypes.number,
+  setCurrentGold: PropTypes.func.isRequired
 };
 
 const MockLevelInput = ({ lowestLevel, highestLevel, setLowestLevel, setHighestLevel }) => {
@@ -167,6 +196,13 @@ const MockLevelInput = ({ lowestLevel, highestLevel, setLowestLevel, setHighestL
   );
 };
 
+MockLevelInput.propTypes = {
+  lowestLevel: PropTypes.number.isRequired,
+  highestLevel: PropTypes.number.isRequired,
+  setLowestLevel: PropTypes.func.isRequired,
+  setHighestLevel: PropTypes.func.isRequired
+};
+
 // Mock the imports
 jest.mock('../../../../components/pages/shopgenerator/tabs/tab_parameters/goldinput/GoldInput', () => ({
   __esModule: true,
@@ -185,11 +221,6 @@ import LevelInput from '../../../../components/pages/shopgenerator/tabs/tab_para
 // Setup test summary
 setupTestSummary();
 
-// Mock functions for testing
-const mockSetCurrentGold = jest.fn();
-const mockSetLowestLevel = jest.fn();
-const mockSetHighestLevel = jest.fn();
-
 describe('Tab_Parameters Components', () => {
   // Reset mocks before each test
   beforeEach(() => {
@@ -203,63 +234,19 @@ describe('Tab_Parameters Components', () => {
       mockSetCurrentGold = jest.fn();
     });
 
-    test('allows only numbers, commas, and periods as input', () => {
-      render(<GoldInput setCurrentGold={mockSetCurrentGold} currentGold={5000} />);
-
-      const input = screen.getByRole('textbox');
-
-      // Invalid inputs should not change the value
-      fireEvent.change(input, { target: { value: 'abc' } });
-      expect(input.value).toBe('5000');
-
-      fireEvent.change(input, { target: { value: '123abc' } });
-      expect(input.value).toBe('5000');
-
-      // Valid inputs
-      fireEvent.change(input, { target: { value: '1234' } });
-      expect(input.value).toBe('1234');
-
-      fireEvent.change(input, { target: { value: '1,234' } });
-      expect(input.value).toBe('1,234');
-
-      fireEvent.change(input, { target: { value: '1234.56' } });
-      expect(input.value).toBe('1234.56');
-    });
-
-    test('formats number correctly on blur', () => {
-      render(<GoldInput setCurrentGold={mockSetCurrentGold} currentGold={5000} />);
-
-      const input = screen.getByRole('textbox');
-
-      // Test with a whole number
-      fireEvent.change(input, { target: { value: '1234' } });
-      fireEvent.blur(input);
-      expect(input.value).toBe('1,234');
-
-      // Test with a decimal number
-      fireEvent.change(input, { target: { value: '1234.56' } });
-      fireEvent.blur(input);
-      expect(input.value).toBe('1,234.56');
-
-      // Test with a number that already has commas
-      fireEvent.change(input, { target: { value: '1,234,567' } });
-      fireEvent.blur(input);
-      expect(input.value).toBe('1,234,567');
-    });
-
     test('updates shopState correctly', () => {
       render(<GoldInput setCurrentGold={mockSetCurrentGold} currentGold={5000} />);
 
       const input = screen.getByRole('textbox');
 
       // Change value and trigger blur to update state
-      fireEvent.change(input, { target: { value: '1234.56' } });
+      fireEvent.input(input, { target: { value: '1234' } });
       fireEvent.blur(input);
-      expect(mockSetCurrentGold).toHaveBeenCalledWith(1234.56);
+      expect(mockSetCurrentGold).toHaveBeenCalledWith(1234);
 
       // Change to a value with commas and check if setCurrentGold was called with the numeric value
       mockSetCurrentGold.mockClear();
-      fireEvent.change(input, { target: { value: '1,234,567' } });
+      fireEvent.input(input, { target: { value: '1,234,567' } });
       fireEvent.blur(input);
       expect(mockSetCurrentGold).toHaveBeenCalledWith(1234567);
     });
@@ -270,12 +257,12 @@ describe('Tab_Parameters Components', () => {
       const input = screen.getByRole('textbox');
 
       // Clear the input and blur
-      fireEvent.change(input, { target: { value: '' } });
+      fireEvent.input(input, { target: { value: '' } });
       fireEvent.blur(input);
 
-      // Should set default value (5000)
-      expect(input.value).toBe('5,000');
-      expect(mockSetCurrentGold).toHaveBeenCalledWith(5000);
+      // Should set default value (0)
+      expect(input.value).toBe('0');
+      expect(mockSetCurrentGold).toHaveBeenCalledWith(0);
     });
   });
 

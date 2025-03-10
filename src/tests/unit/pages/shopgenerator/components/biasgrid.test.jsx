@@ -76,13 +76,13 @@ MockBiasGrid.propTypes = {
 };
 
 // Mock the imports
-jest.mock('../../../../components/pages/shopgenerator/tabs/tab_parameters/biasgrid/BiasGrid', () => ({
+jest.mock('../../../../../components/pages/shopgenerator/tabs/tab_parameters/biasgrid/BiasGrid', () => ({
   __esModule: true,
   default: (props) => <MockBiasGrid {...props} />
 }));
 
 // Import the mocked component
-import BiasGrid from '../../../../components/pages/shopgenerator/tabs/tab_parameters/biasgrid/BiasGrid';
+import BiasGrid from '../../../../../components/pages/shopgenerator/tabs/tab_parameters/biasgrid/BiasGrid';
 
 describe('BiasGrid Component', () => {
   // Reset mocks before each test
