@@ -65,14 +65,20 @@ function BiasGrid({ setItemBias, itemBias }) {
 
     const handleMouseUp = () => {
         setIsDragging(false);
-        // Only update parent state when dragging ends
-        setItemBias(positionRef.current);
+
+        // Round to two decimal places before updating parent state
+        const roundedPosition = {
+            x: Math.round(positionRef.current.x * 100) / 100,
+            y: Math.round(positionRef.current.y * 100) / 100
+        };
+        setItemBias(roundedPosition);
     };
 
     const handleReset = () => {
         const newPos = { x: 0.5, y: 0.5 };
         positionRef.current = newPos;
         setPosition(newPos);
+        // No need to round here as 0.5 is already a simple decimal
         setItemBias(newPos);
     };
 
