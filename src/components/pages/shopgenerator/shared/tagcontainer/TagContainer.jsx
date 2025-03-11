@@ -1,7 +1,7 @@
 // import React from 'react';
 import PropTypes from 'prop-types';
 import './TagContainer.css';
-import Tag from './Tag';
+import Tag from '../tag/Tag';
 
 function TagContainer({ tags, onTagClick, getTagState }) {
     return (

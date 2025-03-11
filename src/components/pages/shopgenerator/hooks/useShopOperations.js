@@ -4,6 +4,7 @@ import { takeShopSnapshot } from "../utils/shopStateUtils";
 import defaultShopData from "../utils/shopData";
 import { serializeShopData, deserializeAiConversations } from '../utils/serializationUtils';
 import { useShopCache } from './useShopCache';
+import { debug } from '../../../../utils/debugUtils';
 
 /**
  * Helper function to generate a unique shop ID
@@ -113,7 +114,7 @@ export const useShopOperations = ({
                 []
             );
         } catch (error) {
-            console.error("Error creating new shop:", error);
+            debug("shopGenerator", "Error creating new shop", error);
             alert("Error creating new shop. Please try again.");
         }
     };
@@ -141,12 +142,12 @@ export const useShopOperations = ({
             
             // Check if we need to refresh from Firebase
             if (cachedShops && !isRefreshNeeded()) {
-                console.log('Using cached shop list');
+                debug("shopGenerator", "Using cached shop list");
                 setSavedShops(cachedShops);
                 return;
             }
             
-            console.log('Loading shop list from Firebase');
+            debug("shopGenerator", "Loading shop list from Firebase");
             const loadedShops = await loadShopData(userId);
             
             const formattedShops = loadedShops.map((shop) => ({
@@ -160,11 +161,11 @@ export const useShopOperations = ({
             updateCache(formattedShops);
             markAsRefreshed();
         } catch (error) {
-            console.error("Error loading shops:", error);
+            debug("shopGenerator", "Error loading shops", error);
             
             // If Firebase fails but we have cached data, use that
             if (cachedShops) {
-                console.log('Firebase load failed, using cached data');
+                debug("shopGenerator", "Firebase load failed, using cached data");
                 setSavedShops(cachedShops);
             } else {
                 alert("Error loading shops. Please try again.");
@@ -176,7 +177,7 @@ export const useShopOperations = ({
      * Load a shop from the saved shops list
      */
     const handleLoadShop = async (shop) => {
-        console.log("Loading shop:", shop);
+        debug("shopGenerator", "Loading shop", shop);
         try {
             // Create a new shop state from the loaded shop
             const newShopState = {
@@ -214,7 +215,7 @@ export const useShopOperations = ({
             // Create new snapshot
             createShopSnapshot(newShopState, newFilters, shop.currentStock || []);
         } catch (error) {
-            console.error("Error loading shop:", error);
+            debug("shopGenerator", "Error loading shop", error);
             alert("Error loading shop. Please try again.");
         }
     };
@@ -240,7 +241,7 @@ export const useShopOperations = ({
      * Saves to Firebase first, then updates cache on success
      */
     const handleSaveShop = async () => {
-        console.log("handleSaveShop called - Starting save process", {
+        debug("shopGenerator", "Starting save process", {
             isUserLoggedIn: !!currentUser,
             hasCurrentUser: !!currentUser,
             currentShopState: shopState,
@@ -249,13 +250,13 @@ export const useShopOperations = ({
         });
 
         if (!currentUser) {
-            console.log("Save failed: User not logged in");
+            debug("shopGenerator", "Save failed: User not logged in");
             alert("Please log in to save shops");
             return;
         }
 
         try {
-            console.log("Starting save operation");
+            debug("shopGenerator", "Starting save operation");
             
             // Use the serialization utility to create a clean, serializable copy of the shop data
             const savedShopData = serializeShopData(shopState, filterMaps, inventory);
@@ -265,7 +266,7 @@ export const useShopOperations = ({
                 savedShopData.id = generateShopId();
             }
 
-            console.log("About to call saveOrUpdateShopData with:", {
+            debug("shopGenerator", "About to call saveOrUpdateShopData", {
                 userId: currentUser.uid,
                 savedShopData
             });
@@ -273,7 +274,7 @@ export const useShopOperations = ({
             // Save to Firebase first
             const savedShopId = await saveOrUpdateShopData(currentUser.uid, savedShopData);
             
-            console.log("Shop saved successfully", { savedShopId });
+            debug("shopGenerator", "Shop saved successfully", { savedShopId });
 
             // Update local state
             const updatedState = {
@@ -282,7 +283,7 @@ export const useShopOperations = ({
                 dateLastEdited: savedShopData.dateLastEdited
             };
 
-            console.log("Updating local state after save");
+            debug("shopGenerator", "Updating local state after save");
             setShopState(updatedState);
             createShopSnapshot(updatedState, filterMaps, inventory);
             
@@ -315,9 +316,9 @@ export const useShopOperations = ({
                 await handleLoadShopList();
             }
             
-            console.log("Save process completed successfully");
+            debug("shopGenerator", "Save process completed successfully");
         } catch (error) {
-            console.error("Error saving shop:", error);
+            debug("shopGenerator", "Error saving shop", error);
             alert("Error saving shop. Please try again.");
         }
     };
@@ -338,7 +339,7 @@ export const useShopOperations = ({
             
             // Delete from Firebase first
             await deleteShopData(userId, shopId);
-            console.log("Shop deleted from Firebase with ID:", shopId);
+            debug("shopGenerator", "Shop deleted from Firebase with ID", shopId);
             
             // Remove from cache
             removeFromCache(shopId);
@@ -349,15 +350,15 @@ export const useShopOperations = ({
             
             // If there are remaining shops, load the first one
             if (updatedShops.length > 0) {
-                console.log("Loading first available shop after deletion");
+                debug("shopGenerator", "Loading first available shop after deletion");
                 await handleLoadShop(updatedShops[0]);
             } else {
                 // If no shops remain, create a new one
-                console.log("No shops remain, creating new one");
+                debug("shopGenerator", "No shops remain, creating new one");
                 await handleNewShop();
             }
         } catch (error) {
-            console.error("Error deleting shop:", error);
+            debug("shopGenerator", "Error deleting shop", error);
             alert("Error deleting shop. Please try again.");
         }
     };

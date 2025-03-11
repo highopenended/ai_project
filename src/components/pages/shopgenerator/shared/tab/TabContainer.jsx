@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { debug } from '../../../../../utils/debugUtils';
 
 import TabHeader from './TabHeader.jsx';
 import './TabContainer.css';
@@ -131,11 +132,11 @@ function TabContainer({
     const handleDragStart = (e, tab, index) => {
         // Safety check for tab structure
         if (!tab || !tab.type) {
-            console.log('[DragStart] Invalid tab structure:', tab);
+            debug("tabManagement", "Invalid tab structure for drag", tab);
             return;
         }
 
-        console.log('[DragStart] Starting drag operation:', {
+        debug("tabManagement", "Starting drag operation", {
             tabType: tab.type.name,
             index,
             groupIndex,
@@ -166,7 +167,7 @@ function TabContainer({
             groupIndex: groupIndex
         };
 
-        console.log('[DragStart] Setting drag data:', tabData);
+        debug("tabManagement", "Setting drag data", tabData);
         
         try {
             // Set data in multiple formats for redundancy
@@ -175,7 +176,7 @@ function TabContainer({
             e.dataTransfer.setData('groupIndex', groupIndex.toString());
             e.dataTransfer.setData('tabInfo', JSON.stringify(tabData));
         } catch (err) {
-            console.warn('[DragStart] Error setting drag data:', err);
+            debug("tabManagement", "Error setting drag data", err);
         }
     };
 
@@ -287,7 +288,7 @@ function TabContainer({
 
     const handleDrop = (e) => {
         e.preventDefault();
-        console.log('[Drop] Starting drop operation');
+        debug("tabManagement", "Starting drop operation");
         
         try {
             // Try to get data from dataTransfer first
@@ -295,7 +296,7 @@ function TabContainer({
             const sourceGroupIndex = parseInt(e.dataTransfer.getData('groupIndex'));
             let tabInfo = null;
             
-            console.log('[Drop] Initial data from dataTransfer:', {
+            debug("tabManagement", "Initial data from dataTransfer", {
                 sourceIndex,
                 sourceGroupIndex,
                 types: e.dataTransfer.types
@@ -304,20 +305,20 @@ function TabContainer({
             try {
                 const tabInfoStr = e.dataTransfer.getData('tabInfo');
                 tabInfo = JSON.parse(tabInfoStr);
-                console.log('[Drop] Successfully parsed tabInfo from dataTransfer:', tabInfo);
+                debug("tabManagement", "Successfully parsed tabInfo from dataTransfer", tabInfo);
             } catch (parseErr) {
-                console.log('[Drop] Failed to parse tabInfo from dataTransfer:', parseErr);
+                debug("tabManagement", "Failed to parse tabInfo from dataTransfer", parseErr);
             }
             
             // Fallback to global reference if needed
             if (!tabInfo && window.__lastDraggedTab) {
-                console.log('[Drop] Using fallback from global reference:', window.__lastDraggedTab);
+                debug("tabManagement", "Using fallback from global reference", window.__lastDraggedTab);
                 tabInfo = window.__lastDraggedTab;
             }
             
             // If we still don't have the required data, abort
             if (isNaN(sourceIndex) || isNaN(sourceGroupIndex) || !tabInfo) {
-                console.warn('[Drop] Missing required drag data:', {
+                debug("tabManagement", "Missing required drag data", {
                     sourceIndex,
                     sourceGroupIndex,
                     tabInfo,
@@ -331,7 +332,7 @@ function TabContainer({
             const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
             const wasShowingBetweenIndicatorRight = dropIndicators.betweenGroupsRight === groupIndex;
             
-            console.log('[Drop] Current indicators:', {
+            debug("tabManagement", "Current indicators", {
                 wasShowingLeftIndicator,
                 wasShowingRightIndicator,
                 wasShowingBetweenIndicator,
@@ -348,24 +349,24 @@ function TabContainer({
             });
             
             if (wasShowingBetweenIndicator) {
-                console.log('[Drop] Splitting tab between groups (left)');
+                debug("tabManagement", "Splitting tab between groups (left)");
                 onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
             }
             else if (wasShowingBetweenIndicatorRight) {
-                console.log('[Drop] Splitting tab between groups (right)');
+                debug("tabManagement", "Splitting tab between groups (right)");
                 onTabSplit(tabInfo, sourceGroupIndex, groupIndex + 1);
             }
             else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-                console.log('[Drop] Splitting tab to edge:', wasShowingRightIndicator ? 'right' : 'left');
+                debug("tabManagement", "Splitting tab to edge", { edge: wasShowingRightIndicator ? 'right' : 'left' });
                 onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
             }
             else if (sourceGroupIndex !== groupIndex) {
-                console.log('[Drop] Moving tab between groups');
+                debug("tabManagement", "Moving tab between groups");
                 const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
                 onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
             }
             else if (sourceIndex !== dropIndex && dropIndex !== null) {
-                console.log('[Drop] Reordering within group');
+                debug("tabManagement", "Reordering within group");
                 const newTabs = [...tabs];
                 const [movedTab] = newTabs.splice(sourceIndex, 1);
                 newTabs.splice(dropIndex, 0, movedTab);
@@ -375,7 +376,7 @@ function TabContainer({
                 }
             }
         } catch (err) {
-            console.error('[Drop] Error handling drop:', err);
+            debug("tabManagement", "Error handling drop", err);
         }
 
         setDropIndex(null);
@@ -388,6 +389,7 @@ function TabContainer({
      * Resets all drag-related state
      */
     const handleDragEnd = () => {
+        debug("tabManagement", "Ending drag operation");
         setDropIndex(null);
         onDragEnd();
         if (edgeHoldTimeout.current) {
@@ -443,6 +445,7 @@ function TabContainer({
 
     const handleResizeStart = (e) => {
         e.preventDefault();
+        debug("tabManagement", "Starting resize operation", { groupIndex });
         setIsResizing(true);
         const startX = e.clientX;
         const startWidth = containerRef.current?.getBoundingClientRect().width || 0;
@@ -454,6 +457,7 @@ function TabContainer({
         };
 
         const handleMouseUp = () => {
+            debug("tabManagement", "Ending resize operation", { groupIndex });
             setIsResizing(false);
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
@@ -462,7 +466,6 @@ function TabContainer({
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
-
 
     // Add additional class names based on the active tab (ex. no-scrollbar for inventory table)
     let additionalClassNames = "";

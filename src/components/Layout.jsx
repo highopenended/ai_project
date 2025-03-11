@@ -5,14 +5,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import ChatHistory from "./pages/home/history/ChatHistory";
 import '../styles/Layout.css';
-import { debug, configureDebug } from "../utils/debugUtils";
-
-// Configure debug for layout component
-configureDebug({
-    areas: {
-        layout: false, // Set to true to enable debugging for layout
-    }
-});
+import { debug } from "../utils/debugUtils";
 
 /**
  * Main layout component for the application

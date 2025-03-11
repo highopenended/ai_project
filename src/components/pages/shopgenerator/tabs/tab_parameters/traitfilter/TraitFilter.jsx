@@ -4,7 +4,7 @@ import Section from "../../../shared/section/Section";
 import traitList from "../../../../../../../src/data/trait-list.json";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
-import TagContainer from "../../../shared/TagContainer";
+import TagContainer from "../../../shared/tagcontainer/TagContainer";
 import { getFilteredTraits } from "../../../utils/filterGroupUtils";
 
 function TraitFilter({ getFilterState, toggleTrait, clearTraitSelections }) {

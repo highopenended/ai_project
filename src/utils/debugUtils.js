@@ -1,12 +1,21 @@
 // Global debug configuration
 const DEBUG_CONFIG = {
-  enabled: false, // Master debug switch
+  enabled: true, // Master debug switch
   areas: {
-    tabManagement: false,
+    // Core application areas
+    tabManagement: true,
+    tabSplit: false,
     initialization: false,
     stateSync: false,
     tabCreation: false,
     performance: false,
+    
+    // Component areas
+    layout: false,
+    auth: false,
+    routing: false,
+    shopGenerator: false,
+    
     // Add other areas as needed
   },
 };
@@ -28,6 +37,10 @@ export const debug = (area, message, data = "") => {
     stateSync: "🔄 [Sync]",
     tabCreation: "🏗️ [Create]",
     performance: "⏱️ [Perf]",
+    layout: "📐 [Layout]",
+    auth: "🔐 [Auth]",
+    routing: "🧭 [Route]",
+    shopGenerator: "🏪 [Shop]",
   }[area] || `[${area}]`;
   
   console.log(`${prefix} [${timestamp}ms] ${message}`, data ? data : "");
@@ -69,22 +82,6 @@ export const createMark = (area, name) => {
   const markName = `${area}-${name}-start-${Date.now()}`;
   performance.mark(markName);
   return markName;
-};
-
-/**
- * Enable or disable debugging for specific areas
- * @param {Object} config - Configuration object with areas to enable/disable
- */
-export const configureDebug = (config) => {
-  if (config.enabled !== undefined) {
-    DEBUG_CONFIG.enabled = config.enabled;
-  }
-  
-  if (config.areas) {
-    Object.keys(config.areas).forEach(area => {
-      DEBUG_CONFIG.areas[area] = config.areas[area];
-    });
-  }
 };
 
 /**

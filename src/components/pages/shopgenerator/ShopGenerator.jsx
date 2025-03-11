@@ -15,18 +15,7 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE, TAB_TYPES } from "./utils/tabConstants";
 import { useTabRegistry } from './hooks/useTabRegistry';
 import { shouldRefreshCache, setLastRefreshTimestamp, clearShopCache } from './utils/shopCacheUtils';
-import { debug, configureDebug } from '../../../utils/debugUtils';
-
-// Configure debug for this component
-configureDebug({
-    enabled: false, // Master debug switch
-    areas: {
-        initialization: false,
-        tabManagement: false,
-        stateSync: false,
-        tabCreation: false,
-    }
-});
+import { debug } from '../../../utils/debugUtils';
 
 const STORAGE_KEY = "tabGroupsState";
 
@@ -74,7 +63,7 @@ const createInitialTabState = () => {
         }
         return validState;
     } catch (error) {
-        console.error("[Tab State] Error loading saved state:", error);
+        debug("initialization", "Error loading saved tab state", error);
         return DEFAULT_TAB_STATE;
     }
 };
@@ -304,27 +293,27 @@ function ShopGenerator() {
 
         const refreshOnLogin = async () => {
             try {
-                console.log('User logged in, checking if refresh needed');
+                debug("shopGenerator", "User logged in, checking if refresh needed");
                 
                 // Clear cache on user change (different user logged in)
                 if (previousUser.current && previousUser.current !== currentUser.uid) {
-                    console.log('Different user logged in, clearing previous cache');
+                    debug("shopGenerator", "Different user logged in, clearing previous cache");
                     clearShopCache(previousUser.current);
                 }
                 
                 // Check cooldown before refreshing
                 if (shouldRefreshCache(currentUser.uid, 60)) {
-                    console.log('Refreshing shop list after login');
+                    debug("shopGenerator", "Refreshing shop list after login");
                     await handleLoadShopList();
                     setLastRefreshTimestamp(currentUser.uid);
                 } else {
-                    console.log('Skipping refresh due to cooldown');
+                    debug("shopGenerator", "Skipping refresh due to cooldown");
                 }
                 
                 // Update previous user reference
                 previousUser.current = currentUser.uid;
             } catch (error) {
-                console.error('Error refreshing after login:', error);
+                debug("shopGenerator", "Error refreshing after login", error);
             }
         };
 

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Section from "../../../shared/section/Section";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
-import TagContainer from "../../../shared/TagContainer";
+import TagContainer from "../../../shared/tagcontainer/TagContainer";
 import { getFilteredCategories } from "../../../utils/filterGroupUtils";
 
 function CategoryFilter({ categoryData, getFilterState, toggleCategory, clearCategorySelections }) {

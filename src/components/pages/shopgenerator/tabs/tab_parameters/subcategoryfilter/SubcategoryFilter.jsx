@@ -4,7 +4,7 @@ import { SELECTION_STATES } from "../../../utils/shopGeneratorConstants";
 import Section from "../../../shared/section/Section";
 import MiniButtonGroup from "../../../shared/minibuttongroup/MiniButtonGroup";
 import SearchBar from "../../../shared/searchbar/SearchBar";
-import TagContainer from "../../../shared/TagContainer";
+import TagContainer from "../../../shared/tagcontainer/TagContainer";
 import { getFilteredSubcategories } from "../../../utils/filterGroupUtils";
 
 function SubcategoryFilter({ categoryData, categoryStates, getFilterState, toggleSubcategory, clearSubcategorySelections }) {

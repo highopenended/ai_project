@@ -1,13 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { debug, trackPerformance, createMark, configureDebug } from '../../../../utils/debugUtils';
-
-// Configure debug for this module
-configureDebug({
-    areas: {
-        tabManagement: false, // Set to true to enable debugging for this module
-        tabSplit: false, // For tab splitting operations
-    }
-});
+import { debug, trackPerformance, createMark } from '../../../../utils/debugUtils';
 
 // Constants
 const MIN_WIDTH_PX = 200;
@@ -48,7 +40,7 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
  */
 
 /**
- * Hook for managing tab navigation and content in the shop generator
+ * Hook for managing tab navigation, layout, and content in the shop generator
  *
  * Provides functionality for switching between different views (tabs) of the shop generator,
  * including inventory management, shop details, and generation settings. Handles tab state,
@@ -71,6 +63,7 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
  * @property {Function} handleTabChange - Handler for tab change events
  */
 export const useTabManagement = (initialGroups, initialWidths) => {
+    // Consolidated state management
     const [tabGroups, setTabGroups] = useState(initialGroups);
     const [flexBasis, setFlexBasis] = useState(initialWidths);
     const [dragState, setDragState] = useState({
@@ -87,30 +80,32 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         lastResizeTime: 0,
     });
 
-    // Add ref to track resize state
-    const resizeRef = useRef({
-        active: false,
-        handler: null,
-    });
+    // Resize tracking ref
+    const resizeRef = useRef({ active: false });
 
-    // Memoize container width calculation
+    /**
+     * Gets the container width for resize calculations
+     * @returns {number} Width of the container in pixels
+     */
     const getContainerWidth = useCallback(() => {
         const container = document.querySelector(".shop-generator");
         return container ? container.clientWidth : 0;
     }, []);
 
-    // Batch update drag state
+    /**
+     * Updates drag state with batched changes
+     * @param {Object} updates - State updates to apply
+     */
     const updateDragState = useCallback((updates) => {
-        setDragState((prev) => ({
-            ...prev,
-            ...updates,
-        }));
-        debug("State", "Updating drag state", updates);
+        setDragState(prev => ({ ...prev, ...updates }));
+        debug("tabManagement", "Updating drag state", updates);
     }, []);
 
-    // Handle drag end with batched updates
+    /**
+     * Resets all drag and drop state
+     */
     const handleDragEnd = useCallback(() => {
-        debug("Action", "Ending drag/resize operation");
+        debug("tabManagement", "Ending drag/resize operation");
         updateDragState({
             isResizing: false,
             draggedTab: null,
@@ -125,411 +120,331 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         });
     }, [updateDragState]);
 
-    // Resize handler with throttling
-    const handleResize = useCallback(
-        (newWidth, groupIndex) => {
-            const startMark = createMark('tabManagement', 'Resize Operation');
+    /**
+     * Handles resizing of tab groups with throttling
+     * @param {number} newWidth - New width in pixels
+     * @param {number} groupIndex - Index of the group being resized
+     */
+    const handleResize = useCallback((newWidth, groupIndex) => {
+        const startMark = createMark('tabManagement', 'Resize Operation');
 
-            if (groupIndex >= tabGroups.length - 1) {
-                debug("Resize", "Invalid group index", { groupIndex });
-                return;
-            }
-
-            const now = Date.now();
-            if (now - dragState.lastResizeTime < RESIZE_THROTTLE_MS) {
-                debug("Resize", "Throttled", {
-                    timeSinceLastResize: now - dragState.lastResizeTime,
-                    throttleLimit: RESIZE_THROTTLE_MS,
-                });
-                return;
-            }
-
-            debug("Resize", "Processing resize", {
-                groupIndex,
-                newWidth,
-                isActive: resizeRef.current.active,
-                timeSinceLastResize: now - dragState.lastResizeTime,
-            });
-
-            const totalWidth = getContainerWidth();
-            if (!totalWidth) {
-                debug("Resize", "No container width available");
-                return;
-            }
-
-            updateDragState({
-                isResizing: true,
-                lastResizeTime: now,
-            });
-
-            setFlexBasis((prev) => {
-                const newBasis = [...prev];
-                const minWidthPercent = (MIN_WIDTH_PX / totalWidth) * 100;
-
-                let currentPercent = Math.max((newWidth / totalWidth) * 100, minWidthPercent);
-
-                const remainingPercent = parseFloat(prev[groupIndex]) + parseFloat(prev[groupIndex + 1]);
-                const nextGroupPercent = remainingPercent - currentPercent;
-
-                if (nextGroupPercent < minWidthPercent) {
-                    debug("Resize", "Next group would be too small", {
-                        nextGroupPercent,
-                        minWidthPercent,
-                    });
-                    return prev;
-                }
-
-                newBasis[groupIndex] = `${currentPercent}%`;
-                newBasis[groupIndex + 1] = `${nextGroupPercent}%`;
-
-                debug("Resize", "Updated basis", {
-                    current: currentPercent,
-                    next: nextGroupPercent,
-                    total: currentPercent + nextGroupPercent,
-                });
-
-                trackPerformance('tabManagement', 'Resize Operation', startMark);
-                return newBasis;
-            });
-        },
-        [tabGroups.length, dragState.lastResizeTime, getContainerWidth, updateDragState]
-    );
-
-    // Resize handler initialization
-    useEffect(() => {
-        const mountTime = Date.now();
-        const currentRef = resizeRef.current;
-        const effectId = Math.random().toString(36).slice(2, 11);
-
-        debug("Lifecycle", `[Effect ${effectId}] Resize handler initialized`, {
-            mountTime,
-            handlerExists: !!currentRef.handler,
-        });
-
-        const handleGlobalMouseUp = () => {
-            if (!currentRef.active) return;
-
-            const startMark = createMark('tabManagement', 'Mouse Up Handler');
-
-            debug("Mouse", `[Effect ${effectId}] Global mouse up`, {
-                timeSinceMount: Date.now() - mountTime,
-            });
-
-            handleDragEnd();
-            currentRef.active = false;
-
-            trackPerformance('tabManagement', 'Mouse Up Handler', startMark);
-        };
-
-        currentRef.handler = handleGlobalMouseUp;
-        window.addEventListener("mouseup", handleGlobalMouseUp);
-
-        return () => {
-            debug("Cleanup", `[Effect ${effectId}] Removing resize handler`, {
-                timeActive: Date.now() - mountTime,
-                hadHandler: !!currentRef.handler,
-            });
-            window.removeEventListener("mouseup", handleGlobalMouseUp);
-            currentRef.handler = null;
-        };
-    }, [handleDragEnd]);
-
-    // Track resize state separately
-    useEffect(() => {
-        const effectId = Math.random().toString(36).substr(2, 9);
-        const currentRef = resizeRef.current;
-
-        if (!dragState.isResizing) {
-            if (currentRef.active) {
-                debug("State", `[Effect ${effectId}] Deactivating resize`, {
-                    draggedTab: dragState.draggedTab?.type?.name,
-                });
-                currentRef.active = false;
-            }
+        // Validate inputs
+        if (groupIndex >= tabGroups.length - 1) {
+            debug("tabManagement", "Invalid group index for resize", { groupIndex });
             return;
         }
 
-        debug("State", `[Effect ${effectId}] Activating resize`, {
-            draggedTab: dragState.draggedTab?.type?.name,
+        // Apply throttling
+        const now = Date.now();
+        if (now - dragState.lastResizeTime < RESIZE_THROTTLE_MS) {
+            return;
+        }
+
+        debug("tabManagement", "Processing resize", { groupIndex, newWidth });
+
+        // Get container width
+        const totalWidth = getContainerWidth();
+        if (!totalWidth) {
+            debug("tabManagement", "No container width available");
+            return;
+        }
+
+        // Update resize state
+        updateDragState({
+            isResizing: true,
+            lastResizeTime: now,
         });
-        currentRef.active = true;
 
-        return () => {
-            if (currentRef.active) {
-                debug("State", `[Effect ${effectId}] Cleaning up resize state`);
-                currentRef.active = false;
+        // Calculate and apply new widths
+        setFlexBasis(prev => {
+            const newBasis = [...prev];
+            const minWidthPercent = (MIN_WIDTH_PX / totalWidth) * 100;
+
+            // Calculate new percentages
+            let currentPercent = Math.max((newWidth / totalWidth) * 100, minWidthPercent);
+            const remainingPercent = parseFloat(prev[groupIndex]) + parseFloat(prev[groupIndex + 1]);
+            const nextGroupPercent = remainingPercent - currentPercent;
+
+            // Ensure minimum width constraints
+            if (nextGroupPercent < minWidthPercent) {
+                debug("tabManagement", "Next group would be too small", {
+                    nextGroupPercent,
+                    minWidthPercent,
+                });
+                return prev;
             }
-        };
-    }, [dragState.isResizing, dragState.draggedTab?.type?.name]);
 
-    // Handle drag start with batched update
-    const handleDragStart = useCallback(
-        (tab, tabIndex, groupIndex) => {
-            debug("Action", "Starting drag", { tabIndex, groupIndex });
-            updateDragState({
-                draggedTab: tab,
-                draggedTabIndex: tabIndex,
-                sourceGroupIndex: groupIndex,
-            });
-        },
-        [updateDragState]
-    );
+            // Apply new widths
+            newBasis[groupIndex] = `${currentPercent}%`;
+            newBasis[groupIndex + 1] = `${nextGroupPercent}%`;
 
-    // Handle drop indicators with batched update
-    const handleDropIndicatorChange = useCallback(
-        (indicators) => {
-            updateDragState({
-                dropIndicators: { ...dragState.dropIndicators, ...indicators },
+            debug("tabManagement", "Updated basis", {
+                current: currentPercent,
+                next: nextGroupPercent,
             });
-        },
-        [dragState.dropIndicators, updateDragState]
-    );
+
+            trackPerformance('tabManagement', 'Resize Operation', startMark);
+            return newBasis;
+        });
+    }, [tabGroups.length, dragState.lastResizeTime, getContainerWidth, updateDragState]);
 
     /**
-     * Handles moving tabs within and between groups while preserving component state
-     *
+     * Sets up global mouse event handlers for resize operations
+     */
+    useEffect(() => {
+        const currentRef = resizeRef.current;
+
+        // Handle mouse up globally to end resize operations
+        const handleGlobalMouseUp = () => {
+            if (!currentRef.active) return;
+
+            debug("tabManagement", "Global mouse up detected");
+            handleDragEnd();
+            currentRef.active = false;
+        };
+
+        window.addEventListener("mouseup", handleGlobalMouseUp);
+
+        return () => {
+            window.removeEventListener("mouseup", handleGlobalMouseUp);
+        };
+    }, [handleDragEnd]);
+
+    /**
+     * Tracks resize state changes
+     */
+    useEffect(() => {
+        const currentRef = resizeRef.current;
+        currentRef.active = dragState.isResizing;
+    }, [dragState.isResizing]);
+
+    /**
+     * Initiates tab drag operation
+     * @param {Tab} tab - The tab being dragged
+     * @param {number} tabIndex - Index of the tab in its group
+     * @param {number} groupIndex - Index of the group containing the tab
+     */
+    const handleDragStart = useCallback((tab, tabIndex, groupIndex) => {
+        debug("tabManagement", "Starting drag", { tabIndex, groupIndex });
+        updateDragState({
+            draggedTab: tab,
+            draggedTabIndex: tabIndex,
+            sourceGroupIndex: groupIndex,
+        });
+    }, [updateDragState]);
+
+    /**
+     * Updates drop indicators during drag operations
+     * @param {Object} indicators - New indicator states
+     */
+    const handleDropIndicatorChange = useCallback((indicators) => {
+        updateDragState({
+            dropIndicators: { ...dragState.dropIndicators, ...indicators },
+        });
+    }, [dragState.dropIndicators, updateDragState]);
+
+    /**
+     * Handles moving tabs within and between groups
      * @param {Array<Tab>|[Tab, number]} newTabs - Either array of tabs (reorder) or [sourceTab, targetIndex] (move)
      * @param {number} sourceGroupIndex - Index of the source group
      * @param {number} [targetGroupIndex] - Index of target group (if moving between groups)
-     *
-     * Key Behaviors:
-     * 1. Within Group: Preserves original tab objects while reordering
-     * 2. Between Groups: Moves complete tab object with all properties
-     * 3. Empty Groups: Removes source group if it becomes empty
-     *
-     * State Preservation:
-     * - Uses tab.key for reliable identification
-     * - Maintains original component references
-     * - Preserves memoized props from registry
      */
-    const handleTabMove = useCallback(
-        (newTabs, sourceGroupIndex, targetGroupIndex) => {
-            debug("Action", "Moving tab", { sourceGroupIndex, targetGroupIndex });
+    const handleTabMove = useCallback((newTabs, sourceGroupIndex, targetGroupIndex) => {
+        debug("tabManagement", "Moving tab", { sourceGroupIndex, targetGroupIndex });
 
-            // Reset drag states
-            updateDragState({
-                draggedTab: null,
-                draggedTabIndex: null,
-                sourceGroupIndex: null,
-                dropIndicators: {
-                    leftGroup: null,
-                    rightGroup: null,
-                    betweenGroups: null,
-                    betweenGroupsRight: null,
-                },
-            });
+        // Reset drag states
+        updateDragState({
+            draggedTab: null,
+            draggedTabIndex: null,
+            sourceGroupIndex: null,
+            dropIndicators: {
+                leftGroup: null,
+                rightGroup: null,
+                betweenGroups: null,
+                betweenGroupsRight: null,
+            },
+        });
 
-            setTabGroups((prevGroups) => {
-                const newGroups = [...prevGroups];
+        setTabGroups(prevGroups => {
+            const newGroups = [...prevGroups];
 
-                if (targetGroupIndex !== undefined) {
-                    // Moving between groups
-                    const [sourceTab, dropIndex] = newTabs;
-                    const sourceGroup = [...prevGroups[sourceGroupIndex]];
-
-                    // Find and remove the tab from source group
-                    const sourceTabIndex = sourceGroup.findIndex((tab) => tab.key === sourceTab.key);
-
-                    if (sourceTabIndex === -1) {
-                        debug("Move", "Source tab not found", sourceTab);
-                        return prevGroups;
-                    }
-
-                    // Get the actual tab object with all its properties
-                    const movedTab = sourceGroup[sourceTabIndex];
-                    sourceGroup.splice(sourceTabIndex, 1);
-
-                    // Handle empty source group
-                    if (sourceGroup.length === 0) {
-                        debug("Move", "Removing empty source group");
-                        newGroups.splice(sourceGroupIndex, 1);
-                        if (targetGroupIndex > sourceGroupIndex) {
-                            targetGroupIndex--;
-                        }
-                    } else {
-                        newGroups[sourceGroupIndex] = sourceGroup;
-                    }
-
-                    // Add to target group
-                    const targetGroup = [...(newGroups[targetGroupIndex] || [])];
-                    targetGroup.splice(dropIndex, 0, movedTab);
-                    newGroups[targetGroupIndex] = targetGroup;
-                } else {
-                    // Reordering within same group
-                    newGroups[sourceGroupIndex] = newTabs.map((tab) => {
-                        // Find the original tab object to preserve all properties
-                        const originalTab = prevGroups[sourceGroupIndex].find((t) => t.key === tab.key);
-                        return originalTab || tab;
-                    });
-                }
-
-                debug("Move", "Updated groups:", newGroups);
-                return newGroups;
-            });
-        },
-        [updateDragState]
-    );
-
-    /**
-     * Split a tab into a new tab group
-     * @param {Object} tabInfo - Information about the tab to split
-     * @param {number} sourceGroupIndex - Index of the group containing the tab
-     * @param {*} targetPosition - Where to place the new group
-     */
-    const handleTabSplit = useCallback(
-        (tabInfo, sourceGroupIndex, targetPosition) => {
-            debug("tabSplit", "Starting split operation:", {
-                sourceGroupIndex,
-                targetPosition,
-                tabInfo: {
-                    type: tabInfo.type,
-                    key: tabInfo.key,
-                    component: tabInfo.component,
-                },
-            });
-
-            // Reset drag states
-            updateDragState({
-                draggedTab: null,
-                draggedTabIndex: null,
-                sourceGroupIndex: null,
-                dropIndicators: {
-                    leftGroup: null,
-                    rightGroup: null,
-                    betweenGroups: null,
-                    betweenGroupsRight: null,
-                },
-            });
-
-            setTabGroups((prevGroups) => {
-                const newGroups = [...prevGroups];
+            if (targetGroupIndex !== undefined) {
+                // Moving between groups
+                const [sourceTab, dropIndex] = newTabs;
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
 
-                debug("tabSplit", "Finding source tab in group:", {
-                    sourceGroupSize: sourceGroup.length,
-                    searchType: tabInfo.type,
-                    availableTypes: sourceGroup.map((tab) => ({
-                        name: tab.type.name,
-                        component: tab.type.component?.name,
-                    })),
-                });
-
-                // Try to find the source tab using multiple methods
-                let sourceTab = null;
-
-                // 1. Try to find by exact type name match
-                sourceTab = sourceGroup.find((tab) => tab.type.name === tabInfo.type);
-
-                // 2. If not found and we have a global reference, try to find by key
-                if (!sourceTab && window.__lastDraggedTabComponent) {
-                    debug("tabSplit", "Trying to find tab by key from global reference");
-                    sourceTab = sourceGroup.find((tab) => tab.key === window.__lastDraggedTabComponent.key);
-                }
-
-                // 3. If still not found, try to find by component name
-                if (!sourceTab && tabInfo.component) {
-                    debug("tabSplit", "Trying to find tab by component name");
-                    sourceTab = sourceGroup.find((tab) => tab.type.component?.name === tabInfo.component);
-                }
-
-                if (!sourceTab) {
-                    debug("tabSplit", "Source tab not found");
+                // Find and remove the tab from source group
+                const sourceTabIndex = sourceGroup.findIndex(tab => tab.key === sourceTab.key);
+                if (sourceTabIndex === -1) {
+                    debug("tabManagement", "Source tab not found", sourceTab);
                     return prevGroups;
                 }
 
-                debug("tabSplit", "Found source tab:", {
-                    tabName: sourceTab.type.name,
-                    hasComponent: !!sourceTab.type.component,
-                    componentName: sourceTab.type.component?.name,
-                    key: sourceTab.key,
-                });
+                // Get the actual tab object with all its properties
+                const movedTab = sourceGroup[sourceTabIndex];
+                sourceGroup.splice(sourceTabIndex, 1);
 
-                // Remove from source group
-                sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
-
-                // Create new tab object preserving all properties
-                const newTab = {
-                    ...sourceTab,
-                    key: `${sourceTab.type.name}-${Date.now()}`,
-                    type: {
-                        ...sourceTab.type,
-                        name: sourceTab.type.name,
-                        component: sourceTab.type.component,
-                        minWidth: sourceTab.type.minWidth || 200,
-                    },
-                };
-
-                // Create new group with the copied tab
-                const newGroup = [newTab];
-
-                debug("tabSplit", "Created new tab:", {
-                    newTabType: newTab.type.name,
-                    hasComponent: !!newTab.type.component,
-                    componentName: newTab.type.component?.name,
-                    key: newTab.key,
-                });
-
+                // Handle empty source group
                 if (sourceGroup.length === 0) {
-                    debug("tabSplit", "Removing empty source group");
+                    debug("tabManagement", "Removing empty source group");
                     newGroups.splice(sourceGroupIndex, 1);
-                    if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
-                        targetPosition--;
+                    if (targetGroupIndex > sourceGroupIndex) {
+                        targetGroupIndex--;
                     }
                 } else {
                     newGroups[sourceGroupIndex] = sourceGroup;
                 }
 
-                // Insert new group at specified position
-                if (typeof targetPosition === "number") {
-                    debug("tabSplit", "Inserting at specific position:", targetPosition);
-                    newGroups.splice(targetPosition, 0, newGroup);
-                } else if (targetPosition === true) {
-                    debug("tabSplit", "Appending to end");
-                    newGroups.push(newGroup);
-                } else {
-                    debug("tabSplit", "Prepending to start");
-                    newGroups.unshift(newGroup);
-                }
-
-                debug("tabSplit", "Final group structure:", {
-                    groupCount: newGroups.length,
-                    groups: newGroups.map((g) =>
-                        g.map((t) => ({
-                            name: t.type.name,
-                            component: t.type.component?.name,
-                            key: t.key,
-                        }))
-                    ),
+                // Add to target group
+                const targetGroup = [...(newGroups[targetGroupIndex] || [])];
+                targetGroup.splice(dropIndex, 0, movedTab);
+                newGroups[targetGroupIndex] = targetGroup;
+            } else {
+                // Reordering within same group
+                newGroups[sourceGroupIndex] = newTabs.map(tab => {
+                    // Find the original tab object to preserve all properties
+                    return prevGroups[sourceGroupIndex].find(t => t.key === tab.key) || tab;
                 });
+            }
 
-                // Clean up global reference after successful split
-                delete window.__lastDraggedTabComponent;
+            debug("tabManagement", "Updated groups:", newGroups);
+            return newGroups;
+        });
+    }, [updateDragState]);
 
-                return newGroups;
+    /**
+     * Splits a tab into a new tab group
+     * @param {Tab} tabInfo - Information about the tab to split
+     * @param {number} sourceGroupIndex - Index of the group containing the tab
+     * @param {number|boolean} targetPosition - Where to place the new group
+     */
+    const handleTabSplit = useCallback((tabInfo, sourceGroupIndex, targetPosition) => {
+        debug("tabSplit", "Starting split operation", {
+            sourceGroupIndex,
+            targetPosition,
+            tabInfo: {
+                type: tabInfo.type,
+                key: tabInfo.key,
+            },
+        });
+
+        // Reset drag states
+        updateDragState({
+            draggedTab: null,
+            draggedTabIndex: null,
+            sourceGroupIndex: null,
+            dropIndicators: {
+                leftGroup: null,
+                rightGroup: null,
+                betweenGroups: null,
+                betweenGroupsRight: null,
+            },
+        });
+
+        setTabGroups(prevGroups => {
+            const newGroups = [...prevGroups];
+            const sourceGroup = [...prevGroups[sourceGroupIndex]];
+
+            // Find the source tab using multiple strategies
+            let sourceTab = findSourceTab(sourceGroup, tabInfo);
+            
+            if (!sourceTab) {
+                debug("tabSplit", "Source tab not found");
+                return prevGroups;
+            }
+
+            debug("tabSplit", "Found source tab:", {
+                tabName: sourceTab.type.name,
+                key: sourceTab.key,
             });
-        },
-        [updateDragState]
-    );
 
-    // Initialize flex basis when group count changes
+            // Remove from source group
+            sourceGroup.splice(sourceGroup.indexOf(sourceTab), 1);
+
+            // Create new tab object preserving all properties
+            const newTab = {
+                ...sourceTab,
+                key: `${sourceTab.type.name}-${Date.now()}`,
+                type: {
+                    ...sourceTab.type,
+                    name: sourceTab.type.name,
+                    component: sourceTab.type.component,
+                    minWidth: sourceTab.type.minWidth || 200,
+                },
+            };
+
+            // Create new group with the copied tab
+            const newGroup = [newTab];
+
+            // Handle empty source group
+            if (sourceGroup.length === 0) {
+                debug("tabSplit", "Removing empty source group");
+                newGroups.splice(sourceGroupIndex, 1);
+                if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
+                    targetPosition--;
+                }
+            } else {
+                newGroups[sourceGroupIndex] = sourceGroup;
+            }
+
+            // Insert new group at specified position
+            if (typeof targetPosition === "number") {
+                debug("tabSplit", "Inserting at specific position:", targetPosition);
+                newGroups.splice(targetPosition, 0, newGroup);
+            } else if (targetPosition === true) {
+                debug("tabSplit", "Appending to end");
+                newGroups.push(newGroup);
+            } else {
+                debug("tabSplit", "Prepending to start");
+                newGroups.unshift(newGroup);
+            }
+
+            // Clean up global reference if it exists
+            if (window.__lastDraggedTabComponent) {
+                delete window.__lastDraggedTabComponent;
+            }
+
+            return newGroups;
+        });
+    }, [updateDragState]);
+
+    /**
+     * Helper function to find a source tab using multiple strategies
+     * @param {Array<Tab>} sourceGroup - The group to search in
+     * @param {Object} tabInfo - Information about the tab to find
+     * @returns {Tab|null} The found tab or null
+     */
+    const findSourceTab = (sourceGroup, tabInfo) => {
+        // 1. Try to find by exact type name match
+        let sourceTab = sourceGroup.find(tab => tab.type.name === tabInfo.type);
+
+        // 2. If not found and we have a global reference, try to find by key
+        if (!sourceTab && window.__lastDraggedTabComponent) {
+            sourceTab = sourceGroup.find(tab => tab.key === window.__lastDraggedTabComponent.key);
+        }
+
+        // 3. If still not found, try to find by component name
+        if (!sourceTab && tabInfo.component) {
+            sourceTab = sourceGroup.find(tab => tab.type.component?.name === tabInfo.component);
+        }
+
+        return sourceTab;
+    };
+
+    /**
+     * Initializes flex basis when group count changes
+     */
     useEffect(() => {
         // Early return if no change needed
         if (tabGroups.length === flexBasis.length) {
-            debug("FlexBasis", "No update needed", {
-                groupCount: tabGroups.length,
-            });
             return;
         }
 
         const groupCount = tabGroups.length;
-        debug("FlexBasis", "Updating widths", {
-            groupCount,
-        });
+        debug("tabManagement", "Updating widths", { groupCount });
 
         const defaultWidths = Array(groupCount).fill(`${100 / groupCount}%`);
         setFlexBasis(defaultWidths);
-
-        debug("FlexBasis", "Updated widths", { newWidths: defaultWidths });
     }, [tabGroups, flexBasis.length]);
 
     return {

@@ -4,16 +4,9 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, isInitialized } from "../firebaseConfig";
 import { clearShopCache } from "../components/pages/shopgenerator/utils/shopCacheUtils";
-import { debug, configureDebug } from "../utils/debugUtils";
+import { debug } from "../utils/debugUtils";
 
 const AuthContext = createContext();
-
-// Configure debug for auth module
-configureDebug({
-    areas: {
-        auth: false, // Set to true to enable debugging for auth
-    }
-});
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

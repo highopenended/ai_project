@@ -1,37 +1,38 @@
 import { db } from '../../../../firebaseConfig';
 import { collection, addDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { debug } from '../../../../utils/debugUtils';
 
 // Function to save or update shop data in Firebase
 export async function saveOrUpdateShopData(userId, shopData) {
-  console.log('Saving or updating shop data for user:', userId);
+  debug('shopGenerator', 'Saving or updating shop data for user', userId);
   try {
     const shopsRef = collection(db, `users/${userId}/shops`);
     if (shopData.id) {
       const shopDoc = doc(shopsRef, shopData.id);
       await setDoc(shopDoc, shopData);
-      console.log('Shop data updated with ID:', shopData.id);
+      debug('shopGenerator', 'Shop data updated with ID', shopData.id);
       return shopData.id;
     } else {
       const docRef = await addDoc(shopsRef, shopData);
-      console.log('Shop data saved with ID:', docRef.id);
+      debug('shopGenerator', 'Shop data saved with ID', docRef.id);
       return docRef.id;
     }
   } catch (error) {
-    console.error('Error saving or updating shop data:', error);
+    debug('shopGenerator', 'Error saving or updating shop data', error);
     throw error;
   }
 }
 
 // Function to load shop data from Firebase
 export async function loadShopData(userId) {
-  console.log('Loading shop data for user:', userId);
+  debug('shopGenerator', 'Loading shop data for user', userId);
   try {
     const shopsRef = collection(db, `users/${userId}/shops`);
     const querySnapshot = await getDocs(shopsRef);
     const shops = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return shops;
   } catch (error) {
-    console.error('Error loading shop data:', error);
+    debug('shopGenerator', 'Error loading shop data', error);
     throw error;
   }
 }
@@ -41,9 +42,9 @@ export async function deleteShopData(userId, shopId) {
   try {
     const shopDoc = doc(db, `users/${userId}/shops`, shopId);
     await deleteDoc(shopDoc);
-    console.log('Shop deleted with ID:', shopId);
+    debug('shopGenerator', 'Shop deleted with ID', shopId);
   } catch (error) {
-    console.error('Error deleting shop:', error);
+    debug('shopGenerator', 'Error deleting shop', error);
     throw error;
   }
 } 

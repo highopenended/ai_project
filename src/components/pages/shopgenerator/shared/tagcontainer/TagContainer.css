@@ -1,0 +1,33 @@
+
+
+.filter-grid-content {
+    max-height: 10rem;
+    overflow-y: auto;
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: #666 #333;
+    padding: 0.1rem;
+    border: 1px solid var(--dark-border-color);
+    background-color: var(--background-secondary);
+    border-radius: 0.5rem 0.5rem 0 0.25rem;
+    overscroll-behavior: contain;
+}
+
+/* For Webkit browsers (Chrome, Safari, etc.) */
+.filter-grid-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.filter-grid-content::-webkit-scrollbar-track {
+    background: #333;
+    border-radius: 4px;
+}
+
+.filter-grid-content::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 4px;
+}
+
+.filter-grid-content::-webkit-scrollbar-thumb:hover {
+    background: #888;
+} 

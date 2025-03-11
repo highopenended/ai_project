@@ -1,16 +1,9 @@
 // eslint-disable-next-line no-unused-vars
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { debug, configureDebug } from "../utils/debugUtils";
+import { debug } from "../utils/debugUtils";
 import PropTypes from 'prop-types';
-
-// Configure debug for protected route component
-configureDebug({
-    areas: {
-        routing: false, // Set to true to enable debugging for routing
-    }
-});
 
 /**
  * Protected route component that redirects to login if user is not authenticated
