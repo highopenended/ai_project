@@ -4,11 +4,6 @@ import { useAuth } from "../../../context/AuthContext";
 import { useItemData } from "../../../context/itemData";
 import "./ShopGenerator.css";
 import TabContainer from "./shared/tab/TabContainer";
-import Tab_Parameters from "./tabs/tab_parameters/Tab_Parameters";
-import Tab_InventoryTable from "./tabs/tab_inventorytable/Tab_InventoryTable";
-import Tab_ChooseShop from "./tabs/tab_chooseshop/Tab_ChooseShop";
-import Tab_ShopDetails from "./tabs/tab_shopdetails/Tab_ShopDetails";
-import Tab_AiAssistant from "./tabs/tab_aiassistant/Tab_AiAssistant";
 import { useSorting } from "./utils/sortingUtils";
 import defaultShopData from "./utils/shopData";
 import { useShopOperations } from "./hooks/useShopOperations";
@@ -17,7 +12,7 @@ import { useShopFilters } from "./hooks/useShopFilters";
 import { useShopSnapshot } from "./hooks/useShopSnapshot";
 import { useTabManagement } from "./hooks/useTabManagement";
 import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
-import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE } from "./utils/tabConstants";
+import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE, TAB_TYPES } from "./utils/tabConstants";
 import { useTabRegistry } from './hooks/useTabRegistry';
 import { shouldRefreshCache, setLastRefreshTimestamp, clearShopCache } from './utils/shopCacheUtils';
 
@@ -48,15 +43,6 @@ const debug = (area, message, data = "") => {
 };
 
 const STORAGE_KEY = "tabGroupsState";
-
-// Add a mapping of valid tab types
-const TAB_TYPES = {
-    [TAB_TYPE_IDENTIFIERS.PARAMETERS]: Tab_Parameters,
-    [TAB_TYPE_IDENTIFIERS.INVENTORY]: Tab_InventoryTable,
-    [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: Tab_ChooseShop,
-    [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: Tab_ShopDetails,
-    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant,
-};
 
 /**
  * Validates if the state has a valid structure and tab types
