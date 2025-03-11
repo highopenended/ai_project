@@ -20,6 +20,18 @@ export const TAB_TYPES = {
     [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: Tab_AiAssistant,
 };
 
+/**
+ * Maps tab types to their additional CSS class names
+ * Used to apply specific styling based on the active tab
+ */
+export const TAB_CLASS_NAMES = {
+    [TAB_TYPE_IDENTIFIERS.PARAMETERS]: "",
+    [TAB_TYPE_IDENTIFIERS.INVENTORY]: "no-scrollbar",
+    [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: "",
+    [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: "",
+    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: "",
+};
+
 export const DEFAULT_TAB_STATE = {
     groups: [
         [{ type: TAB_TYPE_IDENTIFIERS.PARAMETERS, key: "Tab_Parameters-0" }],

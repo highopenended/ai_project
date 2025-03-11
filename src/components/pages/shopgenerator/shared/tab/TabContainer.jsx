@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { debug } from '../../../../../utils/debugUtils';
+import './TabContainer.css';
+import { TAB_CLASS_NAMES } from '../../utils/tabConstants.js';
 
 import TabHeader from './TabHeader.jsx';
-import './TabContainer.css';
 
 /**
  * Custom hook to debounce function calls.
@@ -467,20 +468,8 @@ function TabContainer({
         document.addEventListener('mouseup', handleMouseUp);
     };
 
-    // Add additional class names based on the active tab (ex. no-scrollbar for inventory table)
-    let additionalClassNames = "";
-    switch (activeTabName) {
-      case "Tab_Parameters":
-        break;
-      case "Tab_InventoryTable":
-        additionalClassNames = "no-scrollbar";
-        break;
-      case "Tab_ShopDetails":
-        break;
-      default:
-        additionalClassNames = "";
-        break;
-    }
+    // Get additional class names from the constants file based on active tab
+    const additionalClassNames = activeTabName ? TAB_CLASS_NAMES[activeTabName] || "" : "";
     
     return (
         <div 
