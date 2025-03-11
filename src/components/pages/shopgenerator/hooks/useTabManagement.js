@@ -102,12 +102,10 @@ export const useTabManagement = (initialGroups, initialWidths) => {
     }, []);
 
     /**
-     * Resets all drag and drop state
+     * Resets all drag state properties
      */
-    const handleDragEnd = useCallback(() => {
-        debug("tabManagement", "Ending drag/resize operation");
+    const resetDragState = useCallback(() => {
         updateDragState({
-            isResizing: false,
             draggedTab: null,
             draggedTabIndex: null,
             sourceGroupIndex: null,
@@ -119,6 +117,15 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             },
         });
     }, [updateDragState]);
+
+    /**
+     * Resets all drag and drop state
+     */
+    const handleDragEnd = useCallback(() => {
+        debug("tabManagement", "Ending drag/resize operation");
+        resetDragState();
+        updateDragState({ isResizing: false });
+    }, [resetDragState, updateDragState]);
 
     /**
      * Handles resizing of tab groups with throttling
@@ -253,17 +260,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         debug("tabManagement", "Moving tab", { sourceGroupIndex, targetGroupIndex });
 
         // Reset drag states
-        updateDragState({
-            draggedTab: null,
-            draggedTabIndex: null,
-            sourceGroupIndex: null,
-            dropIndicators: {
-                leftGroup: null,
-                rightGroup: null,
-                betweenGroups: null,
-                betweenGroupsRight: null,
-            },
-        });
+        resetDragState();
 
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
@@ -310,7 +307,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             debug("tabManagement", "Updated groups:", newGroups);
             return newGroups;
         });
-    }, [updateDragState]);
+    }, [resetDragState]);
 
     /**
      * Splits a tab into a new tab group
@@ -329,17 +326,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         });
 
         // Reset drag states
-        updateDragState({
-            draggedTab: null,
-            draggedTabIndex: null,
-            sourceGroupIndex: null,
-            dropIndicators: {
-                leftGroup: null,
-                rightGroup: null,
-                betweenGroups: null,
-                betweenGroupsRight: null,
-            },
-        });
+        resetDragState();
 
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
@@ -406,7 +393,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
             return newGroups;
         });
-    }, [updateDragState]);
+    }, [resetDragState]);
 
     /**
      * Helper function to find a source tab using multiple strategies

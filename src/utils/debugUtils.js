@@ -3,7 +3,7 @@ const DEBUG_CONFIG = {
   enabled: true, // Master debug switch
   areas: {
     // Core application areas
-    tabManagement: true,
+    tabManagement: false,
     tabSplit: false,
     initialization: false,
     stateSync: false,
