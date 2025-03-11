@@ -17,9 +17,9 @@ import TabHeader from './TabHeader.jsx';
  * 
  * State Management:
  * - activeTab: Currently selected tab in this group
- * - dropIndex: Current position where a dragged tab would be inserted
+ * - dragState.dropIndex: Current position where a dragged tab would be inserted
  * - tabRefs: References to tab DOM elements for position calculations
- * - originalPositions: Cached positions of tabs when drag starts
+ * - originalPositionsRef: Cached positions of tabs when drag starts
  * 
  * Key Behaviors:
  * 1. Drag Start: Caches original positions and sets up drag data
@@ -28,7 +28,7 @@ import TabHeader from './TabHeader.jsx';
  * 4. Drag End: Cleans up state and visual indicators
  * 
  * Common Issues & Solutions:
- * 1. Tabs jumping during drag: Check originalPositions and getTabStyle
+ * 1. Tabs jumping during drag: Check originalPositionsRef and getTabStyle
  * 2. Incorrect drop positions: Verify dropIndex calculations
  * 3. Visual glitches: Ensure proper cleanup in handleDragEnd
  * 4. State inconsistencies: Check parent-child state sync
@@ -71,7 +71,7 @@ function TabContainer({
         handleDragEnd,
         getTabStyle
     } = useTabDragAndDrop({
-        tabs,
+        tabGroup: tabs,
         groupIndex,
         onTabMove,
         onTabSplit,

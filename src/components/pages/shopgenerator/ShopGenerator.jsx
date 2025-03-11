@@ -341,7 +341,10 @@ function ShopGenerator() {
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
-    } = useTabManagement(tabElements, tabStructure.widths);
+    } = useTabManagement({
+        initialTabGroups: tabElements,
+        initialGroupWidths: tabStructure.widths
+    });
 
     // Save state whenever tab groups or widths change
     useEffect(() => {

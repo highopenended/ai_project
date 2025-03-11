@@ -12,7 +12,7 @@ import useDebounce from '../../../../hooks/useDebounce';
  * - Visual feedback during drag operations
  * 
  * @param {Object} params - Hook parameters
- * @param {Array} params.tabs - Array of tab objects in the group
+ * @param {Array} params.tabGroup - Array of tab objects in the group
  * @param {number} params.groupIndex - Index of the current tab group
  * @param {Function} params.onTabMove - Callback for tab movement
  * @param {Function} params.onTabSplit - Callback for tab splitting
@@ -25,26 +25,49 @@ import useDebounce from '../../../../hooks/useDebounce';
  * @returns {Object} Drag and drop handlers and state
  */
 function useTabDragAndDrop({
-  tabs,
+  tabGroup,
   groupIndex,
   onTabMove,
   onTabSplit,
-  onDragStart: parentOnDragStart,
-  onDragEnd: parentOnDragEnd,
+  onDragStart,
+  onDragEnd,
   onDropIndicatorChange,
   dropIndicators,
   tabRefs,
   edgeThreshold = 80
 }) {
-  // State management
-  const [dropIndex, setDropIndex] = useState(null);
-  const originalPositions = useRef([]);
-  const edgeHoldTimeout = useRef(null);
+  // Consolidated state management
+  const [dragState, setDragState] = useState({
+    dropIndex: null,
+    lastUpdateTime: 0
+  });
+  
+  const originalPositionsRef = useRef([]);
+  const edgeHoldTimeoutRef = useRef(null);
 
   // Debounce indicator changes to prevent rapid updates
   const debouncedDropIndicatorChange = useDebounce((indicators) => {
     onDropIndicatorChange(indicators);
   }, 50);
+
+  /**
+   * Updates drag state with batched changes
+   * @param {Object} updates - State updates to apply
+   */
+  const handleDragStateUpdate = (updates) => {
+    setDragState(prev => ({ ...prev, ...updates }));
+    debug("tabManagement", "Updating drag state", updates);
+  };
+
+  /**
+   * Resets drag state properties
+   */
+  const handleDragStateReset = () => {
+    handleDragStateUpdate({
+      dropIndex: null,
+      lastUpdateTime: Date.now()
+    });
+  };
 
   /**
    * Initializes drag operation
@@ -68,7 +91,7 @@ function useTabDragAndDrop({
     window.__lastDraggedTabComponent = tab;
 
     const tabElements = Array.from(e.currentTarget.parentElement.children);
-    originalPositions.current = tabElements.map(tab => {
+    originalPositionsRef.current = tabElements.map(tab => {
       const rect = tab.getBoundingClientRect();
       return {
         left: rect.left,
@@ -78,7 +101,7 @@ function useTabDragAndDrop({
       };
     });
     
-    parentOnDragStart(tab, index);
+    onDragStart(tab, index);
     
     // Enhanced data transfer for production mode
     const tabData = {
@@ -108,18 +131,18 @@ function useTabDragAndDrop({
    * @returns {number} The calculated drop index
    */
   const calculateDropIndex = (relativeX, headerRect) => {
-    let dropIndex = tabs.length;
+    let newDropIndex = tabGroup.length;
     
-    if (originalPositions.current.length > 0) {
-      if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
-        dropIndex = 0;
+    if (originalPositionsRef.current.length > 0) {
+      if (relativeX < originalPositionsRef.current[0]?.center - headerRect.left) {
+        newDropIndex = 0;
       } else {
-        for (let i = 1; i < originalPositions.current.length; i++) {
-          const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
-          const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+        for (let i = 1; i < originalPositionsRef.current.length; i++) {
+          const prevCenter = originalPositionsRef.current[i - 1]?.center - headerRect.left;
+          const currentCenter = originalPositionsRef.current[i]?.center - headerRect.left;
           
           if (relativeX >= prevCenter && relativeX < currentCenter) {
-            dropIndex = i;
+            newDropIndex = i;
             break;
           }
         }
@@ -127,7 +150,7 @@ function useTabDragAndDrop({
     }
 
     // Ensure dropIndex doesn't exceed current group's length
-    return Math.min(dropIndex, tabs.length);
+    return Math.min(newDropIndex, tabGroup.length);
   };
 
   /**
@@ -182,12 +205,16 @@ function useTabDragAndDrop({
         const relativeX = mouseX - headerRect.left;
         let newDropIndex = calculateDropIndex(relativeX, headerRect);
         
-        if (dropIndex !== newDropIndex) {
-          setDropIndex(newDropIndex);
+        if (dragState.dropIndex !== newDropIndex) {
+          handleDragStateUpdate({
+            dropIndex: newDropIndex
+          });
         }
       } else {
         // Reset dropIndex when showing edge indicators
-        setDropIndex(null);
+        handleDragStateUpdate({
+          dropIndex: null
+        });
       }
     }
   };
@@ -210,9 +237,9 @@ function useTabDragAndDrop({
         betweenGroups: null,
         betweenGroupsRight: null
       });
-      if (edgeHoldTimeout.current) {
-        clearTimeout(edgeHoldTimeout.current);
-        edgeHoldTimeout.current = null;
+      if (edgeHoldTimeoutRef.current) {
+        clearTimeout(edgeHoldTimeoutRef.current);
+        edgeHoldTimeoutRef.current = null;
       }
     }
   };
@@ -332,13 +359,13 @@ function useTabDragAndDrop({
         onTabSplit(tabInfo, sourceGroupIndex, dropAction.targetPosition);
       }
       else if (dropAction.action === 'move') {
-        const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
+        const targetIndex = dragState.dropIndex !== null ? dragState.dropIndex : tabGroup.length;
         onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
       }
-      else if (dropAction.action === 'reorder' && sourceIndex !== dropIndex && dropIndex !== null) {
-        const newTabs = [...tabs];
+      else if (dropAction.action === 'reorder' && sourceIndex !== dragState.dropIndex && dragState.dropIndex !== null) {
+        const newTabs = [...tabGroup];
         const [movedTab] = newTabs.splice(sourceIndex, 1);
-        newTabs.splice(dropIndex, 0, movedTab);
+        newTabs.splice(dragState.dropIndex, 0, movedTab);
         onTabMove(newTabs, groupIndex);
         
         // Return the moved tab for the component to handle active tab updates
@@ -348,7 +375,7 @@ function useTabDragAndDrop({
       debug("tabManagement", "Error handling drop", err);
     }
 
-    setDropIndex(null);
+    handleDragStateReset();
     // Clean up global reference
     delete window.__lastDraggedTab;
     
@@ -361,11 +388,11 @@ function useTabDragAndDrop({
    */
   const handleDragEnd = () => {
     debug("tabManagement", "Ending drag operation");
-    setDropIndex(null);
-    parentOnDragEnd();
-    if (edgeHoldTimeout.current) {
-      clearTimeout(edgeHoldTimeout.current);
-      edgeHoldTimeout.current = null;
+    handleDragStateReset();
+    onDragEnd();
+    if (edgeHoldTimeoutRef.current) {
+      clearTimeout(edgeHoldTimeoutRef.current);
+      edgeHoldTimeoutRef.current = null;
     }
     delete window.__draggedTab;
   };
@@ -377,7 +404,7 @@ function useTabDragAndDrop({
    * @returns {boolean} True if this is the dragged tab
    */
   const isDraggedTab = (index, draggedTab) => {
-    return draggedTab?.key && tabs[index]?.key === draggedTab.key;
+    return draggedTab?.key && tabGroup[index]?.key === draggedTab.key;
   };
 
   /**
@@ -386,7 +413,7 @@ function useTabDragAndDrop({
    * @returns {boolean} True if the tab is in this group
    */
   const isTabInCurrentGroup = (tab) => {
-    return tabs.some(t => t.key === tab?.key);
+    return tabGroup.some(t => t.key === tab?.key);
   };
 
   /**
@@ -399,12 +426,12 @@ function useTabDragAndDrop({
     const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
     const tabWidth = draggedRect ? draggedRect.width : 0;
     
-    if (draggedTabIndex < dropIndex) {
-      if (index > draggedTabIndex && index <= dropIndex) {
+    if (draggedTabIndex < dragState.dropIndex) {
+      if (index > draggedTabIndex && index <= dragState.dropIndex) {
         return { transform: `translateX(-${tabWidth}px)` };
       }
-    } else if (draggedTabIndex > dropIndex) {
-      if (index >= dropIndex && index < draggedTabIndex) {
+    } else if (draggedTabIndex > dragState.dropIndex) {
+      if (index >= dragState.dropIndex && index < draggedTabIndex) {
         return { transform: `translateX(${tabWidth}px)` };
       }
     }
@@ -423,10 +450,10 @@ function useTabDragAndDrop({
    */
   const getTabStyle = (index, draggedTab, draggedTabIndex) => {
     // If we're not in a valid drag operation, return empty styles
-    if (draggedTabIndex === null || dropIndex === null || draggedTab === null) return {};
+    if (draggedTabIndex === null || dragState.dropIndex === null || draggedTab === null) return {};
     
     // Get the original positions of tabs in this group
-    const currentGroupTabs = originalPositions.current;
+    const currentGroupTabs = originalPositionsRef.current;
     if (!currentGroupTabs || currentGroupTabs.length === 0) return {};
     
     // Check if this tab is the one being dragged
@@ -446,7 +473,7 @@ function useTabDragAndDrop({
   };
 
   return {
-    dropIndex,
+    dropIndex: dragState.dropIndex,
     handleDragStart,
     handleDragOver,
     handleDragLeave,

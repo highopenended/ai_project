@@ -47,25 +47,30 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
  * content rendering, and navigation logic.
  *
  * @param {Object} params - The parameters for tab management
- * @param {Object} params.shopState - Current shop state
- * @param {Function} params.setShopState - Function to update shop state
- * @param {Object} params.filters - Current filter states
- * @param {Array} params.inventory - Current shop inventory
- * @param {Function} params.setInventory - Function to update inventory
- * @param {Function} params.handleSort - Function to handle inventory sorting
- * @param {Object} params.sortConfig - Current sort configuration
- * @param {boolean} params.isGenerating - Whether inventory generation is in progress
+ * @param {Array<Array<Tab>>} params.initialTabGroups - Initial tab groups configuration
+ * @param {Array<string>} params.initialGroupWidths - Initial widths for tab groups
  *
  * @returns {Object} Tab management handlers and state
- * @property {string} activeTab - Currently active tab
- * @property {Function} setActiveTab - Function to change active tab
- * @property {Object} tabContent - Content to render for current tab
- * @property {Function} handleTabChange - Handler for tab change events
+ * @property {Array<Array<Tab>>} tabGroups - Current tab groups configuration
+ * @property {Function} setTabGroups - Function to update tab groups
+ * @property {Array<string>} flexBasis - Current widths for tab groups
+ * @property {Function} setFlexBasis - Function to update group widths
+ * @property {boolean} isResizing - Whether a resize operation is in progress
+ * @property {Tab|null} draggedTab - Currently dragged tab
+ * @property {number|null} draggedTabIndex - Index of dragged tab
+ * @property {number|null} sourceGroupIndex - Group index of drag source
+ * @property {Object} dropIndicators - Visual indicators for drag operations
+ * @property {Function} handleTabMove - Handler for tab movement
+ * @property {Function} handleTabSplit - Handler for tab splitting
+ * @property {Function} handleResize - Handler for group resizing
+ * @property {Function} handleDragStart - Handler for drag start
+ * @property {Function} handleDragEnd - Handler for drag end
+ * @property {Function} handleDropIndicatorChange - Handler for drop indicator changes
  */
-export const useTabManagement = (initialGroups, initialWidths) => {
+export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     // Consolidated state management
-    const [tabGroups, setTabGroups] = useState(initialGroups);
-    const [flexBasis, setFlexBasis] = useState(initialWidths);
+    const [tabGroups, setTabGroups] = useState(initialTabGroups);
+    const [flexBasis, setFlexBasis] = useState(initialGroupWidths);
     const [dragState, setDragState] = useState({
         isResizing: false,
         draggedTab: null,
@@ -96,7 +101,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
      * Updates drag state with batched changes
      * @param {Object} updates - State updates to apply
      */
-    const updateDragState = useCallback((updates) => {
+    const handleDragStateUpdate = useCallback((updates) => {
         setDragState(prev => ({ ...prev, ...updates }));
         debug("tabManagement", "Updating drag state", updates);
     }, []);
@@ -104,8 +109,8 @@ export const useTabManagement = (initialGroups, initialWidths) => {
     /**
      * Resets all drag state properties
      */
-    const resetDragState = useCallback(() => {
-        updateDragState({
+    const handleDragStateReset = useCallback(() => {
+        handleDragStateUpdate({
             draggedTab: null,
             draggedTabIndex: null,
             sourceGroupIndex: null,
@@ -116,16 +121,16 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 betweenGroupsRight: null,
             },
         });
-    }, [updateDragState]);
+    }, [handleDragStateUpdate]);
 
     /**
      * Resets all drag and drop state
      */
     const handleDragEnd = useCallback(() => {
         debug("tabManagement", "Ending drag/resize operation");
-        resetDragState();
-        updateDragState({ isResizing: false });
-    }, [resetDragState, updateDragState]);
+        handleDragStateReset();
+        handleDragStateUpdate({ isResizing: false });
+    }, [handleDragStateReset, handleDragStateUpdate]);
 
     /**
      * Handles resizing of tab groups with throttling
@@ -157,7 +162,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         }
 
         // Update resize state
-        updateDragState({
+        handleDragStateUpdate({
             isResizing: true,
             lastResizeTime: now,
         });
@@ -193,7 +198,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             trackPerformance('tabManagement', 'Resize Operation', startMark);
             return newBasis;
         });
-    }, [tabGroups.length, dragState.lastResizeTime, getContainerWidth, updateDragState]);
+    }, [tabGroups.length, dragState.lastResizeTime, getContainerWidth, handleDragStateUpdate]);
 
     /**
      * Sets up global mouse event handlers for resize operations
@@ -233,22 +238,22 @@ export const useTabManagement = (initialGroups, initialWidths) => {
      */
     const handleDragStart = useCallback((tab, tabIndex, groupIndex) => {
         debug("tabManagement", "Starting drag", { tabIndex, groupIndex });
-        updateDragState({
+        handleDragStateUpdate({
             draggedTab: tab,
             draggedTabIndex: tabIndex,
             sourceGroupIndex: groupIndex,
         });
-    }, [updateDragState]);
+    }, [handleDragStateUpdate]);
 
     /**
      * Updates drop indicators during drag operations
      * @param {Object} indicators - New indicator states
      */
     const handleDropIndicatorChange = useCallback((indicators) => {
-        updateDragState({
+        handleDragStateUpdate({
             dropIndicators: { ...dragState.dropIndicators, ...indicators },
         });
-    }, [dragState.dropIndicators, updateDragState]);
+    }, [dragState.dropIndicators, handleDragStateUpdate]);
 
     /**
      * Handles moving tabs within and between groups
@@ -260,7 +265,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         debug("tabManagement", "Moving tab", { sourceGroupIndex, targetGroupIndex });
 
         // Reset drag states
-        resetDragState();
+        handleDragStateReset();
 
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
@@ -307,7 +312,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
             debug("tabManagement", "Updated groups:", newGroups);
             return newGroups;
         });
-    }, [resetDragState]);
+    }, [handleDragStateReset]);
 
     /**
      * Splits a tab into a new tab group
@@ -326,7 +331,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
         });
 
         // Reset drag states
-        resetDragState();
+        handleDragStateReset();
 
         setTabGroups(prevGroups => {
             const newGroups = [...prevGroups];
@@ -393,7 +398,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
             return newGroups;
         });
-    }, [resetDragState]);
+    }, [handleDragStateReset]);
 
     /**
      * Helper function to find a source tab using multiple strategies
