@@ -1,43 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { debug } from '../../../../../utils/debugUtils';
 import './TabContainer.css';
 import { TAB_CLASS_NAMES } from '../../utils/tabConstants.js';
+import useDebounce from '../../../../../hooks/useDebounce';
 
 import TabHeader from './TabHeader.jsx';
-
-/**
- * Custom hook to debounce function calls.
- * Prevents rapid-fire function execution by waiting for a pause in calls.
- * 
- * @param {Function} callback - The function to debounce
- * @param {number} delay - Delay in milliseconds before executing the function
- * @returns {Function} A debounced version of the callback
- */
-function useDebounce(callback, delay) {
-    const timeoutRef = useRef(null);
-
-    useEffect(() => {
-        // Cleanup on unmount
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
-    }, []);
-
-    const debouncedCallback = useCallback((...args) => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
-
-        timeoutRef.current = setTimeout(() => {
-            callback(...args);
-        }, delay);
-    }, [callback, delay]);
-
-    return debouncedCallback;
-}
 
 /**
  * TabContainer Component
@@ -456,28 +424,55 @@ function TabContainer({
      * @returns {Object} Style object for the tab
      */
     const getTabStyle = (index) => {
-        // Only hide the dragged tab in its original group
+        // If we're not in a valid drag operation, return empty styles
         if (draggedTabIndex === null || dropIndex === null || draggedTab === null) return {};
         
         // Get the original positions of tabs in this group
         const currentGroupTabs = originalPositions.current;
         if (!currentGroupTabs || currentGroupTabs.length === 0) return {};
         
-        // Only apply visibility:hidden in the source group where the drag started
-        if (draggedTab.key && tabs[index]?.key === draggedTab.key) {
+        // Check if this tab is the one being dragged
+        if (isDraggedTab(index)) {
             return { visibility: 'hidden' };
         }
         
+        // Check if we have a valid tab element reference
         const tabElement = tabRefs.current[index];
         if (!tabElement) return {};
         
+        // Only apply transforms if the dragged tab is in this group
+        if (!isTabInCurrentGroup(draggedTab)) return {};
+        
+        // Calculate transform for tab position adjustment
+        return calculateTabTransform(index);
+    };
+
+    /**
+     * Checks if the tab at the given index is the one being dragged
+     * @param {number} index - Index of the tab to check
+     * @returns {boolean} True if this is the dragged tab
+     */
+    const isDraggedTab = (index) => {
+        return draggedTab.key && tabs[index]?.key === draggedTab.key;
+    };
+
+    /**
+     * Checks if the given tab is in the current group
+     * @param {Object} tab - The tab to check
+     * @returns {boolean} True if the tab is in this group
+     */
+    const isTabInCurrentGroup = (tab) => {
+        return tabs.some(t => t.key === tab.key);
+    };
+
+    /**
+     * Calculates the transform style for a tab during drag
+     * @param {number} index - Index of the tab
+     * @returns {Object} Style object with transform property
+     */
+    const calculateTabTransform = (index) => {
         const draggedRect = tabRefs.current[draggedTabIndex]?.getBoundingClientRect();
         const tabWidth = draggedRect ? draggedRect.width : 0;
-        
-        // Only move tabs if they're in the same group as the dragged tab
-        const isDraggedTabInThisGroup = tabs.some(tab => tab.key === draggedTab.key);
-        
-        if (!isDraggedTabInThisGroup) return {};
         
         if (draggedTabIndex < dropIndex) {
             if (index > draggedTabIndex && index <= dropIndex) {
