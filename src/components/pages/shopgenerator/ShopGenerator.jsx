@@ -15,32 +15,18 @@ import { useInventoryGeneration } from "./hooks/useInventoryGeneration";
 import { TAB_TYPE_IDENTIFIERS, DEFAULT_TAB_STATE, TAB_TYPES } from "./utils/tabConstants";
 import { useTabRegistry } from './hooks/useTabRegistry';
 import { shouldRefreshCache, setLastRefreshTimestamp, clearShopCache } from './utils/shopCacheUtils';
+import { debug, configureDebug } from '../../../utils/debugUtils';
 
-// Debug configuration
-const DEBUG_CONFIG = {
+// Configure debug for this component
+configureDebug({
     enabled: false, // Master debug switch
     areas: {
         initialization: false,
         tabManagement: false,
         stateSync: false,
         tabCreation: false,
-    },
-};
-
-// Debug logger
-const debug = (area, message, data = "") => {
-    if (!DEBUG_CONFIG.enabled || !DEBUG_CONFIG.areas[area]) return;
-    const timestamp = performance.now().toFixed(2);
-    const prefix =
-        {
-            initialization: "🚀 [Init]",
-            tabManagement: "📑 [Tabs]",
-            stateSync: "🔄 [Sync]",
-            tabCreation: "🏗️ [Create]",
-        }[area] || "🔧 [Debug]";
-
-    console.log(`${prefix} [${timestamp}ms] ${message}`, data ? data : "");
-};
+    }
+});
 
 const STORAGE_KEY = "tabGroupsState";
 
