@@ -231,26 +231,7 @@ function TabContainer({
             if (!Object.values(newIndicators).some(val => val !== null)) {
                 // Calculate drop index using originalPositions for smooth animations
                 const relativeX = mouseX - headerRect.left;
-                let newDropIndex = tabs.length;
-                
-                if (originalPositions.current.length > 0) {
-                    if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
-                        newDropIndex = 0;
-                    } else {
-                        for (let i = 1; i < originalPositions.current.length; i++) {
-                            const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
-                            const currentCenter = originalPositions.current[i]?.center - headerRect.left;
-                            
-                            if (relativeX >= prevCenter && relativeX < currentCenter) {
-                                newDropIndex = i;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                // Ensure dropIndex doesn't exceed current group's length
-                newDropIndex = Math.min(newDropIndex, tabs.length);
+                let newDropIndex = calculateDropIndex(relativeX, headerRect);
                 
                 if (dropIndex !== newDropIndex) {
                     setDropIndex(newDropIndex);
@@ -260,6 +241,35 @@ function TabContainer({
                 setDropIndex(null);
             }
         }
+    };
+
+    /**
+     * Calculates the drop index based on mouse position
+     * @param {number} relativeX - Mouse X position relative to header
+     * @param {DOMRect} headerRect - Bounding rectangle of the header
+     * @returns {number} The calculated drop index
+     */
+    const calculateDropIndex = (relativeX, headerRect) => {
+        let dropIndex = tabs.length;
+        
+        if (originalPositions.current.length > 0) {
+            if (relativeX < originalPositions.current[0]?.center - headerRect.left) {
+                dropIndex = 0;
+            } else {
+                for (let i = 1; i < originalPositions.current.length; i++) {
+                    const prevCenter = originalPositions.current[i - 1]?.center - headerRect.left;
+                    const currentCenter = originalPositions.current[i]?.center - headerRect.left;
+                    
+                    if (relativeX >= prevCenter && relativeX < currentCenter) {
+                        dropIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Ensure dropIndex doesn't exceed current group's length
+        return Math.min(dropIndex, tabs.length);
     };
 
     const handleDragLeave = (e) => {
@@ -284,6 +294,63 @@ function TabContainer({
                 clearTimeout(edgeHoldTimeout.current);
                 edgeHoldTimeout.current = null;
             }
+        }
+    };
+
+    /**
+     * Determines what action to take based on drop indicators
+     * @param {Object} tabInfo - Information about the tab being dropped
+     * @param {number} sourceGroupIndex - Index of the group containing the tab
+     * @param {Object} indicators - Current drop indicators
+     * @returns {Object} Action to take and associated data
+     */
+    const determineDropAction = (tabInfo, sourceGroupIndex, indicators) => {
+        const wasShowingLeftIndicator = indicators.leftGroup === groupIndex;
+        const wasShowingRightIndicator = indicators.rightGroup === groupIndex;
+        const wasShowingBetweenIndicator = indicators.betweenGroups === groupIndex;
+        const wasShowingBetweenIndicatorRight = indicators.betweenGroupsRight === groupIndex;
+        
+        debug("tabManagement", "Determining drop action", {
+            wasShowingLeftIndicator,
+            wasShowingRightIndicator,
+            wasShowingBetweenIndicator,
+            wasShowingBetweenIndicatorRight,
+            groupIndex,
+            sourceGroupIndex
+        });
+        
+        if (wasShowingBetweenIndicator) {
+            return {
+                action: 'split',
+                targetPosition: groupIndex,
+                description: "Splitting tab between groups (left)"
+            };
+        }
+        else if (wasShowingBetweenIndicatorRight) {
+            return {
+                action: 'split',
+                targetPosition: groupIndex + 1,
+                description: "Splitting tab between groups (right)"
+            };
+        }
+        else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
+            return {
+                action: 'split',
+                targetPosition: wasShowingRightIndicator, // true for right, false for left
+                description: `Splitting tab to ${wasShowingRightIndicator ? 'right' : 'left'} edge`
+            };
+        }
+        else if (sourceGroupIndex !== groupIndex) {
+            return {
+                action: 'move',
+                description: "Moving tab between groups"
+            };
+        }
+        else {
+            return {
+                action: 'reorder',
+                description: "Reordering within group"
+            };
         }
     };
 
@@ -328,20 +395,7 @@ function TabContainer({
                 return;
             }
 
-            const wasShowingLeftIndicator = dropIndicators.leftGroup === groupIndex;
-            const wasShowingRightIndicator = dropIndicators.rightGroup === groupIndex;
-            const wasShowingBetweenIndicator = dropIndicators.betweenGroups === groupIndex;
-            const wasShowingBetweenIndicatorRight = dropIndicators.betweenGroupsRight === groupIndex;
-            
-            debug("tabManagement", "Current indicators", {
-                wasShowingLeftIndicator,
-                wasShowingRightIndicator,
-                wasShowingBetweenIndicator,
-                wasShowingBetweenIndicatorRight,
-                groupIndex,
-                sourceGroupIndex
-            });
-            
+            // Reset drop indicators
             onDropIndicatorChange({
                 leftGroup: null,
                 rightGroup: null,
@@ -349,25 +403,19 @@ function TabContainer({
                 betweenGroupsRight: null
             });
             
-            if (wasShowingBetweenIndicator) {
-                debug("tabManagement", "Splitting tab between groups (left)");
-                onTabSplit(tabInfo, sourceGroupIndex, groupIndex);
+            // Determine what action to take based on indicators
+            const dropAction = determineDropAction(tabInfo, sourceGroupIndex, dropIndicators);
+            debug("tabManagement", `Executing drop action: ${dropAction.description}`);
+            
+            // Execute the appropriate action
+            if (dropAction.action === 'split') {
+                onTabSplit(tabInfo, sourceGroupIndex, dropAction.targetPosition);
             }
-            else if (wasShowingBetweenIndicatorRight) {
-                debug("tabManagement", "Splitting tab between groups (right)");
-                onTabSplit(tabInfo, sourceGroupIndex, groupIndex + 1);
-            }
-            else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-                debug("tabManagement", "Splitting tab to edge", { edge: wasShowingRightIndicator ? 'right' : 'left' });
-                onTabSplit(tabInfo, sourceGroupIndex, wasShowingRightIndicator);
-            }
-            else if (sourceGroupIndex !== groupIndex) {
-                debug("tabManagement", "Moving tab between groups");
+            else if (dropAction.action === 'move') {
                 const targetIndex = dropIndex !== null ? dropIndex : tabs.length;
                 onTabMove([draggedTab, targetIndex], sourceGroupIndex, groupIndex);
             }
-            else if (sourceIndex !== dropIndex && dropIndex !== null) {
-                debug("tabManagement", "Reordering within group");
+            else if (dropAction.action === 'reorder' && sourceIndex !== dropIndex && dropIndex !== null) {
                 const newTabs = [...tabs];
                 const [movedTab] = newTabs.splice(sourceIndex, 1);
                 newTabs.splice(dropIndex, 0, movedTab);
