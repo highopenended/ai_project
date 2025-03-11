@@ -1,9 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { debug, trackPerformance, createMark } from '../../../../utils/debugUtils';
-
-// Constants
-const MIN_WIDTH_PX = 200;
-const RESIZE_THROTTLE_MS = 16; // ~60fps
+import { useState, useCallback } from "react";
+import { debug } from '../../../../utils/debugUtils';
+import useTabResize from './useTabResize';
 
 /**
  * Tab Management System Documentation
@@ -70,9 +67,7 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
 export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     // Consolidated state management
     const [tabGroups, setTabGroups] = useState(initialTabGroups);
-    const [flexBasis, setFlexBasis] = useState(initialGroupWidths);
     const [dragState, setDragState] = useState({
-        isResizing: false,
         draggedTab: null,
         draggedTabIndex: null,
         sourceGroupIndex: null,
@@ -81,21 +76,20 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
             rightGroup: null,
             betweenGroups: null,
             betweenGroupsRight: null,
-        },
-        lastResizeTime: 0,
+        }
     });
 
-    // Resize tracking ref
-    const resizeRef = useRef({ active: false });
-
-    /**
-     * Gets the container width for resize calculations
-     * @returns {number} Width of the container in pixels
-     */
-    const getContainerWidth = useCallback(() => {
-        const container = document.querySelector(".shop-generator");
-        return container ? container.clientWidth : 0;
-    }, []);
+    // Use the tab resize hook
+    const {
+        flexBasis,
+        setFlexBasis,
+        isResizing,
+        handleResize,
+        handleResizeEnd
+    } = useTabResize({
+        initialGroupWidths,
+        tabGroupsLength: tabGroups.length
+    });
 
     /**
      * Updates drag state with batched changes
@@ -129,106 +123,8 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     const handleDragEnd = useCallback(() => {
         debug("tabManagement", "Ending drag/resize operation");
         handleDragStateReset();
-        handleDragStateUpdate({ isResizing: false });
-    }, [handleDragStateReset, handleDragStateUpdate]);
-
-    /**
-     * Handles resizing of tab groups with throttling
-     * @param {number} newWidth - New width in pixels
-     * @param {number} groupIndex - Index of the group being resized
-     */
-    const handleResize = useCallback((newWidth, groupIndex) => {
-        const startMark = createMark('tabManagement', 'Resize Operation');
-
-        // Validate inputs
-        if (groupIndex >= tabGroups.length - 1) {
-            debug("tabManagement", "Invalid group index for resize", { groupIndex });
-            return;
-        }
-
-        // Apply throttling
-        const now = Date.now();
-        if (now - dragState.lastResizeTime < RESIZE_THROTTLE_MS) {
-            return;
-        }
-
-        debug("tabManagement", "Processing resize", { groupIndex, newWidth });
-
-        // Get container width
-        const totalWidth = getContainerWidth();
-        if (!totalWidth) {
-            debug("tabManagement", "No container width available");
-            return;
-        }
-
-        // Update resize state
-        handleDragStateUpdate({
-            isResizing: true,
-            lastResizeTime: now,
-        });
-
-        // Calculate and apply new widths
-        setFlexBasis(prev => {
-            const newBasis = [...prev];
-            const minWidthPercent = (MIN_WIDTH_PX / totalWidth) * 100;
-
-            // Calculate new percentages
-            let currentPercent = Math.max((newWidth / totalWidth) * 100, minWidthPercent);
-            const remainingPercent = parseFloat(prev[groupIndex]) + parseFloat(prev[groupIndex + 1]);
-            const nextGroupPercent = remainingPercent - currentPercent;
-
-            // Ensure minimum width constraints
-            if (nextGroupPercent < minWidthPercent) {
-                debug("tabManagement", "Next group would be too small", {
-                    nextGroupPercent,
-                    minWidthPercent,
-                });
-                return prev;
-            }
-
-            // Apply new widths
-            newBasis[groupIndex] = `${currentPercent}%`;
-            newBasis[groupIndex + 1] = `${nextGroupPercent}%`;
-
-            debug("tabManagement", "Updated basis", {
-                current: currentPercent,
-                next: nextGroupPercent,
-            });
-
-            trackPerformance('tabManagement', 'Resize Operation', startMark);
-            return newBasis;
-        });
-    }, [tabGroups.length, dragState.lastResizeTime, getContainerWidth, handleDragStateUpdate]);
-
-    /**
-     * Sets up global mouse event handlers for resize operations
-     */
-    useEffect(() => {
-        const currentRef = resizeRef.current;
-
-        // Handle mouse up globally to end resize operations
-        const handleGlobalMouseUp = () => {
-            if (!currentRef.active) return;
-
-            debug("tabManagement", "Global mouse up detected");
-            handleDragEnd();
-            currentRef.active = false;
-        };
-
-        window.addEventListener("mouseup", handleGlobalMouseUp);
-
-        return () => {
-            window.removeEventListener("mouseup", handleGlobalMouseUp);
-        };
-    }, [handleDragEnd]);
-
-    /**
-     * Tracks resize state changes
-     */
-    useEffect(() => {
-        const currentRef = resizeRef.current;
-        currentRef.active = dragState.isResizing;
-    }, [dragState.isResizing]);
+        handleResizeEnd();
+    }, [handleDragStateReset, handleResizeEnd]);
 
     /**
      * Initiates tab drag operation
@@ -423,28 +319,12 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         return sourceTab;
     };
 
-    /**
-     * Initializes flex basis when group count changes
-     */
-    useEffect(() => {
-        // Early return if no change needed
-        if (tabGroups.length === flexBasis.length) {
-            return;
-        }
-
-        const groupCount = tabGroups.length;
-        debug("tabManagement", "Updating widths", { groupCount });
-
-        const defaultWidths = Array(groupCount).fill(`${100 / groupCount}%`);
-        setFlexBasis(defaultWidths);
-    }, [tabGroups, flexBasis.length]);
-
     return {
         tabGroups,
         setTabGroups,
         flexBasis,
         setFlexBasis,
-        isResizing: dragState.isResizing,
+        isResizing,
         draggedTab: dragState.draggedTab,
         draggedTabIndex: dragState.draggedTabIndex,
         sourceGroupIndex: dragState.sourceGroupIndex,
