@@ -5,6 +5,7 @@ import { debug, trackPerformance, createMark, configureDebug } from '../../../..
 configureDebug({
     areas: {
         tabManagement: false, // Set to true to enable debugging for this module
+        tabSplit: false, // For tab splitting operations
     }
 });
 
@@ -370,30 +371,14 @@ export const useTabManagement = (initialGroups, initialWidths) => {
     );
 
     /**
-     * Creates a new group by splitting a tab from an existing group
-     *
+     * Split a tab into a new tab group
      * @param {Object} tabInfo - Information about the tab to split
-     * @param {number} sourceGroupIndex - Index of the group to split from
-     * @param {boolean|number} targetPosition - Where to insert new group
-     *
-     * Split Behaviors:
-     * 1. true: Append new group at end
-     * 2. false: Prepend new group at start
-     * 3. number: Insert at specific position
-     *
-     * State Handling:
-     * - Preserves complete tab object with all properties
-     * - Maintains component references and state
-     * - Updates group structure without affecting other tabs
-     *
-     * Note for Production Mode:
-     * - Ensure tabInfo contains complete component reference
-     * - Verify tab.type includes both name and component
-     * - Check targetPosition is properly normalized
+     * @param {number} sourceGroupIndex - Index of the group containing the tab
+     * @param {*} targetPosition - Where to place the new group
      */
     const handleTabSplit = useCallback(
         (tabInfo, sourceGroupIndex, targetPosition) => {
-            console.log("[Split] Starting split operation:", {
+            debug("tabSplit", "Starting split operation:", {
                 sourceGroupIndex,
                 targetPosition,
                 tabInfo: {
@@ -420,7 +405,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 const newGroups = [...prevGroups];
                 const sourceGroup = [...prevGroups[sourceGroupIndex]];
 
-                console.log("[Split] Finding source tab in group:", {
+                debug("tabSplit", "Finding source tab in group:", {
                     sourceGroupSize: sourceGroup.length,
                     searchType: tabInfo.type,
                     availableTypes: sourceGroup.map((tab) => ({
@@ -437,30 +422,22 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
                 // 2. If not found and we have a global reference, try to find by key
                 if (!sourceTab && window.__lastDraggedTabComponent) {
-                    console.log("[Split] Trying to find tab by key from global reference");
+                    debug("tabSplit", "Trying to find tab by key from global reference");
                     sourceTab = sourceGroup.find((tab) => tab.key === window.__lastDraggedTabComponent.key);
                 }
 
                 // 3. If still not found, try to find by component name
                 if (!sourceTab && tabInfo.component) {
-                    console.log("[Split] Trying to find tab by component name");
+                    debug("tabSplit", "Trying to find tab by component name");
                     sourceTab = sourceGroup.find((tab) => tab.type.component?.name === tabInfo.component);
                 }
 
                 if (!sourceTab) {
-                    console.warn("[Split] Source tab not found:", {
-                        searchedType: tabInfo.type,
-                        searchedComponent: tabInfo.component,
-                        availableTabs: sourceGroup.map((t) => ({
-                            name: t.type.name,
-                            component: t.type.component?.name,
-                            key: t.key,
-                        })),
-                    });
+                    debug("tabSplit", "Source tab not found");
                     return prevGroups;
                 }
 
-                console.log("[Split] Found source tab:", {
+                debug("tabSplit", "Found source tab:", {
                     tabName: sourceTab.type.name,
                     hasComponent: !!sourceTab.type.component,
                     componentName: sourceTab.type.component?.name,
@@ -485,7 +462,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 // Create new group with the copied tab
                 const newGroup = [newTab];
 
-                console.log("[Split] Created new tab:", {
+                debug("tabSplit", "Created new tab:", {
                     newTabType: newTab.type.name,
                     hasComponent: !!newTab.type.component,
                     componentName: newTab.type.component?.name,
@@ -493,7 +470,7 @@ export const useTabManagement = (initialGroups, initialWidths) => {
                 });
 
                 if (sourceGroup.length === 0) {
-                    console.log("[Split] Removing empty source group");
+                    debug("tabSplit", "Removing empty source group");
                     newGroups.splice(sourceGroupIndex, 1);
                     if (typeof targetPosition === "number" && targetPosition > sourceGroupIndex) {
                         targetPosition--;
@@ -504,17 +481,17 @@ export const useTabManagement = (initialGroups, initialWidths) => {
 
                 // Insert new group at specified position
                 if (typeof targetPosition === "number") {
-                    console.log("[Split] Inserting at specific position:", targetPosition);
+                    debug("tabSplit", "Inserting at specific position:", targetPosition);
                     newGroups.splice(targetPosition, 0, newGroup);
                 } else if (targetPosition === true) {
-                    console.log("[Split] Appending to end");
+                    debug("tabSplit", "Appending to end");
                     newGroups.push(newGroup);
                 } else {
-                    console.log("[Split] Prepending to start");
+                    debug("tabSplit", "Prepending to start");
                     newGroups.unshift(newGroup);
                 }
 
-                console.log("[Split] Final group structure:", {
+                debug("tabSplit", "Final group structure:", {
                     groupCount: newGroups.length,
                     groups: newGroups.map((g) =>
                         g.map((t) => ({

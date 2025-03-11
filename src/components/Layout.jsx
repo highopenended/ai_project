@@ -5,32 +5,32 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import ChatHistory from "./pages/home/history/ChatHistory";
 import '../styles/Layout.css';
+import { debug, configureDebug } from "../utils/debugUtils";
+
+// Configure debug for layout component
+configureDebug({
+    areas: {
+        layout: false, // Set to true to enable debugging for layout
+    }
+});
 
 /**
- * Layout Component
- * 
- * Main layout component that provides the application structure.
- * Handles the top navigation bar and sidebar layout when authenticated.
- * 
- * Features:
- * - Conditional rendering based on authentication state
- * - Navigation links for Login/Home/Shop Generator
- * - Logout functionality
- * - Chat history sidebar only for Home page
+ * Main layout component for the application
+ * Provides navigation, header, footer, and content area
  */
 function Layout() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const isHomePage = location.pathname === '/home';
+    const isHomePage = location.pathname === "/";
 
     const handleLogout = async () => {
         try {
             await signOut(auth);
-            console.log("User logged out");
-            navigate("/")
+            debug("layout", "User logged out");
+            navigate("/"); // Navigate to home page after logout
         } catch (error) {
-            console.error("Error logging out:", error);
+            debug("layout", "Error logging out:", error);
         }
     };
 

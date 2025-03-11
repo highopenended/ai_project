@@ -4,22 +4,16 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, isInitialized } from "../firebaseConfig";
 import { clearShopCache } from "../components/pages/shopgenerator/utils/shopCacheUtils";
+import { debug, configureDebug } from "../utils/debugUtils";
 
 const AuthContext = createContext();
 
-// Simple debug logger
-/* Commented out to fix linter warning
-const log = (area, message, data = '') => {
-    const prefix = '🔐 [Auth]';
-    performance.mark(`${area}-start`);
-    
-    // Always log to console
-    console.log(`${prefix} [${area}] ${message}`, data);
-    
-    performance.mark(`${area}-end`);
-    performance.measure(`Auth ${area}`, `${area}-start`, `${area}-end`);
-};
-*/
+// Configure debug for auth module
+configureDebug({
+    areas: {
+        auth: false, // Set to true to enable debugging for auth
+    }
+});
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
@@ -31,22 +25,22 @@ export const AuthProvider = ({ children }) => {
         loading: true,
         initialized: false,
         error: null,
-        debugMessages: [] // Store debug messages for display
+        debugMessages: []
     });
 
-    // Add debug message to state
+    // Add a debug message to the state
     const addDebugMessage = (message) => {
         setAuthState(prev => ({
             ...prev,
             debugMessages: [...prev.debugMessages, {
-                time: new Date().toLocaleTimeString(),
+                timestamp: new Date().toISOString(),
                 message
             }].slice(-5) // Keep last 5 messages
         }));
     };
 
     useEffect(() => {
-        // log('Init', '🚀 Starting auth initialization');
+        debug('auth', '🚀 Starting auth initialization');
         addDebugMessage('Starting auth initialization');
         
         let isMounted = true;
@@ -55,29 +49,35 @@ export const AuthProvider = ({ children }) => {
 
         const initializeAuth = async () => {
             try {
-                // log('Init', '⌛ Waiting for Firebase');
+                debug('auth', '⌛ Waiting for Firebase');
                 addDebugMessage('Waiting for Firebase');
-                await isInitialized;
+                
+                // Wait for Firebase to initialize
+                if (!isInitialized) {
+                    setTimeout(initializeAuth, 100);
+                    return;
+                }
                 
                 if (!isMounted) {
-                    // log('Cleanup', '🛑 Unmounted during init');
+                    debug('auth', '🛑 Unmounted during init');
                     return;
                 }
 
-                // log('Init', '√ Firebase ready');
+                debug('auth', '√ Firebase ready');
                 addDebugMessage('Firebase initialized');
                 setAuthState(prev => ({ ...prev, initialized: true }));
 
-                unsubscribeAuth = onAuthStateChanged(auth, 
+                unsubscribeAuth = onAuthStateChanged(
+                    auth,
                     (user) => {
                         if (!isMounted) return;
                         const status = user ? '👤 User logged in' : '❌ No user';
-                        // log('Auth', status, user?.email);
+                        debug('auth', status, user?.email);
                         addDebugMessage(status + (user ? `: ${user.email}` : ''));
                         
                         // Check if user logged out
                         if (previousUser && !user) {
-                            console.log('User logged out, clearing shop cache');
+                            debug('auth', 'User logged out, clearing shop cache');
                             clearShopCache(previousUser.uid);
                         }
                         
@@ -93,18 +93,19 @@ export const AuthProvider = ({ children }) => {
                     },
                     (error) => {
                         if (!isMounted) return;
-                        // log('Error', '💥 Auth error:', error);
-                        // addDebugMessage(`Error: ${error.message}`);
+                        debug('auth', '💥 Auth error:', error);
                         
                         setAuthState(prev => ({
                             ...prev,
                             error: error.message,
                             loading: false
                         }));
+                        
+                        addDebugMessage(`Error: ${error.message}`);
                     }
                 );
             } catch (error) {
-                // log('Error', '💥 Init error:', error);
+                debug('auth', '💥 Init error:', error);
                 addDebugMessage(`Init error: ${error.message}`);
                 
                 if (isMounted) {
@@ -120,8 +121,7 @@ export const AuthProvider = ({ children }) => {
         initializeAuth();
 
         return () => {
-            // log('Cleanup', '🧹 Cleaning up');
-            // addDebugMessage('Cleaning up auth');
+            debug('auth', '🧹 Cleaning up');
             isMounted = false;
             if (unsubscribeAuth) {
                 unsubscribeAuth();
@@ -129,53 +129,35 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
-
-
     if (authState.loading && !authState.error) {
-        // log('State', '⌛ Loading...');
         return (
             <>
-                {/* <div>Loading...</div>
-                <div style={debugStyle}>
-                    <div>🔄 Auth Status: Loading</div>
-                    {authState.debugMessages.map((msg, i) => (
-                        <div key={i}>{msg.time}: {msg.message}</div>
-                    ))}
-                </div> */}
+                {/* Loading state */}
+                <div data-testid="loading">Loading...</div>
             </>
         );
     }
     
-
     if (authState.error) {
-        // log('Error', '🚨 Error state:', authState.error);
         return (
             <>
-                {/* <div>Authentication Error: {authState.error}</div>
-                <div style={debugStyle}>
-                    <div>❌ Auth Status: Error</div>
-                    {authState.debugMessages.map((msg, i) => (
-                        <div key={i}>{msg.time}: {msg.message}</div>
-                    ))}
-                </div> */}
+                {/* Error state */}
+                <div data-testid="error">Error: {authState.error}</div>
             </>
         );
     }
 
     return (
         <>
-            <AuthContext.Provider value={{
-                currentUser: authState.currentUser,
-                loading: authState.loading || !authState.initialized
-            }}>
+            <AuthContext.Provider
+                value={{
+                    currentUser: authState.currentUser,
+                    loading: authState.loading,
+                    error: authState.error,
+                }}
+            >
                 {children}
             </AuthContext.Provider>
-            {/* <div style={debugStyle}>
-                <div>√ Auth Status: Ready</div>
-                {authState.debugMessages.map((msg, i) => (
-                    <div key={i}>{msg.time}: {msg.message}</div>
-                ))}
-            </div> */}
         </>
     );
 };
