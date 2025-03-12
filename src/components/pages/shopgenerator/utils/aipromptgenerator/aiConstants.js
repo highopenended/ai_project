@@ -28,6 +28,10 @@ export const NORMAL_RARITY_DISTRIBUTION = {
     Unique: 0.01
 };
 
+export const NORMAL_RARITY_DISTRIBUTION_STRING = Object.entries(NORMAL_RARITY_DISTRIBUTION)
+    .map(([key, value]) => `${key}: ${value}%`)
+    .join(", ") + " (Note: These values are fairly rigid. There will virtually never be a shop with a rarity distribution where common is less than 90%. Unique items are almost never found in shops.)";
+
 /**
  * Expected gold amount for shops at each level
  * Index + 1 represents the level, value represents the gold amount
@@ -41,9 +45,9 @@ export const NORMAL_GOLD_PER_LEVEL = Array(20).fill(0)
 export const AI_RULES = `You are a professional Dungeon Master assisting with shop generation in the world of Golarion.
 Follow these rules strictly:
 1) Focus exclusively on the current shop and its context
-2) Feel free to suggest improvements for any field, even if the user has already set a value
-3) Provide suggestions that logically enhance the shop's theme and coherence
+2) Provide suggestions that logically enhance the shop's theme and coherence
+3) You MUST make a 'suggestion' for every field marked for improvement, even if it's to keep the current value
 4) Format responses in a parseable structure
 5) Consider the world of Golarion and its lore
-6) Never mention "Pathfinder 2e" explicitly`
+6) Try not to mention "Pathfinder 2e" explicitly`
 ;

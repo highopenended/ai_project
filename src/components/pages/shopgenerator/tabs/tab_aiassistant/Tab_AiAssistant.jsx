@@ -216,16 +216,11 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             // Get shop snapshot
             const shopSnapshot = createShopSnapshot(shopState, filterMaps, categoryData, fields);
 
-            // Get conversation history
-            const conversationHistory = messages
-                .map((m) => `${m.role === "user" ? "Human" : "Assistant"}: ${m.content}`)
-                .join("\n");
 
             // Generate the analysis prompt using the utility function
             const analysisPrompt = generateAnalysisPrompt(
                 shopSnapshot,
-                fields,
-                conversationHistory
+                fields
             );
 
             // Log the final prompt being sent to the AI
@@ -270,8 +265,7 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                 if (jsonMatch) {
                     const jsonStr = jsonMatch[0];
                     suggestedChanges = JSON.parse(jsonStr);
-                    console.log("Parsed suggested changes:", suggestedChanges);
-                    
+
                     // Handle item bias format conversion if needed
                     if (suggestedChanges.itemBias) {
                         // If itemBias is provided as Variety/Cost format in the response
@@ -322,7 +316,7 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             };
             console.log("AI RESPONSE:");
             console.log("--------------------------------");
-            console.log(data.answer);
+            console.log(assistantMessage);
             console.log("________________________________");
 
             // Update messages with AI response

@@ -29,6 +29,8 @@ const FIELD_DEFINITIONS = {
     filterCategories: { label: "Categories", defaultValue: {} }
 };
 
+const includeFilterMap = false
+
 const ORACLE_SUGGESTION_TEXT = "The Oracle will offer suggestions...";
 /**
  * Dialog component for selecting which fields to preserve when requesting AI improvements
@@ -169,6 +171,48 @@ const ImprovementDialog = ({
         return { included, excluded };
     };
     
+    // Helper function to render a checkbox with consistent styling
+    const renderCheckbox = (field, label, value) => (
+        <div className="field-item" onClick={() => handleCheckboxChange(field)}>
+            <div className="checkbox-wrapper">
+                <input
+                    type="checkbox"
+                    className="field-checkbox"
+                    checked={selectedFields.has(field)}
+                    onChange={(e) => {
+                        e.stopPropagation();
+                        handleCheckboxChange(field);
+                    }}
+                    id={`checkbox-${field}`}
+                />
+                {selectedFields.has(field) && (
+                    <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        viewBox="0 0 24 24" 
+                        fill="white"
+                        width="12"
+                        height="12"
+                        style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            pointerEvents: 'none'
+                        }}
+                    >
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                )}
+            </div>
+            <span className="field-label">{label}</span>
+            <span className="field-value">
+                {selectedFields.has(field) ? (
+                    <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
+                ) : value}
+            </span>
+        </div>
+    );
+    
     return (
         <div className="improvement-dialog-overlay" onClick={onClose}>
             <div className="improvement-dialog" onClick={(e) => e.stopPropagation()}>
@@ -182,6 +226,26 @@ const ImprovementDialog = ({
                 </div>
                 
                 <div className="improvement-dialog-sections">
+
+
+{/* Parameters Section */}
+<div className="improvement-dialog-section">
+                        <div className="section-header">
+                            <h3 className="section-title">Parameters</h3>
+                            <div className="section-actions">
+                                <button className="section-action-button" onClick={() => selectAllInSection(FIELD_SECTIONS.PARAMETERS)}>Select All</button>
+                                <button className="section-action-button" onClick={() => deselectAllInSection(FIELD_SECTIONS.PARAMETERS)}>Deselect All</button>
+                            </div>
+                        </div>
+                        <div className="field-list single-column">
+                            {renderCheckbox("gold", "Gold", formatGold(shopState.gold))}
+                            {renderCheckbox("levelRange", "Level Range", formatLevelRange())}
+                            {renderCheckbox("itemBias", "Item Bias", formatItemBias())}
+                            {renderCheckbox("rarityDistribution", "Rarity Distribution", formatRarityDistribution())}
+                        </div>
+                    </div>
+
+
                     {/* Basic Fields Section */}
                     <div className="improvement-dialog-section">
                         <div className="section-header">
@@ -194,123 +258,12 @@ const ImprovementDialog = ({
                         <div className="field-list single-column">
                             {Object.entries(FIELD_DEFINITIONS)
                                 .filter(([field]) => ["name", "keeperName", "type", "location", "description", "keeperDescription"].includes(field))
-                                .map(([field, { label }]) => (
-                                    <div key={field} className="field-item" onClick={() => handleCheckboxChange(field)}>
-                                        <input
-                                            type="checkbox"
-                                            className="field-checkbox"
-                                            checked={selectedFields.has(field)}
-                                            onChange={() => {}}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleCheckboxChange(field);
-                                            }}
-                                        />
-                                        <span className="field-label">{label}</span>
-                                        <span className="field-value">
-                                            {selectedFields.has(field) ? (
-                                                <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
-                                            ) : shopState[field]}
-                                        </span>
-                                    </div>
-                                ))}
+                                .map(([field, { label }]) => renderCheckbox(field, label, shopState[field]))}
                         </div>
-                    </div>
-                    
-                    {/* Parameters Section */}
-                    <div className="improvement-dialog-section">
-                        <div className="section-header">
-                            <h3 className="section-title">Parameters</h3>
-                            <div className="section-actions">
-                                <button className="section-action-button" onClick={() => selectAllInSection(FIELD_SECTIONS.PARAMETERS)}>Select All</button>
-                                <button className="section-action-button" onClick={() => deselectAllInSection(FIELD_SECTIONS.PARAMETERS)}>Deselect All</button>
-                            </div>
-                        </div>
-                        <div className="field-list single-column">
-                            <div className="field-item" onClick={() => handleCheckboxChange("gold")}>
-                                <input
-                                    type="checkbox"
-                                    className="field-checkbox"
-                                    checked={selectedFields.has("gold")}
-                                    onChange={() => {}}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCheckboxChange("gold");
-                                    }}
-                                />
-                                <span className="field-label">Gold</span>
-                                {selectedFields.has("gold") ? (
-                                    <span className="field-value">
-                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
-                                    </span>
-                                ) : (
-                                    formatGold(shopState.gold)
-                                )}
-                            </div>
-                            <div className="field-item" onClick={() => handleCheckboxChange("levelRange")}>
-                                <input
-                                    type="checkbox"
-                                    className="field-checkbox"
-                                    checked={selectedFields.has("levelRange")}
-                                    onChange={() => {}}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCheckboxChange("levelRange");
-                                    }}
-                                />
-                                <span className="field-label">Level Range</span>
-                                {selectedFields.has("levelRange") ? (
-                                    <span className="field-value">
-                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
-                                    </span>
-                                ) : (
-                                    formatLevelRange()
-                                )}
-                            </div>
-                            <div className="field-item" onClick={() => handleCheckboxChange("itemBias")}>
-                                <input
-                                    type="checkbox"
-                                    className="field-checkbox"
-                                    checked={selectedFields.has("itemBias")}
-                                    onChange={() => {}}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCheckboxChange("itemBias");
-                                    }}
-                                />
-                                <span className="field-label">Item Bias</span>
-                                {selectedFields.has("itemBias") ? (
-                                    <span className="field-value">
-                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
-                                    </span>
-                                ) : (
-                                    formatItemBias()
-                                )}
-                            </div>
-                            <div className="field-item" onClick={() => handleCheckboxChange("rarityDistribution")}>
-                                <input
-                                    type="checkbox"
-                                    className="field-checkbox"
-                                    checked={selectedFields.has("rarityDistribution")}
-                                    onChange={() => {}}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCheckboxChange("rarityDistribution");
-                                    }}
-                                />
-                                <span className="field-label">Rarity Distribution</span>
-                                {selectedFields.has("rarityDistribution") ? (
-                                    <span className="field-value">
-                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
-                                    </span>
-                                ) : (
-                                    formatRarityDistribution()
-                                )}
-                            </div>
-                        </div>
-                    </div>
+                    </div>                    
                     
                     {/* Filters Section */}
+                    {includeFilterMap && (
                     <div className="improvement-dialog-section">
                         <div className="section-header">
                             <h3 className="section-title">Filters</h3>
@@ -320,35 +273,17 @@ const ImprovementDialog = ({
                             </div>
                         </div>
                         <div className="field-list single-column">
-                            <div className="field-item" onClick={() => handleCheckboxChange("filterCategories")}>
-                                <input
-                                    type="checkbox"
-                                    className="field-checkbox"
-                                    checked={selectedFields.has("filterCategories")}
-                                    onChange={() => {}}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleCheckboxChange("filterCategories");
-                                    }}
-                                />
-                                <span className="field-label">Categories</span>
-                                {selectedFields.has("filterCategories") ? (
-                                    <span className="field-value">
-                                        <span className="oracle-suggestion">{ORACLE_SUGGESTION_TEXT}</span>
+                            {renderCheckbox("filterCategories", "Categories", (() => {
+                                const { included, excluded } = getFilterCount(filterMaps.categories);
+                                return (
+                                    <span>
+                                        {included} included, {excluded} excluded
                                     </span>
-                                ) : (
-                                    (() => {
-                                        const { included, excluded } = getFilterCount(filterMaps.categories);
-                                        return (
-                                            <span className="field-value">
-                                                {included} included, {excluded} excluded
-                                            </span>
-                                        );
-                                    })()
-                                )}
-                            </div>
+                                );
+                            })())}
                         </div>
                     </div>
+                    )}
                 </div>
                 
                 <div className="improvement-dialog-actions">

@@ -111,27 +111,24 @@ export const getPiece_preservedFields = (preservedFields, shopSnapshot) => {
   
   const { preservedList, nonPreservedList } = categorizeFields(preservedFields, shopSnapshot);
   
-  let promptPiece_preservedFields = "";
+  const sections = [];
   
   if (preservedList.length > 0) {
-    promptPiece_preservedFields += `
-PRESERVED FIELDS (DO NOT CHANGE THESE):
+    sections.push(`PRESERVED FIELDS (DO NOT CHANGE THESE):
 ${preservedList.map(field => `- ${field.label}: ${field.value}`).join('\n')}
 
-These preserved fields should be treated as absolute truth and should not be modified in your suggestions.`;
+These preserved fields should be treated as absolute truth and should not be modified in your suggestions.`);
   }
   
   if (nonPreservedList.length > 0) {
-    promptPiece_preservedFields += `
-
-FIELDS TO IMPROVE (PLEASE SUGGEST CHANGES FOR THESE):
+    sections.push(`FIELDS TO IMPROVE (PLEASE SUGGEST CHANGES FOR THESE):
 ${nonPreservedList.map(field => `- ${field.label}`).join('\n')}
 
-Please focus your suggestions on improving these specific fields.`;
+Please focus your suggestions on improving these specific fields.`);
   }
   
   return {
-    promptPiece_preservedFields,
+    promptPiece_preservedFields: sections.join('\n\n'),
     promptPiece_unpreservedFields: nonPreservedList.map(field => field.key)
   };
 };

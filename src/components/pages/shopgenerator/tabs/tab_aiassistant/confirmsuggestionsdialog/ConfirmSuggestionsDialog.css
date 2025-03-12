@@ -179,7 +179,7 @@
     color: #e2e8f0;
     margin: 0 0 12px 0;
     padding-bottom: 8px;
-    border-bottom: 1px solid #4a5568;
+    border-bottom: 1px dashed #4a5568;
 }
 
 .no-changes {

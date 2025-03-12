@@ -5,7 +5,12 @@
  * to provide context for the AI about the shop's characteristics.
  */
 
-import { LEVEL_MARKERS, NORMAL_RARITY_DISTRIBUTION, NORMAL_GOLD_PER_LEVEL } from "./aiConstants";
+import {
+    LEVEL_MARKERS,
+    NORMAL_RARITY_DISTRIBUTION,
+    NORMAL_RARITY_DISTRIBUTION_STRING,
+    NORMAL_GOLD_PER_LEVEL,
+} from "./aiConstants";
 
 /**
  * Analyzes shop data against reference values
@@ -14,22 +19,36 @@ import { LEVEL_MARKERS, NORMAL_RARITY_DISTRIBUTION, NORMAL_GOLD_PER_LEVEL } from
  * @returns {string} Formatted shop analysis text
  */
 export const getPiece_shopAnalysis = (shopSnapshot, preservedFields) => {
-
-    return `
-Average Gold per Level: 1000gp/level (Average out the level range to get the average)   
-Normal Rarity Distribution: ${NORMAL_RARITY_DISTRIBUTION}
-Normal Item Bias: 50% Variety, 50% Cost (Higher cost = more expensive items, usually a fancier shop, Variety = less specialized.)
-
-${preservedFields.gold ? `Gold Analysis: ${analyzeShopGold(shopSnapshot.gold, shopSnapshot.levelRange)}` : ""}
-${preservedFields.levelRange ? `Level Analysis: ${analyzeShopLevel(shopSnapshot.levelRange)}` : ""}
-${preservedFields.rarityDistribution ? `Rarity Analysis: ${analyzeRarityDistribution(shopSnapshot.rarityDistribution)}` : ""}
-${preservedFields.itemBias ? `Item Bias Analysis: ${analyzeItemBias(shopSnapshot.itemBias)}` : ""}
-${
-    preservedFields.filterSelections
-        ? `Filter Analysis: ${analyzeFilterSelections(shopSnapshot.filterSelections, shopSnapshot.availableFilters)}`
-        : ""
-}
-`;
+    // Create an array of analysis pieces that we'll filter and join
+    const analysisPieces = [
+        `-- Average Gold per Level: 1000gp/level (Average out the level range to get the average)`,
+        `-- Normal Rarity Distribution: ${NORMAL_RARITY_DISTRIBUTION_STRING}`,
+        `-- Normal Item Bias: 50% Variety, 50% Cost (Higher cost = more expensive items, usually a fancier shop, Variety = less specialized.)`,
+    ];
+    
+    // Only add analysis pieces if the corresponding field is preserved
+    if (preservedFields.gold) {
+        analysisPieces.push(`Gold Analysis: ${analyzeShopGold(shopSnapshot.gold, shopSnapshot.levelRange)}`);
+    }
+    
+    if (preservedFields.levelRange) {
+        analysisPieces.push(`Level Analysis: ${analyzeShopLevel(shopSnapshot.levelRange)}`);
+    }
+    
+    if (preservedFields.rarityDistribution) {
+        analysisPieces.push(`Rarity Analysis: ${analyzeRarityDistribution(shopSnapshot.rarityDistribution)}`);
+    }
+    
+    if (preservedFields.itemBias) {
+        analysisPieces.push(`Item Bias Analysis: ${analyzeItemBias(shopSnapshot.itemBias)}`);
+    }
+    
+    if (preservedFields.filterSelections) {
+        analysisPieces.push(`Filter Analysis: ${analyzeFilterSelections(shopSnapshot.filterSelections, shopSnapshot.availableFilters)}`);
+    }
+    
+    // Join all non-empty pieces with newlines
+    return analysisPieces.join('\n');
 };
 
 /**

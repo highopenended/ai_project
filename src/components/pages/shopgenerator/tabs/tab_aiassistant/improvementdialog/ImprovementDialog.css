@@ -72,7 +72,7 @@
 .improvement-dialog-sections {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: .4rem;
 }
 
 .improvement-dialog-section {
@@ -137,7 +137,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.25rem 0.75rem;
+    padding: 0.0rem 0.75rem;
     border-radius: 0.25rem;
     transition: all 0.2s ease;
     cursor: pointer;
@@ -152,16 +152,34 @@
     background-color: rgba(73, 88, 141, 0.08);
 }
 
+/* Checkbox wrapper for better alignment */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* Ensure checkbox is visible with proper dimensions */
 .field-checkbox {
     appearance: none;
-    width: 1.1rem;
-    height: 1.1rem;
-    border: 1px solid var(--light-border-color);
-    border-radius: 0.25rem;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--light-border-color);
+    border-radius: 3px;
     background-color: var(--dark-background-color-solid);
     cursor: pointer;
     position: relative;
     transition: all 0.2s;
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+    box-sizing: border-box;
 }
 
 .field-checkbox:checked {
@@ -169,18 +187,29 @@
     border-color: var(--button-background);
 }
 
-.field-checkbox:checked::after {
-    content: "✓";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 0.8rem;
-}
-
 .field-checkbox:hover {
     border-color: var(--button-hover-background);
+}
+
+/* Remove all browser-specific fixes */
+@-moz-document url-prefix() {
+    .field-checkbox {
+        border-width: 2px;
+    }
+}
+
+@media not all and (min-resolution:.001dpcm) { 
+    @supports (-webkit-appearance:none) {
+        .field-checkbox {
+            border-width: 2px;
+        }
+    }
+}
+
+/* Improve focus state for accessibility */
+.field-checkbox:focus {
+    outline: 2px solid var(--button-hover-background);
+    outline-offset: 1px;
 }
 
 .field-checkbox:checked + .field-label + .field-value .oracle-suggestion {
@@ -461,4 +490,32 @@
     to {
         background-position: 200% center;
     }
+}
+
+/* Remove all the browser-specific fixes that might be causing issues */
+@-moz-document url-prefix() {
+    .field-checkbox:checked::before {
+        left: 5px;
+        top: 2px;
+    }
+}
+
+@media not all and (min-resolution:.001dpcm) { 
+    @supports (-webkit-appearance:none) {
+        .field-checkbox:checked::before {
+            left: 5px;
+            top: 2px;
+        }
+    }
+}
+
+/* Improve focus state for accessibility */
+.field-checkbox:focus {
+    outline: 2px solid var(--button-hover-background);
+    outline-offset: 1px;
+}
+
+/* Remove the ::after pseudo-element completely */
+.field-checkbox:checked::after {
+    content: none;
 } 

@@ -19,11 +19,11 @@ import { getPiece_filterContraints } from "./promptPiece_filterOptions";
  *
  * @param {Object} shopSnapshot - Current shop data snapshot
  * @param {Object} preservedFields - Fields marked as preserved by the user
- * @param {string} conversationHistory - Previous conversation history
  * @returns {string} Complete AI prompt
  */
-export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversationHistory) => {
+export const generateAnalysisPrompt = (shopSnapshot, preservedFields) => {
 
+    const includeFilterConstraints = false;
 
     // Analyze shop data against reference values
     const promptPiece_shopAnalysis = getPiece_shopAnalysis(shopSnapshot, preservedFields);
@@ -40,32 +40,34 @@ export const generateAnalysisPrompt = (shopSnapshot, preservedFields, conversati
     // Add filter constraints instructions
     const promptPiece_filterConstraints = getPiece_filterContraints(shopSnapshot);
 
-    // Construct the complete prompt
-    const finalPrompt = `
-${AI_RULES}
-
-${promptPiece_shopAnalysis}
-
-${promptPiece_preservedFields}
-
-${promptPiece_filterConstraints}
-
-${promptPiece_responseExample}
-
-
-
-Analysis-Specific Rules:
+    // Create an array of prompt sections
+    const promptSections = [
+        AI_RULES,
+        promptPiece_shopAnalysis,
+        promptPiece_preservedFields
+    ];
+    
+    // Only add filter constraints if needed
+    if (includeFilterConstraints && promptPiece_filterConstraints) {
+        promptSections.push(promptPiece_filterConstraints);
+    }
+    
+    // Add response example and rules
+    promptSections.push(promptPiece_responseExample);
+    promptSections.push(`Analysis-Specific Rules:
 
 1) Keep your responses very concise and to the point.
 2) The user only see the parts starting with "Current question:", so anything before that should be treated as YOUR observations, not something the user said.
 3) For the analyses, you should definitely mention it in your reasoning if they are a relatively extreme case (Judge this by percentage, words like "very", etc.)
-4) Only offer one suggestion per 'FIELD TO IMPROVE'
+4) Only offer one suggestion per 'FIELD TO IMPROVE'`);
 
-
-`
-    // Return the final prompt
-    return finalPrompt;
+    // Join all sections with double newlines
+    return promptSections.filter(Boolean).join('\n\n');
 };
+
+
+
+
 
 /**
  * Generates a prompt for regular chat interactions
