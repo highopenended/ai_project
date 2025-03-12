@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { debug } from '../../../../utils/debugUtils';
-import useDebounce from '../../../../hooks/useDebounce';
 
 /**
  * Custom hook for managing tab drag and drop functionality
@@ -20,6 +19,7 @@ import useDebounce from '../../../../hooks/useDebounce';
  * @param {Function} params.onDragEnd - Parent drag end handler
  * @param {Function} params.onDropIndicatorChange - Callback to update drop indicators
  * @param {Object} params.dropIndicators - Current drop indicators state
+ * @param {Function} params.determineDropAction - Function to determine drop action
  * @param {Object} params.tabRefs - Refs to tab DOM elements
  * @param {number} [params.edgeThreshold=80] - Distance from edge to trigger group split
  * @returns {Object} Drag and drop handlers and state
@@ -33,6 +33,7 @@ function useTabDragAndDrop({
   onDragEnd,
   onDropIndicatorChange,
   dropIndicators,
+  determineDropAction,
   tabRefs,
   edgeThreshold = 80
 }) {
@@ -44,11 +45,6 @@ function useTabDragAndDrop({
   
   const originalPositionsRef = useRef([]);
   const edgeHoldTimeoutRef = useRef(null);
-
-  // Debounce indicator changes to prevent rapid updates
-  const debouncedDropIndicatorChange = useDebounce((indicators) => {
-    onDropIndicatorChange(indicators);
-  }, 50);
 
   /**
    * Updates drag state with batched changes
@@ -156,7 +152,6 @@ function useTabDragAndDrop({
   /**
    * Handles drag over events
    * Calculates drop positions and updates indicators
-   * Uses debouncing to prevent excessive updates
    */
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -172,53 +167,48 @@ function useTabDragAndDrop({
     
     // Get header area bounds
     const headerRect = e.currentTarget.querySelector('.tab-header').getBoundingClientRect();
-    const isOverHeader = mouseY >= headerRect.top && mouseY <= headerRect.bottom;
     
-    if (mouseY >= containerRect.top && mouseY <= containerRect.bottom) {
-      const distanceFromLeft = mouseX - containerRect.left;
-      const distanceFromRight = containerRect.right - mouseX;
+    // Determine if this is the first or last group
+    const container = e.currentTarget;
+    const parent = container.parentElement;
+    const isFirstGroup = parent.children[0] === container;
+    const isLastGroup = parent.children[parent.children.length - 1] === container;
+    
+    // Call the parent's onDropIndicatorChange with all the parameters needed
+    onDropIndicatorChange(
+      mouseX,
+      mouseY,
+      containerRect,
+      headerRect,
+      groupIndex,
+      edgeThreshold,
+      isFirstGroup,
+      isLastGroup
+    );
 
-      const containerParent = e.currentTarget.parentElement;
-      const allGroups = Array.from(containerParent.children);
-      const currentGroupIndex = allGroups.indexOf(e.currentTarget);
-      const isFirstGroup = currentGroupIndex === 0;
-      const isLastGroup = currentGroupIndex === allGroups.length - 1;
-
-      // Calculate edge thresholds based on container width
-      const containerWidth = containerRect.width;
-      const dynamicEdgeThreshold = Math.min(edgeThreshold, containerWidth * 0.2); // 20% of container width or edgeThreshold, whichever is smaller
-
-      // Only show split indicators when NOT over the header
-      const newIndicators = {
-        leftGroup: !isOverHeader && isFirstGroup && distanceFromLeft < dynamicEdgeThreshold ? groupIndex : null,
-        rightGroup: !isOverHeader && isLastGroup && distanceFromRight < dynamicEdgeThreshold ? groupIndex : null,
-        betweenGroups: !isOverHeader && !isFirstGroup && distanceFromLeft < dynamicEdgeThreshold ? groupIndex : null,
-        betweenGroupsRight: !isOverHeader && !isLastGroup && distanceFromRight < dynamicEdgeThreshold ? groupIndex : null
-      };
+    // Only calculate drop index if we're not showing any edge indicators
+    if (!Object.values(dropIndicators).some(val => val !== null)) {
+      // Calculate drop index using originalPositions for smooth animations
+      const relativeX = mouseX - headerRect.left;
+      let newDropIndex = calculateDropIndex(relativeX, headerRect);
       
-      // Use the debounced version for indicator changes
-      debouncedDropIndicatorChange(newIndicators);
-
-      // Only calculate drop index if we're not showing any edge indicators
-      if (!Object.values(newIndicators).some(val => val !== null)) {
-        // Calculate drop index using originalPositions for smooth animations
-        const relativeX = mouseX - headerRect.left;
-        let newDropIndex = calculateDropIndex(relativeX, headerRect);
-        
-        if (dragState.dropIndex !== newDropIndex) {
-          handleDragStateUpdate({
-            dropIndex: newDropIndex
-          });
-        }
-      } else {
-        // Reset dropIndex when showing edge indicators
+      if (dragState.dropIndex !== newDropIndex) {
         handleDragStateUpdate({
-          dropIndex: null
+          dropIndex: newDropIndex
         });
       }
+    } else {
+      // Reset dropIndex when showing edge indicators
+      handleDragStateUpdate({
+        dropIndex: null
+      });
     }
   };
 
+  /**
+   * Handles drag leave events
+   * Hides indicators when mouse leaves the container
+   */
   const handleDragLeave = (e) => {
     const containerRect = e.currentTarget.getBoundingClientRect();
     const mouseX = e.clientX;
@@ -231,73 +221,13 @@ function useTabDragAndDrop({
       mouseY > containerRect.bottom;
         
     if (isOutsideContainer) {
-      onDropIndicatorChange({
-        leftGroup: null,
-        rightGroup: null,
-        betweenGroups: null,
-        betweenGroupsRight: null
-      });
+      // Call with empty parameters to hide indicators
+      onDropIndicatorChange(0, 0, null, null, null, 0, false, false);
+      
       if (edgeHoldTimeoutRef.current) {
         clearTimeout(edgeHoldTimeoutRef.current);
         edgeHoldTimeoutRef.current = null;
       }
-    }
-  };
-
-  /**
-   * Determines what action to take based on drop indicators
-   * @param {Object} tabInfo - Information about the tab being dropped
-   * @param {number} sourceGroupIndex - Index of the group containing the tab
-   * @param {Object} indicators - Current drop indicators
-   * @returns {Object} Action to take and associated data
-   */
-  const determineDropAction = (tabInfo, sourceGroupIndex, indicators) => {
-    const wasShowingLeftIndicator = indicators.leftGroup === groupIndex;
-    const wasShowingRightIndicator = indicators.rightGroup === groupIndex;
-    const wasShowingBetweenIndicator = indicators.betweenGroups === groupIndex;
-    const wasShowingBetweenIndicatorRight = indicators.betweenGroupsRight === groupIndex;
-    
-    debug("tabManagement", "Determining drop action", {
-      wasShowingLeftIndicator,
-      wasShowingRightIndicator,
-      wasShowingBetweenIndicator,
-      wasShowingBetweenIndicatorRight,
-      groupIndex,
-      sourceGroupIndex
-    });
-    
-    if (wasShowingBetweenIndicator) {
-      return {
-        action: 'split',
-        targetPosition: groupIndex,
-        description: "Splitting tab between groups (left)"
-      };
-    }
-    else if (wasShowingBetweenIndicatorRight) {
-      return {
-        action: 'split',
-        targetPosition: groupIndex + 1,
-        description: "Splitting tab between groups (right)"
-      };
-    }
-    else if (wasShowingLeftIndicator || wasShowingRightIndicator) {
-      return {
-        action: 'split',
-        targetPosition: wasShowingRightIndicator, // true for right, false for left
-        description: `Splitting tab to ${wasShowingRightIndicator ? 'right' : 'left'} edge`
-      };
-    }
-    else if (sourceGroupIndex !== groupIndex) {
-      return {
-        action: 'move',
-        description: "Moving tab between groups"
-      };
-    }
-    else {
-      return {
-        action: 'reorder',
-        description: "Reordering within group"
-      };
     }
   };
 
@@ -343,15 +273,14 @@ function useTabDragAndDrop({
       }
 
       // Reset drop indicators
-      onDropIndicatorChange({
-        leftGroup: null,
-        rightGroup: null,
-        betweenGroups: null,
-        betweenGroupsRight: null
-      });
+      onDropIndicatorChange({});
       
       // Determine what action to take based on indicators
-      const dropAction = determineDropAction(tabInfo, sourceGroupIndex, dropIndicators);
+      const dropAction = determineDropAction({ 
+        groupIndex, 
+        sourceGroupIndex 
+      });
+      
       debug("tabManagement", `Executing drop action: ${dropAction.description}`);
       
       // Execute the appropriate action

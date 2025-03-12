@@ -334,13 +334,8 @@ function ShopGenerator() {
         draggedTab,
         draggedTabIndex,
         sourceGroupIndex,
-        dropIndicators,
         handleTabMove,
-        handleTabSplit,
-        handleResize,
-        handleDragStart,
-        handleDragEnd,
-        handleDropIndicatorChange,
+        tabContainerProps
     } = useTabManagement({
         initialTabGroups: tabElements,
         initialGroupWidths: tabStructure.widths
@@ -432,14 +427,8 @@ function ShopGenerator() {
                     })}
                     draggedTab={draggedTab}
                     draggedTabIndex={draggedTabIndex}
-                    sourceGroupIndex={sourceGroupIndex}
-                    dropIndicators={dropIndicators}
                     isLastGroup={index === tabGroups.length - 1}
-                    onResize={handleResize}
                     style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
-                    onDragStart={(tab, tabIndex) => handleDragStart(tab, tabIndex, index)}
-                    onDragEnd={handleDragEnd}
-                    onDropIndicatorChange={handleDropIndicatorChange}
                     onTabMove={(newTabs) => {
                         if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
                             handleTabMove(newTabs, sourceGroupIndex, index);
@@ -448,7 +437,7 @@ function ShopGenerator() {
                         }
                     }}
                     onTabClick={() => {}}
-                    onTabSplit={handleTabSplit}
+                    {...tabContainerProps}
                 />
             ))}
         </div>

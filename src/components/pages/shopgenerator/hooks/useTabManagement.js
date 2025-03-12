@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { debug } from '../../../../utils/debugUtils';
 import useTabResize from './useTabResize';
+import useTabDropIndicators from './useTabDropIndicators';
 
 /**
  * Tab Management System Documentation
@@ -70,13 +71,7 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     const [dragState, setDragState] = useState({
         draggedTab: null,
         draggedTabIndex: null,
-        sourceGroupIndex: null,
-        dropIndicators: {
-            leftGroup: null,
-            rightGroup: null,
-            betweenGroups: null,
-            betweenGroupsRight: null,
-        }
+        sourceGroupIndex: null
     });
 
     // Use the tab resize hook
@@ -90,6 +85,14 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         initialGroupWidths,
         tabGroupsLength: tabGroups.length
     });
+
+    // Use the tab drop indicators hook
+    const {
+        indicators: dropIndicators,
+        showIndicators,
+        hideIndicators,
+        determineDropAction
+    } = useTabDropIndicators();
 
     /**
      * Updates drag state with batched changes
@@ -107,15 +110,10 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         handleDragStateUpdate({
             draggedTab: null,
             draggedTabIndex: null,
-            sourceGroupIndex: null,
-            dropIndicators: {
-                leftGroup: null,
-                rightGroup: null,
-                betweenGroups: null,
-                betweenGroupsRight: null,
-            },
+            sourceGroupIndex: null
         });
-    }, [handleDragStateUpdate]);
+        hideIndicators();
+    }, [handleDragStateUpdate, hideIndicators]);
 
     /**
      * Resets all drag and drop state
@@ -142,14 +140,11 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     }, [handleDragStateUpdate]);
 
     /**
-     * Updates drop indicators during drag operations
-     * @param {Object} indicators - New indicator states
+     * Handles drop indicator changes during drag operations
      */
-    const handleDropIndicatorChange = useCallback((indicators) => {
-        handleDragStateUpdate({
-            dropIndicators: { ...dragState.dropIndicators, ...indicators },
-        });
-    }, [dragState.dropIndicators, handleDragStateUpdate]);
+    const handleDropIndicatorChange = (mouseX, mouseY, containerRect, headerRect, groupIndex, edgeThreshold, isFirstGroup, isLastGroup) => {
+        showIndicators(mouseX, mouseY, containerRect, headerRect, groupIndex, edgeThreshold, isFirstGroup, isLastGroup);
+    };
 
     /**
      * Handles moving tabs within and between groups
@@ -328,12 +323,25 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         draggedTab: dragState.draggedTab,
         draggedTabIndex: dragState.draggedTabIndex,
         sourceGroupIndex: dragState.sourceGroupIndex,
-        dropIndicators: dragState.dropIndicators,
+        dropIndicators,
         handleTabMove,
         handleTabSplit,
         handleResize,
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
+        determineDropAction,
+        tabContainerProps: {
+            onTabMove: handleTabMove,
+            onTabSplit: handleTabSplit,
+            onDragStart: handleDragStart,
+            onDragEnd: handleDragEnd,
+            onDropIndicatorChange: handleDropIndicatorChange,
+            determineDropAction,
+            onResize: handleResize,
+            dropIndicators
+        }
     };
 };
+
+export default useTabManagement;

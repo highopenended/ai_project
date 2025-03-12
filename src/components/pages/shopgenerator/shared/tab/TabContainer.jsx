@@ -44,6 +44,7 @@ function TabContainer({
     onDragStart,
     onDragEnd,
     onDropIndicatorChange,
+    determineDropAction,
     onTabClick,
     onResize,
     isLastGroup,
@@ -79,6 +80,7 @@ function TabContainer({
         onDragEnd,
         onDropIndicatorChange,
         dropIndicators,
+        determineDropAction,
         tabRefs,
         edgeThreshold
     });
@@ -222,6 +224,8 @@ TabContainer.propTypes = {
     onDragEnd: PropTypes.func.isRequired,
     /** Callback to update drop indicators */
     onDropIndicatorChange: PropTypes.func.isRequired,
+    /** Function to determine drop action */
+    determineDropAction: PropTypes.func.isRequired,
     /** Callback when a tab is clicked */
     onTabClick: PropTypes.func,
     onResize: PropTypes.func.isRequired,
