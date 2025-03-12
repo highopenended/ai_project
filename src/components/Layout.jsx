@@ -15,7 +15,11 @@ function Layout() {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const isHomePage = location.pathname === "/";
+    
+    // Update this condition to include all pages that should show the chat history
+    // This will show the sidebar on the home page and any path that includes 'oracle'
+    const shouldShowSidebar = location.pathname === "/" || 
+                             location.pathname === "/home";
 
     const handleLogout = async () => {
         try {
@@ -62,7 +66,7 @@ function Layout() {
             </nav>
 
             <main className="main-content">
-                {currentUser && isHomePage ? (
+                {currentUser && shouldShowSidebar ? (
                     <div className="layout-with-sidebar">
                         <div className="sidebar">
                             <ChatHistory />
