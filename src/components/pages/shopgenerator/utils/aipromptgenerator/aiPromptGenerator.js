@@ -52,14 +52,12 @@ ${promptPiece_filterConstraints}
 
 ${promptPiece_responseExample}
 
-Previous conversation history:
-${conversationHistory}
 
 
 Analysis-Specific Rules:
 
 1) Keep your responses very concise and to the point.
-2) The user only see the parts after "Previous conversation history:", so anything before that should be treated as YOUR observations, not something the user said.
+2) The user only see the parts starting with "Current question:", so anything before that should be treated as YOUR observations, not something the user said.
 3) For the analyses, you should definitely mention it in your reasoning if they are a relatively extreme case (Judge this by percentage, words like "very", etc.)
 4) Only offer one suggestion per 'FIELD TO IMPROVE'
 
@@ -82,11 +80,6 @@ export const generateChatPrompt = (shopSnapshot, conversationHistory, userQuesti
 // Construct the complete prompt
 const finalPrompt = `
 ${AI_RULES}
-
-Current shop values:
-
-Previous conversation history:
-${conversationHistory}
 
 Current question: ${userQuestion}
 
