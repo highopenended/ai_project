@@ -154,7 +154,7 @@
 .message {
     padding: 0.6rem 0.8rem;
     border-radius: 0.5rem;
-    max-width: 85%;
+    max-width: 95%;
     word-wrap: break-word;
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
@@ -163,6 +163,8 @@
 .message-content {
     white-space: pre-wrap;
     overflow-wrap: break-word;
+    line-height: 1.4;
+    max-width: 100%;
 }
 
 /* Formatted content styles */
@@ -383,4 +385,64 @@
 .message-content ul.sub-list li strong {
     color: var(--accent-color);
     margin-right: 0.5rem;
+}
+
+/* Formatted suggestion styles */
+.suggestion-summary {
+    font-style: italic;
+    color: var(--text-highlight);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    padding: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.25rem;
+}
+
+.message-content h4 {
+    margin-top: 0.8rem;
+    margin-bottom: 0.4rem;
+    color: var(--text-highlight);
+    font-weight: 600;
+}
+
+.message-content li {
+    margin: 0.3rem 0;
+    line-height: 1.4;
+}
+
+.message-content li strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-right: 0.3rem;
+}
+
+/* Add styles for the confirm suggestions button container */
+.confirm-suggestions-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.8rem;
+    width: 100%;
+}
+
+.confirm-suggestions-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--light-border-color);
+    border-radius: 0.25rem;
+    background-color: var(--button-background);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.confirm-suggestions-button:hover {
+    background-color: var(--button-hover-background);
+    border-color: var(--button-hover-background);
+    transform: translateY(-1px);
+}
+
+.confirm-suggestions-button:active {
+    background-color: var(--button-active-background);
+    transform: translateY(0);
 } 

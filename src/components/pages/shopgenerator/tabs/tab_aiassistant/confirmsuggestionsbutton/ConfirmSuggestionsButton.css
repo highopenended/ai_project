@@ -1,7 +1,7 @@
 .confirm-suggestions-container {
     margin-top: 10px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .confirm-suggestions-button {

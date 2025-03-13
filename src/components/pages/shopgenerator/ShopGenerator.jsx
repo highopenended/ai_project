@@ -436,7 +436,6 @@ function ShopGenerator() {
                             handleTabMove(newTabs, index);
                         }
                     }}
-                    onTabClick={() => {}}
                     {...tabContainerProps}
                 />
             ))}

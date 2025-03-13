@@ -6,7 +6,7 @@ import "./Tab_AiAssistant.css";
 import ImprovementDialog from "./improvementdialog/ImprovementDialog";
 import ConfirmSuggestionsButton from "./confirmsuggestionsbutton/ConfirmSuggestionsButton";
 import { generateAnalysisPrompt, generateChatPrompt } from "../../utils/aipromptgenerator/aiPromptGenerator";
-import { formatContent } from "../../utils/aipromptgenerator/contentFormatter";
+import { formatContent, formatSuggestedChanges } from "../../utils/aipromptgenerator/contentFormatter";
 import { extractAvailableFilterOptions } from "../../utils/filterGroupUtils";
 import traitList from "../../../../../data/trait-list.json";
 
@@ -103,6 +103,8 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         // Create a copy of the current shop state
         const updatedShopState = { ...shopState };
 
+        console.log("Applying suggested changes:", suggestedChanges);
+        
         // Apply shop details changes if present
         if (suggestedChanges.name !== undefined) {
             updatedShopState.name = suggestedChanges.name;
@@ -306,10 +308,13 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                 console.error("Error parsing suggested changes:", parseErr);
             }
 
+            console.log("Suggested changes:", suggestedChanges);
+
             // Create AI response message with suggestion flag and data
             const assistantMessage = {
                 role: "assistant",
                 content: data.answer,
+                formattedContent: suggestedChanges ? formatSuggestedChanges(suggestedChanges) : null,
                 timestamp: Date.now(),
                 isSuggestion: true,
                 suggestedChanges: suggestedChanges
@@ -419,7 +424,8 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             const assistantMessage = {
                 role: "assistant",
                 content: data.answer,
-                timestamp: Date.now(),
+                formattedContent: formatContent(data.answer, "assistant"),
+                timestamp: Date.now()
             };
 
             // Update messages with AI response
@@ -500,7 +506,9 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
                             >
                                 <div
                                     className="message-content"
-                                    dangerouslySetInnerHTML={{ __html: formatContent(message.content, message.role) }}
+                                    dangerouslySetInnerHTML={{ 
+                                        __html: message.formattedContent || formatContent(message.content, message.role) 
+                                    }}
                                 />
                                 {message.isSuggestion && message.suggestedChanges && (
                                     <ConfirmSuggestionsButton 

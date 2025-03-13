@@ -73,8 +73,11 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         draggedTabIndex: null,
         sourceGroupIndex: null
     });
+    
+    // Track active tabs for each group
+    const [activeTabTypes, setActiveTabTypes] = useState({});
 
-    // Use the tab resize hook
+    // Use the tab resize hook with active tab information
     const {
         flexBasis,
         setFlexBasis,
@@ -83,7 +86,9 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         handleResizeEnd
     } = useTabResize({
         initialGroupWidths,
-        tabGroupsLength: tabGroups.length
+        tabGroupsLength: tabGroups.length,
+        tabGroups,
+        activeTabTypes
     });
 
     // Use the tab drop indicators hook
@@ -314,6 +319,21 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         return sourceTab;
     };
 
+    /**
+     * Handles tab selection and updates active tab tracking
+     * @param {Object} tab - The tab being clicked
+     * @param {number} tabIndex - Index of the tab in its group
+     * @param {number} groupIndex - Index of the group containing the tab
+     */
+    const handleTabClick = useCallback((tab, tabIndex, groupIndex) => {
+        if (tab && tab.type && tab.type.name) {
+            setActiveTabTypes(prev => ({
+                ...prev,
+                [groupIndex]: tab.type.name
+            }));
+        }
+    }, []);
+
     return {
         tabGroups,
         setTabGroups,
@@ -331,6 +351,7 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         handleDragEnd,
         handleDropIndicatorChange,
         determineDropAction,
+        handleTabClick,
         tabContainerProps: {
             onTabMove: handleTabMove,
             onTabSplit: handleTabSplit,
@@ -339,6 +360,7 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
             onDropIndicatorChange: handleDropIndicatorChange,
             determineDropAction,
             onResize: handleResize,
+            onTabClick: handleTabClick,
             dropIndicators
         }
     };

@@ -21,6 +21,19 @@ export const TAB_TYPES = {
 };
 
 /**
+ * Priority values for each tab type (higher number = higher priority to maintain size)
+ * Used when resizing tab groups to determine which groups should maintain their size
+ * and which should be adjusted to accommodate layout changes
+ */
+export const TAB_PRIORITIES = {
+    [TAB_TYPE_IDENTIFIERS.PARAMETERS]: 4,
+    [TAB_TYPE_IDENTIFIERS.INVENTORY]: 0,  
+    [TAB_TYPE_IDENTIFIERS.CHOOSE_SHOP]: 1,
+    [TAB_TYPE_IDENTIFIERS.SHOP_DETAILS]: 2,
+    [TAB_TYPE_IDENTIFIERS.AI_ASSISTANT]: 3 
+};
+
+/**
  * Maps tab types to their additional CSS class names
  * Used to apply specific styling based on the active tab
  */

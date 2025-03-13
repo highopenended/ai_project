@@ -22,6 +22,7 @@ export const serializeAiConversations = (messages) => {
     const serializedMessage = {
       role: message.role,
       content: message.content,
+      formattedContent: message.formattedContent || null,
       timestamp: message.timestamp
     };
 
@@ -74,12 +75,13 @@ export const deserializeAiConversations = (serializedMessages) => {
     const deserializedMessage = {
       role: message.role,
       content: message.content,
+      formattedContent: message.formattedContent || null,
       timestamp: message.timestamp
     };
 
     // If this is a suggestion message, include the suggestion flag and suggested changes
     if (message.isSuggestion) {
-      deserializedMessage.isSuggestion = true;
+      deserializedMessage.isSuggestion = message.isSuggestion;
       deserializedMessage.suggestedChanges = message.suggestedChanges;
     }
 
