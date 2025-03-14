@@ -5,19 +5,42 @@
     flex-direction: column;
     position: relative;
     min-width: 200px; /* Minimum width for tab groups */
+    transition: box-shadow 0.2s ease;
 }
 
-/* Resize handle */
+.tab-container.resizing {
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.tab-container.resizing-left {
+    cursor: w-resize;
+}
+
+.tab-container.resizing-right {
+    cursor: e-resize;
+}
+
+/* Resize handles */
 .resize-handle {
     position: absolute;
     top: 0;
-    right: -3px;
     width: 6px;
     height: 100%;
     cursor: col-resize;
     z-index: 100;
     background-color: transparent;
     transition: background-color 0.2s ease;
+}
+
+.resize-handle-left {
+    left: -3px;
+    cursor: w-resize;
+}
+
+.resize-handle-right {
+    right: -3px;
+    cursor: e-resize;
 }
 
 .resize-handle:hover,

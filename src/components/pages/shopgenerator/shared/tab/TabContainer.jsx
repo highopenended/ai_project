@@ -14,6 +14,7 @@ import TabHeader from './TabHeader.jsx';
  * - Moving tabs between groups
  * - Creating new groups by dragging to edges
  * - Visual feedback during drag operations
+ * - Bidirectional resizing (from left or right edges)
  * 
  * State Management:
  * - activeTab: Currently selected tab in this group
@@ -26,6 +27,7 @@ import TabHeader from './TabHeader.jsx';
  * 2. Drag Over: Calculates drop positions and shows indicators
  * 3. Drop: Handles tab movement/reordering
  * 4. Drag End: Cleans up state and visual indicators
+ * 5. Resize: Supports bidirectional resizing from both edges
  * 
  * Common Issues & Solutions:
  * 1. Tabs jumping during drag: Check originalPositionsRef and getTabStyle
@@ -48,11 +50,13 @@ function TabContainer({
     onTabClick,
     onResize,
     isLastGroup,
+    isFirstGroup,
     style
 }) {
     // Track active tab by type name instead of component reference
     const [activeTabType, setActiveTabType] = useState(tabs[0]?.type?.name);
     const [isResizing, setIsResizing] = useState(false);
+    const [resizeDirection, setResizeDirection] = useState(null); // 'left' or 'right'
     
     const activeTab = tabs.find(tab => tab.type.name === activeTabType) || tabs[0];
     const activeTabName = activeTab?.type?.name;
@@ -85,21 +89,36 @@ function TabContainer({
         edgeThreshold
     });
 
-    // Get the maximum minWidth from all tabs in this group
-    const groupMinWidth = Math.max(...tabs.map(tab => tab.type.minWidth || 200));
+    // Get the minimum width from the active tab only, not the maximum of all tabs
+    const activeTabMinWidth = activeTab?.type?.minWidth || 200;
 
-    // Merge the calculated minWidth with the provided style
+    // Merge the active tab's minWidth with the provided style
     const containerStyle = {
         ...style,
-        minWidth: `${groupMinWidth}px`
+        minWidth: `${activeTabMinWidth}px`
     };
 
+    // Initialize active tab and notify parent when component mounts
+    useEffect(() => {
+        if (tabs.length > 0) {
+            const initialTab = tabs[0];
+            setActiveTabType(initialTab.type.name);
+            onTabClick?.(initialTab, 0, groupIndex);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    
     // Keep active tab valid when tabs array changes
     useEffect(() => {
         if (!tabs.some(tab => tab.type.name === activeTabType)) {
-            setActiveTabType(tabs[0]?.type?.name);
+            const newActiveType = tabs[0]?.type?.name;
+            setActiveTabType(newActiveType);
+            // Notify parent of active tab change
+            if (newActiveType) {
+                onTabClick?.(tabs[0], 0, groupIndex);
+            }
         }
-    }, [tabs, activeTabType]);
+    }, [tabs, activeTabType, groupIndex, onTabClick]);
 
     /**
      * Handles tab selection
@@ -107,7 +126,7 @@ function TabContainer({
      */
     const handleTabClick = (tab) => {
         setActiveTabType(tab.type.name);
-        onTabClick?.(tab, tabs.indexOf(tab));
+        onTabClick?.(tab, tabs.indexOf(tab), groupIndex);
     };
 
     /**
@@ -120,22 +139,42 @@ function TabContainer({
         }
     };
 
-    const handleResizeStart = (e) => {
+    /**
+     * Initiates resize operation from either left or right edge
+     * @param {MouseEvent} e - The mouse down event
+     * @param {string} direction - The resize direction ('left' or 'right')
+     */
+    const handleResizeStart = (e, direction) => {
         e.preventDefault();
-        debug("tabManagement", "Starting resize operation", { groupIndex });
+        debug("tabManagement", "Starting resize operation", { groupIndex, direction });
         setIsResizing(true);
+        setResizeDirection(direction);
+        
         const startX = e.clientX;
         const startWidth = containerRef.current?.getBoundingClientRect().width || 0;
 
         const handleMouseMove = (e) => {
             if (!containerRef.current) return;
             const delta = e.clientX - startX;
-            onResize(startWidth + delta, groupIndex);
+            
+            // Calculate new width based on direction
+            let newWidth;
+            if (direction === 'right') {
+                // Right resize: add delta to current width
+                newWidth = startWidth + delta;
+            } else {
+                // Left resize: subtract delta from current width
+                newWidth = startWidth - delta;
+            }
+            
+            // Call parent resize handler with direction
+            onResize(newWidth, groupIndex, direction);
         };
 
         const handleMouseUp = () => {
-            debug("tabManagement", "Ending resize operation", { groupIndex });
+            debug("tabManagement", "Ending resize operation", { groupIndex, direction });
             setIsResizing(false);
+            setResizeDirection(null);
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
@@ -154,12 +193,20 @@ function TabContainer({
                 ${dropIndicators.leftGroup === groupIndex ? 'show-left-indicator' : ''} 
                 ${dropIndicators.rightGroup === groupIndex ? 'show-right-indicator' : ''} 
                 ${dropIndicators.betweenGroups === groupIndex ? 'show-between-indicator' : ''}
-                ${dropIndicators.betweenGroupsRight === groupIndex ? 'show-between-indicator-right' : ''}`}
+                ${dropIndicators.betweenGroupsRight === groupIndex ? 'show-between-indicator-right' : ''}
+                ${isResizing ? 'resizing' : ''}
+                ${resizeDirection ? `resizing-${resizeDirection}` : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDropWithActiveTabUpdate}
             style={containerStyle}
         >
+            {!isFirstGroup && (
+                <div 
+                    className={`resize-handle resize-handle-left ${isResizing && resizeDirection === 'left' ? 'resizing' : ''}`}
+                    onMouseDown={(e) => handleResizeStart(e, 'left')}
+                />
+            )}
             <div className="tab-header">
                 {tabs.map((tab, index) => {
                     if (!tab || !tab.type) {
@@ -190,8 +237,8 @@ function TabContainer({
             </div>
             {!isLastGroup && (
                 <div 
-                    className={`resize-handle ${isResizing ? 'resizing' : ''}`}
-                    onMouseDown={handleResizeStart}
+                    className={`resize-handle resize-handle-right ${isResizing && resizeDirection === 'right' ? 'resizing' : ''}`}
+                    onMouseDown={(e) => handleResizeStart(e, 'right')}
                 />
             )}
         </div>
@@ -228,10 +275,18 @@ TabContainer.propTypes = {
     determineDropAction: PropTypes.func.isRequired,
     /** Callback when a tab is clicked */
     onTabClick: PropTypes.func,
+    /** Callback for resize operations */
     onResize: PropTypes.func.isRequired,
+    /** Whether this is the last group */
     isLastGroup: PropTypes.bool.isRequired,
+    /** Whether this is the first group */
+    isFirstGroup: PropTypes.bool,
     /** Style object for the container */
     style: PropTypes.object,
+};
+
+TabContainer.defaultProps = {
+    isFirstGroup: false
 };
 
 export default TabContainer;

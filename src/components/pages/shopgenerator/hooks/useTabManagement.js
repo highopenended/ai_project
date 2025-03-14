@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { debug } from '../../../../utils/debugUtils';
 import useTabResize from './useTabResize';
 import useTabDropIndicators from './useTabDropIndicators';
@@ -76,6 +76,24 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     
     // Track active tabs for each group
     const [activeTabTypes, setActiveTabTypes] = useState({});
+
+    // Initialize active tab types when component mounts or tab groups change
+    useEffect(() => {
+        const initialActiveTypes = {};
+        tabGroups.forEach((group, index) => {
+            if (group.length > 0 && !activeTabTypes[index]) {
+                initialActiveTypes[index] = group[0].type.name;
+            }
+        });
+        
+        if (Object.keys(initialActiveTypes).length > 0) {
+            debug("tabManagement", "Initializing active tab types", initialActiveTypes);
+            setActiveTabTypes(prev => ({
+                ...prev,
+                ...initialActiveTypes
+            }));
+        }
+    }, [tabGroups, activeTabTypes]);
 
     // Use the tab resize hook with active tab information
     const {

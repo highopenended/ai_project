@@ -428,6 +428,7 @@ function ShopGenerator() {
                     draggedTab={draggedTab}
                     draggedTabIndex={draggedTabIndex}
                     isLastGroup={index === tabGroups.length - 1}
+                    isFirstGroup={index === 0}
                     style={{ width: flexBasis[index] || `${100 / tabGroups.length}%` }}
                     onTabMove={(newTabs) => {
                         if (Array.isArray(newTabs) && newTabs.length === 2 && typeof newTabs[1] === "number") {
