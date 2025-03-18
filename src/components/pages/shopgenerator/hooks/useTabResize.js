@@ -7,9 +7,10 @@ const RESIZE_THROTTLE_MS = 16; // ~60fps
 const DEFAULT_PRIORITY = 0; // Default priority if not found
 
 /**
- * Custom hook for managing tab group resizing
+ * Custom hook for managing tab group resizing with cascading functionality
  * 
  * Handles the resizing of tab groups with:
+ * - Cascading resize when adjacent groups reach minimum width
  * - Minimum width constraints based on active tabs
  * - Performance throttling
  * - Percentage-based width calculations
@@ -23,10 +24,6 @@ const DEFAULT_PRIORITY = 0; // Default priority if not found
  * @param {Array<Array<Object>>} [params.tabGroups] - Current tab groups configuration
  * @param {Object} [params.activeTabTypes] - Map of active tab types for each group
  * @returns {Object} Resize handlers and state
- * @property {Array<string>} flexBasis - Current widths for tab groups
- * @property {Function} setFlexBasis - Function to update group widths
- * @property {boolean} isResizing - Whether a resize operation is in progress
- * @property {Function} handleResize - Handler for group resizing
  */
 function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTabTypes }) {
   // State for group widths
@@ -39,8 +36,11 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
   // Resize tracking ref
   const resizeRef = useRef({ 
     active: false,
-    resizingGroupIndex: null,
-    direction: null // 'left' or 'right'
+    dividerIndex: null,
+    startX: null,
+    startWidths: [],
+    cascadingGroups: [],
+    minWidthReached: false
   });
 
   /**
@@ -91,7 +91,7 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
   }, [tabGroups, activeTabTypes]);
 
   /**
-   * Gets the priority of a tab group based on its active tab
+   * Gets the priority for a tab group based on its active tab
    * @param {number} groupIndex - Index of the group
    * @returns {number} Priority value (higher = more important)
    */
@@ -102,71 +102,76 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
 
     // Get the active tab type for this group
     const activeTabType = activeTabTypes?.[groupIndex];
+    
     if (!activeTabType) {
       // If no active tab is found, use the first tab in the group
       const firstTab = tabGroups[groupIndex][0];
-      if (firstTab && firstTab.type && firstTab.type.name) {
-        return TAB_PRIORITIES[firstTab.type.name] || DEFAULT_PRIORITY;
-      }
-      return DEFAULT_PRIORITY;
+      return TAB_PRIORITIES[firstTab?.type?.name] || DEFAULT_PRIORITY;
     }
 
-    // Return the priority for this tab type
+    // Return the priority for the active tab type
     return TAB_PRIORITIES[activeTabType] || DEFAULT_PRIORITY;
   }, [tabGroups, activeTabTypes]);
 
   /**
-   * Normalizes width percentages to ensure they sum to 100%
-   * @param {Array<number>} widths - Array of width percentages
-   * @returns {Array<number>} Normalized width percentages
-   */
-  const normalizeWidths = useCallback((widths) => {
-    const total = widths.reduce((sum, width) => sum + width, 0);
-    
-    if (Math.abs(total - 100) > 0.1) {
-      return widths.map(width => (width / total) * 100);
-    }
-    
-    return widths;
-  }, []);
-
-  /**
    * Converts percentage widths to pixel values
-   * @param {Array<string>} percentWidths - Array of percentage width strings
-   * @param {number} containerWidth - Total container width in pixels
-   * @returns {Array<number>} Width values in pixels
+   * @param {Array<string>} percentWidths - Array of percentage strings (e.g. ['10%', '20%'])
+   * @param {number} totalWidth - Total width in pixels
+   * @returns {Array<number>} Array of pixel widths
    */
-  const percentToPixels = useCallback((percentWidths, containerWidth) => {
+  const percentToPixels = useCallback((percentWidths, totalWidth) => {
     return percentWidths.map(width => {
       const percent = parseFloat(width);
-      return (percent / 100) * containerWidth;
+      return (percent / 100) * totalWidth;
     });
   }, []);
 
   /**
    * Converts pixel widths to percentage values
-   * @param {Array<number>} pixelWidths - Array of pixel width values
-   * @param {number} containerWidth - Total container width in pixels
-   * @returns {Array<number>} Width values as percentages (without % symbol)
+   * @param {Array<number>} pixelWidths - Array of pixel widths
+   * @param {number} totalWidth - Total width in pixels
+   * @returns {Array<number>} Array of percentage values (not strings)
    */
-  const pixelsToPercent = useCallback((pixelWidths, containerWidth) => {
-    return pixelWidths.map(width => (width / containerWidth) * 100);
+  const pixelsToPercent = useCallback((pixelWidths, totalWidth) => {
+    return pixelWidths.map(width => (width / totalWidth) * 100);
   }, []);
 
   /**
-   * Ensures all groups meet their minimum width requirements
+   * Normalizes percentage widths to ensure they sum to 100%
+   * @param {Array<number>} percentWidths - Array of percentage values
+   * @returns {Array<number>} Normalized percentage values
+   */
+  const normalizeWidths = useCallback((percentWidths) => {
+    const sum = percentWidths.reduce((acc, width) => acc + width, 0);
+    if (Math.abs(sum - 100) < 0.01) return percentWidths;
+    
+    return percentWidths.map(width => (width / sum) * 100);
+  }, []);
+
+  /**
+   * Enforces minimum widths for all groups
    * @param {Array<number>} widthsInPixels - Current widths in pixels
-   * @param {number} containerWidth - Total container width
+   * @param {number} containerWidth - Total container width in pixels
    * @returns {Array<number>} Adjusted widths in pixels
    */
   const enforceMinimumWidths = useCallback((widthsInPixels, containerWidth) => {
     const minWidths = Array(widthsInPixels.length).fill(0)
-      .map((_, i) => getGroupMinWidth(i));
+      .map((_, index) => getGroupMinWidth(index));
     
+    // Get priorities for all groups
+    const priorities = Array(widthsInPixels.length).fill(0)
+      .map((_, index) => getGroupPriority(index));
+    
+    debug("tabManagement", "Enforcing minimum widths", { 
+      widthsInPixels, 
+      minWidths,
+      priorities
+    });
+    
+    // First pass: identify groups below minimum width
     let adjustedWidths = [...widthsInPixels];
     let needsAdjustment = false;
     
-    // First pass: identify groups below minimum width
     for (let i = 0; i < adjustedWidths.length; i++) {
       if (adjustedWidths[i] < minWidths[i]) {
         needsAdjustment = true;
@@ -174,37 +179,41 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
       }
     }
     
-    if (!needsAdjustment) return adjustedWidths;
-    
-    // Second pass: adjust widths based on priorities
-    const priorities = Array(widthsInPixels.length).fill(0)
-      .map((_, i) => ({
-        index: i,
-        priority: getGroupPriority(i),
-        width: adjustedWidths[i],
-        minWidth: minWidths[i],
-        excess: Math.max(0, adjustedWidths[i] - minWidths[i])
-      }))
-      .sort((a, b) => a.priority - b.priority); // Sort by priority (lowest first)
-    
-    // Identify groups below minimum and calculate deficit
-    const deficitGroups = priorities.filter(g => g.width < g.minWidth);
-    let totalDeficit = deficitGroups.reduce((sum, g) => sum + (g.minWidth - g.width), 0);
-    
-    // Take space from groups with excess, starting with lowest priority
-    for (const group of priorities) {
-      if (totalDeficit <= 0) break;
-      
-      if (group.excess > 0) {
-        const amountToTake = Math.min(group.excess, totalDeficit);
-        adjustedWidths[group.index] -= amountToTake;
-        totalDeficit -= amountToTake;
-      }
+    if (!needsAdjustment) {
+      return adjustedWidths;
     }
     
-    // Apply minimum widths to deficit groups
-    for (const group of deficitGroups) {
-      adjustedWidths[group.index] = group.minWidth;
+    // Second pass: adjust widths based on priorities
+    // Sort groups by priority (lowest first)
+    const groupIndices = Array(adjustedWidths.length).fill(0)
+      .map((_, index) => index)
+      .sort((a, b) => priorities[a] - priorities[b]);
+    
+    // Ensure all groups meet minimum width requirements
+    for (let i = 0; i < adjustedWidths.length; i++) {
+      const index = groupIndices[i];
+      
+      if (adjustedWidths[index] < minWidths[index]) {
+        const deficit = minWidths[index] - adjustedWidths[index];
+        adjustedWidths[index] = minWidths[index];
+        
+        // Distribute the deficit among higher priority groups
+        let remainingDeficit = deficit;
+        
+        // Start from the highest priority groups
+        for (let j = adjustedWidths.length - 1; j > i; j--) {
+          const highPriorityIndex = groupIndices[j];
+          const available = Math.max(0, adjustedWidths[highPriorityIndex] - minWidths[highPriorityIndex]);
+          
+          if (available > 0) {
+            const reduction = Math.min(available, remainingDeficit);
+            adjustedWidths[highPriorityIndex] -= reduction;
+            remainingDeficit -= reduction;
+            
+            if (remainingDeficit <= 0) break;
+          }
+        }
+      }
     }
     
     // Ensure total width is maintained
@@ -218,17 +227,61 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
   }, [getGroupMinWidth, getGroupPriority]);
 
   /**
-   * Handles bidirectional resizing of tab groups with throttling
-   * @param {number} newWidth - New width in pixels for the resizing group
-   * @param {number} groupIndex - Index of the group being resized
-   * @param {string} direction - Direction of resize ('left' or 'right')
+   * Initializes resize operation
+   * @param {number} dividerIndex - Index of the divider being dragged
    */
-  const handleResize = useCallback((newWidth, groupIndex, direction) => {
-    const startMark = createMark('tabManagement', 'Resize Operation');
+  const handleResizeStart = useCallback((dividerIndex) => {
+    // Validate inputs
+    if (dividerIndex < 0 || dividerIndex >= tabGroupsLength - 1) {
+      debug("tabManagement", "Invalid divider index", { dividerIndex });
+      return;
+    }
+    
+    console.log(`%c[ResizeStart] Divider ${dividerIndex} - Starting resize operation`, 'color: #9c27b0; font-weight: bold');
+    
+    // Get container width
+    const totalWidth = getContainerWidth();
+    if (!totalWidth) {
+      debug("tabManagement", "No container width available");
+      return;
+    }
+    
+    // Convert current widths to pixels
+    const pixelWidths = percentToPixels(flexBasis, totalWidth);
+    
+    console.log(`[ResizeStart] Initial widths (px): [${pixelWidths.join(', ')}]`);
+    console.log(`[ResizeStart] Initial percentages: [${flexBasis.join(', ')}]`);
+    
+    // Get minimum widths for all groups
+    const minWidths = Array(pixelWidths.length).fill(0)
+      .map((_, index) => getGroupMinWidth(index));
+    
+    console.log(`[ResizeStart] Minimum widths (px): [${minWidths.join(', ')}]`);
+    
+    // Update resize state
+    resizeRef.current = {
+      isResizing: true,
+      dividerIndex,
+      startWidths: pixelWidths,
+      minWidths,
+      cascadingGroups: [],
+      minWidthReached: false
+    };
+    
+    // Update UI state
+    setIsResizing(true);
+    
+    // Update last resize time
+    lastResizeTimeRef.current = Date.now();
+  }, [tabGroupsLength, getContainerWidth, percentToPixels, flexBasis, getGroupMinWidth]);
 
-    // Store resize direction
-    resizeRef.current.direction = direction;
-    resizeRef.current.resizingGroupIndex = groupIndex;
+  /**
+   * Performs cascading resize operation
+   * @param {number} dividerIndex - Index of the divider being dragged
+   * @param {number} delta - Mouse movement delta in pixels
+   */
+  const handleResize = useCallback((dividerIndex, delta) => {
+    const startMark = createMark('tabManagement', 'Resize Operation');
 
     // Apply throttling
     const now = Date.now();
@@ -237,13 +290,12 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
     }
 
     // Validate inputs
-    if ((direction === 'right' && groupIndex >= tabGroupsLength - 1) ||
-        (direction === 'left' && groupIndex <= 0)) {
-      debug("tabManagement", "Invalid group index for resize", { groupIndex, direction });
+    if (dividerIndex < 0 || dividerIndex >= tabGroupsLength - 1) {
+      debug("tabManagement", "Invalid divider index", { dividerIndex });
       return;
     }
 
-    debug("tabManagement", "Processing resize", { groupIndex, newWidth, direction });
+    console.log(`%c[Resize] Divider ${dividerIndex}, Delta: ${delta}px`, 'color: #4caf50; font-weight: bold');
 
     // Get container width
     const totalWidth = getContainerWidth();
@@ -253,7 +305,6 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
     }
 
     // Update resize state
-    setIsResizing(true);
     lastResizeTimeRef.current = now;
 
     // Calculate and apply new widths
@@ -261,61 +312,132 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
       // Convert to pixels for easier calculations
       const pixelWidths = percentToPixels(prev, totalWidth);
       
+      // Get the initial widths from resize start
+      const startWidths = resizeRef.current.startWidths.length > 0 
+        ? resizeRef.current.startWidths 
+        : [...pixelWidths];
+      
       // Create a new array for the updated widths
       const newPixelWidths = [...pixelWidths];
       
-      if (direction === 'right') {
-        // Resizing from right edge (affects current and next group)
-        const adjacentGroupIndex = groupIndex + 1;
+      // Get minimum widths for all groups
+      const minWidths = Array(pixelWidths.length).fill(0)
+        .map((_, index) => getGroupMinWidth(index));
+      
+      // Implement cascading resize logic
+      const leftGroupIndex = dividerIndex;
+      const rightGroupIndex = dividerIndex + 1;
+      
+      console.log(`%c[Resize] Groups: Left=${leftGroupIndex}, Right=${rightGroupIndex}`, 'color: #2196f3');
+      console.log(`[Resize] Start Widths: Left=${startWidths[leftGroupIndex]}px, Right=${startWidths[rightGroupIndex]}px`);
+      console.log(`[Resize] Min Widths: Left=${minWidths[leftGroupIndex]}px, Right=${minWidths[rightGroupIndex]}px`);
+      
+      // Calculate new widths based on delta
+      let leftWidth = startWidths[leftGroupIndex] + delta;
+      let rightWidth = startWidths[rightGroupIndex] - delta;
+      
+      console.log(`[Resize] Calculated Widths: Left=${leftWidth}px, Right=${rightWidth}px`);
+      
+      // Check if either group has reached its minimum width
+      const leftMinReached = leftWidth <= minWidths[leftGroupIndex];
+      const rightMinReached = rightWidth <= minWidths[rightGroupIndex];
+      
+      console.log(`%c[Resize] Min Width Reached: Left=${leftMinReached}, Right=${rightMinReached}`, 
+        leftMinReached || rightMinReached ? 'color: #ff5252; font-weight: bold' : 'color: #2196f3');
+      
+      // Track which groups are involved in cascading
+      let cascadingGroups = [];
+      let minWidthReached = false;
+      
+      // Determine the resize direction based on delta
+      // delta > 0: Dragging right (expanding left group, shrinking right group)
+      // delta < 0: Dragging left (shrinking left group, expanding right group)
+      
+      if (delta > 0) {
+        // Dragging right (expanding left group, shrinking right group)
+        console.log(`%c[Resize] Direction: RIGHT (expanding left group)`, 'color: #4caf50');
         
-        // Calculate the combined width of the two affected groups
-        const combinedWidth = pixelWidths[groupIndex] + pixelWidths[adjacentGroupIndex];
-        
-        // Get minimum widths for both groups
-        const currentGroupMinWidth = getGroupMinWidth(groupIndex);
-        const adjacentGroupMinWidth = getGroupMinWidth(adjacentGroupIndex);
-        
-        debug("tabManagement", "Right resize constraints", {
-          currentGroupMinWidth,
-          adjacentGroupMinWidth,
-          combinedWidth,
-          proposedWidth: newWidth
-        });
-        
-        // Apply the new width to the current group, respecting both minimum widths
-        newPixelWidths[groupIndex] = Math.max(
-          currentGroupMinWidth,
-          Math.min(newWidth, combinedWidth - adjacentGroupMinWidth)
-        );
-        
-        // Adjust the adjacent group to maintain the combined width
-        newPixelWidths[adjacentGroupIndex] = combinedWidth - newPixelWidths[groupIndex];
+        if (rightMinReached) {
+          // Right group reached minimum, cascade to next groups
+          // This is the case where we're expanding the left group and need to cascade
+          minWidthReached = true;
+          console.log(`%c[Resize] Right group reached minimum width, cascading...`, 'color: #ff9800; font-weight: bold');
+          
+          // Set right group to its minimum
+          rightWidth = minWidths[rightGroupIndex];
+          
+          // Calculate remaining delta to distribute
+          let remainingDelta = startWidths[rightGroupIndex] - minWidths[rightGroupIndex];
+          let currentDelta = delta - remainingDelta;
+          
+          console.log(`[Resize] Remaining delta to distribute: ${currentDelta}px`);
+          
+          // Try to cascade to groups to the right
+          for (let i = rightGroupIndex + 1; i < pixelWidths.length; i++) {
+            cascadingGroups.push(i);
+            
+            const groupMinWidth = minWidths[i];
+            const availableWidth = startWidths[i] - groupMinWidth;
+            
+            console.log(`[Resize] Cascading to group ${i}: Min=${groupMinWidth}px, Available=${availableWidth}px`);
+            
+            if (availableWidth > 0) {
+              // This group can absorb some of the delta
+              const absorbedDelta = Math.min(availableWidth, currentDelta);
+              newPixelWidths[i] = startWidths[i] - absorbedDelta;
+              currentDelta -= absorbedDelta;
+              
+              console.log(`[Resize] Group ${i} absorbed ${absorbedDelta}px, remaining delta: ${currentDelta}px`);
+              
+              if (currentDelta <= 0) {
+                console.log(`[Resize] All delta absorbed, stopping cascade`);
+                break;
+              }
       } else {
-        // Resizing from left edge (affects current and previous group)
-        const adjacentGroupIndex = groupIndex - 1;
+              console.log(`[Resize] Group ${i} cannot absorb any delta (at min width)`);
+            }
+          }
+          
+          // Adjust left group width based on what was actually absorbed
+          leftWidth = startWidths[leftGroupIndex] + (delta - currentDelta);
+          console.log(`[Resize] Adjusted left group width: ${leftWidth}px (absorbed ${delta - currentDelta}px)`);
+        }
+      } else if (delta < 0) {
+        // Dragging left (shrinking left group, expanding right group)
+        console.log(`%c[Resize] Direction: LEFT (shrinking left group)`, 'color: #2196f3');
         
-        // Calculate the combined width of the two affected groups
-        const combinedWidth = pixelWidths[adjacentGroupIndex] + pixelWidths[groupIndex];
-        
-        // Get minimum widths for both groups
-        const currentGroupMinWidth = getGroupMinWidth(groupIndex);
-        const adjacentGroupMinWidth = getGroupMinWidth(adjacentGroupIndex);
-        
-        debug("tabManagement", "Left resize constraints", {
-          currentGroupMinWidth,
-          adjacentGroupMinWidth,
-          combinedWidth,
-          proposedWidth: newWidth
-        });
-        
-        // Apply the new width to the current group, respecting both minimum widths
-        newPixelWidths[groupIndex] = Math.max(
-          currentGroupMinWidth,
-          Math.min(newWidth, combinedWidth - adjacentGroupMinWidth)
-        );
-        
-        // Adjust the adjacent group to maintain the combined width
-        newPixelWidths[adjacentGroupIndex] = combinedWidth - newPixelWidths[groupIndex];
+        // In this case, we don't want to cascade when the left group reaches minimum width
+        // Instead, we just stop the resize operation at the minimum width
+        if (leftMinReached) {
+          // Left group reached minimum, don't cascade, just stop at minimum width
+          minWidthReached = true;
+          console.log(`%c[Resize] Left group reached minimum width, stopping resize`, 'color: #ff5252; font-weight: bold');
+          
+          leftWidth = minWidths[leftGroupIndex];
+          
+          // Calculate how much of the delta we could actually apply
+          const appliedDelta = startWidths[leftGroupIndex] - minWidths[leftGroupIndex];
+          
+          console.log(`[Resize] Applied delta: ${appliedDelta}px of requested ${delta}px`);
+          
+          // Adjust right group width based on what was actually applied
+          rightWidth = startWidths[rightGroupIndex] - (delta + appliedDelta);
+          console.log(`[Resize] Adjusted right group width: ${rightWidth}px`);
+        }
+      }
+      
+      // Update the widths of the primary groups
+      newPixelWidths[leftGroupIndex] = Math.max(leftWidth, minWidths[leftGroupIndex]);
+      newPixelWidths[rightGroupIndex] = Math.max(rightWidth, minWidths[rightGroupIndex]);
+      
+      console.log(`[Resize] Final widths: Left=${newPixelWidths[leftGroupIndex]}px, Right=${newPixelWidths[rightGroupIndex]}px`);
+      
+      // Store cascading information for visual feedback
+      resizeRef.current.cascadingGroups = cascadingGroups;
+      resizeRef.current.minWidthReached = minWidthReached;
+      
+      if (cascadingGroups.length > 0) {
+        console.log(`%c[Resize] Cascading to groups: ${cascadingGroups.join(', ')}`, 'color: #ff9800; font-weight: bold');
       }
       
       // Enforce minimum widths for all groups
@@ -330,11 +452,8 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
       // Convert to percentage strings
       const newBasis = normalizedWidths.map(w => `${w}%`);
       
-      debug("tabManagement", "Updated basis", {
-        direction,
-        groupIndex,
-        newBasis
-      });
+      console.log(`[Resize] New basis percentages: [${newBasis.join(', ')}]`);
+      console.log('-----------------------------------');
 
       trackPerformance('tabManagement', 'Resize Operation', startMark);
       return newBasis;
@@ -350,15 +469,42 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
   ]);
 
   /**
-   * Resets resize state
+   * Ends resize operation
    */
   const handleResizeEnd = useCallback(() => {
-    debug("tabManagement", "Ending resize operation");
+    console.log(`%c[ResizeEnd] Ending resize operation`, 'color: #9c27b0; font-weight: bold');
+    
+    if (resizeRef.current.isResizing) {
+      // Get final state information
+      const { dividerIndex, cascadingGroups, minWidthReached } = resizeRef.current;
+      
+      console.log(`[ResizeEnd] Divider: ${dividerIndex}`);
+      console.log(`[ResizeEnd] Final percentages: [${flexBasis.join(', ')}]`);
+      
+      if (cascadingGroups.length > 0) {
+        console.log(`[ResizeEnd] Cascaded to groups: [${cascadingGroups.join(', ')}]`);
+      }
+      
+      if (minWidthReached) {
+        console.log(`[ResizeEnd] Minimum width was reached during resize`);
+      }
+      
+      // Reset resize state
+      resizeRef.current = {
+        isResizing: false,
+        dividerIndex: null,
+        startWidths: [],
+        minWidths: [],
+        cascadingGroups: [],
+        minWidthReached: false
+      };
+    }
+    
+    // Update UI state
     setIsResizing(false);
-    resizeRef.current.active = false;
-    resizeRef.current.direction = null;
-    resizeRef.current.resizingGroupIndex = null;
-  }, []);
+    
+    console.log('===================================');
+  }, [flexBasis]);
 
   /**
    * Sets up global mouse event handlers for resize operations
@@ -387,6 +533,106 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
   useEffect(() => {
     resizeRef.current.active = isResizing;
   }, [isResizing]);
+
+  /**
+   * Redistributes widths when adding new tab groups
+   * @param {Array<string>} previousWidths - Previous width percentages
+   * @param {number} newLength - New number of groups
+   * @param {Array<Object>} groupPriorities - Priority information for each group
+   * @returns {Array<string>} New width percentages
+   */
+  const redistributeForNewGroups = (previousWidths, newLength, groupPriorities) => {
+    // Convert percentage strings to numbers
+    const prevPercentages = previousWidths.map(w => parseFloat(w));
+    
+    // Calculate how much width we need to allocate for new groups
+    const newGroupCount = newLength - previousWidths.length;
+    const newGroupPercentage = 10; // Default percentage for new groups
+    const totalNewGroupPercentage = newGroupPercentage * newGroupCount;
+    
+    // Sort groups by priority (lowest first)
+    groupPriorities.sort((a, b) => a.priority - b.priority);
+    
+    // Calculate how much to take from each existing group
+    let remainingToTake = totalNewGroupPercentage;
+    const newPercentages = [...prevPercentages];
+    
+    // Take from lowest priority groups first
+    for (const group of groupPriorities) {
+      if (remainingToTake <= 0) break;
+      
+      const index = group.index;
+      if (index >= newPercentages.length) continue;
+      
+      // Calculate how much we can take from this group
+      const currentWidth = newPercentages[index];
+      const minWidthPercent = (group.minWidth / getContainerWidth()) * 100;
+      const availableToTake = Math.max(0, currentWidth - minWidthPercent);
+      
+      if (availableToTake > 0) {
+        const amountToTake = Math.min(availableToTake, remainingToTake);
+        newPercentages[index] = currentWidth - amountToTake;
+        remainingToTake -= amountToTake;
+      }
+    }
+    
+    // If we couldn't take enough, adjust all groups proportionally
+    if (remainingToTake > 0) {
+      const scaleFactor = (100 - totalNewGroupPercentage) / 100;
+      for (let i = 0; i < newPercentages.length; i++) {
+        newPercentages[i] *= scaleFactor;
+      }
+    }
+    
+    // Add new groups with the allocated percentage
+    const adjustedNewGroupPercentage = (totalNewGroupPercentage - remainingToTake) / newGroupCount;
+    const result = [
+      ...newPercentages,
+      ...Array(newGroupCount).fill(adjustedNewGroupPercentage)
+    ];
+    
+    // Normalize to ensure sum is 100%
+    const sum = result.reduce((acc, val) => acc + val, 0);
+    const normalized = result.map(val => (val / sum) * 100);
+    
+    // Convert back to percentage strings
+    return normalized.map(p => `${p}%`);
+  };
+
+  /**
+   * Redistributes widths when removing tab groups
+   * @param {Array<string>} previousWidths - Previous width percentages
+   * @param {number} previousLength - Previous number of groups
+   * @param {number} newLength - New number of groups
+   * @returns {Array<string>} New width percentages
+   */
+  const redistributeAfterRemoval = (previousWidths, previousLength, newLength) => {
+    // If we have exactly the right number of widths, just return them
+    if (previousWidths.length === newLength) {
+      return previousWidths;
+    }
+    
+    // If we have too many widths, truncate
+    if (previousWidths.length > newLength) {
+      const truncated = previousWidths.slice(0, newLength);
+      
+      // Normalize to ensure sum is 100%
+      const sum = truncated.reduce((acc, val) => acc + parseFloat(val), 0);
+      const normalized = truncated.map(val => (parseFloat(val) / sum) * 100);
+      
+      // Convert back to percentage strings
+      return normalized.map(p => `${p}%`);
+    }
+    
+    // If we have too few widths, add new ones with equal distribution
+    const missingCount = newLength - previousWidths.length;
+    const equalPercentage = 100 / newLength;
+    
+    return [
+      ...previousWidths,
+      ...Array(missingCount).fill(`${equalPercentage}%`)
+    ];
+  };
 
   /**
    * Redistributes widths based on tab priorities when group count changes
@@ -438,208 +684,55 @@ function useTabResize({ initialGroupWidths, tabGroupsLength, tabGroups, activeTa
     // Determine if we're adding or removing groups
     const isAdding = tabGroupsLength > previousLength;
     const isDifferent = tabGroupsLength !== previousLength;
+    
+    let newBasis;
 
     if (isDifferent) {
-      let newWidths;
-      
       if (isAdding) {
-        // Adding groups - take space from lowest priority groups
-        newWidths = redistributeForNewGroups(
-          previousWidths, 
-          tabGroupsLength, 
-          groupPriorities
-        );
+        // Adding new groups
+        newBasis = redistributeForNewGroups(previousWidths, tabGroupsLength, groupPriorities);
       } else {
-        // Removing groups - redistribute freed space to remaining groups
-        // based on inverse priority (lower priority gets more space)
-        newWidths = redistributeAfterRemoval(
-          previousWidths, 
-          previousLength, 
-          tabGroupsLength, 
-          groupPriorities
-        );
+        // Removing groups
+        newBasis = redistributeAfterRemoval(previousWidths, previousLength, tabGroupsLength);
       }
-
-      // Get container width
-      const containerWidth = getContainerWidth();
       
-      // Convert to pixels, enforce minimum widths, and convert back to percentages
-      if (containerWidth) {
-        const pixelWidths = percentToPixels(newWidths, containerWidth);
-        const adjustedPixelWidths = enforceMinimumWidths(pixelWidths, containerWidth);
-        const percentWidths = pixelsToPercent(adjustedPixelWidths, containerWidth);
-        const normalizedWidths = normalizeWidths(percentWidths);
-        newWidths = normalizedWidths.map(w => `${w}%`);
-      }
-
-      debug("tabManagement", "New widths after redistribution", newWidths);
-      setFlexBasis(newWidths);
+      debug("tabManagement", "Redistributed widths", { 
+        previous: previousWidths, 
+        new: newBasis 
+      });
+      
+      setFlexBasis(newBasis);
+    } else if (flexBasis.length !== tabGroupsLength) {
+      // Number of groups is the same but flexBasis length is different
+      // This can happen if the flexBasis state wasn't properly updated
+      debug("tabManagement", "Fixing flexBasis length mismatch");
+      
+      newBasis = redistributeAfterRemoval(previousWidths, previousLength, tabGroupsLength);
+      setFlexBasis(newBasis);
     }
 
     // Update refs for next comparison
     previousGroupsLengthRef.current = tabGroupsLength;
-    previousWidthsRef.current = flexBasis;
+    previousWidthsRef.current = newBasis || flexBasis;
   }, [
     tabGroupsLength, 
-    flexBasis.length, 
+    flexBasis, 
     getGroupPriority, 
     getGroupMinWidth, 
-    getContainerWidth, 
-    percentToPixels, 
-    pixelsToPercent, 
-    normalizeWidths, 
-    enforceMinimumWidths
+    getContainerWidth
   ]);
-
-  /**
-   * Redistributes space when adding new groups
-   * Takes space from lowest priority groups
-   * 
-   * @param {Array<string>} previousWidths - Previous width percentages
-   * @param {number} newLength - New number of groups
-   * @param {Array<Object>} groupPriorities - Sorted group priorities
-   * @returns {Array<string>} New width percentages
-   */
-  const redistributeForNewGroups = (previousWidths, newLength, groupPriorities) => {
-    // Convert percentage strings to numbers
-    const numericWidths = previousWidths.map(w => parseFloat(w));
-    
-    // Calculate how many new groups we're adding
-    const addedGroups = newLength - numericWidths.length;
-    
-    // Default width for new groups (reasonable starting point)
-    const defaultNewGroupWidth = 10; // 10%
-    
-    // Total width needed for new groups
-    const totalNewWidth = defaultNewGroupWidth * addedGroups;
-    
-    // Create a new array with the current widths
-    let newWidths = [...numericWidths];
-    
-    // Add placeholder widths for new groups
-    for (let i = 0; i < addedGroups; i++) {
-      newWidths.push(defaultNewGroupWidth);
-    }
-    
-    // Calculate how much we need to reduce existing groups
-    let widthToReduce = totalNewWidth;
-    
-    // Take width from lowest priority groups first
-    for (const group of groupPriorities) {
-      // Skip if this is a new group (index >= previous length)
-      if (group.index >= numericWidths.length) continue;
-      
-      // Calculate how much we can take from this group
-      // Don't reduce below minimum width percentage
-      const currentWidth = numericWidths[group.index];
-      const minWidthPercent = 10; // Minimum 10% width as a fallback
-      const availableToTake = Math.max(0, currentWidth - minWidthPercent);
-      
-      if (availableToTake > 0) {
-        // Take what we need, up to what's available
-        const amountToTake = Math.min(widthToReduce, availableToTake);
-        newWidths[group.index] -= amountToTake;
-        widthToReduce -= amountToTake;
-        
-        // Stop if we've reduced enough
-        if (widthToReduce <= 0) break;
-      }
-    }
-    
-    // If we still need to reduce more, take proportionally from all groups
-    if (widthToReduce > 0) {
-      const totalCurrentWidth = newWidths.reduce((sum, width, i) => 
-        i < numericWidths.length ? sum + width : sum, 0);
-      
-      for (let i = 0; i < numericWidths.length; i++) {
-        const reductionRatio = newWidths[i] / totalCurrentWidth;
-        const additionalReduction = widthToReduce * reductionRatio;
-        newWidths[i] -= additionalReduction;
-      }
-    }
-    
-    // Ensure total is 100%
-    const total = newWidths.reduce((sum, width) => sum + width, 0);
-    if (Math.abs(total - 100) > 0.1) {
-      // Normalize to 100%
-      newWidths = newWidths.map(width => (width / total) * 100);
-    }
-    
-    // Convert back to percentage strings
-    return newWidths.map(w => `${w}%`);
-  };
-
-  /**
-   * Redistributes space when removing groups
-   * Gives more space to lower priority groups
-   * 
-   * @param {Array<string>} previousWidths - Previous width percentages
-   * @param {number} previousLength - Previous number of groups
-   * @param {number} newLength - New number of groups
-   * @param {Array<Object>} groupPriorities - Sorted group priorities
-   * @returns {Array<string>} New width percentages
-   */
-  const redistributeAfterRemoval = (previousWidths, previousLength, newLength, groupPriorities) => {
-    // Convert percentage strings to numbers
-    const numericWidths = previousWidths.map(w => parseFloat(w));
-    
-    // Calculate total width of removed groups
-    let freedWidth = 0;
-    for (let i = newLength; i < previousLength; i++) {
-      if (i < numericWidths.length) {
-        freedWidth += numericWidths[i];
-      }
-    }
-    
-    // Create new widths array with only the remaining groups
-    let newWidths = numericWidths.slice(0, newLength);
-    
-    // Calculate inverse priorities (lower priority gets more space)
-    const maxPriority = Math.max(...groupPriorities.map(g => g.priority));
-    const inversePriorities = groupPriorities
-      .filter(g => g.index < newLength) // Only consider remaining groups
-      .map(g => ({
-        index: g.index,
-        inversePriority: maxPriority - g.priority + 1 // +1 to ensure even priority 0 gets something
-      }));
-    
-    // Calculate total inverse priority for distribution ratio
-    const totalInversePriority = inversePriorities.reduce(
-      (sum, g) => sum + g.inversePriority, 0
-    );
-    
-    // Distribute freed width based on inverse priority
-    if (totalInversePriority > 0) {
-      for (const group of inversePriorities) {
-        const distributionRatio = group.inversePriority / totalInversePriority;
-        newWidths[group.index] += freedWidth * distributionRatio;
-      }
-    } else {
-      // Fallback: distribute equally
-      const equalShare = freedWidth / newLength;
-      newWidths = newWidths.map(w => w + equalShare);
-    }
-    
-    // Ensure total is 100%
-    const total = newWidths.reduce((sum, width) => sum + width, 0);
-    if (Math.abs(total - 100) > 0.1) {
-      // Normalize to 100%
-      newWidths = newWidths.map(width => (width / total) * 100);
-    }
-    
-    // Convert back to percentage strings
-    return newWidths.map(w => `${w}%`);
-  };
 
   return {
     flexBasis,
     setFlexBasis,
     isResizing,
+    handleResizeStart,
     handleResize,
     handleResizeEnd,
     getResizeInfo: () => ({
-      direction: resizeRef.current.direction,
-      groupIndex: resizeRef.current.resizingGroupIndex
+      dividerIndex: resizeRef.current.dividerIndex,
+      cascadingGroups: resizeRef.current.cascadingGroups,
+      minWidthReached: resizeRef.current.minWidthReached
     })
   };
 }

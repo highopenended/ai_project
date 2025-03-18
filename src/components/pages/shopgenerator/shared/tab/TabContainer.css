@@ -13,40 +13,27 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-.tab-container.resizing-left {
-    cursor: w-resize;
+/* Visual feedback for cascading resize */
+.tab-container.cascading {
+    box-shadow: 0 0 0 2px var(--accent-color);
+    z-index: 5;
 }
 
-.tab-container.resizing-right {
-    cursor: e-resize;
+/* Visual feedback for minimum width reached */
+.tab-container.min-width-reached {
+    box-shadow: 0 0 0 2px #ff5252;
+    z-index: 15;
 }
 
-/* Resize handles */
-.resize-handle {
+.tab-container.min-width-reached::after {
+    content: '';
     position: absolute;
     top: 0;
-    width: 6px;
-    height: 100%;
-    cursor: col-resize;
-    z-index: 100;
-    background-color: transparent;
-    transition: background-color 0.2s ease;
-}
-
-.resize-handle-left {
-    left: -3px;
-    cursor: w-resize;
-}
-
-.resize-handle-right {
-    right: -3px;
-    cursor: e-resize;
-}
-
-.resize-handle:hover,
-.resize-handle.resizing {
-    background-color: var(--accent-color);
-    opacity: 0.5;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    border: 1px dashed #ff5252;
 }
 
 /* Drag and drop indicators */

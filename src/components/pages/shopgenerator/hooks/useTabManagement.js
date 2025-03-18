@@ -64,6 +64,8 @@ import useTabDropIndicators from './useTabDropIndicators';
  * @property {Function} handleDragStart - Handler for drag start
  * @property {Function} handleDragEnd - Handler for drag end
  * @property {Function} handleDropIndicatorChange - Handler for drop indicator changes
+ * @property {Function} resizeInfo - Information about the current resize operation
+ * @property {Function} tabContainerProps - Props for the tab container component
  */
 export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
     // Consolidated state management
@@ -100,8 +102,10 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         flexBasis,
         setFlexBasis,
         isResizing,
+        handleResizeStart,
         handleResize,
-        handleResizeEnd
+        handleResizeEnd,
+        getResizeInfo
     } = useTabResize({
         initialGroupWidths,
         tabGroupsLength: tabGroups.length,
@@ -352,6 +356,33 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         }
     }, []);
 
+    /**
+     * Handles the start of a resize operation
+     * @param {number} dividerIndex - Index of the divider being dragged
+     */
+    const onResizeStart = useCallback((dividerIndex) => {
+        debug("tabManagement", "Starting resize operation", { dividerIndex });
+        handleResizeStart(dividerIndex);
+    }, [handleResizeStart]);
+
+    /**
+     * Handles resize operations with cascading functionality
+     * @param {number} dividerIndex - Index of the divider being dragged
+     * @param {number} delta - Mouse movement delta in pixels
+     */
+    const onResize = useCallback((dividerIndex, delta) => {
+        debug("tabManagement", "Resizing with delta", { dividerIndex, delta });
+        handleResize(dividerIndex, delta);
+    }, [handleResize]);
+
+    /**
+     * Handles the end of a resize operation
+     */
+    const onResizeEnd = useCallback(() => {
+        debug("tabManagement", "Ending resize operation");
+        handleResizeEnd();
+    }, [handleResizeEnd]);
+
     return {
         tabGroups,
         setTabGroups,
@@ -364,12 +395,12 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
         dropIndicators,
         handleTabMove,
         handleTabSplit,
-        handleResize,
         handleDragStart,
         handleDragEnd,
         handleDropIndicatorChange,
         determineDropAction,
         handleTabClick,
+        resizeInfo: getResizeInfo(),
         tabContainerProps: {
             onTabMove: handleTabMove,
             onTabSplit: handleTabSplit,
@@ -377,9 +408,13 @@ export const useTabManagement = ({ initialTabGroups, initialGroupWidths }) => {
             onDragEnd: handleDragEnd,
             onDropIndicatorChange: handleDropIndicatorChange,
             determineDropAction,
-            onResize: handleResize,
+            onResize,
+            onResizeStart,
+            onResizeEnd,
             onTabClick: handleTabClick,
-            dropIndicators
+            dropIndicators,
+            isResizing,
+            resizeInfo: getResizeInfo()
         }
     };
 };
