@@ -102,44 +102,46 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
     const handleApplySuggestions = useCallback((suggestedChanges) => {
         // Create a copy of the current shop state
         const updatedShopState = { ...shopState };
-
-        console.log("Applying suggested changes:", suggestedChanges);
+        
+        // Add debug logs to see data before changes
+        console.log("SHOP STATE BEFORE CHANGES:", JSON.stringify(shopState, null, 2));
+        console.log("APPLYING SUGGESTIONS:", JSON.stringify(suggestedChanges, null, 2));
         
         // Apply shop details changes if present
         if (suggestedChanges.name !== undefined) {
-            updatedShopState.name = suggestedChanges.name;
+            updatedShopState.name = String(suggestedChanges.name);
         }
         
         if (suggestedChanges.keeperName !== undefined) {
-            updatedShopState.keeperName = suggestedChanges.keeperName;
+            updatedShopState.keeperName = String(suggestedChanges.keeperName);
         }
         
         if (suggestedChanges.type !== undefined) {
-            updatedShopState.type = suggestedChanges.type;
+            updatedShopState.type = String(suggestedChanges.type);
         }
         
         if (suggestedChanges.location !== undefined) {
-            updatedShopState.location = suggestedChanges.location;
+            updatedShopState.location = String(suggestedChanges.location);
         }
         
         if (suggestedChanges.description !== undefined) {
-            updatedShopState.description = suggestedChanges.description;
+            updatedShopState.description = String(suggestedChanges.description);
         }
         
         if (suggestedChanges.keeperDescription !== undefined) {
-            updatedShopState.keeperDescription = suggestedChanges.keeperDescription;
+            updatedShopState.keeperDescription = String(suggestedChanges.keeperDescription);
         }
 
         // Apply gold changes if present
         if (suggestedChanges.gold !== undefined) {
-            updatedShopState.gold = suggestedChanges.gold;
+            updatedShopState.gold = Number(suggestedChanges.gold);
         }
 
         // Apply level range changes if present
         if (suggestedChanges.levelRange) {
             updatedShopState.levelRange = {
-                min: suggestedChanges.levelRange.min,
-                max: suggestedChanges.levelRange.max
+                min: Number(suggestedChanges.levelRange.min),
+                max: Number(suggestedChanges.levelRange.max)
             };
         }
 
@@ -147,38 +149,56 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         if (suggestedChanges.itemBias) {
             console.log("Applying item bias changes:", suggestedChanges.itemBias);
             
+            // Initialize with default values
+            let x = 0.5;
+            let y = 0.5;
+            
             // Make sure we're preserving the correct structure with x and y properties
             if (typeof suggestedChanges.itemBias === 'object') {
                 // Handle direct x/y format
                 if ('x' in suggestedChanges.itemBias && 'y' in suggestedChanges.itemBias) {
-                    updatedShopState.itemBias = {
-                        x: parseFloat(suggestedChanges.itemBias.x),
-                        y: parseFloat(suggestedChanges.itemBias.y)
-                    };
+                    x = parseFloat(suggestedChanges.itemBias.x);
+                    y = parseFloat(suggestedChanges.itemBias.y);
                 } 
                 // Handle Variety/Cost format
                 else if ('Variety' in suggestedChanges.itemBias || 'variety' in suggestedChanges.itemBias ||
                         'Cost' in suggestedChanges.itemBias || 'cost' in suggestedChanges.itemBias) {
                     
-                    const variety = suggestedChanges.itemBias.Variety || 
-                                   suggestedChanges.itemBias.variety || 0.5;
-                    const cost = suggestedChanges.itemBias.Cost || 
-                                suggestedChanges.itemBias.cost || 0.5;
-                    
-                    updatedShopState.itemBias = {
-                        x: parseFloat(variety),
-                        y: parseFloat(cost)
-                    };
+                    x = parseFloat(suggestedChanges.itemBias.Variety || 
+                                  suggestedChanges.itemBias.variety || 0.5);
+                    y = parseFloat(suggestedChanges.itemBias.Cost || 
+                                  suggestedChanges.itemBias.cost || 0.5);
+                }
+            } else if (typeof suggestedChanges.itemBias === 'string') {
+                // Handle string format like "Variety: 0.7, Cost: 0.3"
+                const varietyMatch = suggestedChanges.itemBias.match(/Variety:\s*([\d.]+)/i);
+                const costMatch = suggestedChanges.itemBias.match(/Cost:\s*([\d.]+)/i);
+                
+                if (varietyMatch || costMatch) {
+                    x = varietyMatch ? parseFloat(varietyMatch[1]) : 0.5;
+                    y = costMatch ? parseFloat(costMatch[1]) : 0.5;
                 }
             }
+            
+            // Always set as a clean x/y object with numeric values
+            updatedShopState.itemBias = { x, y };
+            
             // Log the updated item bias for debugging
             console.log("Updated item bias:", updatedShopState.itemBias);
         }
 
         // Apply rarity distribution changes if present
         if (suggestedChanges.rarityDistribution) {
-            updatedShopState.rarityDistribution = { ...suggestedChanges.rarityDistribution };
+            // Create a clean copy with numeric values
+            const cleanedRarityDistribution = {};
+            Object.entries(suggestedChanges.rarityDistribution).forEach(([key, value]) => {
+                cleanedRarityDistribution[key] = Number(value);
+            });
+            updatedShopState.rarityDistribution = cleanedRarityDistribution;
         }
+
+        // Add debug log to see the final updated state
+        console.log("SHOP STATE AFTER CHANGES:", JSON.stringify(updatedShopState, null, 2));
 
         // Try to update the shop state through the provided function
         if (shopState && typeof shopState.onShopUpdate === "function") {

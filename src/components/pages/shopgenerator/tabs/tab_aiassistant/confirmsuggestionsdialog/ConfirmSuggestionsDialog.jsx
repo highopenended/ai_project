@@ -48,16 +48,80 @@ const ConfirmSuggestionsDialog = ({ isOpen, onClose, onConfirm, suggestedChanges
 
     // Handle confirm with only selected changes
     const handleConfirm = () => {
+        // Helper functions to sanitize different data types
+        const sanitizeItemBias = (itemBias) => {
+            let x = 0.5;
+            let y = 0.5;
+            
+            if (typeof itemBias === 'object') {
+                // Handle direct x/y format
+                if ('x' in itemBias && 'y' in itemBias) {
+                    x = parseFloat(itemBias.x);
+                    y = parseFloat(itemBias.y);
+                } 
+                // Handle Variety/Cost format
+                else if ('Variety' in itemBias || 'variety' in itemBias ||
+                        'Cost' in itemBias || 'cost' in itemBias) {
+                    const variety = itemBias.Variety || itemBias.variety;
+                    const cost = itemBias.Cost || itemBias.cost;
+                    
+                    x = parseFloat(variety || 0.5);
+                    y = parseFloat(cost || 0.5);
+                }
+            }
+            
+            return { x, y };
+        };
+        
+        const sanitizeLevelRange = (levelRange) => {
+            return {
+                min: Number(levelRange.min),
+                max: Number(levelRange.max)
+            };
+        };
+        
+        const sanitizeRarityDistribution = (rarityDistribution) => {
+            const cleaned = {};
+            Object.entries(rarityDistribution).forEach(([rarity, value]) => {
+                cleaned[rarity] = Number(value);
+            });
+            return cleaned;
+        };
+
         // Create a new object with only the selected changes
         const filteredChanges = Object.keys(selectedChanges)
             .filter(key => selectedChanges[key])
             .reduce((acc, key) => {
                 if (suggestedChanges[key] !== undefined) {
-                    acc[key] = suggestedChanges[key];
+                    // Clean and sanitize specific data types
+                    switch(key) {
+                        case 'itemBias':
+                            acc[key] = sanitizeItemBias(suggestedChanges.itemBias);
+                            break;
+                        
+                        case 'levelRange':
+                            acc[key] = sanitizeLevelRange(suggestedChanges.levelRange);
+                            break;
+                        
+                        case 'gold':
+                            acc[key] = Number(suggestedChanges[key]);
+                            break;
+                            
+                        case 'rarityDistribution':
+                            acc[key] = sanitizeRarityDistribution(suggestedChanges.rarityDistribution);
+                            break;
+                        
+                        default:
+                            // For string fields, ensure they are strings
+                            acc[key] = String(suggestedChanges[key]);
+                    }
                 }
                 return acc;
             }, { suggestionsSummary: suggestedChanges.suggestionsSummary });
 
+        // Log the filtered changes being applied
+        console.log("CONFIRM SUGGESTIONS DIALOG - Filtered changes:", JSON.stringify(filteredChanges, null, 2));
+        
         onConfirm(filteredChanges);
     };
 

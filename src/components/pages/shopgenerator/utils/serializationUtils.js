@@ -32,24 +32,79 @@ export const serializeAiConversations = (messages) => {
       
       // Only include serializable data from suggestedChanges
       if (message.suggestedChanges) {
-        serializedMessage.suggestedChanges = {
-          // Shop details
-          name: message.suggestedChanges.name,
-          keeperName: message.suggestedChanges.keeperName,
-          type: message.suggestedChanges.type,
-          location: message.suggestedChanges.location,
-          description: message.suggestedChanges.description,
-          keeperDescription: message.suggestedChanges.keeperDescription,
+        // Deep clone to avoid reference issues
+        const cleanedChanges = {};
+        
+        // Copy simple fields directly
+        if (message.suggestedChanges.name !== undefined) 
+          cleanedChanges.name = message.suggestedChanges.name;
+        
+        if (message.suggestedChanges.keeperName !== undefined) 
+          cleanedChanges.keeperName = message.suggestedChanges.keeperName;
+        
+        if (message.suggestedChanges.type !== undefined) 
+          cleanedChanges.type = message.suggestedChanges.type;
+        
+        if (message.suggestedChanges.location !== undefined) 
+          cleanedChanges.location = message.suggestedChanges.location;
+        
+        if (message.suggestedChanges.description !== undefined) 
+          cleanedChanges.description = message.suggestedChanges.description;
+        
+        if (message.suggestedChanges.keeperDescription !== undefined) 
+          cleanedChanges.keeperDescription = message.suggestedChanges.keeperDescription;
+        
+        if (message.suggestedChanges.gold !== undefined) 
+          cleanedChanges.gold = Number(message.suggestedChanges.gold);
+        
+        // Properly format level range as a clean object with numeric values
+        if (message.suggestedChanges.levelRange) {
+          cleanedChanges.levelRange = {
+            min: Number(message.suggestedChanges.levelRange.min),
+            max: Number(message.suggestedChanges.levelRange.max)
+          };
+        }
+        
+        // Properly format itemBias to ensure consistent x/y structure
+        if (message.suggestedChanges.itemBias) {
+          const itemBias = message.suggestedChanges.itemBias;
+          // Initialize with default values
+          let x = 0.5;
+          let y = 0.5;
           
-          // Shop parameters
-          gold: message.suggestedChanges.gold,
-          levelRange: message.suggestedChanges.levelRange,
-          itemBias: message.suggestedChanges.itemBias,
-          rarityDistribution: message.suggestedChanges.rarityDistribution,
+          if (typeof itemBias === 'object') {
+            // Handle direct x/y format
+            if ('x' in itemBias && 'y' in itemBias) {
+              x = Number(itemBias.x);
+              y = Number(itemBias.y);
+            } 
+            // Handle Variety/Cost format
+            else if ('Variety' in itemBias || 'variety' in itemBias ||
+                    'Cost' in itemBias || 'cost' in itemBias) {
+              
+              x = Number(itemBias.Variety || itemBias.variety || 0.5);
+              y = Number(itemBias.Cost || itemBias.cost || 0.5);
+            }
+          }
           
-          // Summary for display
-          suggestionsSummary: message.suggestedChanges.suggestionsSummary
-        };
+          // Always store as x/y format with numeric values
+          cleanedChanges.itemBias = { x, y };
+        }
+        
+        // Clean rarity distribution to ensure numeric values
+        if (message.suggestedChanges.rarityDistribution) {
+          cleanedChanges.rarityDistribution = {};
+          Object.entries(message.suggestedChanges.rarityDistribution).forEach(([key, value]) => {
+            cleanedChanges.rarityDistribution[key] = Number(value);
+          });
+        }
+        
+        // Add summary
+        if (message.suggestedChanges.suggestionsSummary) {
+          cleanedChanges.suggestionsSummary = message.suggestedChanges.suggestionsSummary;
+        }
+        
+        serializedMessage.suggestedChanges = cleanedChanges;
       }
     }
 
@@ -101,6 +156,9 @@ export const deserializeAiConversations = (serializedMessages) => {
  * @returns {Object} - Serialized shop data safe for storage
  */
 export const serializeShopData = (shopState, filterMaps, inventory) => {
+  // Log input shop state
+  console.log("SERIALIZING SHOP STATE - Input itemBias:", shopState.itemBias);
+
   // Create a clean copy of shop data without functions and non-serializable fields
   const serializedShopData = {
     // Shop details
@@ -133,7 +191,9 @@ export const serializeShopData = (shopState, filterMaps, inventory) => {
     // AI conversations - serialize to remove any function references
     aiConversations: serializeAiConversations(shopState.aiConversations || [])
   };
-
+  
+  // Log the serialized item bias
+  console.log("SERIALIZED SHOP DATA - itemBias:", serializedShopData.itemBias);
 
   return serializedShopData;
 }; 
