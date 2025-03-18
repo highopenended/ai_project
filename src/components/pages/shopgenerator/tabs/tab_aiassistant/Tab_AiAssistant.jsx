@@ -103,10 +103,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
         // Create a copy of the current shop state
         const updatedShopState = { ...shopState };
         
-        // Add debug logs to see data before changes
-        console.log("SHOP STATE BEFORE CHANGES:", JSON.stringify(shopState, null, 2));
-        console.log("APPLYING SUGGESTIONS:", JSON.stringify(suggestedChanges, null, 2));
-        
         // Apply shop details changes if present
         if (suggestedChanges.name !== undefined) {
             updatedShopState.name = String(suggestedChanges.name);
@@ -147,8 +143,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
 
         // Apply item bias changes if present
         if (suggestedChanges.itemBias) {
-            console.log("Applying item bias changes:", suggestedChanges.itemBias);
-            
             // Initialize with default values
             let x = 0.5;
             let y = 0.5;
@@ -182,9 +176,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             
             // Always set as a clean x/y object with numeric values
             updatedShopState.itemBias = { x, y };
-            
-            // Log the updated item bias for debugging
-            console.log("Updated item bias:", updatedShopState.itemBias);
         }
 
         // Apply rarity distribution changes if present
@@ -196,9 +187,6 @@ function Tab_AiAssistant({ shopState = {}, filterMaps = defaultFilterMaps }) {
             });
             updatedShopState.rarityDistribution = cleanedRarityDistribution;
         }
-
-        // Add debug log to see the final updated state
-        console.log("SHOP STATE AFTER CHANGES:", JSON.stringify(updatedShopState, null, 2));
 
         // Try to update the shop state through the provided function
         if (shopState && typeof shopState.onShopUpdate === "function") {

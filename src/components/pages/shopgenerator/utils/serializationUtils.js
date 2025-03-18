@@ -156,9 +156,6 @@ export const deserializeAiConversations = (serializedMessages) => {
  * @returns {Object} - Serialized shop data safe for storage
  */
 export const serializeShopData = (shopState, filterMaps, inventory) => {
-  // Log input shop state
-  console.log("SERIALIZING SHOP STATE - Input itemBias:", shopState.itemBias);
-
   // Create a clean copy of shop data without functions and non-serializable fields
   const serializedShopData = {
     // Shop details
@@ -191,9 +188,6 @@ export const serializeShopData = (shopState, filterMaps, inventory) => {
     // AI conversations - serialize to remove any function references
     aiConversations: serializeAiConversations(shopState.aiConversations || [])
   };
-  
-  // Log the serialized item bias
-  console.log("SERIALIZED SHOP DATA - itemBias:", serializedShopData.itemBias);
 
   return serializedShopData;
 }; 

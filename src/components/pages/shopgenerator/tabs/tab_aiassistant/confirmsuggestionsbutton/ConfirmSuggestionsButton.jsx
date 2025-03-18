@@ -22,9 +22,6 @@ const ConfirmSuggestionsButton = ({ suggestedChanges, onApply }) => {
     };
 
     const handleConfirm = (sanitizedChanges) => {
-        // Log the suggestions being applied
-        console.log("CONFIRM SUGGESTIONS BUTTON - Applying sanitized suggestions:", JSON.stringify(sanitizedChanges, null, 2));
-        
         // Pass the sanitized changes to the parent component
         onApply(sanitizedChanges);
         setIsDialogOpen(false);

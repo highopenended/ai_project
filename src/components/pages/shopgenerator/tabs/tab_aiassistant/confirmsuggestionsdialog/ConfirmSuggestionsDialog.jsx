@@ -118,9 +118,6 @@ const ConfirmSuggestionsDialog = ({ isOpen, onClose, onConfirm, suggestedChanges
                 }
                 return acc;
             }, { suggestionsSummary: suggestedChanges.suggestionsSummary });
-
-        // Log the filtered changes being applied
-        console.log("CONFIRM SUGGESTIONS DIALOG - Filtered changes:", JSON.stringify(filteredChanges, null, 2));
         
         onConfirm(filteredChanges);
     };
@@ -144,9 +141,6 @@ const ConfirmSuggestionsDialog = ({ isOpen, onClose, onConfirm, suggestedChanges
     // Format item bias display
     const formatItemBias = (itemBias) => {
         if (!itemBias) return 'No change';
-        
-        // Log the item bias for debugging
-        console.log("Formatting item bias:", itemBias);
         
         // Safely access x and y properties with fallbacks
         let x, y;

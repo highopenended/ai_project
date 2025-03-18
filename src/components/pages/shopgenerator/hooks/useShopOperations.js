@@ -258,14 +258,8 @@ export const useShopOperations = ({
         try {
             debug("shopGenerator", "Starting save operation");
             
-            // Log the shop state before serialization
-            console.log("SHOP STATE BEFORE SERIALIZATION:", JSON.stringify(shopState, null, 2));
-            
             // Use the serialization utility to create a clean, serializable copy of the shop data
             const savedShopData = serializeShopData(shopState, filterMaps, inventory);
-            
-            // Log the serialized data to see what will be sent to Firebase
-            console.log("SERIALIZED SHOP DATA:", JSON.stringify(savedShopData, null, 2));
             
             // Ensure we have a valid ID before saving
             if (!savedShopData.id || savedShopData.id === '') {
