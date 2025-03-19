@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+// eslint-disable-next-line no-unused-vars
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Scrollbar from '../../../shared/scrollbar/Scrollbar';
 import './SavedShopsList.css';
