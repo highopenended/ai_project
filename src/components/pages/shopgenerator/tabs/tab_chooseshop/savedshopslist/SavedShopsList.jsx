@@ -89,9 +89,15 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
 
     // Handle selecting a shop
     const handleSelectShop = useCallback((shopId, index, event) => {
-        // Simple click without modifiers - just load the shop, no multi-select
+        const shopToLoad = savedShops.find(shop => shop.id === shopId);
+        
+        // Simple click without modifiers - just load the shop
         if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-            loadShop(savedShops.find(shop => shop.id === shopId));
+            // Always load the shop on simple click
+            if (shopToLoad) {
+                loadShop(shopToLoad);
+            }
+            
             // Always clear selections and reset the starting point
             setSelectedShops([]);
             setLastSelectedIndex(index);
@@ -117,7 +123,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
             setSelectedShops(rangeShops);
         }
         
-        // Ctrl/Cmd + Click support (optional, can be removed if not wanted)
+        // Ctrl/Cmd + Click support
         else if (event.ctrlKey || event.metaKey) {
             event.preventDefault();
             
@@ -149,21 +155,40 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
 
     // Bulk operations
     const handleDeleteSelected = () => {
+        // If nothing is explicitly selected but there's a current shop,
+        // use the current shop for deletion
+        if (selectedShops.length === 0 && currentShopId) {
+            setSelectedShops([currentShopId]);
+        }
         setShowConfirmDelete(true);
     };
 
     const confirmDelete = () => {
-        if (onDeleteShops && selectedShops.length > 0) {
+        // If we have explicitly selected shops, delete those
+        if (selectedShops.length > 0 && onDeleteShops) {
             onDeleteShops(selectedShops);
         }
+        // Otherwise if we have a current shop, delete that
+        else if (currentShopId && onDeleteShops) {
+            onDeleteShops([currentShopId]);
+        }
+        
         setShowConfirmDelete(false);
         setSelectedShops([]);
     };
 
     const handleExportSelected = () => {
-        if (onExportShops && selectedShops.length > 0) {
+        // If we have explicitly selected shops, export those
+        if (selectedShops.length > 0 && onExportShops) {
             const shopsToExport = savedShops.filter(shop => selectedShops.includes(shop.id));
             onExportShops(shopsToExport);
+        } 
+        // Otherwise if we have a current shop, export that
+        else if (currentShopId && onExportShops) {
+            const currentShop = savedShops.find(shop => shop.id === currentShopId);
+            if (currentShop) {
+                onExportShops([currentShop]);
+            }
         }
     };
 
@@ -173,12 +198,6 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         return sortOrder === 'asc' ? '↑' : '↓';
     };
 
-    // Add a function to cancel selection
-    const cancelSelection = () => {
-        setSelectedShops([]);
-        setLastSelectedIndex(null);
-    };
-
     return (
         <div 
             ref={containerRef}
@@ -186,7 +205,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         >
             <div className="saved-shops-header">
                 <div className="saved-shops-title">
-                    {selectedShops.length > 0 ? (
+                    {selectedShops.length > 1 ? (
                         <span className="selection-mode-indicator">
                             {selectedShops.length} Selected
                         </span>
@@ -195,31 +214,22 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                     )}
                 </div>
                 <div className="saved-shops-actions">
-                    {selectedShops.length > 0 && (
-                        <>
-                            <button 
-                                className="shop-action-button shop-action-cancel" 
-                                onClick={cancelSelection}
-                                title="Cancel selection"
-                            >
-                                Cancel
-                            </button>
-                            <button 
-                                className="shop-action-button shop-action-export" 
-                                onClick={handleExportSelected}
-                                title="Export selected shops"
-                            >
-                                Export
-                            </button>
-                            <button 
-                                className="shop-action-button shop-action-delete" 
-                                onClick={handleDeleteSelected}
-                                title="Delete selected shops"
-                            >
-                                Delete
-                            </button>
-                        </>
-                    )}
+                    <button 
+                        className="shop-action-button shop-action-export" 
+                        onClick={handleExportSelected}
+                        title="Export selected shops"
+                        disabled={selectedShops.length === 0 && !currentShopId}
+                    >
+                        Export
+                    </button>
+                    <button 
+                        className="shop-action-button shop-action-delete" 
+                        onClick={handleDeleteSelected}
+                        title="Delete selected shops"
+                        disabled={selectedShops.length === 0 && !currentShopId}
+                    >
+                        Delete
+                    </button>
                 </div>
             </div>
             

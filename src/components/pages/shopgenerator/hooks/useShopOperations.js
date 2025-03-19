@@ -324,42 +324,69 @@ export const useShopOperations = ({
     };
 
     /**
-     * Delete the current shop
+     * Delete one or more shops
      * Deletes from Firebase first, then updates cache on success
+     * @param {string|string[]} [shopIdsToDelete] - Optional ID or array of IDs to delete, defaults to current shop
      */
-    const handleDeleteShop = async () => {
-        if (!currentUser || !shopState.id) {
-            alert("Cannot delete shop. Please ensure you are logged in and have a valid shop selected.");
+    const handleDeleteShop = async (shopIdsToDelete) => {
+        if (!currentUser) {
+            alert("Cannot delete shop. Please ensure you are logged in.");
             return;
         }
 
         try {
             const userId = currentUser.uid;
-            const shopId = shopState.id;
             
-            // Delete from Firebase first
-            await deleteShopData(userId, shopId);
-            debug("shopGenerator", "Shop deleted from Firebase with ID", shopId);
+            // Determine which shop(s) to delete
+            let shopIds = [];
             
-            // Remove from cache
-            removeFromCache(shopId);
+            if (shopIdsToDelete) {
+                // Use provided ID(s)
+                shopIds = Array.isArray(shopIdsToDelete) ? shopIdsToDelete : [shopIdsToDelete];
+            } else if (shopState.id) {
+                // Fall back to current shop if no IDs provided
+                shopIds = [shopState.id];
+            }
+            
+            if (shopIds.length === 0) {
+                alert("No shops selected for deletion.");
+                return;
+            }
+            
+            debug("shopGenerator", "Deleting shops with IDs:", shopIds);
+            
+            // Delete each shop from Firebase and cache
+            for (const shopId of shopIds) {
+                await deleteShopData(userId, shopId);
+                debug("shopGenerator", "Shop deleted from Firebase with ID", shopId);
+                
+                // Remove from cache
+                removeFromCache(shopId);
+            }
             
             // Update savedShops state
-            const updatedShops = cachedShops ? cachedShops.filter(shop => shop.id !== shopId) : [];
+            const updatedShops = cachedShops 
+                ? cachedShops.filter(shop => !shopIds.includes(shop.id)) 
+                : [];
             setSavedShops(updatedShops);
             
-            // If there are remaining shops, load the first one
-            if (updatedShops.length > 0) {
-                debug("shopGenerator", "Loading first available shop after deletion");
-                await handleLoadShop(updatedShops[0]);
-            } else {
-                // If no shops remain, create a new one
-                debug("shopGenerator", "No shops remain, creating new one");
-                await handleNewShop();
+            // If we deleted the current shop, load another one
+            const deletedCurrentShop = shopIds.includes(shopState.id);
+            
+            if (deletedCurrentShop) {
+                // If there are remaining shops, load the first one
+                if (updatedShops.length > 0) {
+                    debug("shopGenerator", "Loading first available shop after deletion");
+                    await handleLoadShop(updatedShops[0]);
+                } else {
+                    // If no shops remain, create a new one
+                    debug("shopGenerator", "No shops remain, creating new one");
+                    await handleNewShop();
+                }
             }
         } catch (error) {
-            debug("shopGenerator", "Error deleting shop", error);
-            alert("Error deleting shop. Please try again.");
+            debug("shopGenerator", "Error deleting shop(s)", error);
+            alert("Error deleting shop(s). Please try again.");
         }
     };
 

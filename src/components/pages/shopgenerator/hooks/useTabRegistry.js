@@ -142,6 +142,7 @@ const useChooseShopRegistry = (props) => {
         savedShops,
         handleLoadShop,
         handleNewShop,
+        handleDeleteShop,
         shopState,
         filterMaps,
         inventory,
@@ -152,6 +153,7 @@ const useChooseShopRegistry = (props) => {
         savedShops,
         onLoadShop: handleLoadShop,
         onNewShop: handleNewShop,
+        onDeleteShop: handleDeleteShop,
         currentShopId: shopState.id,
         currentShopData: {
             ...shopState,
@@ -167,6 +169,7 @@ const useChooseShopRegistry = (props) => {
         savedShops,
         handleLoadShop,
         handleNewShop,
+        handleDeleteShop,
         shopState,
         filterMaps,
         inventory,

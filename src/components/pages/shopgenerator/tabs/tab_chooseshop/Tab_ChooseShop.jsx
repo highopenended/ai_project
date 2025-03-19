@@ -20,8 +20,8 @@ function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, onDeleteShop, curre
     // Handle bulk deletion of shops
     const handleDeleteShops = useCallback((shopIds) => {
         if (shopIds && shopIds.length && onDeleteShop) {
-            // Delete each shop in the selection
-            shopIds.forEach(id => onDeleteShop(id));
+            // Pass all shop IDs to be deleted at once
+            onDeleteShop(shopIds);
         }
     }, [onDeleteShop]);
     

@@ -38,8 +38,13 @@
     transition: all 0.15s ease;
 }
 
-.shop-action-button:hover {
+.shop-action-button:hover:not(:disabled) {
     background-color: var(--button-hover-background);
+}
+
+.shop-action-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .shop-action-delete {
@@ -47,7 +52,7 @@
     background-color: #482121;
 }
 
-.shop-action-delete:hover {
+.shop-action-delete:hover:not(:disabled) {
     background-color: #6e3838;
 }
 
