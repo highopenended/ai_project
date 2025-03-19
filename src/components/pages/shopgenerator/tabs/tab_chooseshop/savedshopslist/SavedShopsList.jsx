@@ -89,43 +89,58 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
 
     // Handle selecting a shop
     const handleSelectShop = useCallback((shopId, index, event) => {
+        // Simple click without modifiers - just load the shop, no multi-select
         if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-            // Simple click - load the shop and clear selection
             loadShop(savedShops.find(shop => shop.id === shopId));
-            setSelectedShops([shopId]);
-            setLastSelectedIndex(index);
+            // If we were in multi-select mode, end it
+            if (selectedShops.length > 0) {
+                setSelectedShops([]);
+                setLastSelectedIndex(null);
+            } else {
+                // Just track the current item as the potential start of a future shift-select
+                setLastSelectedIndex(index);
+            }
             return;
         }
         
-        // For multi-select operations
-        event.preventDefault();
-        
-        if (event.ctrlKey || event.metaKey) {
-            // Ctrl/Cmd + Click: Toggle selection of this item
-            setSelectedShops(prev => 
-                prev.includes(shopId) 
-                    ? prev.filter(id => id !== shopId)
-                    : [...prev, shopId]
-            );
-            setLastSelectedIndex(index);
-        } 
-        else if (event.shiftKey && lastSelectedIndex !== null) {
-            // Shift + Click: Select range
+        // For multi-select operations with shift key
+        if (event.shiftKey) {
+            event.preventDefault();
+            
+            if (lastSelectedIndex === null) {
+                // If no previous selection, start with current shop
+                setLastSelectedIndex(index);
+                setSelectedShops([shopId]);
+                return;
+            }
+            
+            // Shift + Click: Select range from last clicked to current
             const start = Math.min(lastSelectedIndex, index);
             const end = Math.max(lastSelectedIndex, index);
             const rangeShops = sortedShops.slice(start, end + 1).map(shop => shop.id);
             
-            setSelectedShops(prev => {
-                const newSelection = [...prev];
-                rangeShops.forEach(id => {
-                    if (!newSelection.includes(id)) {
-                        newSelection.push(id);
-                    }
-                });
-                return newSelection;
-            });
+            setSelectedShops(rangeShops);
         }
-    }, [loadShop, savedShops, lastSelectedIndex, sortedShops]);
+        
+        // Ctrl/Cmd + Click support (optional, can be removed if not wanted)
+        else if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            
+            if (selectedShops.length === 0) {
+                // First selection with Ctrl/Cmd
+                setSelectedShops([shopId]);
+                setLastSelectedIndex(index);
+            } else {
+                // Toggle selection with Ctrl/Cmd
+                setSelectedShops(prev => 
+                    prev.includes(shopId) 
+                        ? prev.filter(id => id !== shopId)
+                        : [...prev, shopId]
+                );
+                setLastSelectedIndex(index);
+            }
+        }
+    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, selectedShops]);
 
     // Toggle sort order or change sort field
     const handleSort = (field) => {
@@ -163,16 +178,37 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         return sortOrder === 'asc' ? '↑' : '↓';
     };
 
+    // Add a function to cancel selection
+    const cancelSelection = () => {
+        setSelectedShops([]);
+        setLastSelectedIndex(null);
+    };
+
     return (
         <div 
             ref={containerRef}
             className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''}`}
         >
             <div className="saved-shops-header">
-                <div className="saved-shops-title">Saved Shops</div>
+                <div className="saved-shops-title">
+                    {selectedShops.length > 0 ? (
+                        <span className="selection-mode-indicator">
+                            {selectedShops.length} Selected
+                        </span>
+                    ) : (
+                        "Saved Shops"
+                    )}
+                </div>
                 <div className="saved-shops-actions">
                     {selectedShops.length > 0 && (
                         <>
+                            <button 
+                                className="shop-action-button shop-action-cancel" 
+                                onClick={cancelSelection}
+                                title="Cancel selection"
+                            >
+                                Cancel
+                            </button>
                             <button 
                                 className="shop-action-button shop-action-export" 
                                 onClick={handleExportSelected}
