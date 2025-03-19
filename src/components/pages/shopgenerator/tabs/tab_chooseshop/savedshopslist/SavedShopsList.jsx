@@ -1,14 +1,42 @@
-// import React from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Scrollbar from '../../../shared/scrollbar/Scrollbar';
 import './SavedShopsList.css';
 
-const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
+const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, onExportShops }) => {
+    const [selectedShops, setSelectedShops] = useState([]);
+    const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
+    const [sortBy, setSortBy] = useState('dateLastEdited');
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+    const [isNarrow, setIsNarrow] = useState(false);
+    const containerRef = useRef(null);
+    
+    // Reset selection when shops change
+    useEffect(() => {
+        setSelectedShops([]);
+    }, [savedShops]);
 
-    // console.log("loadShop: ", loadShop);
-    // console.log("currentShopId: ", currentShopId);
-    // console.log("savedShops: ", savedShops);
-
+    // Check and update container width
+    useEffect(() => {
+        if (!containerRef.current) return;
+        
+        const checkWidth = () => {
+            const width = containerRef.current?.clientWidth || 0;
+            setIsNarrow(width < 380); // Adjusted threshold to 380px for better spacing
+        };
+        
+        // Initial check
+        checkWidth();
+        
+        // Set up resize observer to check width on container resize
+        const resizeObserver = new ResizeObserver(checkWidth);
+        resizeObserver.observe(containerRef.current);
+        
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
 
     const formatDate = (date) => {
         if (!date) return '';
@@ -28,52 +56,230 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId }) => {
         });
     };
 
-    // Only show "New Unsaved Shop" if:
-    // 1) There are no saved shops, or
-    // 2) The current shop ID starts with "shop_" (indicating it's newly created)
-    const showNewUnsavedShop = savedShops.length === 0 || 
-        (currentShopId?.startsWith('shop_') && !savedShops.find(shop => shop.id === currentShopId));
+    // Sort shops based on current sort criteria
+    const sortedShops = [...savedShops].sort((a, b) => {
+        let valueA, valueB;
+        
+        if (sortBy === 'name') {
+            valueA = (a.name || 'Unnamed Shop').toLowerCase();
+            valueB = (b.name || 'Unnamed Shop').toLowerCase();
+            return sortOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        } 
+        else if (sortBy === 'type') {
+            valueA = (a.type || '').toLowerCase();
+            valueB = (b.type || '').toLowerCase();
+            return sortOrder === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        }
+        else if (sortBy === 'dateLastEdited') {
+            // Handle Firebase Timestamp objects
+            if (a.dateLastEdited?.toDate) valueA = a.dateLastEdited.toDate().getTime();
+            else valueA = new Date(a.dateLastEdited).getTime();
+            
+            if (b.dateLastEdited?.toDate) valueB = b.dateLastEdited.toDate().getTime();
+            else valueB = new Date(b.dateLastEdited).getTime();
+            
+            return sortOrder === 'asc' ? valueA - valueB : valueB - valueA;
+        }
+        return 0;
+    });
+
+    // Shows unsaved shop at top if applicable
+    const showNewUnsavedShop = currentShopId?.startsWith('shop_') && 
+        !savedShops.find(shop => shop.id === currentShopId);
+
+    // Handle selecting a shop
+    const handleSelectShop = useCallback((shopId, index, event) => {
+        if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+            // Simple click - load the shop and clear selection
+            loadShop(savedShops.find(shop => shop.id === shopId));
+            setSelectedShops([shopId]);
+            setLastSelectedIndex(index);
+            return;
+        }
+        
+        // For multi-select operations
+        event.preventDefault();
+        
+        if (event.ctrlKey || event.metaKey) {
+            // Ctrl/Cmd + Click: Toggle selection of this item
+            setSelectedShops(prev => 
+                prev.includes(shopId) 
+                    ? prev.filter(id => id !== shopId)
+                    : [...prev, shopId]
+            );
+            setLastSelectedIndex(index);
+        } 
+        else if (event.shiftKey && lastSelectedIndex !== null) {
+            // Shift + Click: Select range
+            const start = Math.min(lastSelectedIndex, index);
+            const end = Math.max(lastSelectedIndex, index);
+            const rangeShops = sortedShops.slice(start, end + 1).map(shop => shop.id);
+            
+            setSelectedShops(prev => {
+                const newSelection = [...prev];
+                rangeShops.forEach(id => {
+                    if (!newSelection.includes(id)) {
+                        newSelection.push(id);
+                    }
+                });
+                return newSelection;
+            });
+        }
+    }, [loadShop, savedShops, lastSelectedIndex, sortedShops]);
+
+    // Toggle sort order or change sort field
+    const handleSort = (field) => {
+        if (sortBy === field) {
+            setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(field);
+            setSortOrder('asc');
+        }
+    };
+
+    // Bulk operations
+    const handleDeleteSelected = () => {
+        setShowConfirmDelete(true);
+    };
+
+    const confirmDelete = () => {
+        if (onDeleteShops && selectedShops.length > 0) {
+            onDeleteShops(selectedShops);
+        }
+        setShowConfirmDelete(false);
+        setSelectedShops([]);
+    };
+
+    const handleExportSelected = () => {
+        if (onExportShops && selectedShops.length > 0) {
+            const shopsToExport = savedShops.filter(shop => selectedShops.includes(shop.id));
+            onExportShops(shopsToExport);
+        }
+    };
+
+    // Get icon for sorting
+    const getSortIcon = (field) => {
+        if (sortBy !== field) return null;
+        return sortOrder === 'asc' ? '↑' : '↓';
+    };
 
     return (
-        <div className="saved-shops-list-container">
-            <div className="saved-shops-title">Saved Shops</div>
-            <Scrollbar style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                <ul className="shop-list">
+        <div 
+            ref={containerRef}
+            className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''}`}
+        >
+            <div className="saved-shops-header">
+                <div className="saved-shops-title">Saved Shops</div>
+                <div className="saved-shops-actions">
+                    {selectedShops.length > 0 && (
+                        <>
+                            <button 
+                                className="shop-action-button shop-action-export" 
+                                onClick={handleExportSelected}
+                                title="Export selected shops"
+                            >
+                                Export
+                            </button>
+                            <button 
+                                className="shop-action-button shop-action-delete" 
+                                onClick={handleDeleteSelected}
+                                title="Delete selected shops"
+                            >
+                                Delete
+                            </button>
+                        </>
+                    )}
+                </div>
+            </div>
+            
+            <div className="saved-shops-table-header">
+                <div 
+                    className="shop-col shop-col-name clickable" 
+                    onClick={() => handleSort('name')}
+                >
+                    Name {getSortIcon('name')}
+                </div>
+                {!isNarrow && (
+                    <div 
+                        className="shop-col shop-col-type clickable" 
+                        onClick={() => handleSort('type')}
+                    >
+                        Type {getSortIcon('type')}
+                    </div>
+                )}
+                <div 
+                    className="shop-col shop-col-date clickable" 
+                    onClick={() => handleSort('dateLastEdited')}
+                >
+                    Modified {getSortIcon('dateLastEdited')}
+                </div>
+            </div>
+            
+            <Scrollbar className="shops-scrollbar">
+                <div className="saved-shops-table">
                     {showNewUnsavedShop && (
-                        <li className="shop-item shop-item-current shop-item-unsaved">
-                            <span className="shop-item-name">
-                                New Unsaved Shop
-                                <span className="unsaved-indicator">*</span>
-                            </span>
-                            <span className="shop-item-date">
-                                Just now
-                            </span>
-                        </li>
+                        <div className="shop-row shop-row-current shop-row-unsaved">
+                            <div className="shop-col shop-col-name">
+                                New Unsaved Shop <span className="unsaved-indicator">*</span>
+                            </div>
+                            {!isNarrow && <div className="shop-col shop-col-type">-</div>}
+                            <div className="shop-col shop-col-date">Just now</div>
+                        </div>
                     )}
-                    {savedShops.map((shop) => (
-                        <li 
-                            key={shop.id} 
-                            onClick={() => loadShop(shop)} 
-                            className={`shop-item ${shop.id === currentShopId ? 'shop-item-current' : ''}`}
-                            title={`Last edited: ${formatDate(shop.dateLastEdited)}`}
+                    
+                    {sortedShops.map((shop, index) => (
+                        <div 
+                            key={shop.id}
+                            onClick={(e) => handleSelectShop(shop.id, index, e)}
+                            className={`shop-row ${shop.id === currentShopId ? 'shop-row-current' : ''} ${selectedShops.includes(shop.id) ? 'shop-row-selected' : ''}`}
+                            title={`${shop.name || 'Unnamed Shop'}${isNarrow ? '\nType: ' + (shop.type || '-') : ''}\nLocation: ${shop.location || '-'}\nShopkeeper: ${shop.keeperName || '-'}`}
                         >
-                            <span className="shop-item-name">
+                            <div className="shop-col shop-col-name">
                                 {shop.name || 'Unnamed Shop'}
-                            </span>
-                            <span className="shop-item-date">
+                            </div>
+                            {!isNarrow && (
+                                <div className="shop-col shop-col-type">
+                                    {shop.type || '-'}
+                                </div>
+                            )}
+                            <div className="shop-col shop-col-date">
                                 {formatDate(shop.dateLastEdited)}
-                            </span>
-                        </li>
+                            </div>
+                        </div>
                     ))}
+                    
                     {savedShops.length === 0 && !showNewUnsavedShop && (
-                        <li className="shop-item" style={{ justifyContent: 'center', cursor: 'default' }}>
-                            <span className="shop-item-name" style={{ opacity: 0.7 }}>
-                                No saved shops
-                            </span>
-                        </li>
+                        <div className="shop-row shop-row-empty">
+                            <div className="shop-col">No saved shops</div>
+                        </div>
                     )}
-                </ul>
+                </div>
             </Scrollbar>
+
+            {showConfirmDelete && (
+                <div className="delete-confirm-overlay">
+                    <div className="delete-confirm-dialogue">
+                        <h3 className="delete-confirm-title">Delete {selectedShops.length} Shop{selectedShops.length > 1 ? 's' : ''}?</h3>
+                        <p className="delete-confirm-message">
+                            Are you sure you want to delete {selectedShops.length > 1 ? 'these shops' : 'this shop'}? This action cannot be undone.
+                        </p>
+                        <div className="delete-confirm-buttons">
+                            <button 
+                                className="delete-confirm-button delete-confirm-proceed"
+                                onClick={confirmDelete}
+                            >
+                                Delete
+                            </button>
+                            <button 
+                                className="delete-confirm-button delete-confirm-cancel"
+                                onClick={() => setShowConfirmDelete(false)}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -111,7 +317,9 @@ SavedShopsList.propTypes = {
         filterStorageObjects: PropTypes.object
     })).isRequired,
     loadShop: PropTypes.func.isRequired,
-    currentShopId: PropTypes.string
+    currentShopId: PropTypes.string,
+    onDeleteShops: PropTypes.func,
+    onExportShops: PropTypes.func
 };
 
 export default SavedShopsList; 
