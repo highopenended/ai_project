@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import "./ResetChangesButton.css";
 import UnsavedChangesDialogue from "../../../shared/unsavedchangesdialogue/UnsavedChangesDialogue";
 
-const ResetChangesButton = ({ onReset, shopName, hasUnsavedChanges, changes }) => {
+const ResetChangesButton = ({ onReset, shopName, hasUnsavedChanges, changes, isDisabled = false }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
 
     const handleClick = () => {
@@ -24,7 +24,7 @@ const ResetChangesButton = ({ onReset, shopName, hasUnsavedChanges, changes }) =
             <button
                 className="reset-changes-button"
                 onClick={handleClick}
-                disabled={!hasUnsavedChanges}
+                disabled={isDisabled || !hasUnsavedChanges}
                 aria-label="Revert changes"
             >
                 <span className="reset-icon">⎌</span>
@@ -51,6 +51,7 @@ ResetChangesButton.propTypes = {
     shopName: PropTypes.string.isRequired,
     hasUnsavedChanges: PropTypes.bool.isRequired,
     changes: PropTypes.object.isRequired,
+    isDisabled: PropTypes.bool
 };
 
 export default ResetChangesButton;

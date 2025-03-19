@@ -3,7 +3,7 @@ import ShortDetailRow from './ShortDetailRow';
 import ShortDetailContainer from './ShortDetailContainer';
 import { useRef, useCallback } from 'react';
 
-const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
+const ShopDetailsShort = ({ shopDetails, onInputChange, isDisabled = false }) => {
     const shopNameRef = useRef(null);
     const shopKeeperNameRef = useRef(null);
     const typeRef = useRef(null);
@@ -29,6 +29,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 name="shopName"
                 onEnterPress={() => handleEnterPress(shopKeeperNameRef)}
                 placeholder="Enter the shop's name"
+                disabled={isDisabled}
             />
             <ShortDetailRow
                 ref={shopKeeperNameRef}
@@ -38,6 +39,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 name="shopKeeperName"
                 onEnterPress={() => handleEnterPress(typeRef)}
                 placeholder="Enter the shopkeeper's name"
+                disabled={isDisabled}
             />
             <ShortDetailRow
                 ref={typeRef}
@@ -47,6 +49,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 name="type"
                 onEnterPress={() => handleEnterPress(locationRef)}
                 placeholder="Enter the type of shop"
+                disabled={isDisabled}
             />
             <ShortDetailRow
                 ref={locationRef}
@@ -56,6 +59,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
                 name="location"
                 onEnterPress={() => handleEnterPress(shopNameRef)}
                 placeholder="Enter the shop's location"
+                disabled={isDisabled}
             />
         </ShortDetailContainer>
     );
@@ -64,6 +68,7 @@ const ShopDetailsShort = ({ shopDetails, onInputChange }) => {
 ShopDetailsShort.propTypes = {
     shopDetails: PropTypes.object.isRequired,
     onInputChange: PropTypes.func.isRequired,
+    isDisabled: PropTypes.bool
 };
 
 export default ShopDetailsShort;

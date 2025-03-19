@@ -27,6 +27,7 @@ function Tab_ShopDetails({
     hasUnsavedChanges,
     onRevertChanges,
     changes,
+    isLoadingShop = false,
 }) {
     // Function to check if all shop details are filled
     const areAllDetailsFilled = () => {
@@ -57,6 +58,7 @@ function Tab_ShopDetails({
                     isNewUnsavedShop={isNewUnsavedShop}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
+                    isDisabled={isLoadingShop}
                 />
                 <CloneShopButton
                     onClone={onCloneShop}
@@ -64,23 +66,34 @@ function Tab_ShopDetails({
                     shopState={shopState}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
+                    isDisabled={isLoadingShop}
                 />
                 <ResetChangesButton
                     onReset={onRevertChanges}
                     shopName={shopState.name}
                     hasUnsavedChanges={hasUnsavedChanges}
                     changes={changes}
+                    isDisabled={isLoadingShop}
                 />
             </div>
             <div className="tab-shop-details scrollable">
-                <ShopDetailsShort shopDetails={shopState} onInputChange={onShopDetailsChange} />
-                <ShopDetailsLong shopDetails={shopState} onInputChange={onShopDetailsChange} />
+                <ShopDetailsShort 
+                    shopDetails={shopState} 
+                    onInputChange={onShopDetailsChange} 
+                    isDisabled={isLoadingShop}
+                />
+                <ShopDetailsLong 
+                    shopDetails={shopState} 
+                    onInputChange={onShopDetailsChange} 
+                    isDisabled={isLoadingShop}
+                />
                 <ShopDates dateCreated={shopState?.dateCreated} dateLastEdited={shopState?.dateLastEdited} />
 
                 <DeleteShopButton
                     onDelete={onDeleteShop}
                     shopId={isNewUnsavedShop ? null : shopState?.id}
                     shopState={shopState}
+                    isDisabled={isLoadingShop}
                 />
             </div>
         </div>
@@ -131,6 +144,7 @@ Tab_ShopDetails.propTypes = {
         parameters: PropTypes.object.isRequired,
         hasInventoryChanged: PropTypes.bool.isRequired,
     }).isRequired,
+    isLoadingShop: PropTypes.bool
 };
 
 Tab_ShopDetails.displayName = "Shop Details";

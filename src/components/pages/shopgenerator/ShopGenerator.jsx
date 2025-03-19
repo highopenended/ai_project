@@ -147,20 +147,27 @@ function ShopGenerator() {
     });
 
     // Shop operations
-    const { handleLoadShopList, handleLoadShop, handleNewShop, handleCloneShop, handleSaveShop, handleDeleteShop } =
-        useShopOperations({
-            currentUser,
-            shopState,
-            setShopState,
-            filterMaps,
-            inventory,
-            setInventory,
-            setShopSnapshot,
-            setSavedShops,
-            setFilterMaps,
-            getFilteredArray,
-            hasUnsavedChanges,
-        });
+    const { 
+        handleLoadShopList, 
+        handleLoadShop, 
+        handleNewShop, 
+        handleCloneShop, 
+        handleSaveShop, 
+        handleDeleteShop,
+        isLoadingShop 
+    } = useShopOperations({
+        currentUser,
+        shopState,
+        setShopState,
+        filterMaps,
+        inventory,
+        setInventory,
+        setShopSnapshot,
+        setSavedShops,
+        setFilterMaps,
+        getFilteredArray,
+        hasUnsavedChanges,
+    });
 
     // Sorting state
     const { sortedItems, sortConfig, handleSort } = useSorting(inventory);
@@ -201,7 +208,8 @@ function ShopGenerator() {
         setFilterMaps,
         inventory,
         setInventory,
-        shopSnapshot
+        shopSnapshot,
+        isLoadingShop
     });
 
     // Initialize shop - either from saved state or create new

@@ -15,7 +15,16 @@ import { exportShopData } from "../../utils/shopFileUtils";
  * - Importing/Exporting shop data
  * - Bulk operations (deletion, export)
  */
-function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, onDeleteShop, currentShopId, currentShopData, shopSnapshot }) {
+function Tab_ChooseShop({ 
+    savedShops, 
+    onLoadShop, 
+    onNewShop, 
+    onDeleteShop, 
+    currentShopId, 
+    currentShopData, 
+    shopSnapshot,
+    isLoadingShop = false 
+}) {
     
     // Handle bulk deletion of shops
     const handleDeleteShops = useCallback((shopIds) => {
@@ -65,19 +74,21 @@ function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, onDeleteShop, curre
     
     return (
         <div className="tab-choose-shop">
-            <NewShopButton handleNewShop={onNewShop} />
+            <NewShopButton handleNewShop={onNewShop} disabled={isLoadingShop} />
             <SavedShopsList 
                 savedShops={savedShops} 
                 loadShop={onLoadShop} 
                 currentShopId={currentShopId}
                 onDeleteShops={handleDeleteShops}
-                onExportShops={handleExportShops} 
+                onExportShops={handleExportShops}
+                isLoadingShop={isLoadingShop}
             />
             <ImportExport 
                 handleImportShop={onLoadShop} 
                 handleExportShop={exportShopData} 
                 shopData={currentShopData}
                 shopSnapshot={shopSnapshot}
+                disabled={isLoadingShop}
             />
         </div>
     );
@@ -91,6 +102,7 @@ Tab_ChooseShop.propTypes = {
     currentShopId: PropTypes.string,
     currentShopData: PropTypes.object.isRequired,
     shopSnapshot: PropTypes.object,
+    isLoadingShop: PropTypes.bool
 };
 
 Tab_ChooseShop.displayName = "Choose Shop";

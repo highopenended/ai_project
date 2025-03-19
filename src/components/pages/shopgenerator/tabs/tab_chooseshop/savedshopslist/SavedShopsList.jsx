@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Scrollbar from '../../../shared/scrollbar/Scrollbar';
 import './SavedShopsList.css';
 
-const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, onExportShops }) => {
+const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, onExportShops, isLoadingShop = false }) => {
     const [selectedShops, setSelectedShops] = useState([]);
     const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
     const [sortBy, setSortBy] = useState('dateLastEdited');
@@ -90,18 +90,21 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
 
     // Handle selecting a shop
     const handleSelectShop = useCallback((shopId, index, event) => {
+        // Prevent interactions while loading a shop
+        if (isLoadingShop) return;
+
         const shopToLoad = savedShops.find(shop => shop.id === shopId);
         
         // Simple click without modifiers - just load the shop
         if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
-            // Always load the shop on simple click
+            // Set last selected index and clear selections immediately for responsive UI
+            setLastSelectedIndex(index);
+            setSelectedShops([]);
+            
+            // Load the shop (will happen asynchronously)
             if (shopToLoad) {
                 loadShop(shopToLoad);
             }
-            
-            // Always clear selections and reset the starting point
-            setSelectedShops([]);
-            setLastSelectedIndex(index);
             return;
         }
         
@@ -153,7 +156,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
             // Update last selected index
             setLastSelectedIndex(index);
         }
-    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, currentShopId]);
+    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, currentShopId, isLoadingShop]);
 
     // Toggle sort order or change sort field
     const handleSort = (field) => {
@@ -213,7 +216,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
     return (
         <div 
             ref={containerRef}
-            className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''}`}
+            className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''} ${isLoadingShop ? 'loading-shop' : ''}`}
         >
             <div className="saved-shops-header">
                 <div className="saved-shops-title">
@@ -230,7 +233,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                         className="shop-action-button shop-action-export" 
                         onClick={handleExportSelected}
                         title="Export selected shops"
-                        disabled={selectedShops.length === 0 && !currentShopId}
+                        disabled={(selectedShops.length === 0 && !currentShopId) || isLoadingShop}
                     >
                         Export
                     </button>
@@ -238,7 +241,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                         className="shop-action-button shop-action-delete" 
                         onClick={handleDeleteSelected}
                         title="Delete selected shops"
-                        disabled={selectedShops.length === 0 && !currentShopId}
+                        disabled={(selectedShops.length === 0 && !currentShopId) || isLoadingShop}
                     >
                         Delete
                     </button>
@@ -282,7 +285,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                     
                     {sortedShops.map((shop, index) => (
                         <div 
-                            key={shop.id}
+                            key={shop.id} 
                             onClick={(e) => handleSelectShop(shop.id, index, e)}
                             className={`shop-row ${shop.id === currentShopId ? 'shop-row-current' : ''} ${selectedShops.includes(shop.id) ? 'shop-row-selected' : ''}`}
                             title={`${shop.name || 'Unnamed Shop'}${isNarrow ? '\nType: ' + (shop.type || '-') : ''}\nLocation: ${shop.location || '-'}\nShopkeeper: ${shop.keeperName || '-'}`}
@@ -372,7 +375,8 @@ SavedShopsList.propTypes = {
     loadShop: PropTypes.func.isRequired,
     currentShopId: PropTypes.string,
     onDeleteShops: PropTypes.func,
-    onExportShops: PropTypes.func
+    onExportShops: PropTypes.func,
+    isLoadingShop: PropTypes.bool
 };
 
 export default SavedShopsList; 

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import './LongDetailRow.css';
 
-const LongDetailRow = ({ title, value, onChange, name, placeholder }) => {
+const LongDetailRow = ({ title, value, onChange, name, placeholder, disabled = false }) => {
     return (
         <div className="long-detail-block">
             <div className="long-detail-header">
@@ -14,6 +14,7 @@ const LongDetailRow = ({ title, value, onChange, name, placeholder }) => {
                 value={value}
                 onChange={onChange}
                 aria-label={title}
+                disabled={disabled}
             />
         </div>
     );
@@ -25,6 +26,7 @@ LongDetailRow.propTypes = {
     onChange: PropTypes.func.isRequired,
     name: PropTypes.string.isRequired,
     placeholder: PropTypes.string.isRequired,
+    disabled: PropTypes.bool
 };
 
 export default LongDetailRow; 

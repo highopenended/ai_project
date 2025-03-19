@@ -4,7 +4,13 @@ import { useCallback } from 'react';
 import { importShopData } from '../../../utils/shopFileUtils';
 import { exportShopToFvtt } from '../../../utils/shopFvttExportUtils';
 
-const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData, shopSnapshot }) => {
+const ImportExport = ({ 
+    handleImportShop, 
+    handleExportShop: exportShop, 
+    shopData, 
+    shopSnapshot, 
+    disabled = false 
+}) => {
     const handleImport = useCallback((importedData) => {
         // Strip the ID from imported data to ensure a new one is generated
         // eslint-disable-next-line no-unused-vars
@@ -13,19 +19,24 @@ const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData
     }, [handleImportShop]);
 
     const handleFileChange = useCallback((event) => {
+        if (disabled) return;
+        
         const file = event.target.files[0];
         if (file) {
             importShopData(file, handleImport);
         }
-    }, [handleImport]);
+    }, [handleImport, disabled]);
 
     const handleDrop = useCallback((event) => {
         event.preventDefault();
+        
+        if (disabled) return;
+        
         const file = event.dataTransfer.files[0];
         if (file) {
             importShopData(file, handleImport);
         }
-    }, [handleImport]);
+    }, [handleImport, disabled]);
 
     const handleDragOver = useCallback((event) => {
         event.preventDefault();
@@ -40,11 +51,12 @@ const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData
             <div className="import-export-title">Import/Export</div>
             <div className="import-export-section">
                 <div 
-                    className="drag-drop-zone"
-                    onClick={() => document.getElementById('file-input').click()}
+                    className={`drag-drop-zone ${disabled ? 'disabled' : ''}`}
+                    onClick={() => !disabled && document.getElementById('file-input').click()}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     aria-label="Drag and drop or Select File"
+                    aria-disabled={disabled}
                 >
                     Drag and drop
                     <br />
@@ -59,11 +71,13 @@ const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData
                     onChange={handleFileChange}
                     aria-label="Import Shop"
                     className="file-input"
+                    disabled={disabled}
                 />
                 <button 
                     className="action-button"
                     onClick={() => exportShop(shopData)}
                     aria-label="Export Shop"
+                    disabled={disabled}
                 >
                     Export Shop
                 </button>
@@ -71,6 +85,7 @@ const ImportExport = ({ handleImportShop, handleExportShop: exportShop, shopData
                     className="action-button"
                     onClick={handleExportFvtt}
                     aria-label="Export Shop as Foundry VTT JSON"
+                    disabled={disabled}
                 >
                     Export Shop (json)
                 </button>
@@ -84,6 +99,7 @@ ImportExport.propTypes = {
     handleExportShop: PropTypes.func.isRequired,
     shopData: PropTypes.object.isRequired,
     shopSnapshot: PropTypes.object,
+    disabled: PropTypes.bool
 };
 
 export default ImportExport; 

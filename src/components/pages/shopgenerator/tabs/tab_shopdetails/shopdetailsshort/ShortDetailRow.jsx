@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import './ShortDetailRow.css';
 import React from 'react';
 
-const ShortDetailRow = React.forwardRef(({ title, value, onChange, name, onEnterPress, placeholder }, ref) => {
+const ShortDetailRow = React.forwardRef(({ title, value, onChange, name, onEnterPress, placeholder, disabled = false }, ref) => {
     // const inputRef = useRef(null);
 
     const handleKeyDown = (event) => {
@@ -24,6 +24,7 @@ const ShortDetailRow = React.forwardRef(({ title, value, onChange, name, onEnter
                 onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 autoComplete="off"
+                disabled={disabled}
             />
         </div>
     );
@@ -36,6 +37,7 @@ ShortDetailRow.propTypes = {
     name: PropTypes.string.isRequired,
     onEnterPress: PropTypes.func.isRequired,
     placeholder: PropTypes.string.isRequired,
+    disabled: PropTypes.bool
 };
 
 ShortDetailRow.displayName = 'ShortDetailRow';

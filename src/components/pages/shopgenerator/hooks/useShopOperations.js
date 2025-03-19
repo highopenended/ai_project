@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { deleteShopData, saveOrUpdateShopData, loadShopData } from "../utils/firebaseShopUtils";
 import { takeShopSnapshot } from "../utils/shopStateUtils";
 import defaultShopData from "../utils/shopData";
@@ -49,6 +49,8 @@ export const useShopOperations = ({
     setFilterMaps,
     hasUnsavedChanges,
 }) => {
+    const [isLoadingShop, setIsLoadingShop] = useState(false);
+    
     // Initialize shop cache
     const {
         cachedShops,
@@ -179,6 +181,9 @@ export const useShopOperations = ({
     const handleLoadShop = async (shop) => {
         debug("shopGenerator", "Loading shop", shop);
         try {
+            // Set loading state to true at the start
+            setIsLoadingShop(true);
+            
             // Create a new shop state from the loaded shop
             const newShopState = {
                 id: shop.id,
@@ -205,17 +210,23 @@ export const useShopOperations = ({
                 traits: new Map(Object.entries(shop.filterStorageObjects?.traits || {}))
             };
 
-            // Update all state variables
-            await Promise.all([
-                setShopState(newShopState),
-                setFilterMaps(newFilters),
-                setInventory(shop.currentStock || [])
-            ]);
-
-            // Create new snapshot
-            createShopSnapshot(newShopState, newFilters, shop.currentStock || []);
+            // Update shop state first for immediate visual feedback
+            setShopState(newShopState);
+            
+            // Then update the rest of the state asynchronously
+            setTimeout(() => {
+                setFilterMaps(newFilters);
+                setInventory(shop.currentStock || []);
+                
+                // Create new snapshot
+                createShopSnapshot(newShopState, newFilters, shop.currentStock || []);
+                
+                // Reset loading state when done
+                setIsLoadingShop(false);
+            }, 0);
         } catch (error) {
             debug("shopGenerator", "Error loading shop", error);
+            setIsLoadingShop(false);
             alert("Error loading shop. Please try again.");
         }
     };
@@ -396,6 +407,7 @@ export const useShopOperations = ({
         handleNewShop,
         handleCloneShop,
         handleSaveShop,
-        handleDeleteShop
+        handleDeleteShop,
+        isLoadingShop
     };
 }; 

@@ -5,7 +5,8 @@ import LongDetailRow from './LongDetailRow';
 const ShopDetailsLong = ({ 
     shopDetails, 
     onInputChange, 
-    placeholders = {} 
+    placeholders = {},
+    isDisabled = false
 }) => {
     const longDetails = {
         shopDetails: shopDetails.description,
@@ -22,6 +23,7 @@ const ShopDetailsLong = ({
                     onChange={onInputChange}
                     name={key}
                     placeholder={placeholders[key] || `Enter ${key.toLowerCase()}`}
+                    disabled={isDisabled}
                 />
             ))}
         </LongDetailsContainer>
@@ -34,7 +36,8 @@ ShopDetailsLong.propTypes = {
         keeperDescription: PropTypes.string.isRequired
     }).isRequired,
     onInputChange: PropTypes.func.isRequired,
-    placeholders: PropTypes.object
+    placeholders: PropTypes.object,
+    isDisabled: PropTypes.bool
 };
 
 export default ShopDetailsLong; 

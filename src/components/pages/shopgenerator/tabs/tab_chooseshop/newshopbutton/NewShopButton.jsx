@@ -10,13 +10,15 @@ import './NewShopButton.css';
  * @component
  * @param {Object} props
  * @param {Function} props.handleNewShop - Callback function to handle new shop creation
+ * @param {boolean} [props.disabled=false] - Whether the button should be disabled
  */
-const NewShopButton = ({ handleNewShop }) => {
+const NewShopButton = ({ handleNewShop, disabled = false }) => {
     return (
         <button 
             className="new-shop-button"
             onClick={handleNewShop}
             aria-label="Create new shop"
+            disabled={disabled}
         >
             <span className="new-shop-icon">+</span>
             <span className="new-shop-text">New Shop</span>
@@ -26,6 +28,7 @@ const NewShopButton = ({ handleNewShop }) => {
 
 NewShopButton.propTypes = {
     handleNewShop: PropTypes.func.isRequired,
+    disabled: PropTypes.bool
 };
 
 export default NewShopButton; 

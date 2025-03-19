@@ -108,7 +108,8 @@ const useShopDetailsRegistry = (props) => {
         getChangedFields,
         shopSnapshot,
         setFilterMaps,
-        setInventory
+        setInventory,
+        isLoadingShop
     } = props;
 
     return useMemo(() => ({
@@ -120,7 +121,8 @@ const useShopDetailsRegistry = (props) => {
         onRevertChanges: () => handleRevertChanges(shopSnapshot, setFilterMaps, setInventory),
         savedShops,
         hasUnsavedChanges,
-        changes: getChangedFields()
+        changes: getChangedFields(),
+        isLoadingShop
     }), [
         shopState,
         handleShopDetailsChange,
@@ -133,7 +135,8 @@ const useShopDetailsRegistry = (props) => {
         getChangedFields,
         shopSnapshot,
         setFilterMaps,
-        setInventory
+        setInventory,
+        isLoadingShop
     ]);
 };
 
@@ -146,7 +149,8 @@ const useChooseShopRegistry = (props) => {
         shopState,
         filterMaps,
         inventory,
-        shopSnapshot
+        shopSnapshot,
+        isLoadingShop
     } = props;
 
     return useMemo(() => ({
@@ -164,7 +168,8 @@ const useChooseShopRegistry = (props) => {
                 traits: Object.fromEntries(filterMaps.traits.entries()),
             }
         },
-        shopSnapshot
+        shopSnapshot,
+        isLoadingShop
     }), [
         savedShops,
         handleLoadShop,
@@ -173,7 +178,8 @@ const useChooseShopRegistry = (props) => {
         shopState,
         filterMaps,
         inventory,
-        shopSnapshot
+        shopSnapshot,
+        isLoadingShop
     ]);
 };
 
