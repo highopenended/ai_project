@@ -92,14 +92,9 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         // Simple click without modifiers - just load the shop, no multi-select
         if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
             loadShop(savedShops.find(shop => shop.id === shopId));
-            // If we were in multi-select mode, end it
-            if (selectedShops.length > 0) {
-                setSelectedShops([]);
-                setLastSelectedIndex(null);
-            } else {
-                // Just track the current item as the potential start of a future shift-select
-                setLastSelectedIndex(index);
-            }
+            // Always clear selections and reset the starting point
+            setSelectedShops([]);
+            setLastSelectedIndex(index);
             return;
         }
         
