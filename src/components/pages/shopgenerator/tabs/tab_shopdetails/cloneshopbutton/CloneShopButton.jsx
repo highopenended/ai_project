@@ -1,6 +1,5 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import ActionButton from "../../../shared/actionbutton/ActionButton";
 import UnsavedChangesDialogue from "../../../shared/unsavedchangesdialogue/UnsavedChangesDialogue";
 import "./CloneShopButton.css";
 
@@ -46,14 +45,16 @@ const CloneShopButton = ({ onClone, shopId, shopState, hasUnsavedChanges, change
 
     return (
         <>
-            <ActionButton
+            <button
+                className="clone-shop-button"
                 onClick={handleClick}
                 disabled={!shopId}
-                icon="⧉"
-                text="Clone"
-                customClassName="clone-shop-button"
+                aria-label="Clone Shop"
                 title={!shopId ? "Save the shop first to enable cloning" : "Create a copy of this shop"}
-            />
+            >
+                <span className="clone-icon">⧉</span>
+                <span className="clone-text">Clone</span>
+            </button>
 
             {showConfirmation && (
                 <UnsavedChangesDialogue

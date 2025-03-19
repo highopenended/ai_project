@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import './DeleteShopButton.css';
-import ActionButton from '../../../shared/actionbutton/ActionButton';
 
 const DeleteShopButton = ({ onDelete, shopId, shopState }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -21,14 +20,16 @@ const DeleteShopButton = ({ onDelete, shopId, shopState }) => {
 
     return (
         <>
-            <ActionButton 
+            <button 
+                className="delete-shop-button"
                 onClick={handleClick}
                 disabled={!shopId}
-                icon="&#128465;"
-                text="Delete Shop"
-                theme="delete"
+                aria-label="Delete Shop"
                 title="Delete this shop permanently"
-            />
+            >
+                <span className="delete-icon">&#128465;</span>
+                <span className="delete-text">Delete Shop</span>
+            </button>
 
             {showConfirmation && (
                 <div className="delete-confirm-overlay">
