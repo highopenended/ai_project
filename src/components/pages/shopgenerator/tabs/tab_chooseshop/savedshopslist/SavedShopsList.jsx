@@ -123,25 +123,36 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
             setSelectedShops(rangeShops);
         }
         
-        // Ctrl/Cmd + Click support
+        // Ctrl/Cmd + Click support for individual shop toggling
         else if (event.ctrlKey || event.metaKey) {
             event.preventDefault();
             
-            if (selectedShops.length === 0) {
-                // First selection with Ctrl/Cmd
-                setSelectedShops([shopId]);
-                setLastSelectedIndex(index);
-            } else {
-                // Toggle selection with Ctrl/Cmd
-                setSelectedShops(prev => 
-                    prev.includes(shopId) 
-                        ? prev.filter(id => id !== shopId)
-                        : [...prev, shopId]
-                );
-                setLastSelectedIndex(index);
-            }
+            // Toggle the clicked shop in/out of the selection
+            setSelectedShops(prev => {
+                let newSelection = [...prev];
+                
+                // If this is the first Ctrl+click and there's a current shop,
+                // include the current shop in the selection if it's not the one being clicked
+                if (newSelection.length === 0 && currentShopId && currentShopId !== shopId) {
+                    newSelection.push(currentShopId);
+                }
+                
+                // Check if the shop is already selected
+                const isSelected = newSelection.includes(shopId);
+                
+                if (isSelected) {
+                    // If already selected, remove it
+                    return newSelection.filter(id => id !== shopId);
+                } else {
+                    // If not selected, add it
+                    return [...newSelection, shopId];
+                }
+            });
+            
+            // Update last selected index
+            setLastSelectedIndex(index);
         }
-    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, selectedShops]);
+    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, currentShopId]);
 
     // Toggle sort order or change sort field
     const handleSort = (field) => {
@@ -205,7 +216,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         >
             <div className="saved-shops-header">
                 <div className="saved-shops-title">
-                    {selectedShops.length > 1 ? (
+                    {selectedShops.length > 0 ? (
                         <span className="selection-mode-indicator">
                             {selectedShops.length} Selected
                         </span>
@@ -300,7 +311,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
             {showConfirmDelete && (
                 <div className="delete-confirm-overlay">
                     <div className="delete-confirm-dialogue">
-                        <h3 className="delete-confirm-title">Delete {selectedShops.length} Shop{selectedShops.length > 1 ? 's' : ''}?</h3>
+                        <h3 className="delete-confirm-title">Delete {selectedShops.length === 1 ? "1 Shop" : `${selectedShops.length} Shops`}?</h3>
                         <p className="delete-confirm-message">
                             Are you sure you want to delete {selectedShops.length > 1 ? 'these shops' : 'this shop'}? This action cannot be undone.
                         </p>
