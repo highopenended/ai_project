@@ -13,7 +13,7 @@ import { exportShopData } from "../../utils/shopFileUtils";
  * - Loading saved shops
  * - Importing/Exporting shop data
  */
-function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId, currentShopData }) {
+function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId, currentShopData, shopSnapshot }) {
     return (
         <div className="tab-choose-shop">
             <NewShopButton handleNewShop={onNewShop} />
@@ -21,7 +21,8 @@ function Tab_ChooseShop({ savedShops, onLoadShop, onNewShop, currentShopId, curr
             <ImportExport 
                 handleImportShop={onLoadShop} 
                 handleExportShop={exportShopData} 
-                shopData={currentShopData} 
+                shopData={currentShopData}
+                shopSnapshot={shopSnapshot}
             />
         </div>
     );
@@ -33,6 +34,7 @@ Tab_ChooseShop.propTypes = {
     onNewShop: PropTypes.func.isRequired,
     currentShopId: PropTypes.string,
     currentShopData: PropTypes.object.isRequired,
+    shopSnapshot: PropTypes.object,
 };
 
 Tab_ChooseShop.displayName = "Choose Shop";

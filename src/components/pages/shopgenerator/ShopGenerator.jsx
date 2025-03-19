@@ -199,6 +199,7 @@ function ShopGenerator() {
         handleLoadShop,
         handleNewShop,
         setFilterMaps,
+        inventory,
         setInventory,
         shopSnapshot
     });
