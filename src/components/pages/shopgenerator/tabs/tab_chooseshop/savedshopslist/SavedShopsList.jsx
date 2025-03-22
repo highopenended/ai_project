@@ -10,7 +10,6 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
     const [sortBy, setSortBy] = useState('dateLastEdited');
     const [sortOrder, setSortOrder] = useState('desc');
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
-    const [isNarrow, setIsNarrow] = useState(false);
     const containerRef = useRef(null);
     const tableRef = useRef(null);
     const [hasFocus, setHasFocus] = useState(false);
@@ -19,27 +18,6 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
     useEffect(() => {
         setSelectedShops([]);
     }, [savedShops]);
-
-    // Check and update container width
-    useEffect(() => {
-        if (!containerRef.current) return;
-        
-        const checkWidth = () => {
-            const width = containerRef.current?.clientWidth || 0;
-            setIsNarrow(width < 380); // Adjusted threshold to 380px for better spacing
-        };
-        
-        // Initial check
-        checkWidth();
-        
-        // Set up resize observer to check width on container resize
-        const resizeObserver = new ResizeObserver(checkWidth);
-        resizeObserver.observe(containerRef.current);
-        
-        return () => {
-            resizeObserver.disconnect();
-        };
-    }, []);
 
     const formatDate = (date) => {
         if (!date) return '';
@@ -280,7 +258,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
     return (
         <div 
             ref={containerRef}
-            className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''} ${isLoadingShop ? 'loading' : ''}`}
+            className={`saved-shops-list-container ${isLoadingShop ? 'loading' : ''}`}
         >
             <div className="saved-shops-header">
                 <div className="saved-shops-title">
@@ -319,14 +297,12 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                 >
                     Name {getSortIcon('name')}
                 </div>
-                {!isNarrow && (
-                    <div 
-                        className="shop-col shop-col-type clickable" 
-                        onClick={() => handleSort('type')}
-                    >
-                        Type {getSortIcon('type')}
-                    </div>
-                )}
+                <div 
+                    className="shop-col shop-col-type clickable" 
+                    onClick={() => handleSort('type')}
+                >
+                    Type {getSortIcon('type')}
+                </div>
                 <div 
                     className="shop-col shop-col-date clickable" 
                     onClick={() => handleSort('dateLastEdited')}
@@ -346,7 +322,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                             <div className="shop-col shop-col-name">
                                 New Unsaved Shop <span className="unsaved-indicator">*</span>
                             </div>
-                            {!isNarrow && <div className="shop-col shop-col-type">-</div>}
+                            <div className="shop-col shop-col-type">-</div>
                             <div className="shop-col shop-col-date">Just now</div>
                         </div>
                     )}
@@ -356,16 +332,14 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                             key={shop.id} 
                             onClick={(e) => handleSelectShop(shop.id, index, e)}
                             className={`shop-row ${shop.id === currentShopId ? 'shop-row-current' : ''} ${selectedShops.includes(shop.id) ? 'shop-row-selected' : ''}`}
-                            title={`${shop.name || 'Unnamed Shop'}${isNarrow ? '\nType: ' + (shop.type || '-') : ''}\nLocation: ${shop.location || '-'}\nShopkeeper: ${shop.keeperName || '-'}`}
+                            title={`${shop.name || 'Unnamed Shop'}\nType: ${shop.type || '-'}\nLocation: ${shop.location || '-'}\nShopkeeper: ${shop.keeperName || '-'}`}
                         >
                             <div className="shop-col shop-col-name">
                                 {shop.name || 'Unnamed Shop'}
                             </div>
-                            {!isNarrow && (
-                                <div className="shop-col shop-col-type">
-                                    {shop.type || '-'}
-                                </div>
-                            )}
+                            <div className="shop-col shop-col-type">
+                                {shop.type || '-'}
+                            </div>
                             <div className="shop-col shop-col-date">
                                 {formatDate(shop.dateLastEdited)}
                             </div>

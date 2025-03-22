@@ -5,6 +5,7 @@
     border: 1px solid var(--dark-border-color);
     border-radius: 0.375rem;
     width: 100%;
+    container-type: inline-size;
 }
 
 /* Loading state */
@@ -19,7 +20,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3);
     z-index: 2;
     border-radius: 0.375rem;
     pointer-events: none;
@@ -94,15 +94,6 @@
     color: var(--text-secondary);
 }
 
-/* For narrow container */
-.narrow-container .saved-shops-table-header {
-    grid-template-columns: 2fr 1fr;
-}
-
-.narrow-container .shop-col-type {
-    display: none;
-}
-
 .shops-scrollbar {
     max-height: 300px;
     min-height: 100px;
@@ -129,11 +120,6 @@
     cursor: pointer;
     user-select: none;
     transition: background-color 0.15s ease, box-shadow 0.2s ease;
-}
-
-/* For narrow container */
-.narrow-container .shop-row {
-    grid-template-columns: 2fr 1fr;
 }
 
 .shop-row:last-child {
@@ -237,6 +223,21 @@
     font-weight: bold;
     margin-left: 0.3rem;
     animation: pulse 2s infinite;
+}
+
+/* Responsive grid adjustments using only container queries */
+@container (max-width: 420px) {
+    .saved-shops-table-header {
+        grid-template-columns: 2fr 1fr;
+    }
+    
+    .shop-row {
+        grid-template-columns: 2fr 1fr;
+    }
+    
+    .shop-col-type {
+        display: none;
+    }
 }
 
 /* Delete confirmation modal */
