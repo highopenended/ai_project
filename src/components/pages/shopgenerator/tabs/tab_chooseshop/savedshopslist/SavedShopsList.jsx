@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import Scrollbar from '../../../shared/scrollbar/Scrollbar';
 import './SavedShopsList.css';
 
-const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, onExportShops }) => {
+const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, onExportShops, isLoadingShop }) => {
     const [selectedShops, setSelectedShops] = useState([]);
     const [lastSelectedIndex, setLastSelectedIndex] = useState(null);
     const [sortBy, setSortBy] = useState('dateLastEdited');
@@ -12,6 +12,8 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [isNarrow, setIsNarrow] = useState(false);
     const containerRef = useRef(null);
+    const tableRef = useRef(null);
+    const [hasFocus, setHasFocus] = useState(false);
     
     // Reset selection when shops change
     useEffect(() => {
@@ -90,10 +92,13 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
 
     // Handle selecting a shop
     const handleSelectShop = useCallback((shopId, index, event) => {
+        // Don't process selection when loading
+        if (isLoadingShop) return;
+        
         const shopToLoad = savedShops.find(shop => shop.id === shopId);
         
         // Simple click without modifiers - just load the shop
-        if (!event.shiftKey && !event.ctrlKey && !event.metaKey) {
+        if (!event || (!event.shiftKey && !event.ctrlKey && !event.metaKey)) {
             // Always load the shop on simple click
             if (shopToLoad) {
                 loadShop(shopToLoad);
@@ -106,7 +111,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         }
         
         // For multi-select operations with shift key
-        if (event.shiftKey) {
+        if (event && event.shiftKey) {
             event.preventDefault();
             
             if (lastSelectedIndex === null) {
@@ -125,7 +130,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         }
         
         // Ctrl/Cmd + Click support for individual shop toggling
-        else if (event.ctrlKey || event.metaKey) {
+        else if (event && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             
             // Toggle the clicked shop in/out of the selection
@@ -153,7 +158,69 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
             // Update last selected index
             setLastSelectedIndex(index);
         }
-    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, currentShopId]);
+    }, [loadShop, savedShops, lastSelectedIndex, sortedShops, currentShopId, isLoadingShop]);
+
+    // Handle keyboard navigation
+    const handleKeyDown = useCallback((e) => {
+        if (!hasFocus || sortedShops.length === 0 || isLoadingShop) return;
+        
+        // Get current index (either the last selected or find the current shop)
+        let currentIndex = lastSelectedIndex;
+        if (currentIndex === null && currentShopId) {
+            currentIndex = sortedShops.findIndex(shop => shop.id === currentShopId);
+        }
+        
+        let newIndex = currentIndex;
+        
+        // Handle arrow keys for navigation
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            // Select next shop if not at end of list
+            newIndex = currentIndex < sortedShops.length - 1 
+                ? currentIndex + 1 
+                : currentIndex;
+        } 
+        else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            // Select previous shop if not at start of list
+            newIndex = currentIndex > 0 
+                ? currentIndex - 1 
+                : 0;
+        }
+        
+        // If index has changed, select the new shop
+        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < sortedShops.length) {
+            handleSelectShop(sortedShops[newIndex].id, newIndex, null);
+            
+            // Make sure the selected item is visible
+            const shopElements = tableRef.current?.querySelectorAll('.shop-row');
+            if (shopElements && shopElements[newIndex]) {
+                shopElements[newIndex].scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest' 
+                });
+            }
+        }
+    }, [hasFocus, lastSelectedIndex, currentShopId, sortedShops, handleSelectShop, isLoadingShop]);
+
+    // Add event listeners for focus and keyboard events
+    useEffect(() => {
+        const table = tableRef.current;
+        if (!table) return;
+
+        const handleFocus = () => setHasFocus(true);
+        const handleBlur = () => setHasFocus(false);
+        
+        table.addEventListener('focus', handleFocus);
+        table.addEventListener('blur', handleBlur);
+        table.addEventListener('keydown', handleKeyDown);
+        
+        return () => {
+            table.removeEventListener('focus', handleFocus);
+            table.removeEventListener('blur', handleBlur);
+            table.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [handleKeyDown]);
 
     // Toggle sort order or change sort field
     const handleSort = (field) => {
@@ -213,7 +280,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
     return (
         <div 
             ref={containerRef}
-            className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''}`}
+            className={`saved-shops-list-container ${isNarrow ? 'narrow-container' : ''} ${isLoadingShop ? 'loading' : ''}`}
         >
             <div className="saved-shops-header">
                 <div className="saved-shops-title">
@@ -269,7 +336,11 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
             </div>
             
             <Scrollbar className="shops-scrollbar">
-                <div className="saved-shops-table">
+                <div 
+                    ref={tableRef}
+                    className="saved-shops-table" 
+                    tabIndex="0"
+                >
                     {showNewUnsavedShop && (
                         <div className="shop-row shop-row-current shop-row-unsaved">
                             <div className="shop-col shop-col-name">
@@ -372,7 +443,8 @@ SavedShopsList.propTypes = {
     loadShop: PropTypes.func.isRequired,
     currentShopId: PropTypes.string,
     onDeleteShops: PropTypes.func,
-    onExportShops: PropTypes.func
+    onExportShops: PropTypes.func,
+    isLoadingShop: PropTypes.bool
 };
 
 export default SavedShopsList; 
