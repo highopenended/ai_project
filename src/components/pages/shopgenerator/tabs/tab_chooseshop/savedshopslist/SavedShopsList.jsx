@@ -380,6 +380,19 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                 <div className="delete-confirm-overlay">
                     <div className="delete-confirm-dialogue">
                         <h3 className="delete-confirm-title">Delete {selectedShops.length === 1 ? "1 Shop" : `${selectedShops.length} Shops`}?</h3>
+                        
+                        {/* Display list of shops to be deleted */}
+                        <div className="delete-shop-list">
+                            <ul>
+                                {selectedShops.map(id => {
+                                    const shop = savedShops.find(s => s.id === id);
+                                    return shop ? (
+                                        <li key={id}>{shop.name}</li>
+                                    ) : null;
+                                })}
+                            </ul>
+                        </div>
+                        
                         <p className="delete-confirm-message">
                             Are you sure you want to delete {selectedShops.length > 1 ? 'these shops' : 'this shop'}? This action cannot be undone.
                         </p>

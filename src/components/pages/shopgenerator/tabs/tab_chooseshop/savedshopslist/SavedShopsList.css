@@ -357,6 +357,36 @@
     color: var(--text-secondary);
 }
 
+/* Styling for shop list in delete confirmation */
+.delete-shop-list {
+    margin-bottom: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+    background-color: var(--background-tertiary);
+    border-radius: 0.25rem;
+    border: 1px solid var(--dark-border-color);
+}
+
+.delete-shop-list ul {
+    list-style-type: none;
+    padding: 0.5rem;
+    margin: 0;
+}
+
+.delete-shop-list li {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--dark-border-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.delete-shop-list li:last-child {
+    border-bottom: none;
+}
+
 .delete-confirm-buttons {
     display: flex;
     justify-content: flex-end;

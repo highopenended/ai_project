@@ -232,48 +232,13 @@ export const useShopOperations = ({
     };
 
     /**
-     * Helper function to find the next available numerical suffix for a cloned shop
-     * @param {string} baseName - The original shop name without suffix
-     * @param {Array} shopsList - Array of all shops to check against
-     * @returns {number} - The next available numerical suffix
-     */
-    const getNextCloneSuffix = (baseName, shopsList) => {
-        // Extract the base name without any existing suffix
-        const baseNameWithoutSuffix = baseName.replace(/\s*\(\d+\)\s*$/, '');
-        
-        // Find all shops that have this base name with a numerical suffix
-        const matchingShops = shopsList.filter(shop => {
-            const regex = new RegExp(`^${baseNameWithoutSuffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\((\\d+)\\)$`);
-            return regex.test(shop.name);
-        });
-        
-        if (matchingShops.length === 0) {
-            return 1; // First clone
-        }
-        
-        // Find the highest existing number
-        const suffixes = matchingShops.map(shop => {
-            const match = shop.name.match(/\((\d+)\)$/);
-            return match ? parseInt(match[1], 10) : 0;
-        });
-        
-        return Math.max(...suffixes) + 1;
-    };
-
-    /**
      * Clone the current shop
      */
     const handleCloneShop = () => {
-        // Get the next available suffix number
-        const nextSuffix = getNextCloneSuffix(shopState.name, cachedShops || []);
-        
-        // Create base name without any existing suffix for consistency
-        const baseNameWithoutSuffix = shopState.name.replace(/\s*\(\d+\)\s*$/, '');
-        
         const clonedState = {
             ...shopState,
             id: generateShopId(),
-            name: `${baseNameWithoutSuffix} (${nextSuffix})`,
+            name: `${shopState.name} (Clone)`,
             dateCreated: new Date(),
             dateLastEdited: new Date(),
         };
