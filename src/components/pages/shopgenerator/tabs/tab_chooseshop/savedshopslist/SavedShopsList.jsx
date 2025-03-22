@@ -37,6 +37,22 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
         });
     };
 
+    // Compact date format for narrower containers
+    const formatCompactDate = (date) => {
+        if (!date) return '';
+        
+        // Handle Firebase Timestamp objects
+        if (date && typeof date === 'object' && date.toDate) {
+            date = date.toDate();
+        }
+        
+        const d = date instanceof Date ? date : new Date(date);
+        if (isNaN(d.getTime())) return 'Invalid';
+        
+        // Always show MM/DD/YY with 2-digit year
+        return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear().toString().slice(-2)}`;
+    };
+
     // Sort shops based on current sort criteria
     const sortedShops = [...savedShops].sort((a, b) => {
         let valueA, valueB;
@@ -307,7 +323,7 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                     className="shop-col shop-col-date clickable" 
                     onClick={() => handleSort('dateLastEdited')}
                 >
-                    Modified {getSortIcon('dateLastEdited')}
+                    <span className="header-text">Modified</span> {getSortIcon('dateLastEdited')}
                 </div>
             </div>
             
@@ -320,10 +336,15 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                     {showNewUnsavedShop && (
                         <div className="shop-row shop-row-current shop-row-unsaved">
                             <div className="shop-col shop-col-name">
-                                New Unsaved Shop <span className="unsaved-indicator">*</span>
+                                <span className="shop-name-text">New Unsaved Shop</span> <span className="unsaved-indicator">*</span>
                             </div>
-                            <div className="shop-col shop-col-type">-</div>
-                            <div className="shop-col shop-col-date">Just now</div>
+                            <div className="shop-col shop-col-type">
+                                <span className="shop-type-text">-</span>
+                            </div>
+                            <div className="shop-col shop-col-date">
+                                <span className="date-full">Just now</span>
+                                <span className="date-compact">{`${new Date().getMonth() + 1}/${new Date().getDate()}/${new Date().getFullYear().toString().slice(-2)}`}</span>
+                            </div>
                         </div>
                     )}
                     
@@ -332,16 +353,17 @@ const SavedShopsList = ({ savedShops, loadShop, currentShopId, onDeleteShops, on
                             key={shop.id} 
                             onClick={(e) => handleSelectShop(shop.id, index, e)}
                             className={`shop-row ${shop.id === currentShopId ? 'shop-row-current' : ''} ${selectedShops.includes(shop.id) ? 'shop-row-selected' : ''}`}
-                            title={`${shop.name || 'Unnamed Shop'}\nType: ${shop.type || '-'}\nLocation: ${shop.location || '-'}\nShopkeeper: ${shop.keeperName || '-'}`}
+                            title={`${shop.name || 'Unnamed Shop'}\nType: ${shop.type || '-'}\nLocation: ${shop.location || '-'}\nShopkeeper: ${shop.keeperName || '-'}\nLast modified: ${formatDate(shop.dateLastEdited)}`}
                         >
                             <div className="shop-col shop-col-name">
-                                {shop.name || 'Unnamed Shop'}
+                                <span className="shop-name-text">{shop.name || 'Unnamed Shop'}</span>
                             </div>
                             <div className="shop-col shop-col-type">
-                                {shop.type || '-'}
+                                <span className="shop-type-text">{shop.type || '-'}</span>
                             </div>
                             <div className="shop-col shop-col-date">
-                                {formatDate(shop.dateLastEdited)}
+                                <span className="date-full">{formatDate(shop.dateLastEdited)}</span>
+                                <span className="date-compact">{formatCompactDate(shop.dateLastEdited)}</span>
                             </div>
                         </div>
                     ))}

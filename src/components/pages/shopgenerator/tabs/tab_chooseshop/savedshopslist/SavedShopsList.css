@@ -197,16 +197,56 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0;
 }
 
 .shop-col-name {
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.shop-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+
+.shop-type-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
 }
 
 .shop-col-type,
 .shop-col-date {
     color: var(--text-secondary);
     font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.header-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Date format display control */
+.date-full {
+    display: inline;
+}
+
+.date-compact {
+    display: none;
 }
 
 .clickable {
@@ -225,7 +265,7 @@
     animation: pulse 2s infinite;
 }
 
-/* Responsive grid adjustments using only container queries */
+/* Responsive grid adjustments using container queries */
 @container (max-width: 420px) {
     .saved-shops-table-header {
         grid-template-columns: 2fr 1fr;
@@ -236,6 +276,47 @@
     }
     
     .shop-col-type {
+        display: none;
+    }
+}
+
+/* Medium width - use compact date format */
+@container (max-width: 520px) and (min-width: 421px) {
+    .date-full {
+        display: none;
+    }
+    
+    .date-compact {
+        display: inline;
+    }
+}
+
+/* Very narrow width - adjust further */
+@container (max-width: 380px) {
+    .shop-col-date {
+        font-size: 0.75rem;
+    }
+    
+    .date-full {
+        display: none;
+    }
+    
+    .date-compact {
+        display: inline;
+    }
+}
+
+/* Extremely narrow width - show only names */
+@container (max-width: 280px) {
+    .saved-shops-table-header {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .shop-col-date {
         display: none;
     }
 }

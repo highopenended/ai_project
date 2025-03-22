@@ -59,7 +59,7 @@ const CloneShopButton = ({ onClone, shopId, shopState, hasUnsavedChanges, change
             {showConfirmation && (
                 <UnsavedChangesDialogue
                     headerText="Clone This Shop?"
-                    description={`This will create an exact copy of "${shopState.name}" with "(Clone)" appended to its name.`}
+                    description={`This will create an exact copy of "${shopState.name}" with a numerical suffix.`}
                     changes={changes}
                     currentShopName={shopState.name}
                     onConfirm={handleConfirm}
